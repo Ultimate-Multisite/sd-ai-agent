@@ -2,6 +2,8 @@
 /**
  * Admin page for the AI Agent chat UI.
  *
+ * Renders a full-page React app (two-column layout with session sidebar).
+ *
  * @package AiAgent
  */
 
@@ -24,12 +26,12 @@ class Admin_Page {
 		);
 
 		if ( $hook ) {
-			add_action( "admin_enqueue_scripts", [ __CLASS__, 'enqueue_assets' ] );
+			add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
 		}
 	}
 
 	/**
-	 * Enqueue assets only on our page.
+	 * Enqueue the built React app only on our page.
 	 *
 	 * @param string $hook_suffix The current admin page hook suffix.
 	 */
@@ -38,46 +40,32 @@ class Admin_Page {
 			return;
 		}
 
+		$asset_file = AI_AGENT_DIR . '/build/admin-page.asset.php';
+
+		if ( ! file_exists( $asset_file ) ) {
+			return;
+		}
+
+		$asset = require $asset_file;
+
 		wp_enqueue_style(
-			'ai-agent-chat',
-			AI_AGENT_URL . 'assets/chat.css',
-			[],
-			'0.1.0'
+			'ai-agent-admin-page',
+			AI_AGENT_URL . 'build/style-admin-page.css',
+			[ 'wp-components' ],
+			$asset['version']
 		);
 
 		wp_enqueue_script(
-			'ai-agent-chat',
-			AI_AGENT_URL . 'assets/chat.js',
-			[],
-			'0.1.0',
+			'ai-agent-admin-page',
+			AI_AGENT_URL . 'build/admin-page.js',
+			$asset['dependencies'],
+			$asset['version'],
 			true
-		);
-
-		// Build abilities list for the UI.
-		$abilities = [];
-		if ( function_exists( 'wp_get_abilities' ) ) {
-			foreach ( wp_get_abilities() as $ability ) {
-				$abilities[] = [
-					'name'        => $ability->get_name(),
-					'label'       => $ability->get_label(),
-					'description' => $ability->get_description(),
-				];
-			}
-		}
-
-		wp_localize_script(
-			'ai-agent-chat',
-			'aiAgentData',
-			[
-				'restUrl'   => rest_url( Rest_Controller::NAMESPACE . '/run' ),
-				'nonce'     => wp_create_nonce( 'wp_rest' ),
-				'abilities' => $abilities,
-			]
 		);
 	}
 
 	/**
-	 * Render the admin page.
+	 * Render the admin page — just a mount point for React.
 	 */
 	public static function render(): void {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
@@ -90,17 +78,10 @@ class Admin_Page {
 		}
 
 		?>
-		<div class="wrap">
+		<div class="wrap ai-agent-admin-wrap">
 			<h1><?php esc_html_e( 'AI Agent', 'ai-agent' ); ?></h1>
 			<p class="description"><?php esc_html_e( 'Chat with an AI assistant that can interact with your WordPress site using registered abilities.', 'ai-agent' ); ?></p>
-
-			<div id="ai-agent-chat">
-				<div id="ai-agent-messages"></div>
-				<div id="ai-agent-input-area">
-					<textarea id="ai-agent-input" rows="2" placeholder="<?php esc_attr_e( 'Type a message...', 'ai-agent' ); ?>"></textarea>
-					<button id="ai-agent-send" class="button button-primary"><?php esc_html_e( 'Send', 'ai-agent' ); ?></button>
-				</div>
-			</div>
+			<div id="ai-agent-root"></div>
 		</div>
 		<?php
 	}

@@ -1,0 +1,77 @@
+/**
+ * WordPress dependencies
+ */
+import { useSelect, useDispatch } from '@wordpress/data';
+import { Button } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
+
+/**
+ * Internal dependencies
+ */
+import STORE_NAME from '../store';
+
+export default function ContextIndicator() {
+	const { percentage, isWarning, tokenUsage } = useSelect(
+		( select ) => ( {
+			percentage: select( STORE_NAME ).getContextPercentage(),
+			isWarning: select( STORE_NAME ).isContextWarning(),
+			tokenUsage: select( STORE_NAME ).getTokenUsage(),
+		} ),
+		[]
+	);
+	const { clearCurrentSession, compactConversation } =
+		useDispatch( STORE_NAME );
+
+	// Don't show if no tokens tracked yet.
+	if ( tokenUsage.prompt === 0 && tokenUsage.completion === 0 ) {
+		return null;
+	}
+
+	const clampedPct = Math.min( percentage, 100 );
+	let barColor = '#00a32a'; // green
+	if ( clampedPct > 80 ) {
+		barColor = '#d63638'; // red
+	} else if ( clampedPct > 70 ) {
+		barColor = '#dba617'; // yellow
+	}
+
+	return (
+		<div className="ai-agent-context-indicator">
+			<div className="ai-agent-context-bar-track">
+				<div
+					className="ai-agent-context-bar-fill"
+					style={ {
+						width: clampedPct + '%',
+						backgroundColor: barColor,
+					} }
+				/>
+			</div>
+			{ isWarning && (
+				<div className="ai-agent-context-warning">
+					<span>
+						{ __(
+							'Context window is getting full.',
+							'ai-agent'
+						) }
+					</span>
+					<div className="ai-agent-context-warning-actions">
+						<Button
+							variant="secondary"
+							size="small"
+							onClick={ compactConversation }
+						>
+							{ __( 'Compact', 'ai-agent' ) }
+						</Button>
+						<Button
+							variant="secondary"
+							size="small"
+							onClick={ clearCurrentSession }
+						>
+							{ __( 'New Chat', 'ai-agent' ) }
+						</Button>
+					</div>
+				</div>
+			) }
+		</div>
+	);
+}

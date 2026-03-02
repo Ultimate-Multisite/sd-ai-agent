@@ -1,0 +1,208 @@
+/* Settings Page */
+
+.ai-agent-settings {
+	max-width: 800px;
+	margin-top: 16px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+}
+
+.ai-agent-settings-loading {
+	padding: 40px;
+	text-align: center;
+}
+
+.ai-agent-settings .components-tab-panel__tabs {
+	border-bottom: 1px solid #c3c4c7;
+	padding: 0 12px;
+}
+
+.ai-agent-settings .components-tab-panel__tab-content {
+	padding: 0;
+}
+
+.ai-agent-settings-section {
+	padding: 20px 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.ai-agent-settings-actions {
+	padding: 16px 24px;
+	border-top: 1px solid #dcdcde;
+	display: flex;
+	gap: 8px;
+}
+
+/* Memory Manager */
+
+.ai-agent-memory-manager {
+	margin-top: 12px;
+}
+
+.ai-agent-memory-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+}
+
+.ai-agent-memory-header h3 {
+	margin: 0;
+	font-size: 14px;
+}
+
+.ai-agent-memory-form {
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: 16px;
+	margin-bottom: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.ai-agent-memory-form-actions {
+	display: flex;
+	gap: 8px;
+}
+
+.ai-agent-memory-table {
+	font-size: 13px;
+}
+
+.ai-agent-memory-table th {
+	font-weight: 600;
+}
+
+.ai-agent-memory-table td {
+	vertical-align: top;
+}
+
+.ai-agent-memory-category {
+	text-transform: capitalize;
+	font-size: 12px;
+	background: #f0f0f1;
+	padding: 2px 8px;
+	border-radius: 3px;
+	white-space: nowrap;
+}
+
+.ai-agent-memory-actions {
+	display: flex;
+	gap: 2px;
+}
+
+/* Skill Manager */
+
+.ai-agent-skill-manager {
+	margin-top: 0;
+}
+
+.ai-agent-skill-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 16px;
+}
+
+.ai-agent-skill-header h3 {
+	margin: 0 0 4px;
+	font-size: 14px;
+}
+
+.ai-agent-skill-header .description {
+	margin: 0;
+}
+
+.ai-agent-skill-form {
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: 16px;
+	margin-bottom: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.ai-agent-skill-form-actions {
+	display: flex;
+	gap: 8px;
+}
+
+.ai-agent-skill-cards {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.ai-agent-skill-card {
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: 14px 16px;
+	background: #fff;
+	transition: opacity 0.2s;
+}
+
+.ai-agent-skill-card--disabled {
+	opacity: 0.6;
+}
+
+.ai-agent-skill-card-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 6px;
+}
+
+.ai-agent-skill-card-header .components-toggle-control {
+	margin-bottom: 0;
+}
+
+.ai-agent-skill-card-header .components-base-control__field {
+	margin-bottom: 0;
+}
+
+.ai-agent-skill-card-title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 1;
+}
+
+.ai-agent-skill-badge {
+	font-size: 11px;
+	background: #e0e0e0;
+	color: #50575e;
+	padding: 1px 8px;
+	border-radius: 3px;
+	font-weight: normal;
+}
+
+.ai-agent-skill-card-description {
+	margin: 0 0 8px;
+	color: #646970;
+	font-size: 13px;
+	padding-left: 52px;
+}
+
+.ai-agent-skill-card-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding-left: 52px;
+}
+
+.ai-agent-skill-word-count {
+	font-size: 12px;
+	color: #999;
+}
+
+.ai-agent-skill-card-actions {
+	display: flex;
+	gap: 2px;
+}

@@ -1,0 +1,28 @@
+{
+	"name": "ai-agent",
+	"private": true,
+	"license": "GPL-2.0-or-later",
+	"scripts": {
+		"build": "wp-scripts build",
+		"start": "wp-scripts start"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^31.2.0"
+	},
+	"dependencies": {
+		"@wordpress/api-fetch": "^7.36.0",
+		"@wordpress/components": "^30.7.0",
+		"@wordpress/compose": "^7.34.0",
+		"@wordpress/data": "^10.34.0",
+		"@wordpress/dom-ready": "^4.38.0",
+		"@wordpress/element": "^6.34.0",
+		"@wordpress/i18n": "^6.7.0",
+		"@wordpress/icons": "^11.1.0",
+		"@wordpress/notices": "^5.35.0",
+		"react": "^18.3.1"
+	},
+	"overrides": {
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1"
+	}
+}
