@@ -155,3 +155,29 @@ Yes, the plugin works on both single-site and multisite WordPress installations.
 6. Event-Driven Automations with WordPress and WooCommerce triggers
 7. Knowledge Base management for RAG
 8. Settings page with 12 configuration tabs
+
+== Changelog ==
+
+= 1.0.0 =
+* Initial stable release
+* Agentic chat with autonomous tool-calling loop
+* Full-page admin panel and floating widget chat interfaces
+* Session management with folders, search, export/import
+* Persistent memory across sessions with auto-memory mode
+* Skills system for reusable instruction guides
+* Knowledge Base (RAG) with collections, document upload, and full-text search
+* Custom Tools — create HTTP, ACTION, and CLI tools without code
+* Tool Profiles — 6 built-in profiles to scope AI access
+* Scheduled Automations with cron integration and execution logging
+* Event-Driven Automations with 20+ WordPress and WooCommerce triggers
+* Tool Discovery meta-tools for sites with many abilities
+* Smart Conversation Trimming to prevent context overflow
+* Suggestion Chips for contextual follow-ups
+* Usage Dashboard with token counts and cost estimates
+* Context Providers for page-aware AI responses
+* WordPress 6.9 compatibility layer (bundles AI Client SDK)
+
+== Upgrade Notice ==
+
+= 1.0.0 =
+Initial release. Requires WordPress 6.9+ and an AI provider connector plugin.

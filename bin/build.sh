@@ -36,43 +36,39 @@ BUILD_DIR="$(mktemp -d)"
 DEST="${BUILD_DIR}/ai-agent"
 mkdir -p "$DEST"
 
+# Temp file for combined exclusion patterns (used by rsync --exclude-from)
+EXCLUDE_FILE="$(mktemp)"
+
 cleanup() {
 	rm -rf "$BUILD_DIR"
+	rm -f "$EXCLUDE_FILE"
 }
 trap cleanup EXIT
 
 # ── 3. Collect exclusion patterns ──
-# Start with patterns from .distignore
-EXCLUDE_ARGS=()
+# Start with patterns from .distignore (strip comments, blank lines, whitespace, CR)
 if [ -f .distignore ]; then
-	while IFS= read -r pattern || [ -n "$pattern" ]; do
-		# Skip blank lines and comments
-		pattern="$(echo "$pattern" | xargs)"
-		[ -z "$pattern" ] && continue
-		[[ "$pattern" == \#* ]] && continue
-		EXCLUDE_ARGS+=("--exclude=$pattern")
-	done < .distignore
+	sed -e 's/\r$//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e '/^$/d' -e '/^#/d' .distignore > "$EXCLUDE_FILE"
 fi
 
 # Additional exclusions not in .distignore
-EXCLUDE_ARGS+=(
-	"--exclude=bin"
-	"--exclude=.claude"
-	"--exclude=*.map"
-	"--exclude=tests"
-	"--exclude=test"
-	"--exclude=.phpunit*"
-	"--exclude=phpunit*"
-	"--exclude=.editorconfig"
-	"--exclude=.eslintrc*"
-	"--exclude=.prettierrc*"
-	"--exclude=.stylelintrc*"
-)
+cat >> "$EXCLUDE_FILE" <<'EXTRA'
+.claude
+*.map
+tests
+test
+.phpunit*
+phpunit*
+.editorconfig
+.eslintrc*
+.prettierrc*
+.stylelintrc*
+EXTRA
 
 # ── 4. Copy files into temp dir, respecting exclusions ──
 echo "==> Copying files..."
 rsync -a --delete \
-	"${EXCLUDE_ARGS[@]}" \
+	--exclude-from="$EXCLUDE_FILE" \
 	"$PLUGIN_DIR/" "$DEST/"
 echo "    Done."
 
