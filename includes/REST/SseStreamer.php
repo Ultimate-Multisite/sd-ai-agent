@@ -15,10 +15,10 @@ declare(strict_types=1);
  *   $streamer->send_token( 'world!' );
  *   $streamer->send_done( [ 'session_id' => 42 ] );
  *
- * @package AiAgent\REST
+ * @package GratisAiAgent\REST
  */
 
-namespace AiAgent\REST;
+namespace GratisAiAgent\REST;
 
 class SseStreamer {
 

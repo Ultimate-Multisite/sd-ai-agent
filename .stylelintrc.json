@@ -3,7 +3,13 @@
 	"rules": {
 		"no-descending-specificity": null,
 		"font-family-no-missing-generic-family-keyword": null,
-		"selector-class-pattern": null
+		"selector-class-pattern": null,
+		"rule-empty-line-before": [
+			"always",
+			{
+				"ignore": ["after-comment", "inside-block"]
+			}
+		]
 	},
 	"ignoreFiles": [
 		"build/**",

@@ -615,6 +615,35 @@ body.tools_page_gratis-ai-agent #wpbody-content > .updated {
 	margin: 0;
 }
 
+/* Streaming response bubble */
+.ai-agent-streaming {
+	position: relative;
+}
+
+.ai-agent-streaming-cursor {
+	display: inline-block;
+	width: 2px;
+	height: 1em;
+	background: currentcolor;
+	margin-left: 2px;
+	vertical-align: text-bottom;
+	animation: ai-agent-blink 0.8s step-end infinite;
+}
+
+@keyframes ai-agent-blink {
+	0% {
+		opacity: 1;
+	}
+
+	50% {
+		opacity: 0;
+	}
+
+	100% {
+		opacity: 1;
+	}
+}
+
 /* Tool calls */
 .gratis-ai-agent-tool-calls {
 	align-self: flex-start;
