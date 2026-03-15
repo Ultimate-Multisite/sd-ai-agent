@@ -20,7 +20,7 @@ import DebugPanel from './debug-panel';
  * Suggestions are lines starting with `[suggestion]`.
  *
  * @param {string} text The full response text.
- * @return {{ cleanText: string, suggestions: string[] }}
+ * @return {{ cleanText: string, suggestions: string[] }} Parsed text and suggestion chips.
  */
 function parseSuggestions( text ) {
 	const lines = text.split( '\n' );
@@ -41,7 +41,10 @@ function parseSuggestions( text ) {
 		}
 	}
 
-	const cleanText = lines.slice( 0, lastContentIdx + 1 ).join( '\n' ).trimEnd();
+	const cleanText = lines
+		.slice( 0, lastContentIdx + 1 )
+		.join( '\n' )
+		.trimEnd();
 	return { cleanText, suggestions };
 }
 
@@ -141,7 +144,10 @@ export default function MessageList() {
 		<div className="ai-agent-messages" ref={ messagesRef }>
 			{ visibleMessages.length === 0 && ! sending && (
 				<div className="ai-agent-empty-state">
-					{ __( 'Send a message to start a conversation.', 'ai-agent' ) }
+					{ __(
+						'Send a message to start a conversation.',
+						'ai-agent'
+					) }
 				</div>
 			) }
 			{ visibleMessages.map( ( msg, i ) => {
@@ -156,9 +162,7 @@ export default function MessageList() {
 					: { cleanText: rawText, suggestions: [] };
 
 				const isLastModel =
-					isModel &&
-					! sending &&
-					i === visibleMessages.length - 1;
+					isModel && ! sending && i === visibleMessages.length - 1;
 
 				return (
 					<div key={ i } className="ai-agent-message-row">
@@ -166,10 +170,7 @@ export default function MessageList() {
 							<ToolCallDetails toolCalls={ msg.toolCalls } />
 						) }
 						<MessageBubble role={ msg.role } text={ cleanText } />
-						<MessageActions
-							message={ msg }
-							index={ i }
-						/>
+						<MessageActions message={ msg } index={ i } />
 						{ debugMode && isModel && msg.debug && (
 							<DebugPanel debug={ msg.debug } />
 						) }
@@ -185,7 +186,7 @@ export default function MessageList() {
 			{ sending && (
 				<div className="ai-agent-bubble ai-agent-assistant ai-agent-thinking">
 					<Spinner />
-					{ __( 'Thinking...', 'ai-agent' ) }
+					{ __( 'Thinking…', 'ai-agent' ) }
 				</div>
 			) }
 		</div>

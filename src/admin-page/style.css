@@ -478,7 +478,7 @@ body.tools_page_ai-agent #wpbody-content > .updated {
 	font-size: 0.9em;
 }
 
-/* Code blocks (react-syntax-highlighter) */
+/* Code blocks (highlight.js) */
 .ai-agent-code-block {
 	margin: 0.5em 0;
 	border-radius: 4px;
@@ -543,6 +543,45 @@ body.tools_page_ai-agent #wpbody-content > .updated {
 .ai-agent-code-copy:hover {
 	background: #555;
 	color: #fff;
+}
+
+/* highlight.js pre wrapper inside code blocks */
+.ai-agent-code-pre {
+	margin: 0;
+	border-radius: 0 0 4px 4px;
+	overflow-x: auto;
+	font-size: 0.85em;
+	line-height: 1.5;
+}
+
+.ai-agent-code-pre code.hljs {
+	border-radius: 0 0 4px 4px;
+}
+
+/* Line numbers (toggled via show-line-numbers class) */
+.ai-agent-code-pre.show-line-numbers {
+	counter-reset: hljs-ln;
+}
+
+.ai-agent-code-pre.show-line-numbers code {
+	display: block;
+}
+
+.ai-agent-code-pre.show-line-numbers .hljs-ln-line::before {
+	counter-increment: hljs-ln;
+	content: counter(hljs-ln);
+	display: inline-block;
+	min-width: 2em;
+	margin-right: 1em;
+	text-align: right;
+	color: #636d83;
+	user-select: none;
+}
+
+/* Word wrap (toggled via wrap-lines class) */
+.ai-agent-code-pre.wrap-lines {
+	white-space: pre-wrap;
+	word-break: break-all;
 }
 
 .ai-agent-assistant pre {

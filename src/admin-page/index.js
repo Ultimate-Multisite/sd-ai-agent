@@ -1,8 +1,13 @@
 /**
  * WordPress dependencies
  */
-import { createRoot } from '@wordpress/element';
-import { useEffect, useState, useCallback, useMemo } from '@wordpress/element';
+import {
+	createRoot,
+	useEffect,
+	useState,
+	useCallback,
+	useMemo,
+} from '@wordpress/element';
 import { useDispatch, useSelect } from '@wordpress/data';
 
 /**
@@ -17,8 +22,12 @@ import { useKeyboardShortcuts } from '../utils/keyboard-shortcuts';
 import './style.css';
 
 function AdminPageApp() {
-	const { fetchProviders, fetchSessions, fetchSettings, clearCurrentSession } =
-		useDispatch( STORE_NAME );
+	const {
+		fetchProviders,
+		fetchSessions,
+		fetchSettings,
+		clearCurrentSession,
+	} = useDispatch( STORE_NAME );
 	const { settings, settingsLoaded } = useSelect(
 		( select ) => ( {
 			settings: select( STORE_NAME ).getSettings(),
@@ -73,9 +82,7 @@ function AdminPageApp() {
 
 	if ( showOnboarding ) {
 		return (
-			<OnboardingWizard
-				onComplete={ () => setShowOnboarding( false ) }
-			/>
+			<OnboardingWizard onComplete={ () => setShowOnboarding( false ) } />
 		);
 	}
 
@@ -88,9 +95,7 @@ function AdminPageApp() {
 				</div>
 			</div>
 			{ showShortcuts && (
-				<ShortcutsHelp
-					onClose={ () => setShowShortcuts( false ) }
-				/>
+				<ShortcutsHelp onClose={ () => setShowShortcuts( false ) } />
 			) }
 		</>
 	);

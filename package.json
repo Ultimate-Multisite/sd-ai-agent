@@ -39,9 +39,9 @@
 		"@wordpress/i18n": "^6.7.0",
 		"@wordpress/icons": "^11.1.0",
 		"@wordpress/notices": "^5.35.0",
+		"highlight.js": "^11.11.1",
 		"react": "^18.3.1",
 		"react-markdown": "^10.1.0",
-		"react-syntax-highlighter": "^16.1.1",
 		"remark-gfm": "^4.0.1"
 	},
 	"overrides": {

@@ -75,22 +75,20 @@ export default function ImportDialog( { onClose } ) {
 		<div className="ai-agent-shortcuts-overlay">
 			<div className="ai-agent-export-dialog" ref={ dialogRef }>
 				<div className="ai-agent-export-header">
-					<h3>
-						{ __( 'Import Conversation', 'ai-agent' ) }
-					</h3>
+					<h3>{ __( 'Import Conversation', 'ai-agent' ) }</h3>
 					<button type="button" onClick={ onClose }>
 						&times;
 					</button>
 				</div>
 				<div className="ai-agent-export-body">
+					{ /* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */ }
 					<div
 						ref={ dropRef }
 						className="ai-agent-import-dropzone"
 						onDragOver={ ( e ) => e.preventDefault() }
 						onDrop={ handleDrop }
 						onClick={ () => {
-							const input =
-								document.createElement( 'input' );
+							const input = document.createElement( 'input' );
 							input.type = 'file';
 							input.accept = '.json';
 							input.onchange = ( e ) => {
@@ -108,12 +106,12 @@ export default function ImportDialog( { onClose } ) {
 								{ fileData && (
 									<p>
 										{ fileData.title ||
-											__( 'Untitled', 'ai-agent' ) }{ ' ' }
-										({ ( fileData.messages?.length || 0 ) }{ ' ' }
-										{ __(
-											'messages',
-											'ai-agent'
-										) })
+											__(
+												'Untitled',
+												'ai-agent'
+											) }{ ' ' }
+										({ fileData.messages?.length || 0 }{ ' ' }
+										{ __( 'messages', 'ai-agent' ) })
 									</p>
 								) }
 							</div>

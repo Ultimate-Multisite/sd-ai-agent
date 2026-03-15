@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { useState, useRef, useEffect } from '@wordpress/element';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { useDispatch } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -16,6 +16,13 @@ export default function SessionContextMenu( { session, onClose } ) {
 	const [ isRenaming, setIsRenaming ] = useState( false );
 	const [ renameTitle, setRenameTitle ] = useState( session.title || '' );
 	const menuRef = useRef( null );
+	const renameInputRef = useRef( null );
+
+	useEffect( () => {
+		if ( isRenaming && renameInputRef.current ) {
+			renameInputRef.current.focus();
+		}
+	}, [ isRenaming ] );
 
 	const {
 		pinSession,
@@ -26,11 +33,6 @@ export default function SessionContextMenu( { session, onClose } ) {
 		moveSessionToFolder,
 		exportSession,
 	} = useDispatch( STORE_NAME );
-
-	const sessionFilter = useSelect(
-		( select ) => select( STORE_NAME ).getSessionFilter(),
-		[]
-	);
 
 	const sessionId = parseInt( session.id, 10 );
 	const isPinned = parseInt( session.pinned, 10 ) === 1;
@@ -61,6 +63,7 @@ export default function SessionContextMenu( { session, onClose } ) {
 			<div className="ai-agent-context-menu" ref={ menuRef }>
 				<div className="ai-agent-context-menu-rename">
 					<input
+						ref={ renameInputRef }
 						type="text"
 						value={ renameTitle }
 						onChange={ ( e ) => setRenameTitle( e.target.value ) }
@@ -72,7 +75,6 @@ export default function SessionContextMenu( { session, onClose } ) {
 								onClose();
 							}
 						} }
-						autoFocus
 					/>
 					<button type="button" onClick={ handleRename }>
 						{ __( 'Save', 'ai-agent' ) }

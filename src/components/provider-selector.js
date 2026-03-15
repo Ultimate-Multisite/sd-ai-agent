@@ -22,8 +22,7 @@ export default function ProviderSelector( { compact = false } ) {
 			};
 		}, [] );
 
-	const { setSelectedProvider, setSelectedModel } =
-		useDispatch( STORE_NAME );
+	const { setSelectedProvider, setSelectedModel } = useDispatch( STORE_NAME );
 
 	const providerOptions = providers.map( ( p ) => ( {
 		label: p.name,
@@ -41,7 +40,7 @@ export default function ProviderSelector( { compact = false } ) {
 		? models.map( ( m ) => ( {
 				label: m.name || m.id,
 				value: m.id,
-			} ) )
+		  } ) )
 		: [ { label: __( '(default)', 'ai-agent' ), value: '' } ];
 
 	const onProviderChange = ( value ) => {

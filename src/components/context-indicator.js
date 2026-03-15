@@ -76,10 +76,7 @@ export default function ContextIndicator() {
 			{ isWarning && (
 				<div className="ai-agent-context-warning">
 					<span>
-						{ __(
-							'Context window is getting full.',
-							'ai-agent'
-						) }
+						{ __( 'Context window is getting full.', 'ai-agent' ) }
 					</span>
 					<div className="ai-agent-context-warning-actions">
 						<Button

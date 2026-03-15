@@ -56,9 +56,7 @@ export default function UsageDashboard() {
 	}
 
 	if ( ! data ) {
-		return (
-			<p>{ __( 'Failed to load usage data.', 'ai-agent' ) }</p>
-		);
+		return <p>{ __( 'Failed to load usage data.', 'ai-agent' ) }</p>;
 	}
 
 	const totals = data.totals || {};
@@ -141,24 +139,17 @@ export default function UsageDashboard() {
 							<tr>
 								<th>{ __( 'Model', 'ai-agent' ) }</th>
 								<th>{ __( 'Requests', 'ai-agent' ) }</th>
-								<th>
-									{ __( 'Input Tokens', 'ai-agent' ) }
-								</th>
-								<th>
-									{ __( 'Output Tokens', 'ai-agent' ) }
-								</th>
+								<th>{ __( 'Input Tokens', 'ai-agent' ) }</th>
+								<th>{ __( 'Output Tokens', 'ai-agent' ) }</th>
 								<th>{ __( 'Cost', 'ai-agent' ) }</th>
 								<th></th>
 							</tr>
 						</thead>
 						<tbody>
 							{ byModel.map( ( m, i ) => {
-								const cost =
-									parseFloat( m.cost_usd ) || 0;
+								const cost = parseFloat( m.cost_usd ) || 0;
 								const pct =
-									maxCost > 0
-										? ( cost / maxCost ) * 100
-										: 0;
+									maxCost > 0 ? ( cost / maxCost ) * 100 : 0;
 								return (
 									<tr key={ i }>
 										<td>
@@ -168,18 +159,14 @@ export default function UsageDashboard() {
 										</td>
 										<td>{ m.request_count }</td>
 										<td>
-											{ formatTokens(
-												m.prompt_tokens
-											) }
+											{ formatTokens( m.prompt_tokens ) }
 										</td>
 										<td>
 											{ formatTokens(
 												m.completion_tokens
 											) }
 										</td>
-										<td>
-											{ formatCost( m.cost_usd ) }
-										</td>
+										<td>{ formatCost( m.cost_usd ) }</td>
 										<td>
 											<div className="ai-agent-usage-bar">
 												<div

@@ -26,8 +26,7 @@ export default function FloatingPanel() {
 		[]
 	);
 
-	const { position, isDragging, handleMouseDown, resetPosition } =
-		useDrag();
+	const { position, isDragging, handleMouseDown, resetPosition } = useDrag();
 
 	// Build inline styles for custom position.
 	const panelStyle = {};
@@ -48,6 +47,7 @@ export default function FloatingPanel() {
 
 	return (
 		<div className={ classNames } style={ panelStyle }>
+			{ /* eslint-disable-next-line jsx-a11y/no-static-element-interactions */ }
 			<div
 				className="ai-agent-floating-titlebar"
 				onMouseDown={ handleMouseDown }
@@ -80,9 +80,7 @@ export default function FloatingPanel() {
 								? __( 'Expand', 'ai-agent' )
 								: __( 'Minimize', 'ai-agent' )
 						}
-						onClick={ () =>
-							setFloatingMinimized( ! isMinimized )
-						}
+						onClick={ () => setFloatingMinimized( ! isMinimized ) }
 					/>
 					<Button
 						icon={ close }

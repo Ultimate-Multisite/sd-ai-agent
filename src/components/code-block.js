@@ -1,99 +1,110 @@
 /**
  * WordPress dependencies
  */
-import { useState, useCallback } from '@wordpress/element';
+import { useState, useCallback, useRef, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
  * External dependencies
  *
- * Use PrismLight (tree-shakeable build) with explicit language registration
- * to avoid bundling all ~300 Prism grammars. Only the most common languages
+ * Use highlight.js core (tree-shakeable) with explicit language registration
+ * to avoid bundling all ~190 hljs grammars. Only the most common languages
  * used in AI chat responses are registered here.
  */
-import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import hljs from 'highlight.js/lib/core';
+import 'highlight.js/styles/atom-one-dark.css';
 
 // Register only the languages we need (keeps bundle lean).
-import bash from 'react-syntax-highlighter/dist/esm/languages/prism/bash';
-import css from 'react-syntax-highlighter/dist/esm/languages/prism/css';
-import diff from 'react-syntax-highlighter/dist/esm/languages/prism/diff';
-import docker from 'react-syntax-highlighter/dist/esm/languages/prism/docker';
-import graphql from 'react-syntax-highlighter/dist/esm/languages/prism/graphql';
-import javascript from 'react-syntax-highlighter/dist/esm/languages/prism/javascript';
-import json from 'react-syntax-highlighter/dist/esm/languages/prism/json';
-import jsx from 'react-syntax-highlighter/dist/esm/languages/prism/jsx';
-import markdown from 'react-syntax-highlighter/dist/esm/languages/prism/markdown';
-import php from 'react-syntax-highlighter/dist/esm/languages/prism/php';
-import python from 'react-syntax-highlighter/dist/esm/languages/prism/python';
-import ruby from 'react-syntax-highlighter/dist/esm/languages/prism/ruby';
-import rust from 'react-syntax-highlighter/dist/esm/languages/prism/rust';
-import scss from 'react-syntax-highlighter/dist/esm/languages/prism/scss';
-import shell from 'react-syntax-highlighter/dist/esm/languages/prism/shell-session';
-import sql from 'react-syntax-highlighter/dist/esm/languages/prism/sql';
-import tsx from 'react-syntax-highlighter/dist/esm/languages/prism/tsx';
-import typescript from 'react-syntax-highlighter/dist/esm/languages/prism/typescript';
-import xml from 'react-syntax-highlighter/dist/esm/languages/prism/xml-doc';
-import yaml from 'react-syntax-highlighter/dist/esm/languages/prism/yaml';
+import bash from 'highlight.js/lib/languages/bash';
+import css from 'highlight.js/lib/languages/css';
+import diff from 'highlight.js/lib/languages/diff';
+import dockerfile from 'highlight.js/lib/languages/dockerfile';
+import graphql from 'highlight.js/lib/languages/graphql';
+import javascript from 'highlight.js/lib/languages/javascript';
+import json from 'highlight.js/lib/languages/json';
+import markdown from 'highlight.js/lib/languages/markdown';
+import php from 'highlight.js/lib/languages/php';
+import python from 'highlight.js/lib/languages/python';
+import ruby from 'highlight.js/lib/languages/ruby';
+import rust from 'highlight.js/lib/languages/rust';
+import scss from 'highlight.js/lib/languages/scss';
+import shell from 'highlight.js/lib/languages/shell';
+import sql from 'highlight.js/lib/languages/sql';
+import typescript from 'highlight.js/lib/languages/typescript';
+import xml from 'highlight.js/lib/languages/xml';
+import yaml from 'highlight.js/lib/languages/yaml';
 
-SyntaxHighlighter.registerLanguage( 'bash', bash );
-SyntaxHighlighter.registerLanguage( 'css', css );
-SyntaxHighlighter.registerLanguage( 'diff', diff );
-SyntaxHighlighter.registerLanguage( 'docker', docker );
-SyntaxHighlighter.registerLanguage( 'dockerfile', docker );
-SyntaxHighlighter.registerLanguage( 'graphql', graphql );
-SyntaxHighlighter.registerLanguage( 'javascript', javascript );
-SyntaxHighlighter.registerLanguage( 'js', javascript );
-SyntaxHighlighter.registerLanguage( 'json', json );
-SyntaxHighlighter.registerLanguage( 'jsx', jsx );
-SyntaxHighlighter.registerLanguage( 'markdown', markdown );
-SyntaxHighlighter.registerLanguage( 'md', markdown );
-SyntaxHighlighter.registerLanguage( 'php', php );
-SyntaxHighlighter.registerLanguage( 'python', python );
-SyntaxHighlighter.registerLanguage( 'py', python );
-SyntaxHighlighter.registerLanguage( 'ruby', ruby );
-SyntaxHighlighter.registerLanguage( 'rb', ruby );
-SyntaxHighlighter.registerLanguage( 'rust', rust );
-SyntaxHighlighter.registerLanguage( 'scss', scss );
-SyntaxHighlighter.registerLanguage( 'shell', shell );
-SyntaxHighlighter.registerLanguage( 'sh', bash );
-SyntaxHighlighter.registerLanguage( 'sql', sql );
-SyntaxHighlighter.registerLanguage( 'tsx', tsx );
-SyntaxHighlighter.registerLanguage( 'typescript', typescript );
-SyntaxHighlighter.registerLanguage( 'ts', typescript );
-SyntaxHighlighter.registerLanguage( 'xml', xml );
-SyntaxHighlighter.registerLanguage( 'yaml', yaml );
-SyntaxHighlighter.registerLanguage( 'yml', yaml );
+hljs.registerLanguage( 'bash', bash );
+hljs.registerLanguage( 'css', css );
+hljs.registerLanguage( 'diff', diff );
+hljs.registerLanguage( 'docker', dockerfile );
+hljs.registerLanguage( 'dockerfile', dockerfile );
+hljs.registerLanguage( 'graphql', graphql );
+hljs.registerLanguage( 'javascript', javascript );
+hljs.registerLanguage( 'js', javascript );
+hljs.registerLanguage( 'json', json );
+hljs.registerLanguage( 'jsx', javascript );
+hljs.registerLanguage( 'markdown', markdown );
+hljs.registerLanguage( 'md', markdown );
+hljs.registerLanguage( 'php', php );
+hljs.registerLanguage( 'python', python );
+hljs.registerLanguage( 'py', python );
+hljs.registerLanguage( 'ruby', ruby );
+hljs.registerLanguage( 'rb', ruby );
+hljs.registerLanguage( 'rust', rust );
+hljs.registerLanguage( 'scss', scss );
+hljs.registerLanguage( 'shell', shell );
+hljs.registerLanguage( 'sh', bash );
+hljs.registerLanguage( 'sql', sql );
+hljs.registerLanguage( 'tsx', typescript );
+hljs.registerLanguage( 'typescript', typescript );
+hljs.registerLanguage( 'ts', typescript );
+hljs.registerLanguage( 'xml', xml );
+hljs.registerLanguage( 'yaml', yaml );
+hljs.registerLanguage( 'yml', yaml );
 
 /**
  * Normalise language aliases to the registered name.
  *
  * @param {string|undefined} lang Raw language identifier from the fenced code block.
- * @return {string} Normalised language name registered with SyntaxHighlighter.
+ * @return {string|null} Normalised language name registered with hljs, or null if unknown.
  */
 function normaliseLanguage( lang ) {
 	if ( ! lang ) {
-		return 'text';
+		return null;
 	}
 	const aliases = {
 		js: 'javascript',
 		ts: 'typescript',
+		tsx: 'typescript',
+		jsx: 'javascript',
 		py: 'python',
 		rb: 'ruby',
 		sh: 'bash',
 		yml: 'yaml',
 		md: 'markdown',
-		dockerfile: 'docker',
+		docker: 'dockerfile',
 	};
-	return aliases[ lang.toLowerCase() ] ?? lang.toLowerCase();
+	const normalised = aliases[ lang.toLowerCase() ] ?? lang.toLowerCase();
+	return hljs.getLanguage( normalised ) ? normalised : null;
 }
 
 export default function CodeBlock( { language, children } ) {
 	const [ copied, setCopied ] = useState( false );
 	const [ showLineNumbers, setShowLineNumbers ] = useState( false );
 	const [ wrapLines, setWrapLines ] = useState( false );
+	const codeRef = useRef( null );
 	const code = String( children ).replace( /\n$/, '' );
 	const normalisedLang = normaliseLanguage( language );
+
+	useEffect( () => {
+		if ( codeRef.current ) {
+			// Reset the data-highlighted attribute so hljs re-highlights on
+			// content or language changes without duplicating spans.
+			codeRef.current.removeAttribute( 'data-highlighted' );
+			hljs.highlightElement( codeRef.current );
+		}
+	}, [ code, normalisedLang ] );
 
 	const handleCopy = useCallback( () => {
 		navigator.clipboard.writeText( code ).then( () => {
@@ -101,6 +112,10 @@ export default function CodeBlock( { language, children } ) {
 			setTimeout( () => setCopied( false ), 2000 );
 		} );
 	}, [ code ] );
+
+	const codeClassName = normalisedLang
+		? `language-${ normalisedLang }`
+		: 'language-plaintext';
 
 	return (
 		<div className="ai-agent-code-block">
@@ -142,21 +157,15 @@ export default function CodeBlock( { language, children } ) {
 					</button>
 				</div>
 			</div>
-			<SyntaxHighlighter
-				style={ oneDark }
-				language={ normalisedLang }
-				PreTag="div"
-				showLineNumbers={ showLineNumbers }
-				wrapLines={ wrapLines }
-				wrapLongLines={ wrapLines }
-				customStyle={ {
-					margin: 0,
-					borderRadius: '0 0 4px 4px',
-					fontSize: '0.85em',
-				} }
+			<pre
+				className={ `ai-agent-code-pre${
+					showLineNumbers ? ' show-line-numbers' : ''
+				}${ wrapLines ? ' wrap-lines' : '' }` }
 			>
-				{ code }
-			</SyntaxHighlighter>
+				<code ref={ codeRef } className={ codeClassName }>
+					{ code }
+				</code>
+			</pre>
 		</div>
 	);
 }

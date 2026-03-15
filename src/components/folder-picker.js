@@ -57,7 +57,7 @@ export default function FolderPicker( { currentFolder, onSelect, onClose } ) {
 			<div className="ai-agent-folder-picker-new">
 				<input
 					type="text"
-					placeholder={ __( 'New folder...', 'ai-agent' ) }
+					placeholder={ __( 'New folder…', 'ai-agent' ) }
 					value={ newFolder }
 					onChange={ ( e ) => setNewFolder( e.target.value ) }
 					onKeyDown={ ( e ) => {

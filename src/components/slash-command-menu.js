@@ -17,7 +17,10 @@ const COMMANDS = [
 	},
 	{
 		name: '/remember',
-		description: __( 'Save a fact to memory (type fact after)', 'ai-agent' ),
+		description: __(
+			'Save a fact to memory (type fact after)',
+			'ai-agent'
+		),
 		action: 'remember',
 	},
 	{
@@ -47,7 +50,10 @@ const COMMANDS = [
 	},
 	{
 		name: '/debug',
-		description: __( 'Toggle debug mode (per-response metrics)', 'ai-agent' ),
+		description: __(
+			'Toggle debug mode (per-response metrics)',
+			'ai-agent'
+		),
 		action: 'debug',
 	},
 ];
@@ -108,6 +114,7 @@ export default function SlashCommandMenu( {
 			style={ position ? { bottom: position.bottom } : {} }
 		>
 			{ filtered.map( ( cmd, i ) => (
+				// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
 				<div
 					key={ cmd.name }
 					className={ `ai-agent-slash-item ${
@@ -116,9 +123,7 @@ export default function SlashCommandMenu( {
 					onClick={ () => onSelect( cmd ) }
 					onMouseEnter={ () => setSelectedIndex( i ) }
 				>
-					<span className="ai-agent-slash-name">
-						{ cmd.name }
-					</span>
+					<span className="ai-agent-slash-name">{ cmd.name }</span>
 					<span className="ai-agent-slash-desc">
 						{ cmd.description }
 					</span>

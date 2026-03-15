@@ -52,10 +52,7 @@ export default function ShortcutsHelp( { onClose } ) {
 				</div>
 				<div className="ai-agent-shortcuts-list">
 					{ SHORTCUTS.map( ( s ) => (
-						<div
-							key={ s.combo }
-							className="ai-agent-shortcut-row"
-						>
+						<div key={ s.combo } className="ai-agent-shortcut-row">
 							<span className="ai-agent-shortcut-label">
 								{ s.label }
 							</span>
@@ -75,21 +72,15 @@ export default function ShortcutsHelp( { onClose } ) {
 					</div>
 					<div className="ai-agent-shortcut-row">
 						<span>/model</span>
-						<span>
-							{ __( 'Switch model', 'ai-agent' ) }
-						</span>
+						<span>{ __( 'Switch model', 'ai-agent' ) }</span>
 					</div>
 					<div className="ai-agent-shortcut-row">
 						<span>/clear</span>
-						<span>
-							{ __( 'Clear conversation', 'ai-agent' ) }
-						</span>
+						<span>{ __( 'Clear conversation', 'ai-agent' ) }</span>
 					</div>
 					<div className="ai-agent-shortcut-row">
 						<span>/export</span>
-						<span>
-							{ __( 'Export conversation', 'ai-agent' ) }
-						</span>
+						<span>{ __( 'Export conversation', 'ai-agent' ) }</span>
 					</div>
 					<div className="ai-agent-shortcut-row">
 						<span>/compact</span>
@@ -99,9 +90,7 @@ export default function ShortcutsHelp( { onClose } ) {
 					</div>
 					<div className="ai-agent-shortcut-row">
 						<span>/help</span>
-						<span>
-							{ __( 'Show shortcuts', 'ai-agent' ) }
-						</span>
+						<span>{ __( 'Show shortcuts', 'ai-agent' ) }</span>
 					</div>
 				</div>
 			</div>

@@ -39,7 +39,8 @@ export default function DebugPanel( { debug } ) {
 		toolNames = [],
 	} = debug;
 
-	const totalTokens = ( tokenUsage.prompt || 0 ) + ( tokenUsage.completion || 0 );
+	const totalTokens =
+		( tokenUsage.prompt || 0 ) + ( tokenUsage.completion || 0 );
 
 	const summaryParts = [];
 	if ( responseTimeMs > 0 ) {
@@ -51,7 +52,8 @@ export default function DebugPanel( { debug } ) {
 	if ( costEstimate > 0 ) {
 		summaryParts.push( formatCost( costEstimate ) );
 	}
-	const summary = summaryParts.join( ' / ' ) || __( 'No metrics', 'ai-agent' );
+	const summary =
+		summaryParts.join( ' / ' ) || __( 'No metrics', 'ai-agent' );
 
 	return (
 		<div className="ai-agent-debug-panel">
@@ -60,9 +62,7 @@ export default function DebugPanel( { debug } ) {
 				onClick={ () => setExpanded( ! expanded ) }
 				type="button"
 			>
-				<span className="ai-agent-debug-summary">
-					{ summary }
-				</span>
+				<span className="ai-agent-debug-summary">{ summary }</span>
 				<span className="ai-agent-debug-caret">
 					{ expanded ? '\u25B4' : '\u25BE' }
 				</span>
@@ -94,7 +94,12 @@ export default function DebugPanel( { debug } ) {
 						<span className="ai-agent-debug-value">
 							{ totalTokens.toLocaleString() }
 							<span className="ai-agent-debug-detail">
-								({ ( tokenUsage.prompt || 0 ).toLocaleString() } in / { ( tokenUsage.completion || 0 ).toLocaleString() } out)
+								({ ( tokenUsage.prompt || 0 ).toLocaleString() }{ ' ' }
+								in /{ ' ' }
+								{ (
+									tokenUsage.completion || 0
+								).toLocaleString() }{ ' ' }
+								out)
 							</span>
 						</span>
 					</div>

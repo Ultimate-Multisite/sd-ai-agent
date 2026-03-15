@@ -51,7 +51,7 @@ export default function ToolCallDetails( { toolCalls } ) {
 														entry.response,
 														null,
 														2
-													),
+												  ),
 											500
 										) }
 									</pre>

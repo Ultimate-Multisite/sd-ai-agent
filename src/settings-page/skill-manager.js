@@ -18,13 +18,8 @@ import { trash, pencil, plus, backup } from '@wordpress/icons';
 import STORE_NAME from '../store';
 
 export default function SkillManager() {
-	const {
-		fetchSkills,
-		createSkill,
-		updateSkill,
-		deleteSkill,
-		resetSkill,
-	} = useDispatch( STORE_NAME );
+	const { fetchSkills, createSkill, updateSkill, deleteSkill, resetSkill } =
+		useDispatch( STORE_NAME );
 	const { skills, skillsLoaded } = useSelect(
 		( select ) => ( {
 			skills: select( STORE_NAME ).getSkills(),
@@ -100,11 +95,7 @@ export default function SkillManager() {
 	const handleDelete = useCallback(
 		async ( id ) => {
 			// eslint-disable-next-line no-alert
-			if (
-				window.confirm(
-					__( 'Delete this skill?', 'ai-agent' )
-				)
-			) {
+			if ( window.confirm( __( 'Delete this skill?', 'ai-agent' ) ) ) {
 				await deleteSkill( id );
 			}
 		},
@@ -114,14 +105,10 @@ export default function SkillManager() {
 	const handleReset = useCallback(
 		async ( id ) => {
 			// eslint-disable-next-line no-alert
-			if (
-				window.confirm(
-					__(
-						'Reset this skill to its default content?',
-						'ai-agent'
-					)
-				)
-			) {
+			const confirmed = window.confirm(
+				__( 'Reset this skill to its default content?', 'ai-agent' )
+			);
+			if ( confirmed ) {
 				await resetSkill( id );
 			}
 		},
@@ -226,9 +213,7 @@ export default function SkillManager() {
 			) }
 
 			{ ! skillsLoaded && (
-				<p className="description">
-					{ __( 'Loading...', 'ai-agent' ) }
-				</p>
+				<p className="description">{ __( 'Loading…', 'ai-agent' ) }</p>
 			) }
 
 			{ skillsLoaded && skills.length === 0 && (
@@ -254,19 +239,14 @@ export default function SkillManager() {
 							<div className="ai-agent-skill-card-header">
 								<ToggleControl
 									checked={ skill.enabled }
-									onChange={ () =>
-										handleToggle( skill )
-									}
+									onChange={ () => handleToggle( skill ) }
 									__nextHasNoMarginBottom
 								/>
 								<div className="ai-agent-skill-card-title">
 									<strong>{ skill.name }</strong>
 									{ skill.is_builtin && (
 										<span className="ai-agent-skill-badge">
-											{ __(
-												'Built-in',
-												'ai-agent'
-											) }
+											{ __( 'Built-in', 'ai-agent' ) }
 										</span>
 									) }
 								</div>
@@ -283,13 +263,8 @@ export default function SkillManager() {
 									<Button
 										icon={ pencil }
 										size="small"
-										label={ __(
-											'Edit',
-											'ai-agent'
-										) }
-										onClick={ () =>
-											handleEdit( skill )
-										}
+										label={ __( 'Edit', 'ai-agent' ) }
+										onClick={ () => handleEdit( skill ) }
 									/>
 									{ skill.is_builtin ? (
 										<Button
@@ -307,10 +282,7 @@ export default function SkillManager() {
 										<Button
 											icon={ trash }
 											size="small"
-											label={ __(
-												'Delete',
-												'ai-agent'
-											) }
+											label={ __( 'Delete', 'ai-agent' ) }
 											isDestructive
 											onClick={ () =>
 												handleDelete( skill.id )

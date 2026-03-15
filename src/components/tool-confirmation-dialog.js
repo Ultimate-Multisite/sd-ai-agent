@@ -30,12 +30,7 @@ export default function ToolConfirmationDialog( {
 		<div className="ai-agent-shortcuts-overlay">
 			<div className="ai-agent-tool-confirm-dialog" ref={ dialogRef }>
 				<div className="ai-agent-tool-confirm-header">
-					<h3>
-						{ __(
-							'Tool Confirmation Required',
-							'ai-agent'
-						) }
-					</h3>
+					<h3>{ __( 'Tool Confirmation Required', 'ai-agent' ) }</h3>
 				</div>
 				<div className="ai-agent-tool-confirm-body">
 					<p className="ai-agent-tool-confirm-desc">
@@ -59,8 +54,12 @@ export default function ToolConfirmationDialog( {
 							) }
 						</div>
 					) ) }
-					<label className="ai-agent-tool-confirm-always">
+					<label
+						className="ai-agent-tool-confirm-always"
+						htmlFor="tool-confirm-always-allow"
+					>
 						<input
+							id="tool-confirm-always-allow"
 							type="checkbox"
 							checked={ alwaysAllow }
 							onChange={ ( e ) =>

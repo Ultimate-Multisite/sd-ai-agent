@@ -53,8 +53,13 @@ export default function ExportDialog( { sessionId, onClose } ) {
 					</button>
 				</div>
 				<div className="ai-agent-export-body">
-					<label className="ai-agent-export-option">
+					<label
+						className="ai-agent-export-option"
+						htmlFor="export-format-json"
+						aria-label={ __( 'Export as JSON', 'ai-agent' ) }
+					>
 						<input
+							id="export-format-json"
 							type="radio"
 							name="format"
 							value="json"
@@ -71,8 +76,13 @@ export default function ExportDialog( { sessionId, onClose } ) {
 							</p>
 						</div>
 					</label>
-					<label className="ai-agent-export-option">
+					<label
+						className="ai-agent-export-option"
+						htmlFor="export-format-markdown"
+						aria-label={ __( 'Export as Markdown', 'ai-agent' ) }
+					>
 						<input
+							id="export-format-markdown"
 							type="radio"
 							name="format"
 							value="markdown"

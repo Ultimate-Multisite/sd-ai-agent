@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { useState, useCallback } from '@wordpress/element';
+import { useState, useCallback, useRef, useEffect } from '@wordpress/element';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
@@ -14,6 +14,13 @@ export default function MessageActions( { message, index } ) {
 	const [ copied, setCopied ] = useState( false );
 	const [ editing, setEditing ] = useState( false );
 	const [ editText, setEditText ] = useState( '' );
+	const editRef = useRef( null );
+
+	useEffect( () => {
+		if ( editing && editRef.current ) {
+			editRef.current.focus();
+		}
+	}, [ editing ] );
 
 	const { regenerateMessage, editAndResend } = useDispatch( STORE_NAME );
 	const sending = useSelect(
@@ -49,11 +56,11 @@ export default function MessageActions( { message, index } ) {
 		return (
 			<div className="ai-agent-message-edit">
 				<textarea
+					ref={ editRef }
 					className="ai-agent-message-edit-input"
 					value={ editText }
 					onChange={ ( e ) => setEditText( e.target.value ) }
 					rows={ 3 }
-					autoFocus
 					onKeyDown={ ( e ) => {
 						if ( e.key === 'Enter' && ! e.shiftKey ) {
 							e.preventDefault();
@@ -72,10 +79,7 @@ export default function MessageActions( { message, index } ) {
 					>
 						{ __( 'Send', 'ai-agent' ) }
 					</button>
-					<button
-						type="button"
-						onClick={ () => setEditing( false ) }
-					>
+					<button type="button" onClick={ () => setEditing( false ) }>
 						{ __( 'Cancel', 'ai-agent' ) }
 					</button>
 				</div>
@@ -94,7 +98,9 @@ export default function MessageActions( { message, index } ) {
 				onClick={ handleCopy }
 				title={ __( 'Copy', 'ai-agent' ) }
 			>
-				{ copied ? __( 'Copied', 'ai-agent' ) : __( 'Copy', 'ai-agent' ) }
+				{ copied
+					? __( 'Copied', 'ai-agent' )
+					: __( 'Copy', 'ai-agent' ) }
 			</button>
 			{ isUser && (
 				<button

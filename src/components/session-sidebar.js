@@ -164,9 +164,7 @@ export default function SessionSidebar() {
 					importSession( data );
 				} catch {
 					// eslint-disable-next-line no-alert
-					window.alert(
-						__( 'Invalid JSON file.', 'ai-agent' )
-					);
+					window.alert( __( 'Invalid JSON file.', 'ai-agent' ) );
 				}
 			};
 			reader.readAsText( file );
@@ -211,7 +209,7 @@ export default function SessionSidebar() {
 				<input
 					type="text"
 					className="ai-agent-sidebar-search"
-					placeholder={ __( 'Search conversations...', 'ai-agent' ) }
+					placeholder={ __( 'Search conversations…', 'ai-agent' ) }
 					onChange={ handleSearchChange }
 				/>
 			</div>
@@ -260,11 +258,18 @@ export default function SessionSidebar() {
 			<div className="ai-agent-session-list">
 				{ sessions.length === 0 && (
 					<div className="ai-agent-session-empty">
-						{ sessionFilter === 'trash'
-							? __( 'Trash is empty', 'ai-agent' )
-							: sessionFilter === 'archived'
-							? __( 'No archived conversations', 'ai-agent' )
-							: __( 'No conversations yet', 'ai-agent' ) }
+						{ ( () => {
+							if ( sessionFilter === 'trash' ) {
+								return __( 'Trash is empty', 'ai-agent' );
+							}
+							if ( sessionFilter === 'archived' ) {
+								return __(
+									'No archived conversations',
+									'ai-agent'
+								);
+							}
+							return __( 'No conversations yet', 'ai-agent' );
+						} )() }
 					</div>
 				) }
 				{ sessions.map( ( session ) => (
@@ -272,8 +277,7 @@ export default function SessionSidebar() {
 						key={ session.id }
 						session={ session }
 						isActive={
-							currentSessionId ===
-							parseInt( session.id, 10 )
+							currentSessionId === parseInt( session.id, 10 )
 						}
 					/>
 				) ) }

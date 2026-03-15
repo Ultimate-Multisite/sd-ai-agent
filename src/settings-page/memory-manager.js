@@ -3,12 +3,7 @@
  */
 import { useEffect, useState, useCallback } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
-import {
-	Button,
-	TextControl,
-	TextareaControl,
-	SelectControl,
-} from '@wordpress/components';
+import { Button, TextareaControl, SelectControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { trash, pencil, plus } from '@wordpress/icons';
 
@@ -149,9 +144,7 @@ export default function MemoryManager() {
 			) }
 
 			{ ! memoriesLoaded && (
-				<p className="description">
-					{ __( 'Loading...', 'ai-agent' ) }
-				</p>
+				<p className="description">{ __( 'Loading…', 'ai-agent' ) }</p>
 			) }
 
 			{ memoriesLoaded && memories.length === 0 && (
@@ -186,10 +179,7 @@ export default function MemoryManager() {
 										<Button
 											icon={ pencil }
 											size="small"
-											label={ __(
-												'Edit',
-												'ai-agent'
-											) }
+											label={ __( 'Edit', 'ai-agent' ) }
 											onClick={ () =>
 												handleEdit( memory )
 											}
@@ -197,10 +187,7 @@ export default function MemoryManager() {
 										<Button
 											icon={ trash }
 											size="small"
-											label={ __(
-												'Delete',
-												'ai-agent'
-											) }
+											label={ __( 'Delete', 'ai-agent' ) }
 											isDestructive
 											onClick={ () =>
 												handleDelete( memory.id )
