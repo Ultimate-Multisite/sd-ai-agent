@@ -57,6 +57,16 @@ jobs:
       # generated CLI Dockerfile template. This updates WP-CLI inside the container
       # at build time, regardless of what base image is used or whether Docker
       # uses a cached base image layer.
+      # The ubuntu-latest runner ships with an old WP-CLI at /usr/local/bin/wp.
+      # wp-env uses the host wp binary for some operations (e.g. wp core install
+      # via docker exec). The old host binary emits PHP 8.2 deprecation notices
+      # that cause wp-env to exit with "Error:" and a non-zero exit code.
+      - name: Update host WP-CLI to latest
+        run: |
+          sudo curl -sSf -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+          sudo chmod +x /usr/local/bin/wp
+          wp --info --allow-root
+
       - name: Patch wp-env CLI Dockerfile to update WP-CLI
         run: |
           INIT_CONFIG="node_modules/@wordpress/env/lib/runtime/docker/init-config.js"
