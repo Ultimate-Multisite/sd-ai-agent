@@ -46,43 +46,17 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
-      # The wordpress:cli-php8.2 base image ships with WP-CLI < 2.8.0, which
-      # emits "Deprecated: trim(): Passing null" on PHP 8.2 and exits with an
-      # empty "Error:" during wp core multisite-install.
+      # The wordpress:cli-php8.2 base image ships with WP-CLI that emits
+      # "Deprecated: trim(): Passing null to parameter #1 ($string) of type string"
+      # on PHP 8.2. wp-env runs WP-CLI commands inside the container via docker exec
+      # and treats any output to stderr as a fatal error, causing wp-env start to fail.
       #
-      # Root cause: wp-env generates a CLI.Dockerfile with FROM wordpress:cli-php8.2
-      # and builds the CLI container from it. The base image has old WP-CLI.
-      #
-      # Fix: patch wp-env's init-config.js to inject a RUN curl step into the
-      # generated CLI Dockerfile template. This updates WP-CLI inside the container
-      # at build time, regardless of what base image is used or whether Docker
-      # uses a cached base image layer.
-      # The ubuntu-latest runner ships with an old WP-CLI at /usr/local/bin/wp.
-      # wp-env uses the host wp binary for some operations (e.g. wp core install
-      # via docker exec). The old host binary emits PHP 8.2 deprecation notices
-      # that cause wp-env to exit with "Error:" and a non-zero exit code.
-      - name: Update host WP-CLI to latest
-        run: |
-          sudo curl -sSf -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-          sudo chmod +x /usr/local/bin/wp
-          wp --info --allow-root
-
-      - name: Patch wp-env CLI Dockerfile to update WP-CLI
-        run: |
-          INIT_CONFIG="node_modules/@wordpress/env/lib/runtime/docker/init-config.js"
-          # Inject a RUN curl step into wp-env's CLI Dockerfile template so that
-          # WP-CLI is updated inside the container at build time. This is more
-          # reliable than patching the base image because it runs inside the
-          # container build and is not affected by Docker image caching.
-          # The base image runs as www-data; switch to root to write to /usr/local/bin.
-          WP_CLI_BLOCK='USER root\nRUN curl -sSf -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \&\& chmod +x /usr/local/bin/wp\nUSER www-data'
-          sed -i "s|return \`FROM wordpress:cli\\\${ phpVersion }|return \`FROM wordpress:cli\${ phpVersion }\n\n# Update WP-CLI to fix PHP 8.2 deprecation (trim() null parameter).\n# The base image ships with WP-CLI < 2.8.0 which fails on PHP 8.2.\n${WP_CLI_BLOCK}|" "$INIT_CONFIG"
-          grep -q 'Update WP-CLI' "$INIT_CONFIG" || { echo "Patch failed — line not found in $INIT_CONFIG"; exit 1; }
-          # Also patch index.js to add --no-cache to the buildOne call so Docker
-          # does not reuse a cached CLI container layer that has old WP-CLI.
-          WP_ENV_INDEX="node_modules/@wordpress/env/lib/runtime/docker/index.js"
-          sed -i "s|await dockerCompose\.buildOne( \[ 'cli' \], {|await dockerCompose.buildOne( [ 'cli' ], { commandOptions: ['--no-cache'],|" "$WP_ENV_INDEX"
-          grep -q 'no-cache' "$WP_ENV_INDEX" || { echo "index.js patch failed"; exit 1; }
+      # Fix: set WP_CLI_PHP_ARGS to suppress PHP deprecation notices for WP-CLI.
+      # This is the correct approach — the deprecation is harmless and WP-CLI 2.x
+      # is not yet fully PHP 8.2 clean. Suppressing E_DEPRECATED for WP-CLI only
+      # does not affect PHPUnit test results.
+      - name: Set WP-CLI PHP args to suppress PHP 8.2 deprecation notices
+        run: echo "WP_CLI_PHP_ARGS=-d error_reporting=24575" >> $GITHUB_ENV
 
       - name: Start wp-env
         run: npm run wp-env:start
