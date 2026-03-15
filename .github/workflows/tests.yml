@@ -65,15 +65,20 @@ jobs:
       # with the latest WP-CLI phar before wp-env builds its CLI container.
       # The --ignore-buildable patch above ensures docker compose pull does not
       # re-pull this image and overwrite our fix.
+      # docker builder prune clears the build cache so wp-env's docker compose
+      # up --build rebuilds the CLI container FROM our patched base image rather
+      # than reusing a cached layer built from the old image on a reused runner.
       - name: Update WP-CLI in base Docker image
         run: |
           docker pull wordpress:cli-php8.2
           printf '%s\n' \
             'FROM wordpress:cli-php8.2' \
             'USER root' \
-            'RUN curl -sS -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && chmod +x /usr/local/bin/wp' \
+            'RUN curl -sSf -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && chmod +x /usr/local/bin/wp' \
             'USER www-data' \
           | docker build -t wordpress:cli-php8.2 -
+          docker run --rm wordpress:cli-php8.2 wp --version
+          docker builder prune -f
 
       - name: Start wp-env
         run: npm run wp-env:start
