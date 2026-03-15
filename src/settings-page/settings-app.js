@@ -62,21 +62,24 @@ export default function SettingsApp() {
 		}
 	}, [ settings, local ] );
 
-	const updateField = useCallback(
-		( key, value ) => {
-			setLocal( ( prev ) => ( { ...prev, [ key ]: value } ) );
-		},
-		[]
-	);
+	const updateField = useCallback( ( key, value ) => {
+		setLocal( ( prev ) => ( { ...prev, [ key ]: value } ) );
+	}, [] );
 
 	const handleSave = useCallback( async () => {
 		setSaving( true );
 		setNotice( null );
 		try {
 			await saveSettings( local );
-			setNotice( { status: 'success', message: __( 'Settings saved.', 'ai-agent' ) } );
+			setNotice( {
+				status: 'success',
+				message: __( 'Settings saved.', 'ai-agent' ),
+			} );
 		} catch {
-			setNotice( { status: 'error', message: __( 'Failed to save settings.', 'ai-agent' ) } );
+			setNotice( {
+				status: 'error',
+				message: __( 'Failed to save settings.', 'ai-agent' ),
+			} );
 		}
 		setSaving( false );
 	}, [ local, saveSettings ] );
@@ -194,10 +197,7 @@ export default function SettingsApp() {
 										value={ local.default_provider }
 										options={ providerOptions }
 										onChange={ ( v ) =>
-											updateField(
-												'default_provider',
-												v
-											)
+											updateField( 'default_provider', v )
 										}
 										__nextHasNoMarginBottom
 									/>
@@ -241,10 +241,7 @@ export default function SettingsApp() {
 										) }
 										value={ local.greeting_message }
 										onChange={ ( v ) =>
-											updateField(
-												'greeting_message',
-												v
-											)
+											updateField( 'greeting_message', v )
 										}
 										placeholder={
 											settings?._defaults
@@ -256,6 +253,31 @@ export default function SettingsApp() {
 										) }
 										rows={ 2 }
 									/>
+									<div className="ai-agent-settings-yolo-section">
+										<ToggleControl
+											label={ __(
+												'YOLO Mode',
+												'ai-agent'
+											) }
+											checked={ !! local.yolo_mode }
+											onChange={ ( v ) =>
+												updateField( 'yolo_mode', v )
+											}
+											help={ __(
+												'Skip all confirmation dialogs for tool operations. Use with caution — destructive actions will run without prompting.',
+												'ai-agent'
+											) }
+											__nextHasNoMarginBottom
+										/>
+										{ local.yolo_mode && (
+											<div className="ai-agent-yolo-warning">
+												{ __(
+													'Warning: YOLO mode is active. All tool confirmations are skipped automatically. Destructive operations will execute without asking.',
+													'ai-agent'
+												) }
+											</div>
+										) }
+									</div>
 								</div>
 							);
 
@@ -339,9 +361,7 @@ export default function SettingsApp() {
 											'Auto-Index on Post Save',
 											'ai-agent'
 										) }
-										checked={
-											local.knowledge_auto_index
-										}
+										checked={ local.knowledge_auto_index }
 										onChange={ ( v ) =>
 											updateField(
 												'knowledge_auto_index',
@@ -520,9 +540,7 @@ export default function SettingsApp() {
 										type="number"
 										min={ 4096 }
 										max={ 2000000 }
-										value={
-											local.context_window_default
-										}
+										value={ local.context_window_default }
 										onChange={ ( v ) =>
 											updateField(
 												'context_window_default',
@@ -541,8 +559,7 @@ export default function SettingsApp() {
 											'ai-agent'
 										) }
 										value={
-											local.tool_discovery_mode ||
-											'auto'
+											local.tool_discovery_mode || 'auto'
 										}
 										options={ [
 											{
