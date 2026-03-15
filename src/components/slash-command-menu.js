@@ -7,47 +7,62 @@ import { __ } from '@wordpress/i18n';
 const COMMANDS = [
 	{
 		name: '/new',
-		description: __( 'Start a new chat', 'ai-agent' ),
+		description: __( 'Start a new chat', 'gratis-ai-agent' ),
 		action: 'new',
 	},
 	{
 		name: '/model',
-		description: __( 'Switch model (type model name after)', 'ai-agent' ),
+		description: __(
+			'Switch model (type model name after)',
+			'gratis-ai-agent'
+		),
 		action: 'model',
 	},
 	{
 		name: '/remember',
-		description: __( 'Save a fact to memory (type fact after)', 'ai-agent' ),
+		description: __(
+			'Save a fact to memory (type fact after)',
+			'gratis-ai-agent'
+		),
 		action: 'remember',
 	},
 	{
 		name: '/forget',
-		description: __( 'Forget memories matching a topic', 'ai-agent' ),
+		description: __(
+			'Forget memories matching a topic',
+			'gratis-ai-agent'
+		),
 		action: 'forget',
 	},
 	{
 		name: '/clear',
-		description: __( 'Clear conversation', 'ai-agent' ),
+		description: __( 'Clear conversation', 'gratis-ai-agent' ),
 		action: 'clear',
 	},
 	{
 		name: '/export',
-		description: __( 'Export current conversation', 'ai-agent' ),
+		description: __( 'Export current conversation', 'gratis-ai-agent' ),
 		action: 'export',
 	},
 	{
 		name: '/compact',
-		description: __( 'Compact conversation to save context', 'ai-agent' ),
+		description: __(
+			'Compact conversation to save context',
+			'gratis-ai-agent'
+		),
 		action: 'compact',
 	},
 	{
 		name: '/help',
-		description: __( 'Show keyboard shortcuts', 'ai-agent' ),
+		description: __( 'Show keyboard shortcuts', 'gratis-ai-agent' ),
 		action: 'help',
 	},
 	{
 		name: '/debug',
-		description: __( 'Toggle debug mode (per-response metrics)', 'ai-agent' ),
+		description: __(
+			'Toggle debug mode (per-response metrics)',
+			'gratis-ai-agent'
+		),
 		action: 'debug',
 	},
 ];
@@ -103,23 +118,31 @@ export default function SlashCommandMenu( {
 
 	return (
 		<div
-			className="ai-agent-slash-menu"
+			className="gratis-ai-agent-slash-menu"
 			ref={ menuRef }
 			style={ position ? { bottom: position.bottom } : {} }
 		>
 			{ filtered.map( ( cmd, i ) => (
 				<div
 					key={ cmd.name }
-					className={ `ai-agent-slash-item ${
+					className={ `gratis-ai-agent-slash-item ${
 						i === selectedIndex ? 'is-selected' : ''
 					}` }
+					role="option"
+					aria-selected={ i === selectedIndex }
+					tabIndex={ 0 }
 					onClick={ () => onSelect( cmd ) }
+					onKeyDown={ ( e ) => {
+						if ( e.key === 'Enter' || e.key === ' ' ) {
+							onSelect( cmd );
+						}
+					} }
 					onMouseEnter={ () => setSelectedIndex( i ) }
 				>
-					<span className="ai-agent-slash-name">
+					<span className="gratis-ai-agent-slash-name">
 						{ cmd.name }
 					</span>
-					<span className="ai-agent-slash-desc">
+					<span className="gratis-ai-agent-slash-desc">
 						{ cmd.description }
 					</span>
 				</div>

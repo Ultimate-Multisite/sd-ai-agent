@@ -1,8 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { createRoot } from '@wordpress/element';
-import { useEffect } from '@wordpress/element';
+import { createRoot, useEffect } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
 
 /**
@@ -91,7 +90,7 @@ function gatherPageContext() {
 
 // Mount the floating widget.
 const wrapper = document.createElement( 'div' );
-wrapper.id = 'ai-agent-floating-root';
+wrapper.id = 'gratis-ai-agent-floating-root';
 document.body.appendChild( wrapper );
 
 const root = createRoot( wrapper );

@@ -47,12 +47,13 @@ export default function MessageActions( { message, index } ) {
 
 	if ( editing ) {
 		return (
-			<div className="ai-agent-message-edit">
+			<div className="gratis-ai-agent-message-edit">
 				<textarea
-					className="ai-agent-message-edit-input"
+					className="gratis-ai-agent-message-edit-input"
 					value={ editText }
 					onChange={ ( e ) => setEditText( e.target.value ) }
 					rows={ 3 }
+					// eslint-disable-next-line jsx-a11y/no-autofocus
 					autoFocus
 					onKeyDown={ ( e ) => {
 						if ( e.key === 'Enter' && ! e.shiftKey ) {
@@ -64,19 +65,16 @@ export default function MessageActions( { message, index } ) {
 						}
 					} }
 				/>
-				<div className="ai-agent-message-edit-actions">
+				<div className="gratis-ai-agent-message-edit-actions">
 					<button
 						type="button"
 						onClick={ handleEditSubmit }
 						disabled={ sending }
 					>
-						{ __( 'Send', 'ai-agent' ) }
+						{ __( 'Send', 'gratis-ai-agent' ) }
 					</button>
-					<button
-						type="button"
-						onClick={ () => setEditing( false ) }
-					>
-						{ __( 'Cancel', 'ai-agent' ) }
+					<button type="button" onClick={ () => setEditing( false ) }>
+						{ __( 'Cancel', 'gratis-ai-agent' ) }
 					</button>
 				</div>
 			</div>
@@ -87,35 +85,37 @@ export default function MessageActions( { message, index } ) {
 	const isModel = message.role === 'model';
 
 	return (
-		<div className="ai-agent-message-actions">
+		<div className="gratis-ai-agent-message-actions">
 			<button
 				type="button"
-				className="ai-agent-action-btn"
+				className="gratis-ai-agent-action-btn"
 				onClick={ handleCopy }
-				title={ __( 'Copy', 'ai-agent' ) }
+				title={ __( 'Copy', 'gratis-ai-agent' ) }
 			>
-				{ copied ? __( 'Copied', 'ai-agent' ) : __( 'Copy', 'ai-agent' ) }
+				{ copied
+					? __( 'Copied', 'gratis-ai-agent' )
+					: __( 'Copy', 'gratis-ai-agent' ) }
 			</button>
 			{ isUser && (
 				<button
 					type="button"
-					className="ai-agent-action-btn"
+					className="gratis-ai-agent-action-btn"
 					onClick={ handleEdit }
 					disabled={ sending }
-					title={ __( 'Edit', 'ai-agent' ) }
+					title={ __( 'Edit', 'gratis-ai-agent' ) }
 				>
-					{ __( 'Edit', 'ai-agent' ) }
+					{ __( 'Edit', 'gratis-ai-agent' ) }
 				</button>
 			) }
 			{ isModel && (
 				<button
 					type="button"
-					className="ai-agent-action-btn"
+					className="gratis-ai-agent-action-btn"
 					onClick={ () => regenerateMessage( index ) }
 					disabled={ sending }
-					title={ __( 'Regenerate', 'ai-agent' ) }
+					title={ __( 'Regenerate', 'gratis-ai-agent' ) }
 				>
-					{ __( 'Regenerate', 'ai-agent' ) }
+					{ __( 'Regenerate', 'gratis-ai-agent' ) }
 				</button>
 			) }
 		</div>

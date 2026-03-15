@@ -37,31 +37,28 @@ export default function useDrag() {
 		};
 	}, [] );
 
-	const handleMouseDown = useCallback(
-		( e ) => {
-			// Only left button.
-			if ( e.button !== 0 ) {
-				return;
-			}
+	const handleMouseDown = useCallback( ( e ) => {
+		// Only left button.
+		if ( e.button !== 0 ) {
+			return;
+		}
 
-			const panel = e.target.closest( '.ai-agent-floating-panel' );
-			if ( ! panel ) {
-				return;
-			}
+		const panel = e.target.closest( '.gratis-ai-agent-floating-panel' );
+		if ( ! panel ) {
+			return;
+		}
 
-			panelRef.current = panel;
-			const rect = panel.getBoundingClientRect();
-			dragOffset.current = {
-				x: e.clientX - rect.left,
-				y: e.clientY - rect.top,
-			};
+		panelRef.current = panel;
+		const rect = panel.getBoundingClientRect();
+		dragOffset.current = {
+			x: e.clientX - rect.left,
+			y: e.clientY - rect.top,
+		};
 
-			setIsDragging( true );
-			document.body.style.userSelect = 'none';
-			e.preventDefault();
-		},
-		[]
-	);
+		setIsDragging( true );
+		document.body.style.userSelect = 'none';
+		e.preventDefault();
+	}, [] );
 
 	useEffect( () => {
 		if ( ! isDragging ) {
