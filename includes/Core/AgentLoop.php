@@ -20,6 +20,7 @@ use GratisAiAgent\Tools\ToolDiscovery;
 use GratisAiAgent\Tools\ToolProfiles;
 use WP_AI_Client_Ability_Function_Resolver;
 use WP_Error;
+use GratisAiAgent\Core\CredentialResolver;
 use WordPress\AiClient\Messages\DTO\Message;
 use WordPress\AiClient\Messages\DTO\MessagePart;
 use WordPress\AiClient\Messages\DTO\ModelMessage;
@@ -327,8 +328,7 @@ class AgentLoop {
 		try {
 			$registry = \WordPress\AiClient\AiClient::defaultRegistry();
 			if ( ! $registry->hasProvider( $provider_id ) ) {
-				$endpoint_url = get_option( 'openai_compat_endpoint_url', '' );
-				if ( ! empty( $endpoint_url ) ) {
+				if ( CredentialResolver::isOpenAiCompatConfigured() ) {
 					return $this->send_prompt_direct();
 				}
 				return new WP_Error(
@@ -878,8 +878,8 @@ class AgentLoop {
 	 * @return SimpleAiResult|WP_Error
 	 */
 	private function send_prompt_direct() {
-		$endpoint_url = rtrim( (string) get_option( 'openai_compat_endpoint_url', '' ), '/' );
-		if ( empty( $endpoint_url ) ) {
+		$endpoint_url = CredentialResolver::getOpenAiCompatEndpointUrl();
+		if ( '' === $endpoint_url ) {
 			return new WP_Error( 'gratis_ai_agent_no_endpoint', __( 'OpenAI-compatible endpoint URL is not configured.', 'gratis-ai-agent' ) );
 		}
 
@@ -896,8 +896,8 @@ class AgentLoop {
 		$messages = $this->build_openai_messages();
 		$tools    = $this->build_openai_tools();
 
-		$api_key = (string) get_option( 'openai_compat_api_key', 'no-key' );
-		$timeout = (int) get_option( 'openai_compat_timeout', 600 );
+		$api_key = CredentialResolver::getOpenAiCompatApiKey();
+		$timeout = CredentialResolver::getOpenAiCompatTimeout();
 
 		$use_streaming = null !== $this->sse_streamer;
 
@@ -1239,9 +1239,9 @@ class AgentLoop {
 		}
 
 		// Source 2: AI Experiments plugin credentials option.
-		$credentials = get_option( 'wp_ai_client_provider_credentials', [] );
+		$credentials = CredentialResolver::getAiExperimentsCredentials();
 
-		if ( is_array( $credentials ) && ! empty( $credentials ) ) {
+		if ( ! empty( $credentials ) ) {
 			foreach ( $credentials as $provider_id => $api_key ) {
 				if ( ! is_string( $api_key ) || '' === $api_key ) {
 					continue;
@@ -1262,11 +1262,7 @@ class AgentLoop {
 		$compat_provider = 'ai-provider-for-any-openai-compatible';
 
 		if ( $registry->hasProvider( $compat_provider ) && null === $registry->getProviderRequestAuthentication( $compat_provider ) ) {
-			$api_key = get_option( 'openai_compat_api_key', '' );
-
-			if ( empty( $api_key ) ) {
-				$api_key = 'no-key';
-			}
+			$api_key = CredentialResolver::getOpenAiCompatApiKey();
 
 			$registry->setProviderRequestAuthentication(
 				$compat_provider,
