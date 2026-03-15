@@ -40,11 +40,14 @@ use AiAgent\Abilities\DatabaseAbilities;
 use AiAgent\Abilities\FileAbilities;
 use AiAgent\Abilities\KnowledgeAbilities;
 use AiAgent\Abilities\MarketingAbilities;
+use AiAgent\Abilities\MediaAbilities;
 use AiAgent\Abilities\MemoryAbilities;
 use AiAgent\Abilities\NavigationAbilities;
+use AiAgent\Abilities\PostAbilities;
 use AiAgent\Abilities\SeoAbilities;
 use AiAgent\Abilities\SkillAbilities;
 use AiAgent\Abilities\StockImageAbilities;
+use AiAgent\Abilities\UserAbilities;
 use AiAgent\Abilities\WordPressAbilities;
 use AiAgent\Admin\AdminPage;
 use AiAgent\Admin\FloatingWidget;
@@ -122,6 +125,15 @@ WordPressAbilities::register();
 
 // Navigation abilities (navigate, get page HTML).
 NavigationAbilities::register();
+
+// Post management abilities (get, create, update, delete posts).
+PostAbilities::register();
+
+// User management abilities (list, create, update role).
+UserAbilities::register();
+
+// Media library abilities (list, upload from URL, delete).
+MediaAbilities::register();
 
 // Custom tool abilities (registered as WordPress Abilities).
 CustomToolExecutor::register();
