@@ -148,7 +148,9 @@ describe( 'actions', () => {
 			type: 'SET_SELECTED_PROVIDER',
 			providerId: 'anthropic',
 		} );
-		expect( localStorage.getItem( 'aiAgentProvider' ) ).toBe( 'anthropic' );
+		expect( localStorage.getItem( 'gratisAiAgentProvider' ) ).toBe(
+			'anthropic'
+		);
 	} );
 
 	test( 'setSelectedModel persists to localStorage and returns action', () => {
@@ -157,7 +159,9 @@ describe( 'actions', () => {
 			type: 'SET_SELECTED_MODEL',
 			modelId: 'claude-3',
 		} );
-		expect( localStorage.getItem( 'aiAgentModel' ) ).toBe( 'claude-3' );
+		expect( localStorage.getItem( 'gratisAiAgentModel' ) ).toBe(
+			'claude-3'
+		);
 	} );
 
 	test( 'setFloatingOpen returns correct action', () => {
@@ -270,10 +274,14 @@ describe( 'actions', () => {
 			type: 'SET_DEBUG_MODE',
 			enabled: true,
 		} );
-		expect( localStorage.getItem( 'aiAgentDebugMode' ) ).toBe( 'true' );
+		expect( localStorage.getItem( 'gratisAiAgentDebugMode' ) ).toBe(
+			'true'
+		);
 
 		actions.setDebugMode( false );
-		expect( localStorage.getItem( 'aiAgentDebugMode' ) ).toBe( 'false' );
+		expect( localStorage.getItem( 'gratisAiAgentDebugMode' ) ).toBe(
+			'false'
+		);
 	} );
 
 	test( 'setSendTimestamp returns correct action', () => {
