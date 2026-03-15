@@ -46,6 +46,20 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      # The wordpress:cli-php8.2 base image may ship with WP-CLI < 2.8.0, which
+      # emits "Deprecated: trim(): Passing null" on PHP 8.2 and then exits with
+      # an empty "Error:" — causing wp-env start to fail. Patch the local image
+      # with the latest WP-CLI before wp-env builds its CLI container from it.
+      - name: Update WP-CLI in base Docker image
+        run: |
+          docker pull wordpress:cli-php8.2
+          printf '%s\n' \
+            'FROM wordpress:cli-php8.2' \
+            'USER root' \
+            'RUN curl -sS -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && chmod +x /usr/local/bin/wp' \
+            'USER www-data' \
+          | docker build -t wordpress:cli-php8.2 -
+
       - name: Start wp-env
         run: npm run wp-env:start
 
