@@ -80,8 +80,31 @@ jobs:
           docker run --rm wordpress:cli-php8.2 wp --version
           docker builder prune -f
 
+      - name: Debug - show Docker images before wp-env start
+        run: |
+          echo "=== Docker images ==="
+          docker images | grep -E "wordpress|REPOSITORY"
+          echo "=== wordpress:cli-php8.2 digest ==="
+          docker inspect wordpress:cli-php8.2 --format '{{.Id}} {{.RepoDigests}}'
+
       - name: Start wp-env
         run: npm run wp-env:start
+
+      - name: Debug - check WP-CLI version in CLI container after wp-env start
+        if: always()
+        run: |
+          echo "=== Docker images after wp-env start ==="
+          docker images | grep -E "wordpress|REPOSITORY"
+          echo "=== Running containers ==="
+          docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
+          echo "=== WP-CLI version in CLI container ==="
+          CLI_CONTAINER=$(docker ps --filter "name=cli" --format "{{.Names}}" | head -1)
+          if [ -n "$CLI_CONTAINER" ]; then
+            docker exec "$CLI_CONTAINER" wp --version 2>&1 || echo "wp --version failed"
+            docker exec "$CLI_CONTAINER" cat /usr/local/bin/wp | head -c 100 | strings | head -5 || true
+          else
+            echo "No CLI container found"
+          fi
 
       - name: Run PHPUnit via wp-env
         run: npm run test:php
