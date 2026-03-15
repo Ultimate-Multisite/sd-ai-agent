@@ -381,90 +381,90 @@ export default function SettingsApp() {
 										) }
 										rows={ 2 }
 									/>
-									<TextControl
-										label={ __(
-											'Keyboard Shortcut',
-											'gratis-ai-agent'
-										) }
-										value={
-											local.keyboard_shortcut ?? 'alt+a'
-										}
-										onChange={ ( v ) =>
-											updateField(
-												'keyboard_shortcut',
-												v
-											)
-										}
-										help={ __(
-											'Shortcut to open/close the floating chat widget. Use modifier keys joined by "+", e.g. "alt+a" or "ctrl+shift+k". Leave empty to disable.',
-											'gratis-ai-agent'
-										) }
-										placeholder="alt+a"
-										__nextHasNoMarginBottom
-									/>
-									<div className="ai-agent-settings-yolo-section">
-										<ToggleControl
-											label={ __(
-												'YOLO Mode',
-												'ai-agent'
-											) }
-											checked={ !! local.yolo_mode }
-											onChange={ ( v ) =>
-												updateField( 'yolo_mode', v )
-											}
-											help={ __(
-												'Skip all confirmation dialogs for tool operations. Use with caution — destructive actions will run without prompting.',
-												'ai-agent'
-											) }
-											__nextHasNoMarginBottom
-										/>
-										{ local.yolo_mode && (
-											<div className="ai-agent-yolo-warning">
-												{ __(
-													'Warning: YOLO mode is active. All tool confirmations are skipped automatically. Destructive operations will execute without asking.',
-													'ai-agent'
-												) }
-											</div>
-										) }
-									</div>
+								<TextControl
+									label={ __(
+										'Keyboard Shortcut',
+										'gratis-ai-agent'
+									) }
+									value={
+										local.keyboard_shortcut ?? 'alt+a'
+									}
+									onChange={ ( v ) =>
+										updateField(
+											'keyboard_shortcut',
+											v
+										)
+									}
+									help={ __(
+										'Shortcut to open/close the floating chat widget. Use modifier keys joined by "+", e.g. "alt+a" or "ctrl+shift+k". Leave empty to disable.',
+										'gratis-ai-agent'
+									) }
+									placeholder="alt+a"
+									__nextHasNoMarginBottom
+								/>
+								<div className="ai-agent-settings-yolo-section">
 									<ToggleControl
 										label={ __(
-											'Show Widget on Frontend',
-											'gratis-ai-agent'
+											'YOLO Mode',
+											'ai-agent'
 										) }
-										checked={ !! local.show_on_frontend }
+										checked={ !! local.yolo_mode }
 										onChange={ ( v ) =>
-											updateField( 'show_on_frontend', v )
+											updateField( 'yolo_mode', v )
 										}
 										help={ __(
-											'Display the floating chat widget on public-facing pages for logged-in administrators.',
-											'gratis-ai-agent'
+											'Skip all confirmation dialogs for tool operations. Use with caution — destructive actions will run without prompting.',
+											'ai-agent'
 										) }
 										__nextHasNoMarginBottom
 									/>
-									<hr />
-									<h3>
-										{ __(
-											'AI Image Generation',
-											'gratis-ai-agent'
-										) }
-									</h3>
-									<p className="description">
-										{ __(
-											'Settings for the Generate AI Image ability (DALL-E 3). Requires an OpenAI API key configured in the Providers tab.',
-											'gratis-ai-agent'
-										) }
-									</p>
-									<SelectControl
-										label={ __(
-											'Default Image Size',
-											'gratis-ai-agent'
-										) }
-										value={
-											local.image_generation_size ||
-											'1024x1024'
-										}
-										options={ [
+									{ local.yolo_mode && (
+										<div className="ai-agent-yolo-warning">
+											{ __(
+												'Warning: YOLO mode is active. All tool confirmations are skipped automatically. Destructive operations will execute without asking.',
+												'ai-agent'
+											) }
+										</div>
+									) }
+								</div>
+								<ToggleControl
+									label={ __(
+										'Show Widget on Frontend',
+										'gratis-ai-agent'
+									) }
+									checked={ !! local.show_on_frontend }
+									onChange={ ( v ) =>
+										updateField( 'show_on_frontend', v )
+									}
+									help={ __(
+										'Display the floating chat widget on public-facing pages for logged-in administrators.',
+										'gratis-ai-agent'
+									) }
+									__nextHasNoMarginBottom
+								/>
+								<hr />
+								<h3>
+									{ __(
+										'AI Image Generation',
+										'gratis-ai-agent'
+									) }
+								</h3>
+								<p className="description">
+									{ __(
+										'Settings for the Generate AI Image ability (DALL-E 3). Requires an OpenAI API key configured in the Providers tab.',
+										'gratis-ai-agent'
+									) }
+								</p>
+								<SelectControl
+									label={ __(
+										'Default Image Size',
+										'gratis-ai-agent'
+									) }
+									value={
+										local.image_generation_size ||
+										'1024x1024'
+									}
+									options={ [
 											{
 												label: __(
 													'Square (1024×1024)',
@@ -561,20 +561,20 @@ export default function SettingsApp() {
 												value: 'natural',
 											},
 										] }
-										onChange={ ( v ) =>
-											updateField(
-												'image_generation_style',
-												v
-											)
-										}
-										help={ __(
-											'Vivid is hyper-real and dramatic; Natural is more subdued and realistic.',
-											'gratis-ai-agent'
-										) }
-										__nextHasNoMarginBottom
-									/>
-								</div>
-							);
+									onChange={ ( v ) =>
+										updateField(
+											'image_generation_style',
+											v
+										)
+									}
+									help={ __(
+										'Vivid is hyper-real and dramatic; Natural is more subdued and realistic.',
+										'gratis-ai-agent'
+									) }
+									__nextHasNoMarginBottom
+								/>
+							</div>
+						);
 
 						case 'system-prompt':
 							return (
