@@ -52,10 +52,14 @@ export default function ChatPanel( { compact = false, onSlashCommand } ) {
 					) }
 				</div>
 				<ContextIndicator />
-				<ErrorBoundary label={ __( 'Message list', 'gratis-ai-agent' ) }>
+				<ErrorBoundary
+					label={ __( 'Message list', 'gratis-ai-agent' ) }
+				>
 					<MessageList />
 				</ErrorBoundary>
-				<ErrorBoundary label={ __( 'Message input', 'gratis-ai-agent' ) }>
+				<ErrorBoundary
+					label={ __( 'Message input', 'gratis-ai-agent' ) }
+				>
 					<MessageInput
 						compact={ compact }
 						onSlashCommand={ onSlashCommand }

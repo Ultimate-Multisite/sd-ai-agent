@@ -3,11 +3,13 @@
  */
 import { createRoot, useEffect } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import STORE_NAME from '../store';
+import ErrorBoundary from '../components/error-boundary';
 import FloatingButton from './floating-button';
 import FloatingPanel from './floating-panel';
 import './style.css';
@@ -102,4 +104,8 @@ wrapper.id = 'gratis-ai-agent-floating-root';
 document.body.appendChild( wrapper );
 
 const root = createRoot( wrapper );
-root.render( <FloatingWidget /> );
+root.render(
+	<ErrorBoundary label={ __( 'AI Agent widget', 'ai-agent' ) }>
+		<FloatingWidget />
+	</ErrorBoundary>
+);
