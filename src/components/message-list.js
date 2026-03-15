@@ -50,9 +50,9 @@ function parseSuggestions( text ) {
 
 function MessageBubble( { role, text } ) {
 	const classMap = {
-		user: 'gratis-ai-agent-bubble gratis-ai-agent-user',
-		model: 'gratis-ai-agent-bubble gratis-ai-agent-assistant',
-		system: 'gratis-ai-agent-bubble gratis-ai-agent-system',
+		user: 'ai-agent-bubble ai-agent-user',
+		model: 'ai-agent-bubble ai-agent-assistant',
+		system: 'ai-agent-bubble ai-agent-system',
 	};
 
 	if ( role === 'model' ) {
@@ -74,12 +74,12 @@ function SuggestionChips( { suggestions, onSelect } ) {
 	}
 
 	return (
-		<div className="gratis-ai-agent-suggestion-chips">
+		<div className="ai-agent-suggestion-chips">
 			{ suggestions.map( ( suggestion, i ) => (
 				<Button
 					key={ i }
 					variant="tertiary"
-					className="gratis-ai-agent-suggestion-chip"
+					className="ai-agent-suggestion-chip"
 					onClick={ () => onSelect( suggestion ) }
 				>
 					{ suggestion }
@@ -100,14 +100,17 @@ function extractText( message ) {
 }
 
 export default function MessageList() {
-	const { messages, sending, debugMode } = useSelect( ( select ) => {
-		const store = select( STORE_NAME );
-		return {
-			messages: store.getCurrentSessionMessages(),
-			sending: store.isSending(),
-			debugMode: store.isDebugMode(),
-		};
-	}, [] );
+	const { messages, sending, debugMode, streamingText, isStreaming } =
+		useSelect( ( select ) => {
+			const store = select( STORE_NAME );
+			return {
+				messages: store.getCurrentSessionMessages(),
+				sending: store.isSending(),
+				debugMode: store.isDebugMode(),
+				streamingText: store.getStreamingText(),
+				isStreaming: store.isStreamingActive(),
+			};
+		}, [] );
 
 	const { sendMessage } = useDispatch( STORE_NAME );
 	const messagesRef = useRef( null );
@@ -123,7 +126,7 @@ export default function MessageList() {
 				window.scrollTo( 0, savedY );
 			}
 		}
-	}, [ messages, sending ] );
+	}, [ messages, sending, streamingText ] );
 
 	const visibleMessages = messages.filter( ( msg ) => {
 		// Skip function-role messages (tool responses).
@@ -141,9 +144,9 @@ export default function MessageList() {
 	} );
 
 	return (
-		<div className="gratis-ai-agent-messages" ref={ messagesRef }>
+		<div className="ai-agent-messages" ref={ messagesRef }>
 			{ visibleMessages.length === 0 && ! sending && (
-				<div className="gratis-ai-agent-empty-state">
+				<div className="ai-agent-empty-state">
 					{ __(
 						'Send a message to start a conversation.',
 						'gratis-ai-agent'
@@ -165,7 +168,7 @@ export default function MessageList() {
 					isModel && ! sending && i === visibleMessages.length - 1;
 
 				return (
-					<div key={ i } className="gratis-ai-agent-message-row">
+					<div key={ i } className="ai-agent-message-row">
 						{ msg.toolCalls?.length > 0 && (
 							<ToolCallDetails toolCalls={ msg.toolCalls } />
 						) }
@@ -183,8 +186,19 @@ export default function MessageList() {
 					</div>
 				);
 			} ) }
-			{ sending && (
-				<div className="gratis-ai-agent-bubble gratis-ai-agent-assistant gratis-ai-agent-thinking">
+			{ isStreaming && streamingText && (
+				<div className="ai-agent-message-row ai-agent-message-row--streaming">
+					<div className="ai-agent-bubble ai-agent-assistant ai-agent-streaming">
+						<MarkdownMessage content={ streamingText } />
+						<span
+							className="ai-agent-streaming-cursor"
+							aria-hidden="true"
+						/>
+					</div>
+				</div>
+			) }
+			{ sending && ! isStreaming && (
+				<div className="ai-agent-bubble ai-agent-assistant ai-agent-thinking">
 					<Spinner />
 					{ __( 'Thinking…', 'gratis-ai-agent' ) }
 				</div>

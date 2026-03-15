@@ -32,6 +32,7 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 	);
 	const {
 		sendMessage,
+		streamMessage,
 		stopGeneration,
 		clearCurrentSession,
 		compactConversation,
@@ -150,13 +151,18 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 			return;
 		}
 
-		sendMessage( trimmed );
+		// Use streaming when the Fetch API and ReadableStream are available.
+		if ( window.fetch && window.ReadableStream ) {
+			streamMessage( trimmed );
+		} else {
+			sendMessage( trimmed );
+		}
 		setText( '' );
 		setTimeout(
 			() => textareaRef.current?.focus( { preventScroll: true } ),
 			0
 		);
-	}, [ text, sending, sendMessage, onSlashCommand ] );
+	}, [ text, sending, sendMessage, streamMessage, onSlashCommand ] );
 
 	const handleSlashSelect = useCallback(
 		( cmd ) => {
@@ -253,9 +259,7 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 
 	return (
 		<div
-			className={ `gratis-ai-agent-input-area ${
-				compact ? 'is-compact' : ''
-			}` }
+			className={ `ai-agent-input-area ${ compact ? 'is-compact' : '' }` }
 		>
 			{ showSlash && (
 				<SlashCommandMenu
@@ -266,7 +270,7 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 			) }
 			<textarea
 				ref={ textareaRef }
-				className="gratis-ai-agent-input"
+				className="ai-agent-input"
 				rows={ 1 }
 				placeholder={ __(
 					'Type a message or / for commands…',
@@ -281,7 +285,7 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 				<Button
 					variant="secondary"
 					onClick={ stopGeneration }
-					className="gratis-ai-agent-stop-btn"
+					className="ai-agent-stop-btn"
 					label={ __( 'Stop', 'gratis-ai-agent' ) }
 				>
 					{ __( 'Stop', 'gratis-ai-agent' ) }
@@ -291,7 +295,7 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 					variant="primary"
 					onClick={ handleSend }
 					disabled={ ! text.trim() }
-					className="gratis-ai-agent-send-btn"
+					className="ai-agent-send-btn"
 					label={ __( 'Send', 'gratis-ai-agent' ) }
 					icon={ <Icon icon={ arrowUp } /> }
 				/>
