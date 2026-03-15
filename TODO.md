@@ -119,7 +119,7 @@
 
 ### Architecture & Modernization (P2)
 
-- [ ] t046 Extract send_prompt_direct() to dedicated OpenAI proxy class @dave #refactor ~4h logged:2026-03-14 ref=GH#239 pr:#281
+- [x] t046 Extract send_prompt_direct() to dedicated OpenAI proxy class @dave #refactor ~4h logged:2026-03-14 ref=GH#239 pr:#281 pr:#281 completed:2026-03-15
 - [x] t047 Extract credential management to CredentialResolver class @dave #refactor ~3h logged:2026-03-14 pr:#280 completed:2026-03-15
 - [x] t048 Replace hardcoded model fallback with configurable default @dave #refactor ~1h logged:2026-03-14 pr:#278 completed:2026-03-15
 - [ ] t049 Add proper dependency injection instead of static method calls @dave #refactor ~4h logged:2026-03-14 pr:#344 ref=GH#320
