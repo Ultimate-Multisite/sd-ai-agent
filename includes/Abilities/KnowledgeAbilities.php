@@ -18,6 +18,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class KnowledgeAbilities {
 
+	// ─── Static proxy methods (for backwards-compatible test access) ─────────
+
+	/**
+	 * Search the knowledge base.
+	 *
+	 * @param array<string,mixed> $input Input args.
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	public static function handle_knowledge_search( array $input = [] ) {
+		$ability = new KnowledgeSearchAbility(
+			'gratis-ai-agent/knowledge-search',
+			[
+				'label'       => __( 'Search Knowledge Base', 'gratis-ai-agent' ),
+				'description' => __( 'Search the knowledge base for relevant information. Use this to find indexed documents, posts, and uploaded files.', 'gratis-ai-agent' ),
+			]
+		);
+		return $ability->run( $input );
+	}
+
 	/**
 	 * Register knowledge abilities on init.
 	 */
@@ -36,40 +55,58 @@ class KnowledgeAbilities {
 		wp_register_ability(
 			'gratis-ai-agent/knowledge-search',
 			[
-				'label'               => __( 'Search Knowledge Base', 'gratis-ai-agent' ),
-				'description'         => __( 'Search the knowledge base for relevant information. Use this to find indexed documents, posts, and uploaded files.', 'gratis-ai-agent' ),
-				'category'            => 'gratis-ai-agent',
-				'input_schema'        => [
-					'type'       => 'object',
-					'properties' => [
-						'query'      => [
-							'type'        => 'string',
-							'description' => 'The search query to find relevant knowledge.',
-						],
-						'collection' => [
-							'type'        => 'string',
-							'description' => 'Optional collection slug to search within. Leave empty to search all collections.',
-						],
-					],
-					'required'   => [ 'query' ],
-				],
-				'meta'                => [
-					'show_in_rest' => true,
-				],
-				'execute_callback'    => [ __CLASS__, 'handle_knowledge_search' ],
-				'permission_callback' => function () {
-					return current_user_can( 'manage_options' ); },
+				'label'         => __( 'Search Knowledge Base', 'gratis-ai-agent' ),
+				'description'   => __( 'Search the knowledge base for relevant information. Use this to find indexed documents, posts, and uploaded files.', 'gratis-ai-agent' ),
+				'ability_class' => KnowledgeSearchAbility::class,
 			]
 		);
 	}
+}
 
-	/**
-	 * Handle the knowledge-search ability call.
-	 *
-	 * @param array<string, mixed> $input Input with query and optional collection.
-	 * @return array<string, mixed>|\WP_Error Result or WP_Error on failure.
-	 */
-	public static function handle_knowledge_search( array $input ): array|\WP_Error {
+/**
+ * Knowledge Search ability.
+ *
+ * @since 1.0.0
+ */
+class KnowledgeSearchAbility extends AbstractAbility {
+
+	protected function label(): string {
+		return __( 'Search Knowledge Base', 'gratis-ai-agent' );
+	}
+
+	protected function description(): string {
+		return __( 'Search the knowledge base for relevant information. Use this to find indexed documents, posts, and uploaded files.', 'gratis-ai-agent' );
+	}
+
+	protected function input_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'query'      => [
+					'type'        => 'string',
+					'description' => 'The search query to find relevant knowledge.',
+				],
+				'collection' => [
+					'type'        => 'string',
+					'description' => 'Optional collection slug to search within. Leave empty to search all collections.',
+				],
+			],
+			'required'   => [ 'query' ],
+		];
+	}
+
+	protected function output_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'results' => [ 'type' => 'array' ],
+				'count'   => [ 'type' => 'integer' ],
+				'message' => [ 'type' => 'string' ],
+			],
+		];
+	}
+
+	protected function execute_callback( $input ) {
 		$query = $input['query'] ?? '';
 
 		if ( empty( $query ) ) {
@@ -106,6 +143,21 @@ class KnowledgeAbilities {
 		return [
 			'results' => $formatted,
 			'count'   => count( $formatted ),
+		];
+	}
+
+	protected function permission_callback( $input ): bool {
+		return current_user_can( 'manage_options' );
+	}
+
+	protected function meta(): array {
+		return [
+			'annotations'  => [
+				'readonly'    => true,
+				'destructive' => false,
+				'idempotent'  => false,
+			],
+			'show_in_rest' => false,
 		];
 	}
 }

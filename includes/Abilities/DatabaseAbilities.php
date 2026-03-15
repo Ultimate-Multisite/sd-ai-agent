@@ -20,6 +20,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class DatabaseAbilities {
 
+	// ─── Static proxy methods (for backwards-compatible test access) ─────────
+
+	/**
+	 * Execute a SELECT database query.
+	 *
+	 * @param array<string,mixed> $input Input args.
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	public static function handle_db_query( array $input = [] ) {
+		$ability = new DatabaseQueryAbility(
+			'gratis-ai-agent/db-query',
+			[
+				'label'       => __( 'Database Query', 'gratis-ai-agent' ),
+				'description' => __( 'Execute a SELECT query on the WordPress database. Only SELECT queries are allowed. Use {prefix} as placeholder for the table prefix.', 'gratis-ai-agent' ),
+			]
+		);
+		return $ability->run( $input );
+	}
+
 	/**
 	 * Register database abilities on init.
 	 */
@@ -38,49 +57,54 @@ class DatabaseAbilities {
 		wp_register_ability(
 			'gratis-ai-agent/db-query',
 			[
-				'label'               => __( 'Database Query', 'gratis-ai-agent' ),
-				'description'         => __( 'Execute a SELECT query on the WordPress database. Only SELECT queries are allowed. Use {prefix} as placeholder for the table prefix.', 'gratis-ai-agent' ),
-				'category'            => 'gratis-ai-agent',
-				'input_schema'        => [
-					'type'       => 'object',
-					'properties' => [
-						'sql' => [
-							'type'        => 'string',
-							'description' => 'The SELECT SQL query to execute. Use {prefix} as placeholder for table prefix.',
-						],
-					],
-					'required'   => [ 'sql' ],
-				],
-				'output_schema'       => [
-					'type'       => 'object',
-					'properties' => [
-						'query' => [ 'type' => 'string' ],
-						'rows'  => [ 'type' => 'array' ],
-						'count' => [ 'type' => 'integer' ],
-					],
-				],
-				'meta'                => [
-					'annotations'  => [
-						'readonly'   => true,
-						'idempotent' => true,
-					],
-					'show_in_rest' => true,
-				],
-				'execute_callback'    => [ __CLASS__, 'handle_db_query' ],
-				'permission_callback' => function () {
-					return current_user_can( 'manage_options' );
-				},
+				'label'         => __( 'Database Query', 'gratis-ai-agent' ),
+				'description'   => __( 'Execute a SELECT query on the WordPress database. Only SELECT queries are allowed. Use {prefix} as placeholder for the table prefix.', 'gratis-ai-agent' ),
+				'ability_class' => DatabaseQueryAbility::class,
 			]
 		);
 	}
+}
 
-	/**
-	 * Handle the db-query ability.
-	 *
-	 * @param array<string, mixed> $input Input with sql.
-	 * @return array<string, mixed>|WP_Error
-	 */
-	public static function handle_db_query( array $input ) {
+/**
+ * Database Query ability.
+ *
+ * @since 1.0.0
+ */
+class DatabaseQueryAbility extends AbstractAbility {
+
+	protected function label(): string {
+		return __( 'Database Query', 'gratis-ai-agent' );
+	}
+
+	protected function description(): string {
+		return __( 'Execute a SELECT query on the WordPress database. Only SELECT queries are allowed. Use {prefix} as placeholder for the table prefix.', 'gratis-ai-agent' );
+	}
+
+	protected function input_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'sql' => [
+					'type'        => 'string',
+					'description' => 'The SELECT SQL query to execute. Use {prefix} as placeholder for table prefix.',
+				],
+			],
+			'required'   => [ 'sql' ],
+		];
+	}
+
+	protected function output_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'query' => [ 'type' => 'string' ],
+				'rows'  => [ 'type' => 'array' ],
+				'count' => [ 'type' => 'integer' ],
+			],
+		];
+	}
+
+	protected function execute_callback( $input ) {
 		global $wpdb;
 
 		$sql = trim( $input['sql'] ?? '' );
@@ -111,6 +135,21 @@ class DatabaseAbilities {
 			'query' => $sql,
 			'rows'  => $results,
 			'count' => is_array( $results ) ? count( $results ) : 0,
+		];
+	}
+
+	protected function permission_callback( $input ): bool {
+		return current_user_can( 'manage_options' );
+	}
+
+	protected function meta(): array {
+		return [
+			'annotations'  => [
+				'readonly'    => true,
+				'destructive' => false,
+				'idempotent'  => true,
+			],
+			'show_in_rest' => true,
 		];
 	}
 }

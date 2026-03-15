@@ -13,6 +13,8 @@ parameters:
 		- vendor/wordpress/php-ai-client/src
 	bootstrapFiles:
 		- vendor/autoload.php
+	scanFiles:
+		- compat/abilities-api/class-abstract-ability.php
 	treatPhpDocTypesAsCertain: false
 	ignoreErrors:
 		# WP_CLI is only available when running in CLI context
