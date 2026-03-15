@@ -68,6 +68,11 @@ jobs:
           WP_CLI_BLOCK='USER root\nRUN curl -sSf -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \&\& chmod +x /usr/local/bin/wp\nUSER www-data'
           sed -i "s|return \`FROM wordpress:cli\\\${ phpVersion }|return \`FROM wordpress:cli\${ phpVersion }\n\n# Update WP-CLI to fix PHP 8.2 deprecation (trim() null parameter).\n# The base image ships with WP-CLI < 2.8.0 which fails on PHP 8.2.\n${WP_CLI_BLOCK}|" "$INIT_CONFIG"
           grep -q 'Update WP-CLI' "$INIT_CONFIG" || { echo "Patch failed — line not found in $INIT_CONFIG"; exit 1; }
+          # Also patch index.js to add --no-cache to the buildOne call so Docker
+          # does not reuse a cached CLI container layer that has old WP-CLI.
+          WP_ENV_INDEX="node_modules/@wordpress/env/lib/runtime/docker/index.js"
+          sed -i "s|await dockerCompose\.buildOne( \[ 'cli' \], {|await dockerCompose.buildOne( [ 'cli' ], { commandOptions: ['--no-cache'],|" "$WP_ENV_INDEX"
+          grep -q 'no-cache' "$WP_ENV_INDEX" || { echo "index.js patch failed"; exit 1; }
 
       - name: Start wp-env
         run: npm run wp-env:start
