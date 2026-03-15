@@ -122,7 +122,7 @@
 - [ ] t046 Extract send_prompt_direct() to dedicated OpenAI proxy class @dave #refactor ~4h logged:2026-03-14 ref=GH#239 pr:#281
 - [ ] t047 Extract credential management to CredentialResolver class @dave #refactor ~3h logged:2026-03-14
 - [ ] t048 Replace hardcoded model fallback with configurable default @dave #refactor ~1h logged:2026-03-14
-- [ ] t049 Add proper dependency injection instead of static method calls @dave #refactor ~4h logged:2026-03-14
+- [ ] t049 Add proper dependency injection instead of static method calls @dave #refactor ~4h logged:2026-03-14 pr:#344 ref=GH#320
 - [ ] t050 Add event/hook system for ability execution (before/after hooks) @dave #refactor ~3h logged:2026-03-14
 
 ### Frontend/UI Improvements (P2)
