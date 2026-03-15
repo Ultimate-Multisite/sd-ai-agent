@@ -17,7 +17,7 @@
 		"test:e2e": "wp-scripts test-e2e",
 		"test:php": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/gratis-ai-agent && php vendor/bin/phpunit'",
 		"test:php:testdox": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/gratis-ai-agent && php vendor/bin/phpunit --testdox'",
-		"test:php:coverage": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/gratis-ai-agent && php vendor/bin/phpunit --coverage-text'",
+		"test:php:coverage": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/gratis-ai-agent && php -d pcov.enabled=1 vendor/bin/phpunit --coverage-text'",
 		"wp-env": "wp-env",
 		"wp-env:start": "wp-env start",
 		"wp-env:stop": "wp-env stop",
