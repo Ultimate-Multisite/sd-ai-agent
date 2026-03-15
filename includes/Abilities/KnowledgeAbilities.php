@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace GratisAiAgent\Abilities;
 
 use GratisAiAgent\Knowledge\Knowledge;
-use WP_Error;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -63,14 +62,14 @@ class KnowledgeAbilities {
 	/**
 	 * Handle the knowledge-search ability call.
 	 *
-	 * @param array $input Input with query and optional collection.
-	 * @return array|\WP_Error Result or WP_Error on failure.
+	 * @param array<string, mixed> $input Input with query and optional collection.
+	 * @return array<string, mixed> Result.
 	 */
-	public static function handle_knowledge_search( array $input ): array|\WP_Error {
+	public static function handle_knowledge_search( array $input ): array {
 		$query = $input['query'] ?? '';
 
 		if ( empty( $query ) ) {
-			return new WP_Error( 'missing_param', __( 'Search query is required.', 'gratis-ai-agent' ) );
+			return [ 'error' => 'Search query is required.' ];
 		}
 
 		$options = [ 'limit' => 8 ];

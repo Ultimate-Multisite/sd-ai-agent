@@ -9,8 +9,6 @@ declare(strict_types=1);
 
 namespace GratisAiAgent\Abilities;
 
-use WP_Error;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -94,14 +92,14 @@ class SeoAbilities {
 	/**
 	 * Handle the seo-audit-url ability call.
 	 *
-	 * @param array $input Input with url and optional site_url.
-	 * @return array|\WP_Error Audit results or WP_Error on failure.
+	 * @param array<string, mixed> $input Input with url and optional site_url.
+	 * @return array<string, mixed> Audit results.
 	 */
-	public static function handle_audit_url( array $input ): array|\WP_Error {
+	public static function handle_audit_url( array $input ): array {
 		$url = esc_url_raw( $input['url'] ?? '' );
 
 		if ( empty( $url ) ) {
-			return new WP_Error( 'missing_param', __( 'url is required.', 'gratis-ai-agent' ) );
+			return [ 'error' => 'url is required.' ];
 		}
 
 		$response = wp_remote_get(
@@ -113,28 +111,18 @@ class SeoAbilities {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			return new WP_Error(
-				'fetch_failed',
-				sprintf(
-					/* translators: %s: error message */
-					__( 'Failed to fetch URL: %s', 'gratis-ai-agent' ),
-					$response->get_error_message()
-				)
-			);
+			return [ 'error' => 'Failed to fetch URL: ' . $response->get_error_message() ];
 		}
 
 		$status_code = wp_remote_retrieve_response_code( $response );
 		$body        = wp_remote_retrieve_body( $response );
 
 		if ( empty( $body ) ) {
-			return new WP_Error(
-				'empty_response',
-				__( 'Empty response body.', 'gratis-ai-agent' ),
-				[
-					'url'         => $url,
-					'status_code' => $status_code,
-				]
-			);
+			return [
+				'url'         => $url,
+				'status_code' => $status_code,
+				'error'       => 'Empty response body.',
+			];
 		}
 
 		return self::parse_seo_elements( $url, $status_code, $body );
@@ -146,7 +134,7 @@ class SeoAbilities {
 	 * @param string $url         The audited URL.
 	 * @param int    $status_code HTTP status code.
 	 * @param string $html        Raw HTML.
-	 * @return array Structured SEO data.
+	 * @return array<string, mixed> Structured SEO data.
 	 */
 	private static function parse_seo_elements( string $url, int $status_code, string $html ): array {
 		$result = [
@@ -283,16 +271,16 @@ class SeoAbilities {
 	/**
 	 * Handle the seo-analyze-content ability call.
 	 *
-	 * @param array $input Input with post_id, optional focus_keyword, site_url.
-	 * @return array|\WP_Error Analysis results or WP_Error on failure.
+	 * @param array<string, mixed> $input Input with post_id, optional focus_keyword, site_url.
+	 * @return array<string, mixed> Analysis results.
 	 */
-	public static function handle_analyze_content( array $input ): array|\WP_Error {
+	public static function handle_analyze_content( array $input ): array {
 		$post_id       = (int) ( $input['post_id'] ?? 0 );
 		$focus_keyword = sanitize_text_field( $input['focus_keyword'] ?? '' );
 		$site_url      = $input['site_url'] ?? '';
 
 		if ( ! $post_id ) {
-			return new WP_Error( 'missing_param', __( 'post_id is required.', 'gratis-ai-agent' ) );
+			return [ 'error' => 'post_id is required.' ];
 		}
 
 		$switched = false;
@@ -315,14 +303,7 @@ class SeoAbilities {
 			if ( $switched ) {
 				restore_current_blog();
 			}
-			return new WP_Error(
-				'not_found',
-				sprintf(
-					/* translators: %d: post ID */
-					__( 'Post %d not found.', 'gratis-ai-agent' ),
-					$post_id
-				)
-			);
+			return [ 'error' => "Post {$post_id} not found." ];
 		}
 
 		$result = self::analyze_post_seo( $post, $focus_keyword );
@@ -339,7 +320,7 @@ class SeoAbilities {
 	 *
 	 * @param \WP_Post $post          The post to analyze.
 	 * @param string   $focus_keyword Optional focus keyword.
-	 * @return array Analysis data.
+	 * @return array<string, mixed> Analysis data.
 	 */
 	private static function analyze_post_seo( \WP_Post $post, string $focus_keyword ): array {
 		$content    = $post->post_content;

@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace GratisAiAgent\Abilities;
 
 use GratisAiAgent\Models\Skill;
-use WP_Error;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -75,38 +74,24 @@ class SkillAbilities {
 	/**
 	 * Handle the skill-load ability call.
 	 *
-	 * @param array $input Input with slug.
-	 * @return array|\WP_Error Result with skill content or WP_Error on failure.
+	 * @param array<string, mixed> $input Input with slug.
+	 * @return array<string, mixed> Result with skill content.
 	 */
-	public static function handle_skill_load( array $input ): array|\WP_Error {
+	public static function handle_skill_load( array $input ): array {
 		$slug = $input['slug'] ?? '';
 
 		if ( empty( $slug ) ) {
-			return new WP_Error( 'missing_param', __( 'Skill slug is required.', 'gratis-ai-agent' ) );
+			return [ 'error' => 'Skill slug is required.' ];
 		}
 
 		$skill = Skill::get_by_slug( $slug );
 
 		if ( ! $skill ) {
-			return new WP_Error(
-				'not_found',
-				sprintf(
-					/* translators: %s: skill slug */
-					__( "Skill '%s' not found.", 'gratis-ai-agent' ),
-					$slug
-				)
-			);
+			return [ 'error' => "Skill '$slug' not found." ];
 		}
 
 		if ( ! (int) $skill->enabled ) {
-			return new WP_Error(
-				'skill_disabled',
-				sprintf(
-					/* translators: %s: skill slug */
-					__( "Skill '%s' is disabled.", 'gratis-ai-agent' ),
-					$slug
-				)
-			);
+			return [ 'error' => "Skill '$slug' is disabled." ];
 		}
 
 		return [
@@ -119,7 +104,7 @@ class SkillAbilities {
 	/**
 	 * Handle the skill-list ability call.
 	 *
-	 * @return array Result with skills index.
+	 * @return array<string, mixed> Result with skills index.
 	 */
 	public static function handle_skill_list(): array {
 		$skills = Skill::get_all( true );

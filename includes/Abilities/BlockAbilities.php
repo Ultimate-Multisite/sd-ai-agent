@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace GratisAiAgent\Abilities;
 
 use GratisAiAgent\Models\MarkdownToBlocks;
-use WP_Error;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -235,14 +234,14 @@ class BlockAbilities {
 	/**
 	 * Handle markdown-to-blocks conversion.
 	 *
-	 * @param array $input Input with 'markdown' key.
-	 * @return array|\WP_Error Result with block_content and block_count or WP_Error on failure.
+	 * @param array<string, mixed> $input Input with 'markdown' key.
+	 * @return array<string, mixed> Result with block_content and block_count.
 	 */
-	public static function handle_markdown_to_blocks( array $input ): array|\WP_Error {
+	public static function handle_markdown_to_blocks( array $input ): array {
 		$markdown = $input['markdown'] ?? '';
 
 		if ( empty( $markdown ) ) {
-			return new WP_Error( 'missing_param', __( 'markdown is required.', 'gratis-ai-agent' ) );
+			return [ 'error' => 'markdown is required.' ];
 		}
 
 		$blocks        = MarkdownToBlocks::parse( $markdown );
@@ -257,8 +256,8 @@ class BlockAbilities {
 	/**
 	 * Handle listing block types.
 	 *
-	 * @param array $input Input with optional category, search, per_page, page.
-	 * @return array Result with block_types, total, and categories.
+	 * @param array<string, mixed> $input Input with optional category, search, per_page, page.
+	 * @return array<string, mixed> Result with block_types, total, and categories.
 	 */
 	public static function handle_list_block_types( array $input ): array {
 		$registry = \WP_Block_Type_Registry::get_instance();
@@ -330,28 +329,21 @@ class BlockAbilities {
 	/**
 	 * Handle getting a single block type's full metadata.
 	 *
-	 * @param array $input Input with 'name' key.
-	 * @return array|\WP_Error Full block type metadata or WP_Error on failure.
+	 * @param array<string, mixed> $input Input with 'name' key.
+	 * @return array<string, mixed> Full block type metadata.
 	 */
-	public static function handle_get_block_type( array $input ): array|\WP_Error {
+	public static function handle_get_block_type( array $input ): array {
 		$name = $input['name'] ?? '';
 
 		if ( empty( $name ) ) {
-			return new WP_Error( 'missing_param', __( 'name is required.', 'gratis-ai-agent' ) );
+			return [ 'error' => 'name is required.' ];
 		}
 
 		$registry = \WP_Block_Type_Registry::get_instance();
 		$block    = $registry->get_registered( $name );
 
 		if ( ! $block ) {
-			return new WP_Error(
-				'not_found',
-				sprintf(
-					/* translators: %s: block type name */
-					__( "Block type '%s' not found.", 'gratis-ai-agent' ),
-					$name
-				)
-			);
+			return [ 'error' => "Block type '{$name}' not found." ];
 		}
 
 		$result = [
@@ -400,8 +392,8 @@ class BlockAbilities {
 	/**
 	 * Handle listing block patterns.
 	 *
-	 * @param array $input Input with optional category, search, per_page, full_content.
-	 * @return array Result with patterns, total, and categories.
+	 * @param array<string, mixed> $input Input with optional category, search, per_page, full_content.
+	 * @return array<string, mixed> Result with patterns, total, and categories.
 	 */
 	public static function handle_list_block_patterns( array $input ): array {
 		$registry = \WP_Block_Patterns_Registry::get_instance();
@@ -471,8 +463,8 @@ class BlockAbilities {
 	/**
 	 * Handle listing block templates.
 	 *
-	 * @param array $input Input with optional search.
-	 * @return array Result with templates and total.
+	 * @param array<string, mixed> $input Input with optional search.
+	 * @return array<string, mixed> Result with templates and total.
 	 */
 	public static function handle_list_block_templates( array $input ): array {
 		$search = strtolower( $input['search'] ?? '' );
@@ -509,14 +501,14 @@ class BlockAbilities {
 	/**
 	 * Handle creating block content from a structured array.
 	 *
-	 * @param array $input Input with 'blocks' array.
-	 * @return array|\WP_Error Result with block_content and block_count or WP_Error on failure.
+	 * @param array<string, mixed> $input Input with 'blocks' array.
+	 * @return array<string, mixed> Result with block_content and block_count.
 	 */
-	public static function handle_create_block_content( array $input ): array|\WP_Error {
+	public static function handle_create_block_content( array $input ): array {
 		$blocks = $input['blocks'] ?? [];
 
 		if ( empty( $blocks ) || ! is_array( $blocks ) ) {
-			return new WP_Error( 'missing_param', __( 'blocks array is required.', 'gratis-ai-agent' ) );
+			return [ 'error' => 'blocks array is required.' ];
 		}
 
 		$output      = '';
@@ -538,16 +530,16 @@ class BlockAbilities {
 	/**
 	 * Handle parsing existing block content.
 	 *
-	 * @param array $input Input with post_id or content, optional site_url.
-	 * @return array|\WP_Error Result with blocks and block_count or WP_Error on failure.
+	 * @param array<string, mixed> $input Input with post_id or content, optional site_url.
+	 * @return array<string, mixed> Result with blocks and block_count.
 	 */
-	public static function handle_parse_block_content( array $input ): array|\WP_Error {
+	public static function handle_parse_block_content( array $input ): array {
 		$post_id  = (int) ( $input['post_id'] ?? 0 );
 		$content  = $input['content'] ?? '';
 		$site_url = $input['site_url'] ?? '';
 
 		if ( ! $post_id && empty( $content ) ) {
-			return new WP_Error( 'missing_param', __( 'Either post_id or content is required.', 'gratis-ai-agent' ) );
+			return [ 'error' => 'Either post_id or content is required.' ];
 		}
 
 		$switched = false;
@@ -562,14 +554,7 @@ class BlockAbilities {
 				switch_to_blog( $blog_id );
 				$switched = true;
 			} elseif ( ! $blog_id ) {
-				return new WP_Error(
-					'site_not_found',
-					sprintf(
-						/* translators: %s: site URL */
-						__( 'Could not find a site matching URL: %s', 'gratis-ai-agent' ),
-						$site_url
-					)
-				);
+				return [ 'error' => "Could not find a site matching URL: {$site_url}" ];
 			}
 		}
 
@@ -579,14 +564,7 @@ class BlockAbilities {
 				if ( $switched ) {
 					restore_current_blog();
 				}
-				return new WP_Error(
-					'not_found',
-					sprintf(
-						/* translators: %d: post ID */
-						__( 'Post %d not found.', 'gratis-ai-agent' ),
-						$post_id
-					)
-				);
+				return [ 'error' => "Post {$post_id} not found." ];
 			}
 			$content = $post->post_content;
 		}
@@ -609,8 +587,8 @@ class BlockAbilities {
 	/**
 	 * Normalize a simplified agent-friendly block into serialize_block() format.
 	 *
-	 * @param array $data Block data with blockName, attrs, content, innerBlocks.
-	 * @return array Full block array for serialize_block().
+	 * @param array<string, mixed> $data Block data with blockName, attrs, content, innerBlocks.
+	 * @return array<string, mixed> Full block array for serialize_block().
 	 */
 	private static function normalize_block( array $data ): array {
 		$block_name = $data['blockName'] ?? '';
@@ -722,11 +700,11 @@ class BlockAbilities {
 	/**
 	 * Build a simple block array (no inner blocks in innerContent).
 	 *
-	 * @param string $block_name  Block name.
-	 * @param array  $attrs       Block attributes.
-	 * @param array  $inner_blocks Inner blocks.
-	 * @param string $html        Inner HTML.
-	 * @return array Block array.
+	 * @param string                     $block_name  Block name.
+	 * @param array<string, mixed>       $attrs       Block attributes.
+	 * @param list<array<string, mixed>> $inner_blocks Inner blocks.
+	 * @param string                     $html        Inner HTML.
+	 * @return array<string, mixed> Block array.
 	 */
 	private static function build_block( string $block_name, array $attrs, array $inner_blocks, string $html ): array {
 		return [
@@ -741,12 +719,12 @@ class BlockAbilities {
 	/**
 	 * Build a container block with inner block placeholders in innerContent.
 	 *
-	 * @param string $block_name  Block name.
-	 * @param array  $attrs       Block attributes.
-	 * @param array  $inner_blocks Inner blocks.
-	 * @param string $tag         HTML tag (div, section, etc.).
-	 * @param string $class       CSS class.
-	 * @return array Block array.
+	 * @param string                     $block_name  Block name.
+	 * @param array<string, mixed>       $attrs       Block attributes.
+	 * @param list<array<string, mixed>> $inner_blocks Inner blocks.
+	 * @param string                     $tag         HTML tag (div, section, etc.).
+	 * @param string                     $class       CSS class.
+	 * @return array<string, mixed> Block array.
 	 */
 	private static function build_container( string $block_name, array $attrs, array $inner_blocks, string $tag, string $class ): array {
 		$open  = '<' . $tag . ' class="' . esc_attr( $class ) . '">';
@@ -775,11 +753,11 @@ class BlockAbilities {
 	/**
 	 * Build a container for unknown blocks with inner block placeholders.
 	 *
-	 * @param string $block_name  Block name.
-	 * @param array  $attrs       Block attributes.
-	 * @param array  $inner_blocks Inner blocks.
-	 * @param string $wrapper_html Optional wrapper HTML.
-	 * @return array Block array.
+	 * @param string                     $block_name   Block name.
+	 * @param array<string, mixed>       $attrs        Block attributes.
+	 * @param list<array<string, mixed>> $inner_blocks Inner blocks.
+	 * @param string                     $wrapper_html Optional wrapper HTML.
+	 * @return array<string, mixed> Block array.
 	 */
 	private static function build_container_raw( string $block_name, array $attrs, array $inner_blocks, string $wrapper_html ): array {
 		$inner_content = [];
@@ -807,7 +785,7 @@ class BlockAbilities {
 	/**
 	 * Count inner blocks recursively.
 	 *
-	 * @param array $block Block array.
+	 * @param array<string, mixed> $block Block array.
 	 * @return int Total inner block count.
 	 */
 	private static function count_inner_blocks( array $block ): int {
@@ -822,8 +800,8 @@ class BlockAbilities {
 	/**
 	 * Clean up parsed blocks from parse_blocks(), removing empty freeform blocks.
 	 *
-	 * @param array $blocks Parsed blocks from parse_blocks().
-	 * @return array Cleaned block tree.
+	 * @param array<string, mixed> $blocks Parsed blocks from parse_blocks().
+	 * @return list<array<string, mixed>> Cleaned block tree.
 	 */
 	private static function clean_parsed_blocks( array $blocks ): array {
 		$cleaned = [];

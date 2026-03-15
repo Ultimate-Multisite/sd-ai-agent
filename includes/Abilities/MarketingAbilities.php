@@ -9,8 +9,6 @@ declare(strict_types=1);
 
 namespace GratisAiAgent\Abilities;
 
-use WP_Error;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -82,14 +80,14 @@ class MarketingAbilities {
 	/**
 	 * Handle the fetch-url ability call.
 	 *
-	 * @param array $input Input with url.
-	 * @return array|\WP_Error Fetch results or WP_Error on failure.
+	 * @param array<string, mixed> $input Input with url.
+	 * @return array<string, mixed> Fetch results.
 	 */
-	public static function handle_fetch_url( array $input ): array|\WP_Error {
+	public static function handle_fetch_url( array $input ): array {
 		$url = esc_url_raw( $input['url'] ?? '' );
 
 		if ( empty( $url ) ) {
-			return new WP_Error( 'missing_param', __( 'url is required.', 'gratis-ai-agent' ) );
+			return [ 'error' => 'url is required.' ];
 		}
 
 		$response = wp_remote_get(
@@ -102,14 +100,7 @@ class MarketingAbilities {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			return new WP_Error(
-				'fetch_failed',
-				sprintf(
-					/* translators: %s: error message */
-					__( 'Failed to fetch URL: %s', 'gratis-ai-agent' ),
-					$response->get_error_message()
-				)
-			);
+			return [ 'error' => 'Failed to fetch URL: ' . $response->get_error_message() ];
 		}
 
 		$status_code = wp_remote_retrieve_response_code( $response );
@@ -167,14 +158,14 @@ class MarketingAbilities {
 	/**
 	 * Handle the analyze-headers ability call.
 	 *
-	 * @param array $input Input with url.
-	 * @return array|\WP_Error Header analysis results or WP_Error on failure.
+	 * @param array<string, mixed> $input Input with url.
+	 * @return array<string, mixed> Header analysis results.
 	 */
-	public static function handle_analyze_headers( array $input ): array|\WP_Error {
+	public static function handle_analyze_headers( array $input ): array {
 		$url = esc_url_raw( $input['url'] ?? '' );
 
 		if ( empty( $url ) ) {
-			return new WP_Error( 'missing_param', __( 'url is required.', 'gratis-ai-agent' ) );
+			return [ 'error' => 'url is required.' ];
 		}
 
 		$response = wp_remote_head(
@@ -187,14 +178,7 @@ class MarketingAbilities {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			return new WP_Error(
-				'fetch_failed',
-				sprintf(
-					/* translators: %s: error message */
-					__( 'Failed to fetch headers: %s', 'gratis-ai-agent' ),
-					$response->get_error_message()
-				)
-			);
+			return [ 'error' => 'Failed to fetch headers: ' . $response->get_error_message() ];
 		}
 
 		$status_code = wp_remote_retrieve_response_code( $response );
@@ -221,8 +205,8 @@ class MarketingAbilities {
 	/**
 	 * Check security-related headers.
 	 *
-	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array $headers Response headers.
-	 * @return array Security header analysis.
+	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array<string, mixed> $headers Response headers.
+	 * @return list<array<string, mixed>> Security header analysis.
 	 */
 	private static function check_security_headers( $headers ): array {
 		$checks = [
@@ -269,8 +253,8 @@ class MarketingAbilities {
 	/**
 	 * Check performance-related headers.
 	 *
-	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array $headers Response headers.
-	 * @return array Performance header analysis.
+	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array<string, mixed> $headers Response headers.
+	 * @return list<array<string, mixed>> Performance header analysis.
 	 */
 	private static function check_performance_headers( $headers ): array {
 		$results = [];
@@ -302,8 +286,8 @@ class MarketingAbilities {
 	/**
 	 * Detect CDN indicators from headers.
 	 *
-	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array $headers Response headers.
-	 * @return array CDN detection results.
+	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array<string, mixed> $headers Response headers.
+	 * @return list<array<string, mixed>> CDN detection results.
 	 */
 	private static function detect_cdn( $headers ): array {
 		$indicators = [
