@@ -61,7 +61,7 @@ class WordPressAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_get_plugins' ],
 				'permission_callback' => function () {
-					return current_user_can( 'activate_plugins' );
+					return ToolCapabilities::current_user_can( 'ai-agent/get-plugins' );
 				},
 			]
 		);
@@ -93,7 +93,7 @@ class WordPressAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_get_themes' ],
 				'permission_callback' => function () {
-					return current_user_can( 'switch_themes' );
+					return ToolCapabilities::current_user_can( 'ai-agent/get-themes' );
 				},
 			]
 		);
@@ -135,7 +135,7 @@ class WordPressAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_install_plugin' ],
 				'permission_callback' => function () {
-					return current_user_can( 'install_plugins' );
+					return ToolCapabilities::current_user_can( 'ai-agent/install-plugin' );
 				},
 			]
 		);
@@ -171,7 +171,7 @@ class WordPressAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_run_php' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' );
+					return ToolCapabilities::current_user_can( 'ai-agent/run-php' );
 				},
 			]
 		);

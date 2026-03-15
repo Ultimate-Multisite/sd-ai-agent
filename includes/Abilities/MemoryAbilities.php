@@ -55,7 +55,8 @@ class MemoryAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_memory_save' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' ); },
+					return ToolCapabilities::current_user_can( 'ai-agent/memory-save' );
+				},
 			]
 		);
 
@@ -71,7 +72,8 @@ class MemoryAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_memory_list' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' ); },
+					return ToolCapabilities::current_user_can( 'ai-agent/memory-list' );
+				},
 			]
 		);
 
@@ -93,7 +95,8 @@ class MemoryAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_memory_delete' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' ); },
+					return ToolCapabilities::current_user_can( 'ai-agent/memory-delete' );
+				},
 			]
 		);
 	}

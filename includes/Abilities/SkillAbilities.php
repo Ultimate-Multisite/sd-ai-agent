@@ -50,7 +50,8 @@ class SkillAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_skill_load' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' ); },
+					return ToolCapabilities::current_user_can( 'ai-agent/skill-load' );
+				},
 			]
 		);
 
@@ -66,7 +67,8 @@ class SkillAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_skill_list' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' ); },
+					return ToolCapabilities::current_user_can( 'ai-agent/skill-list' );
+				},
 			]
 		);
 	}

@@ -48,7 +48,7 @@ class MarketingAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_fetch_url' ],
 				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' );
+					return ToolCapabilities::current_user_can( 'ai-agent/fetch-url' );
 				},
 			]
 		);
@@ -71,7 +71,7 @@ class MarketingAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_analyze_headers' ],
 				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' );
+					return ToolCapabilities::current_user_can( 'ai-agent/analyze-headers' );
 				},
 			]
 		);

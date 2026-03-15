@@ -53,7 +53,7 @@ class BlockAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_markdown_to_blocks' ],
 				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' );
+					return ToolCapabilities::current_user_can( 'ai-agent/markdown-to-blocks' );
 				},
 			]
 		);
@@ -88,7 +88,7 @@ class BlockAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_list_block_types' ],
 				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' );
+					return ToolCapabilities::current_user_can( 'ai-agent/list-block-types' );
 				},
 			]
 		);
@@ -111,7 +111,7 @@ class BlockAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_get_block_type' ],
 				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' );
+					return ToolCapabilities::current_user_can( 'ai-agent/get-block-type' );
 				},
 			]
 		);
@@ -146,7 +146,7 @@ class BlockAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_list_block_patterns' ],
 				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' );
+					return ToolCapabilities::current_user_can( 'ai-agent/list-block-patterns' );
 				},
 			]
 		);
@@ -169,7 +169,7 @@ class BlockAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_list_block_templates' ],
 				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' );
+					return ToolCapabilities::current_user_can( 'ai-agent/list-block-templates' );
 				},
 			]
 		);
@@ -192,7 +192,7 @@ class BlockAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_create_block_content' ],
 				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' );
+					return ToolCapabilities::current_user_can( 'ai-agent/create-block-content' );
 				},
 			]
 		);
@@ -223,7 +223,7 @@ class BlockAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_parse_block_content' ],
 				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' );
+					return ToolCapabilities::current_user_can( 'ai-agent/parse-block-content' );
 				},
 			]
 		);

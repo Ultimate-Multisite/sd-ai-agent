@@ -63,7 +63,7 @@ class StockImageAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_import' ],
 				'permission_callback' => function () {
-					return current_user_can( 'upload_files' );
+					return ToolCapabilities::current_user_can( 'ai-agent/import-stock-image' );
 				},
 			]
 		);

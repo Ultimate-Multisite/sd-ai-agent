@@ -54,7 +54,8 @@ class KnowledgeAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_knowledge_search' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' ); },
+					return ToolCapabilities::current_user_can( 'ai-agent/knowledge-search' );
+				},
 			]
 		);
 	}

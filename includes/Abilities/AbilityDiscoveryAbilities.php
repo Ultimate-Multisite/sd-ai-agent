@@ -104,7 +104,7 @@ class AbilityDiscoveryAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_list_abilities' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' );
+					return ToolCapabilities::current_user_can( 'ai-agent/discovery-list' );
 				},
 			]
 		);
@@ -172,7 +172,7 @@ class AbilityDiscoveryAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_get_ability' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' );
+					return ToolCapabilities::current_user_can( 'ai-agent/discovery-get' );
 				},
 			]
 		);
@@ -227,7 +227,7 @@ class AbilityDiscoveryAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_execute_ability' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' );
+					return ToolCapabilities::current_user_can( 'ai-agent/discovery-execute' );
 				},
 			]
 		);

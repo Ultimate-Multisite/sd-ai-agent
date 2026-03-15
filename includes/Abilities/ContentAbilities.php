@@ -56,7 +56,7 @@ class ContentAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_content_analyze' ],
 				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' );
+					return ToolCapabilities::current_user_can( 'ai-agent/content-analyze' );
 				},
 			]
 		);
@@ -83,7 +83,7 @@ class ContentAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_performance_report' ],
 				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' );
+					return ToolCapabilities::current_user_can( 'ai-agent/content-performance-report' );
 				},
 			]
 		);

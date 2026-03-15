@@ -66,7 +66,7 @@ class NavigationAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_navigate' ],
 				'permission_callback' => function () {
-					return current_user_can( 'read' );
+					return ToolCapabilities::current_user_can( 'ai-agent/navigate' );
 				},
 			]
 		);
@@ -108,7 +108,7 @@ class NavigationAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_get_page_html' ],
 				'permission_callback' => function () {
-					return current_user_can( 'read' );
+					return ToolCapabilities::current_user_can( 'ai-agent/get-page-html' );
 				},
 			]
 		);

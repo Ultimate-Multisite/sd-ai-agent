@@ -52,7 +52,7 @@ class SeoAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_audit_url' ],
 				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' );
+					return ToolCapabilities::current_user_can( 'ai-agent/seo-audit-url' );
 				},
 			]
 		);
@@ -83,7 +83,7 @@ class SeoAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_analyze_content' ],
 				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' );
+					return ToolCapabilities::current_user_can( 'ai-agent/seo-analyze-content' );
 				},
 			]
 		);

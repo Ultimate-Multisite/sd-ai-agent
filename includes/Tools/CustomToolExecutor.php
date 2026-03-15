@@ -56,8 +56,8 @@ class CustomToolExecutor {
 					'execute_callback'    => function ( array $input ) use ( $tool ) {
 						return self::execute( $tool, $input );
 					},
-					'permission_callback' => function () {
-						return current_user_can( 'manage_options' );
+					'permission_callback' => function () use ( $ability_name ) {
+						return \AiAgent\Abilities\ToolCapabilities::current_user_can( $ability_name );
 					},
 				]
 			);

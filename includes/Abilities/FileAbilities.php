@@ -71,7 +71,7 @@ class FileAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_read_file' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' );
+					return ToolCapabilities::current_user_can( 'ai-agent/file-read' );
 				},
 			]
 		);
@@ -112,7 +112,7 @@ class FileAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_write_file' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' );
+					return ToolCapabilities::current_user_can( 'ai-agent/file-write' );
 				},
 			]
 		);
@@ -167,7 +167,7 @@ class FileAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_edit_file' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' );
+					return ToolCapabilities::current_user_can( 'ai-agent/file-edit' );
 				},
 			]
 		);
@@ -203,7 +203,7 @@ class FileAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_delete_file' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' );
+					return ToolCapabilities::current_user_can( 'ai-agent/file-delete' );
 				},
 			]
 		);
@@ -241,7 +241,7 @@ class FileAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_list_directory' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' );
+					return ToolCapabilities::current_user_can( 'ai-agent/file-list' );
 				},
 			]
 		);
@@ -279,7 +279,7 @@ class FileAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_search_files' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' );
+					return ToolCapabilities::current_user_can( 'ai-agent/file-search' );
 				},
 			]
 		);
@@ -325,7 +325,7 @@ class FileAbilities {
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_search_content' ],
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' );
+					return ToolCapabilities::current_user_can( 'ai-agent/content-search' );
 				},
 			]
 		);
