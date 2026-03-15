@@ -40,7 +40,7 @@
 
 ### Streaming Responses (P0)
 
-- [ ] t054 Add streaming response support via SSE @dave #feature ~8h logged:2026-03-15
+- [x] t054 Add streaming response support via SSE @dave #feature ~8h logged:2026-03-15 pr:#268 completed:2026-03-15
   - Custom REST endpoint with `Content-Type: text/event-stream`, output buffer bypass
   - Frontend EventSource API with reconnection; typing indicator; stop button
   - Fall back to current polling pattern if SSE fails
