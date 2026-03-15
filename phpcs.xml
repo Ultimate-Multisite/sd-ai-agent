@@ -42,9 +42,6 @@
         <exclude name="WordPress.DB.DirectDatabaseQuery.DirectQuery"/>
         <exclude name="WordPress.DB.DirectDatabaseQuery.NoCaching"/>
 
-        <!-- Allow file includes with variables (autoloader) -->
-        <exclude name="WordPress.Security.EscapeOutput.OutputNotEscaped"/>
-
         <!-- Allow short ternary (null coalescing style) - modern PHP -->
         <exclude name="Universal.Operators.DisallowShortTernary.Found"/>
 
