@@ -58,6 +58,9 @@ const PROVIDERS = [
 
 /**
  * Single provider configuration card.
+ * @param {Object}  root0          - Component props.
+ * @param {Object}  root0.provider - Provider configuration object.
+ * @param {boolean} root0.hasKey   - Whether an API key is already configured.
  */
 function ProviderCard( { provider, hasKey } ) {
 	const [ apiKey, setApiKey ] = useState( '' );
@@ -99,8 +102,7 @@ function ProviderCard( { provider, hasKey } ) {
 			setNotice( {
 				status: 'error',
 				message:
-					err?.message ||
-					__( 'Failed to save API key.', 'ai-agent' ),
+					err?.message || __( 'Failed to save API key.', 'ai-agent' ),
 			} );
 		}
 
@@ -130,7 +132,7 @@ function ProviderCard( { provider, hasKey } ) {
 				method: 'POST',
 				data: {
 					provider: provider.id,
-					...(keyToTest ? { api_key: keyToTest } : {}),
+					...( keyToTest ? { api_key: keyToTest } : {} ),
 				},
 			} );
 
@@ -155,8 +157,7 @@ function ProviderCard( { provider, hasKey } ) {
 			setNotice( {
 				status: 'error',
 				message:
-					err?.message ||
-					__( 'Connection test failed.', 'ai-agent' ),
+					err?.message || __( 'Connection test failed.', 'ai-agent' ),
 			} );
 		}
 
@@ -243,7 +244,10 @@ function ProviderCard( { provider, hasKey } ) {
 						onChange={ setApiKey }
 						placeholder={
 							keyConfigured
-								? __( '(key saved — enter new key to replace)', 'ai-agent' )
+								? __(
+										'(key saved — enter new key to replace)',
+										'ai-agent'
+								  )
 								: provider.keyPlaceholder
 						}
 						__nextHasNoMarginBottom
@@ -264,7 +268,11 @@ function ProviderCard( { provider, hasKey } ) {
 						variant="secondary"
 						onClick={ handleTest }
 						isBusy={ testing }
-						disabled={ saving || testing || ( ! apiKey.trim() && ! keyConfigured ) }
+						disabled={
+							saving ||
+							testing ||
+							( ! apiKey.trim() && ! keyConfigured )
+						}
 					>
 						{ testing ? (
 							<Spinner />

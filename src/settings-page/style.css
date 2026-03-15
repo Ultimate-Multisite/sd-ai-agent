@@ -410,11 +410,6 @@
 	border-radius: 3px;
 }
 
-/* Tab overflow for many tabs */
-.ai-agent-settings .components-tab-panel__tabs {
-	flex-wrap: wrap;
-}
-
 /* Providers Manager */
 .ai-agent-providers-manager__intro {
 	color: #50575e;

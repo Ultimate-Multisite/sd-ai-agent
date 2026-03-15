@@ -44,35 +44,86 @@ class Settings {
 			'name'          => 'OpenAI',
 			'default_model' => 'gpt-4o',
 			'models'        => [
-				[ 'id' => 'gpt-4o',                'name' => 'GPT-4o' ],
-				[ 'id' => 'gpt-4o-mini',           'name' => 'GPT-4o Mini' ],
-				[ 'id' => 'gpt-4-turbo',           'name' => 'GPT-4 Turbo' ],
-				[ 'id' => 'o1',                    'name' => 'o1' ],
-				[ 'id' => 'o1-mini',               'name' => 'o1 Mini' ],
-				[ 'id' => 'o3-mini',               'name' => 'o3 Mini' ],
+				[
+					'id'   => 'gpt-4o',
+					'name' => 'GPT-4o',
+				],
+				[
+					'id'   => 'gpt-4o-mini',
+					'name' => 'GPT-4o Mini',
+				],
+				[
+					'id'   => 'gpt-4-turbo',
+					'name' => 'GPT-4 Turbo',
+				],
+				[
+					'id'   => 'o1',
+					'name' => 'o1',
+				],
+				[
+					'id'   => 'o1-mini',
+					'name' => 'o1 Mini',
+				],
+				[
+					'id'   => 'o3-mini',
+					'name' => 'o3 Mini',
+				],
 			],
 		],
 		'anthropic' => [
 			'name'          => 'Anthropic',
 			'default_model' => 'claude-sonnet-4-5',
 			'models'        => [
-				[ 'id' => 'claude-opus-4-5',       'name' => 'Claude Opus 4.5' ],
-				[ 'id' => 'claude-sonnet-4-5',     'name' => 'Claude Sonnet 4.5' ],
-				[ 'id' => 'claude-haiku-3-5',      'name' => 'Claude Haiku 3.5' ],
-				[ 'id' => 'claude-opus-4-20250514',   'name' => 'Claude Opus 4' ],
-				[ 'id' => 'claude-sonnet-4-20250514', 'name' => 'Claude Sonnet 4' ],
-				[ 'id' => 'claude-haiku-3-20241022',  'name' => 'Claude Haiku 3' ],
+				[
+					'id'   => 'claude-opus-4-5',
+					'name' => 'Claude Opus 4.5',
+				],
+				[
+					'id'   => 'claude-sonnet-4-5',
+					'name' => 'Claude Sonnet 4.5',
+				],
+				[
+					'id'   => 'claude-haiku-3-5',
+					'name' => 'Claude Haiku 3.5',
+				],
+				[
+					'id'   => 'claude-opus-4-20250514',
+					'name' => 'Claude Opus 4',
+				],
+				[
+					'id'   => 'claude-sonnet-4-20250514',
+					'name' => 'Claude Sonnet 4',
+				],
+				[
+					'id'   => 'claude-haiku-3-20241022',
+					'name' => 'Claude Haiku 3',
+				],
 			],
 		],
 		'google'    => [
 			'name'          => 'Google',
 			'default_model' => 'gemini-2.0-flash',
 			'models'        => [
-				[ 'id' => 'gemini-2.5-pro-preview-05-06', 'name' => 'Gemini 2.5 Pro' ],
-				[ 'id' => 'gemini-2.0-flash',             'name' => 'Gemini 2.0 Flash' ],
-				[ 'id' => 'gemini-2.0-flash-lite',        'name' => 'Gemini 2.0 Flash Lite' ],
-				[ 'id' => 'gemini-1.5-pro',               'name' => 'Gemini 1.5 Pro' ],
-				[ 'id' => 'gemini-1.5-flash',             'name' => 'Gemini 1.5 Flash' ],
+				[
+					'id'   => 'gemini-2.5-pro-preview-05-06',
+					'name' => 'Gemini 2.5 Pro',
+				],
+				[
+					'id'   => 'gemini-2.0-flash',
+					'name' => 'Gemini 2.0 Flash',
+				],
+				[
+					'id'   => 'gemini-2.0-flash-lite',
+					'name' => 'Gemini 2.0 Flash Lite',
+				],
+				[
+					'id'   => 'gemini-1.5-pro',
+					'name' => 'Gemini 1.5 Pro',
+				],
+				[
+					'id'   => 'gemini-1.5-flash',
+					'name' => 'Gemini 1.5 Flash',
+				],
 			],
 		],
 	];
@@ -190,8 +241,8 @@ class Settings {
 	public static function get_configured_direct_providers(): array {
 		$result = [];
 		foreach ( self::DIRECT_PROVIDERS as $id => $meta ) {
-			$key          = self::get_provider_key( $id );
-			$result[]     = [
+			$key      = self::get_provider_key( $id );
+			$result[] = [
 				'id'         => $id,
 				'name'       => $meta['name'],
 				'configured' => '' !== $key,

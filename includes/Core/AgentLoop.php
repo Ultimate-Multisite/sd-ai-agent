@@ -549,13 +549,13 @@ class AgentLoop {
 				}
 
 				if ( ! empty( $msg_tool_calls ) ) {
-					$assistant_msg               = [
+					$assistant_msg            = [
 						'role'       => 'assistant',
 						'tool_calls' => $msg_tool_calls,
 					];
-					$text_content                = implode( '', $texts );
-					$assistant_msg['content']    = '' !== $text_content ? $text_content : null;
-					$messages[]                  = $assistant_msg;
+					$text_content             = implode( '', $texts );
+					$assistant_msg['content'] = '' !== $text_content ? $text_content : null;
+					$messages[]               = $assistant_msg;
 					foreach ( $fn_responses as $fr_msg ) {
 						$messages[] = $fr_msg;
 					}
@@ -765,7 +765,10 @@ class AgentLoop {
 					if ( method_exists( $part, 'getText' ) ) {
 						$t = $part->getText();
 						if ( is_string( $t ) && '' !== $t ) {
-							$content_blocks[] = [ 'type' => 'text', 'text' => $t ];
+							$content_blocks[] = [
+								'type' => 'text',
+								'text' => $t,
+							];
 						}
 					}
 

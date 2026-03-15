@@ -2464,7 +2464,10 @@ class RestController {
 
 		if ( empty( $api_key ) ) {
 			return new WP_REST_Response(
-				[ 'success' => false, 'error' => __( 'No API key provided or stored.', 'ai-agent' ) ],
+				[
+					'success' => false,
+					'error'   => __( 'No API key provided or stored.', 'ai-agent' ),
+				],
 				400
 			);
 		}
@@ -2473,12 +2476,21 @@ class RestController {
 
 		if ( is_wp_error( $result ) ) {
 			return new WP_REST_Response(
-				[ 'success' => false, 'error' => $result->get_error_message() ],
+				[
+					'success' => false,
+					'error'   => $result->get_error_message(),
+				],
 				200
 			);
 		}
 
-		return new WP_REST_Response( [ 'success' => true, 'model' => $result ], 200 );
+		return new WP_REST_Response(
+			[
+				'success' => true,
+				'model'   => $result,
+			],
+			200
+		);
 	}
 
 	/**
@@ -2499,11 +2511,18 @@ class RestController {
 							'Content-Type'  => 'application/json',
 							'Authorization' => 'Bearer ' . $api_key,
 						],
-						'body'    => wp_json_encode( [
-							'model'      => 'gpt-4o-mini',
-							'messages'   => [ [ 'role' => 'user', 'content' => 'Hi' ] ],
-							'max_tokens' => 5,
-						] ),
+						'body'    => wp_json_encode(
+							[
+								'model'      => 'gpt-4o-mini',
+								'messages'   => [
+									[
+										'role'    => 'user',
+										'content' => 'Hi',
+									],
+								],
+								'max_tokens' => 5,
+							]
+						),
 					]
 				);
 				if ( is_wp_error( $response ) ) {
@@ -2527,11 +2546,18 @@ class RestController {
 							'x-api-key'         => $api_key,
 							'anthropic-version' => '2023-06-01',
 						],
-						'body'    => wp_json_encode( [
-							'model'      => 'claude-haiku-3-20241022',
-							'max_tokens' => 5,
-							'messages'   => [ [ 'role' => 'user', 'content' => 'Hi' ] ],
-						] ),
+						'body'    => wp_json_encode(
+							[
+								'model'      => 'claude-haiku-3-20241022',
+								'max_tokens' => 5,
+								'messages'   => [
+									[
+										'role'    => 'user',
+										'content' => 'Hi',
+									],
+								],
+							]
+						),
 					]
 				);
 				if ( is_wp_error( $response ) ) {
@@ -2554,11 +2580,18 @@ class RestController {
 							'Content-Type'  => 'application/json',
 							'Authorization' => 'Bearer ' . $api_key,
 						],
-						'body'    => wp_json_encode( [
-							'model'      => 'gemini-2.0-flash-lite',
-							'messages'   => [ [ 'role' => 'user', 'content' => 'Hi' ] ],
-							'max_tokens' => 5,
-						] ),
+						'body'    => wp_json_encode(
+							[
+								'model'      => 'gemini-2.0-flash-lite',
+								'messages'   => [
+									[
+										'role'    => 'user',
+										'content' => 'Hi',
+									],
+								],
+								'max_tokens' => 5,
+							]
+						),
 					]
 				);
 				if ( is_wp_error( $response ) ) {
