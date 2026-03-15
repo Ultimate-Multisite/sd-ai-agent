@@ -82,6 +82,7 @@ export default function ImportDialog( { onClose } ) {
 					</button>
 				</div>
 				<div className="gratis-ai-agent-export-body">
+					{ /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */ }
 					<div
 						ref={ dropRef }
 						className="gratis-ai-agent-import-dropzone"

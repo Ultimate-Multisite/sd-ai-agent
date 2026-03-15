@@ -263,14 +263,24 @@ export default function SessionSidebar() {
 			<div className="gratis-ai-agent-session-list">
 				{ sessions.length === 0 && (
 					<div className="gratis-ai-agent-session-empty">
-						{ sessionFilter === 'trash'
-							? __( 'Trash is empty', 'gratis-ai-agent' )
-							: sessionFilter === 'archived'
-							? __(
+						{ ( () => {
+							if ( sessionFilter === 'trash' ) {
+								return __(
+									'Trash is empty',
+									'gratis-ai-agent'
+								);
+							}
+							if ( sessionFilter === 'archived' ) {
+								return __(
 									'No archived conversations',
 									'gratis-ai-agent'
-							  )
-							: __( 'No conversations yet', 'gratis-ai-agent' ) }
+								);
+							}
+							return __(
+								'No conversations yet',
+								'gratis-ai-agent'
+							);
+						} )() }
 					</div>
 				) }
 				{ sessions.map( ( session ) => (

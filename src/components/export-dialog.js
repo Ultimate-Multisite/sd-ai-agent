@@ -53,6 +53,7 @@ export default function ExportDialog( { sessionId, onClose } ) {
 					</button>
 				</div>
 				<div className="gratis-ai-agent-export-body">
+					{ /* eslint-disable jsx-a11y/label-has-associated-control */ }
 					<label className="gratis-ai-agent-export-option">
 						<input
 							type="radio"
@@ -89,6 +90,7 @@ export default function ExportDialog( { sessionId, onClose } ) {
 							</p>
 						</div>
 					</label>
+					{ /* eslint-enable jsx-a11y/label-has-associated-control */ }
 				</div>
 				<div className="gratis-ai-agent-export-footer">
 					<button

@@ -123,14 +123,14 @@ export default function KnowledgeManager() {
 
 	const handleDelete = useCallback(
 		async ( id ) => {
-			if (
-				! window.confirm(
-					__(
-						'Delete this collection and all its indexed data?',
-						'gratis-ai-agent'
-					)
+			// eslint-disable-next-line no-alert
+			const confirmed = window.confirm(
+				__(
+					'Delete this collection and all its indexed data?',
+					'gratis-ai-agent'
 				)
-			) {
+			);
+			if ( ! confirmed ) {
 				return;
 			}
 			try {
@@ -472,111 +472,123 @@ export default function KnowledgeManager() {
 								<h4 style={ { margin: '0 0 8px 0' } }>
 									{ __( 'Sources', 'gratis-ai-agent' ) }
 								</h4>
-								{ ! sources[ col.id ] ? (
-									<Spinner />
-								) : sources[ col.id ].length === 0 ? (
-									<p className="description">
-										{ __(
-											'No sources indexed yet.',
-											'gratis-ai-agent'
-										) }
-									</p>
-								) : (
-									<table
-										className="widefat striped"
-										style={ { marginTop: '4px' } }
-									>
-										<thead>
-											<tr>
-												<th>
-													{ __(
-														'Title',
-														'gratis-ai-agent'
-													) }
-												</th>
-												<th>
-													{ __(
-														'Type',
-														'gratis-ai-agent'
-													) }
-												</th>
-												<th>
-													{ __(
-														'Status',
-														'gratis-ai-agent'
-													) }
-												</th>
-												<th>
-													{ __(
-														'Chunks',
-														'gratis-ai-agent'
-													) }
-												</th>
-												<th></th>
-											</tr>
-										</thead>
-										<tbody>
-											{ sources[ col.id ].map(
-												( src ) => (
-													<tr key={ src.id }>
-														<td>
-															{ src.title ||
-																__(
-																	'(untitled)',
-																	'gratis-ai-agent'
-																) }
-														</td>
-														<td>
-															{ src.source_type }
-														</td>
-														<td>
-															<span
-																className={ `gratis-ai-agent-status-badge is-${ src.status }` }
-															>
-																{ src.status }
-															</span>
-															{ src.error_message && (
-																<span
-																	title={
-																		src.error_message
-																	}
-																	style={ {
-																		cursor: 'help',
-																		marginLeft:
-																			'4px',
-																	} }
-																>
-																	&#9888;
-																</span>
-															) }
-														</td>
-														<td>
-															{ src.chunk_count }
-														</td>
-														<td>
-															<Button
-																variant="tertiary"
-																isDestructive
-																isSmall
-																onClick={ () =>
-																	handleDeleteSource(
-																		src.id,
-																		col.id
-																	)
+								{ ( () => {
+									if ( ! sources[ col.id ] ) {
+										return <Spinner />;
+									}
+									if ( sources[ col.id ].length === 0 ) {
+										return (
+											<p className="description">
+												{ __(
+													'No sources indexed yet.',
+													'gratis-ai-agent'
+												) }
+											</p>
+										);
+									}
+									return (
+										<table
+											className="widefat striped"
+											style={ { marginTop: '4px' } }
+										>
+											<thead>
+												<tr>
+													<th>
+														{ __(
+															'Title',
+															'gratis-ai-agent'
+														) }
+													</th>
+													<th>
+														{ __(
+															'Type',
+															'gratis-ai-agent'
+														) }
+													</th>
+													<th>
+														{ __(
+															'Status',
+															'gratis-ai-agent'
+														) }
+													</th>
+													<th>
+														{ __(
+															'Chunks',
+															'gratis-ai-agent'
+														) }
+													</th>
+													<th></th>
+												</tr>
+											</thead>
+											<tbody>
+												{ sources[ col.id ].map(
+													( src ) => (
+														<tr key={ src.id }>
+															<td>
+																{ src.title ||
+																	__(
+																		'(untitled)',
+																		'gratis-ai-agent'
+																	) }
+															</td>
+															<td>
+																{
+																	src.source_type
 																}
-															>
-																{ __(
-																	'Remove',
-																	'gratis-ai-agent'
+															</td>
+															<td>
+																<span
+																	className={ `gratis-ai-agent-status-badge is-${ src.status }` }
+																>
+																	{
+																		src.status
+																	}
+																</span>
+																{ src.error_message && (
+																	<span
+																		title={
+																			src.error_message
+																		}
+																		style={ {
+																			cursor: 'help',
+																			marginLeft:
+																				'4px',
+																		} }
+																	>
+																		&#9888;
+																	</span>
 																) }
-															</Button>
-														</td>
-													</tr>
-												)
-											) }
-										</tbody>
-									</table>
-								) }
+															</td>
+															<td>
+																{
+																	src.chunk_count
+																}
+															</td>
+															<td>
+																<Button
+																	variant="tertiary"
+																	isDestructive
+																	isSmall
+																	onClick={ () =>
+																		handleDeleteSource(
+																			src.id,
+																			col.id
+																		)
+																	}
+																>
+																	{ __(
+																		'Remove',
+																		'gratis-ai-agent'
+																	) }
+																</Button>
+															</td>
+														</tr>
+													)
+												) }
+											</tbody>
+										</table>
+									);
+								} )() }
 							</div>
 						) }
 					</CardBody>

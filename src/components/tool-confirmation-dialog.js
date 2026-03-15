@@ -62,6 +62,7 @@ export default function ToolConfirmationDialog( {
 							) }
 						</div>
 					) ) }
+					{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 					<label className="gratis-ai-agent-tool-confirm-always">
 						<input
 							type="checkbox"

@@ -165,6 +165,10 @@
 .gratis-ai-agent-floating-panel .gratis-ai-agent-messages {
 	padding: 12px;
 	gap: 8px;
+	flex: 1;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
 }
 
 .gratis-ai-agent-floating-panel .gratis-ai-agent-bubble {
@@ -217,13 +221,7 @@
 	display: none;
 }
 
-/* Messages (needed for floating widget) */
-.gratis-ai-agent-floating-panel .gratis-ai-agent-messages {
-	flex: 1;
-	overflow-y: auto;
-	display: flex;
-	flex-direction: column;
-}
+
 
 /* Bubbles (needed for floating widget) */
 .gratis-ai-agent-floating-panel .gratis-ai-agent-user {

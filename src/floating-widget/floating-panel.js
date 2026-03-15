@@ -47,6 +47,7 @@ export default function FloatingPanel() {
 
 	return (
 		<div className={ classNames } style={ panelStyle }>
+			{ /* eslint-disable-next-line jsx-a11y/no-static-element-interactions */ }
 			<div
 				className="gratis-ai-agent-floating-titlebar"
 				onMouseDown={ handleMouseDown }

@@ -126,11 +126,10 @@ export default function ToolProfilesManager() {
 	const handleDelete = useCallback(
 		async ( slug ) => {
 			// eslint-disable-next-line no-alert
-			if (
-				window.confirm(
-					__( 'Delete this profile?', 'gratis-ai-agent' )
-				)
-			) {
+			const confirmed = window.confirm(
+				__( 'Delete this profile?', 'gratis-ai-agent' )
+			);
+			if ( confirmed ) {
 				await apiFetch( {
 					path: `/gratis-ai-agent/v1/tool-profiles/${ slug }`,
 					method: 'DELETE',
@@ -237,11 +236,12 @@ export default function ToolProfilesManager() {
 						value={ formToolNames }
 						onChange={ setFormToolNames }
 						rows={ 8 }
-						help={ __(
-							'Enter tool name prefixes, one per line. Use partial names for matching (e.g., "wp_read" matches all read tools). Available tools: ' +
-								abilities.map( ( a ) => a.name ).join( ', ' ),
-							'gratis-ai-agent'
-						) }
+						help={
+							__(
+								'Enter tool name prefixes, one per line. Use partial names for matching (e.g., "wp_read" matches all read tools). Available tools:',
+								'gratis-ai-agent'
+							) + abilities.map( ( a ) => a.name ).join( ', ' )
+						}
 					/>
 					<div className="gratis-ai-agent-skill-form-actions">
 						<Button

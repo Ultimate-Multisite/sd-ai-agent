@@ -147,11 +147,10 @@ export default function CustomToolsManager() {
 	const handleDelete = useCallback(
 		async ( id ) => {
 			// eslint-disable-next-line no-alert
-			if (
-				window.confirm(
-					__( 'Delete this custom tool?', 'gratis-ai-agent' )
-				)
-			) {
+			const confirmed = window.confirm(
+				__( 'Delete this custom tool?', 'gratis-ai-agent' )
+			);
+			if ( confirmed ) {
 				await apiFetch( {
 					path: `/gratis-ai-agent/v1/custom-tools/${ id }`,
 					method: 'DELETE',

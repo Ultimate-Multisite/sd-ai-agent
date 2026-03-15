@@ -20,7 +20,7 @@ import DebugPanel from './debug-panel';
  * Suggestions are lines starting with `[suggestion]`.
  *
  * @param {string} text The full response text.
- * @return {{ cleanText: string, suggestions: string[] }}
+ * @return {{ cleanText: string, suggestions: string[] }} Parsed text and suggestion chips.
  */
 function parseSuggestions( text ) {
 	const lines = text.split( '\n' );

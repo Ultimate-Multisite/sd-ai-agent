@@ -3,12 +3,7 @@
  */
 import { useEffect, useState, useCallback } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
-import {
-	Button,
-	TextControl,
-	TextareaControl,
-	SelectControl,
-} from '@wordpress/components';
+import { Button, TextareaControl, SelectControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { trash, pencil, plus } from '@wordpress/icons';
 
@@ -81,9 +76,10 @@ export default function MemoryManager() {
 	const handleDelete = useCallback(
 		async ( id ) => {
 			// eslint-disable-next-line no-alert
-			if (
-				window.confirm( __( 'Delete this memory?', 'gratis-ai-agent' ) )
-			) {
+			const confirmed = window.confirm(
+				__( 'Delete this memory?', 'gratis-ai-agent' )
+			);
+			if ( confirmed ) {
 				await deleteMemory( id );
 			}
 		},

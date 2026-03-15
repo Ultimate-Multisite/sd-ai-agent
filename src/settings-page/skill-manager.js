@@ -95,9 +95,10 @@ export default function SkillManager() {
 	const handleDelete = useCallback(
 		async ( id ) => {
 			// eslint-disable-next-line no-alert
-			if (
-				window.confirm( __( 'Delete this skill?', 'gratis-ai-agent' ) )
-			) {
+			const confirmed = window.confirm(
+				__( 'Delete this skill?', 'gratis-ai-agent' )
+			);
+			if ( confirmed ) {
 				await deleteSkill( id );
 			}
 		},
@@ -107,14 +108,13 @@ export default function SkillManager() {
 	const handleReset = useCallback(
 		async ( id ) => {
 			// eslint-disable-next-line no-alert
-			if (
-				window.confirm(
-					__(
-						'Reset this skill to its default content?',
-						'gratis-ai-agent'
-					)
+			const confirmed = window.confirm(
+				__(
+					'Reset this skill to its default content?',
+					'gratis-ai-agent'
 				)
-			) {
+			);
+			if ( confirmed ) {
 				await resetSkill( id );
 			}
 		},

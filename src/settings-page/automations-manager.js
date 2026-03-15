@@ -12,7 +12,7 @@ import {
 	Spinner,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { trash, pencil, plus, backup } from '@wordpress/icons';
+import { trash, pencil, plus } from '@wordpress/icons';
 import apiFetch from '@wordpress/api-fetch';
 
 const SCHEDULE_OPTIONS = [
@@ -132,11 +132,10 @@ export default function AutomationsManager() {
 	const handleDelete = useCallback(
 		async ( id ) => {
 			// eslint-disable-next-line no-alert
-			if (
-				window.confirm(
-					__( 'Delete this automation?', 'gratis-ai-agent' )
-				)
-			) {
+			const confirmed = window.confirm(
+				__( 'Delete this automation?', 'gratis-ai-agent' )
+			);
+			if ( confirmed ) {
 				await apiFetch( {
 					path: `/gratis-ai-agent/v1/automations/${ id }`,
 					method: 'DELETE',

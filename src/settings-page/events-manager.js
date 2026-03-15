@@ -135,11 +135,10 @@ export default function EventsManager() {
 	const handleDelete = useCallback(
 		async ( id ) => {
 			// eslint-disable-next-line no-alert
-			if (
-				window.confirm(
-					__( 'Delete this event automation?', 'gratis-ai-agent' )
-				)
-			) {
+			const confirmed = window.confirm(
+				__( 'Delete this event automation?', 'gratis-ai-agent' )
+			);
+			if ( confirmed ) {
 				await apiFetch( {
 					path: `/gratis-ai-agent/v1/event-automations/${ id }`,
 					method: 'DELETE',

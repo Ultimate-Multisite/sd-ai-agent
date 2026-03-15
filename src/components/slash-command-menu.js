@@ -128,7 +128,15 @@ export default function SlashCommandMenu( {
 					className={ `gratis-ai-agent-slash-item ${
 						i === selectedIndex ? 'is-selected' : ''
 					}` }
+					role="option"
+					aria-selected={ i === selectedIndex }
+					tabIndex={ 0 }
 					onClick={ () => onSelect( cmd ) }
+					onKeyDown={ ( e ) => {
+						if ( e.key === 'Enter' || e.key === ' ' ) {
+							onSelect( cmd );
+						}
+					} }
 					onMouseEnter={ () => setSelectedIndex( i ) }
 				>
 					<span className="gratis-ai-agent-slash-name">

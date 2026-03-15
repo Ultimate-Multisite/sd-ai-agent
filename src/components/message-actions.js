@@ -53,6 +53,7 @@ export default function MessageActions( { message, index } ) {
 					value={ editText }
 					onChange={ ( e ) => setEditText( e.target.value ) }
 					rows={ 3 }
+					// eslint-disable-next-line jsx-a11y/no-autofocus
 					autoFocus
 					onKeyDown={ ( e ) => {
 						if ( e.key === 'Enter' && ! e.shiftKey ) {
