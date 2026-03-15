@@ -61,6 +61,14 @@ class StockImageAbilities {
 					],
 					'required'   => [ 'keyword' ],
 				],
+				'meta'                => [
+					'annotations'  => [
+						'readonly'    => false,
+						'idempotent'  => false,
+						'destructive' => false,
+					],
+					'show_in_rest' => true,
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_import' ],
 				'permission_callback' => function () {
 					return current_user_can( 'upload_files' );

@@ -46,6 +46,13 @@ class MarketingAbilities {
 					],
 					'required'   => [ 'url' ],
 				],
+				'meta'                => [
+					'annotations'  => [
+						'readonly'   => true,
+						'idempotent' => true,
+					],
+					'show_in_rest' => true,
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_fetch_url' ],
 				'permission_callback' => function () {
 					return current_user_can( 'edit_posts' );
@@ -68,6 +75,13 @@ class MarketingAbilities {
 						],
 					],
 					'required'   => [ 'url' ],
+				],
+				'meta'                => [
+					'annotations'  => [
+						'readonly'   => true,
+						'idempotent' => true,
+					],
+					'show_in_rest' => true,
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_analyze_headers' ],
 				'permission_callback' => function () {

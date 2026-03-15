@@ -50,6 +50,13 @@ class SeoAbilities {
 					],
 					'required'   => [ 'url' ],
 				],
+				'meta'                => [
+					'annotations'  => [
+						'readonly'   => true,
+						'idempotent' => true,
+					],
+					'show_in_rest' => true,
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_audit_url' ],
 				'permission_callback' => function () {
 					return current_user_can( 'edit_posts' );
@@ -80,6 +87,13 @@ class SeoAbilities {
 						],
 					],
 					'required'   => [ 'post_id' ],
+				],
+				'meta'                => [
+					'annotations'  => [
+						'readonly'   => true,
+						'idempotent' => true,
+					],
+					'show_in_rest' => true,
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_analyze_content' ],
 				'permission_callback' => function () {
