@@ -28,7 +28,13 @@ class NavigationAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_navigate( array $input = [] ) {
-		$ability = new NavigateAbility( 'gratis-ai-agent/navigate' );
+		$ability = new NavigateAbility(
+			'gratis-ai-agent/navigate',
+			[
+				'label'       => __( 'Navigate', 'gratis-ai-agent' ),
+				'description' => __( 'Navigate the user to a URL within the WordPress site. The URL must be within the current site. This will reload the page.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -39,7 +45,13 @@ class NavigationAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_get_page_html( array $input = [] ) {
-		$ability = new GetPageHtmlAbility( 'gratis-ai-agent/get-page-html' );
+		$ability = new GetPageHtmlAbility(
+			'gratis-ai-agent/get-page-html',
+			[
+				'label'       => __( 'Get Page HTML', 'gratis-ai-agent' ),
+				'description' => __( 'Get the HTML content of elements on the current page the user is viewing. Use CSS selectors to query specific elements. Returns the outer HTML of matched elements.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 

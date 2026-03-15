@@ -28,7 +28,13 @@ class WordPressAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_get_plugins( array $input = [] ) {
-		$ability = new GetPluginsAbility( 'gratis-ai-agent/get-plugins' );
+		$ability = new GetPluginsAbility(
+			'gratis-ai-agent/get-plugins',
+			[
+				'label'       => __( 'List Plugins', 'gratis-ai-agent' ),
+				'description' => __( 'List all installed WordPress plugins with their status (active/inactive).', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -39,7 +45,13 @@ class WordPressAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_get_themes( array $input = [] ) {
-		$ability = new GetThemesAbility( 'gratis-ai-agent/get-themes' );
+		$ability = new GetThemesAbility(
+			'gratis-ai-agent/get-themes',
+			[
+				'label'       => __( 'List Themes', 'gratis-ai-agent' ),
+				'description' => __( 'List all installed WordPress themes with their status.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -50,7 +62,13 @@ class WordPressAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_install_plugin( array $input = [] ) {
-		$ability = new InstallPluginAbility( 'gratis-ai-agent/install-plugin' );
+		$ability = new InstallPluginAbility(
+			'gratis-ai-agent/install-plugin',
+			[
+				'label'       => __( 'Install Plugin', 'gratis-ai-agent' ),
+				'description' => __( 'Install a plugin from the WordPress.org plugin directory by slug. Optionally activate after installation.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -61,7 +79,13 @@ class WordPressAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_run_php( array $input = [] ) {
-		$ability = new RunPhpAbility( 'gratis-ai-agent/run-php' );
+		$ability = new RunPhpAbility(
+			'gratis-ai-agent/run-php',
+			[
+				'label'       => __( 'Run PHP', 'gratis-ai-agent' ),
+				'description' => __( 'Execute PHP code in the WordPress environment. Use this to call WordPress functions like wp_insert_post(), get_option(), WP_Query, etc. The code runs with full WordPress context.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 

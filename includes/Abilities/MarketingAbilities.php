@@ -26,7 +26,13 @@ class MarketingAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_fetch_url( array $input = [] ) {
-		$ability = new FetchUrlAbility( 'gratis-ai-agent/fetch-url' );
+		$ability = new FetchUrlAbility(
+			'gratis-ai-agent/fetch-url',
+			[
+				'label'       => __( 'Fetch URL', 'gratis-ai-agent' ),
+				'description' => __( 'Fetch a URL and return HTTP status, headers, page title, meta description, and head content. Useful for competitive analysis and tech stack discovery.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -37,7 +43,13 @@ class MarketingAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_analyze_headers( array $input = [] ) {
-		$ability = new AnalyzeHeadersAbility( 'gratis-ai-agent/analyze-headers' );
+		$ability = new AnalyzeHeadersAbility(
+			'gratis-ai-agent/analyze-headers',
+			[
+				'label'       => __( 'Analyze HTTP Headers', 'gratis-ai-agent' ),
+				'description' => __( 'Analyze a URL\'s HTTP security and performance headers: HSTS, CSP, X-Frame-Options, caching, CDN indicators.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 

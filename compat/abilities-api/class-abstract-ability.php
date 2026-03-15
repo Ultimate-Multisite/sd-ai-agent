@@ -69,6 +69,30 @@ abstract class GratisAiAgent_Abstract_Ability extends WP_Ability {
 	}
 
 	/**
+	 * Prepares and validates the ability properties.
+	 *
+	 * Overrides WP_Ability::prepare_properties() to inject label and description
+	 * from the abstract methods when they are not provided via $args. This supports
+	 * direct instantiation (e.g. in tests) without passing $properties to the
+	 * constructor, and ensures compatibility with WordPress 6.9.x which always
+	 * requires label and description to be non-empty strings.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string,mixed> $args The ability args array.
+	 * @return array<string,mixed> The validated and prepared properties.
+	 */
+	protected function prepare_properties( array $args ): array {
+		if ( empty( $args['label'] ) ) {
+			$args['label'] = $this->label();
+		}
+		if ( empty( $args['description'] ) ) {
+			$args['description'] = $this->description();
+		}
+		return parent::prepare_properties( $args );
+	}
+
+	/**
 	 * Returns the human-readable label for this ability.
 	 *
 	 * Used when the ability is instantiated directly (e.g. in tests) without

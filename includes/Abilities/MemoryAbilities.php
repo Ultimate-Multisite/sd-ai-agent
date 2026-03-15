@@ -27,7 +27,13 @@ class MemoryAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_memory_save( array $input = [] ) {
-		$ability = new MemorySaveAbility( 'gratis-ai-agent/memory-save' );
+		$ability = new MemorySaveAbility(
+			'gratis-ai-agent/memory-save',
+			[
+				'label'       => __( 'Save Memory', 'gratis-ai-agent' ),
+				'description' => __( 'Save a piece of information to persistent memory. Use this to remember facts, preferences, or context for future conversations.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -38,7 +44,13 @@ class MemoryAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_memory_list( array $input = [] ) {
-		$ability = new MemoryListAbility( 'gratis-ai-agent/memory-list' );
+		$ability = new MemoryListAbility(
+			'gratis-ai-agent/memory-list',
+			[
+				'label'       => __( 'List Memories', 'gratis-ai-agent' ),
+				'description' => __( 'List all stored memories, grouped by category.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -49,7 +61,13 @@ class MemoryAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_memory_delete( array $input = [] ) {
-		$ability = new MemoryDeleteAbility( 'gratis-ai-agent/memory-delete' );
+		$ability = new MemoryDeleteAbility(
+			'gratis-ai-agent/memory-delete',
+			[
+				'label'       => __( 'Delete Memory', 'gratis-ai-agent' ),
+				'description' => __( 'Delete a specific memory by its ID.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 

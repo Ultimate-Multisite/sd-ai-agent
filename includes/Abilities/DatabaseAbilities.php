@@ -29,7 +29,13 @@ class DatabaseAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_db_query( array $input = [] ) {
-		$ability = new DatabaseQueryAbility( 'gratis-ai-agent/db-query' );
+		$ability = new DatabaseQueryAbility(
+			'gratis-ai-agent/db-query',
+			[
+				'label'       => __( 'Database Query', 'gratis-ai-agent' ),
+				'description' => __( 'Execute a SELECT query on the WordPress database. Only SELECT queries are allowed. Use {prefix} as placeholder for the table prefix.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 

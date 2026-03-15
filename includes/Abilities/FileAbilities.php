@@ -31,7 +31,13 @@ class FileAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_read_file( array $input = [] ) {
-		$ability = new FileReadAbility( 'gratis-ai-agent/file-read' );
+		$ability = new FileReadAbility(
+			'gratis-ai-agent/file-read',
+			[
+				'label'       => __( 'Read File', 'gratis-ai-agent' ),
+				'description' => __( 'Read the contents of a file within the wp-content directory.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -42,7 +48,13 @@ class FileAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_write_file( array $input = [] ) {
-		$ability = new FileWriteAbility( 'gratis-ai-agent/file-write' );
+		$ability = new FileWriteAbility(
+			'gratis-ai-agent/file-write',
+			[
+				'label'       => __( 'Write File', 'gratis-ai-agent' ),
+				'description' => __( 'Write or overwrite a file within wp-content. Use for creating NEW files. For modifying existing files, use ai-agent/file-edit instead.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -53,7 +65,13 @@ class FileAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_edit_file( array $input = [] ) {
-		$ability = new FileEditAbility( 'gratis-ai-agent/file-edit' );
+		$ability = new FileEditAbility(
+			'gratis-ai-agent/file-edit',
+			[
+				'label'       => __( 'Edit File', 'gratis-ai-agent' ),
+				'description' => __( 'Edit an existing file by applying search and replace operations. More efficient than write for targeted changes. Each edit finds a unique string and replaces it.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -64,7 +82,13 @@ class FileAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_delete_file( array $input = [] ) {
-		$ability = new FileDeleteAbility( 'gratis-ai-agent/file-delete' );
+		$ability = new FileDeleteAbility(
+			'gratis-ai-agent/file-delete',
+			[
+				'label'       => __( 'Delete File', 'gratis-ai-agent' ),
+				'description' => __( 'Delete a file within the wp-content directory.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -75,7 +99,13 @@ class FileAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_list_directory( array $input = [] ) {
-		$ability = new FileListAbility( 'gratis-ai-agent/file-list' );
+		$ability = new FileListAbility(
+			'gratis-ai-agent/file-list',
+			[
+				'label'       => __( 'List Directory', 'gratis-ai-agent' ),
+				'description' => __( 'List files and directories within a directory in wp-content.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -86,7 +116,13 @@ class FileAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_search_files( array $input = [] ) {
-		$ability = new FileSearchAbility( 'gratis-ai-agent/file-search' );
+		$ability = new FileSearchAbility(
+			'gratis-ai-agent/file-search',
+			[
+				'label'       => __( 'Search Files', 'gratis-ai-agent' ),
+				'description' => __( 'Search for files matching a glob pattern within wp-content.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -97,7 +133,13 @@ class FileAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_search_content( array $input = [] ) {
-		$ability = new ContentSearchAbility( 'gratis-ai-agent/content-search' );
+		$ability = new ContentSearchAbility(
+			'gratis-ai-agent/content-search',
+			[
+				'label'       => __( 'Search Content', 'gratis-ai-agent' ),
+				'description' => __( 'Search for text content within files in wp-content.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 

@@ -24,7 +24,13 @@ class ContentAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_content_analyze( array $input = [] ) {
-		$ability = new ContentAnalyzeAbility( 'gratis-ai-agent/content-analyze' );
+		$ability = new ContentAnalyzeAbility(
+			'gratis-ai-agent/content-analyze',
+			[
+				'label'       => __( 'Analyze Content Strategy', 'gratis-ai-agent' ),
+				'description' => __( 'Analyze content strategy: publishing frequency, word counts, category distribution, missing featured images, and content gaps.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -35,7 +41,13 @@ class ContentAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_performance_report( array $input = [] ) {
-		$ability = new ContentPerformanceReportAbility( 'gratis-ai-agent/content-performance-report' );
+		$ability = new ContentPerformanceReportAbility(
+			'gratis-ai-agent/content-performance-report',
+			[
+				'label'       => __( 'Content Performance Report', 'gratis-ai-agent' ),
+				'description' => __( 'Generate a content performance summary for a given time period: posts published, category breakdown, word counts, drafts pending.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 

@@ -29,7 +29,13 @@ class StockImageAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_import( array $input = [] ) {
-		$ability = new ImportStockImageAbility( 'gratis-ai-agent/import-stock-image' );
+		$ability = new ImportStockImageAbility(
+			'gratis-ai-agent/import-stock-image',
+			[
+				'label'       => __( 'Import Stock Image', 'gratis-ai-agent' ),
+				'description' => __( 'Import a stock image into the media library by keyword. Returns attachment ID and URL. Use site_url to target a subsite.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 

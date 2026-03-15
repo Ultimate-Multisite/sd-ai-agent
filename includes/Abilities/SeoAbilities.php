@@ -26,7 +26,13 @@ class SeoAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_audit_url( array $input = [] ) {
-		$ability = new SeoAuditUrlAbility( 'gratis-ai-agent/seo-audit-url' );
+		$ability = new SeoAuditUrlAbility(
+			'gratis-ai-agent/seo-audit-url',
+			[
+				'label'       => __( 'SEO Audit URL', 'gratis-ai-agent' ),
+				'description' => __( 'Fetch a URL and analyze its SEO elements: title, meta description, headings, images, Open Graph, structured data, and common issues.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -37,7 +43,13 @@ class SeoAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_analyze_content( array $input = [] ) {
-		$ability = new SeoAnalyzeContentAbility( 'gratis-ai-agent/seo-analyze-content' );
+		$ability = new SeoAnalyzeContentAbility(
+			'gratis-ai-agent/seo-analyze-content',
+			[
+				'label'       => __( 'SEO Analyze Content', 'gratis-ai-agent' ),
+				'description' => __( 'Analyze a post\'s content for SEO quality: keyword density, title length, heading structure, links, readability, and meta description.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 

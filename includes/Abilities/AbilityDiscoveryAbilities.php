@@ -39,7 +39,13 @@ class AbilityDiscoveryAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_list_abilities( array $input = [] ) {
-		$ability = new DiscoveryListAbility( 'gratis-ai-agent/discovery-list' );
+		$ability = new DiscoveryListAbility(
+			'gratis-ai-agent/discovery-list',
+			[
+				'label'       => __( 'List Abilities', 'gratis-ai-agent' ),
+				'description' => __( 'List all available WordPress abilities (from plugins, themes, and core). Returns ability names and brief descriptions.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -50,7 +56,13 @@ class AbilityDiscoveryAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_get_ability( array $input = [] ) {
-		$ability = new DiscoveryGetAbility( 'gratis-ai-agent/discovery-get' );
+		$ability = new DiscoveryGetAbility(
+			'gratis-ai-agent/discovery-get',
+			[
+				'label'       => __( 'Get Ability', 'gratis-ai-agent' ),
+				'description' => __( 'Get full details of a specific WordPress ability including its parameters schema, permissions, and usage information. Call this before execute_ability to understand what arguments are needed.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -61,7 +73,13 @@ class AbilityDiscoveryAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_execute_ability( array $input = [] ) {
-		$ability = new DiscoveryExecuteAbility( 'gratis-ai-agent/discovery-execute' );
+		$ability = new DiscoveryExecuteAbility(
+			'gratis-ai-agent/discovery-execute',
+			[
+				'label'       => __( 'Execute Ability', 'gratis-ai-agent' ),
+				'description' => __( 'Execute a WordPress ability with the given arguments. Use get_ability first to understand required parameters.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 

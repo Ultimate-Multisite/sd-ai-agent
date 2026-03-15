@@ -27,7 +27,13 @@ class SkillAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_skill_load( array $input = [] ) {
-		$ability = new SkillLoadAbility( 'gratis-ai-agent/skill-load' );
+		$ability = new SkillLoadAbility(
+			'gratis-ai-agent/skill-load',
+			[
+				'label'       => __( 'Load Skill', 'gratis-ai-agent' ),
+				'description' => __( 'Load the full instructions for a specific skill guide by its slug.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
@@ -38,7 +44,13 @@ class SkillAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_skill_list( array $input = [] ) {
-		$ability = new SkillListAbility( 'gratis-ai-agent/skill-list' );
+		$ability = new SkillListAbility(
+			'gratis-ai-agent/skill-list',
+			[
+				'label'       => __( 'List Skills', 'gratis-ai-agent' ),
+				'description' => __( 'List all available skill guides with their slugs, names, and descriptions.', 'gratis-ai-agent' ),
+			]
+		);
 		return $ability->execute( $input );
 	}
 
