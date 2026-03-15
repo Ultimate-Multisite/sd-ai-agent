@@ -327,6 +327,12 @@ abstract class AbstractBlockAbility extends AbstractAbility {
 
 	/**
 	 * Build a simple block array (no inner blocks in innerContent).
+	 *
+	 * @param string              $block_name   Block name.
+	 * @param array<string,mixed> $attrs        Block attributes.
+	 * @param array<int,mixed>    $inner_blocks Inner blocks array.
+	 * @param string              $html         Block HTML.
+	 * @return array<string,mixed> Block array.
 	 */
 	protected function build_block( string $block_name, array $attrs, array $inner_blocks, string $html ): array {
 		return [
@@ -340,6 +346,13 @@ abstract class AbstractBlockAbility extends AbstractAbility {
 
 	/**
 	 * Build a container block with inner block placeholders in innerContent.
+	 *
+	 * @param string              $block_name   Block name.
+	 * @param array<string,mixed> $attrs        Block attributes.
+	 * @param array<int,mixed>    $inner_blocks Inner blocks array.
+	 * @param string              $tag          HTML tag.
+	 * @param string              $class        CSS class.
+	 * @return array<string,mixed> Block array.
 	 */
 	protected function build_container( string $block_name, array $attrs, array $inner_blocks, string $tag, string $class ): array {
 		$open  = '<' . $tag . ' class="' . esc_attr( $class ) . '">';
@@ -367,6 +380,12 @@ abstract class AbstractBlockAbility extends AbstractAbility {
 
 	/**
 	 * Build a container for unknown blocks with inner block placeholders.
+	 *
+	 * @param string              $block_name   Block name.
+	 * @param array<string,mixed> $attrs        Block attributes.
+	 * @param array<int,mixed>    $inner_blocks Inner blocks array.
+	 * @param string              $wrapper_html Wrapper HTML.
+	 * @return array<string,mixed> Block array.
 	 */
 	protected function build_container_raw( string $block_name, array $attrs, array $inner_blocks, string $wrapper_html ): array {
 		$inner_content = [];
@@ -393,6 +412,8 @@ abstract class AbstractBlockAbility extends AbstractAbility {
 
 	/**
 	 * Count inner blocks recursively.
+	 *
+	 * @param array<string,mixed> $block Block array.
 	 */
 	protected function count_inner_blocks( array $block ): int {
 		$count = 0;
@@ -405,6 +426,9 @@ abstract class AbstractBlockAbility extends AbstractAbility {
 
 	/**
 	 * Clean up parsed blocks from parse_blocks(), removing empty freeform blocks.
+	 *
+	 * @param array<int,mixed> $blocks Parsed blocks array.
+	 * @return array<int,mixed> Cleaned blocks array.
 	 */
 	protected function clean_parsed_blocks( array $blocks ): array {
 		$cleaned = [];

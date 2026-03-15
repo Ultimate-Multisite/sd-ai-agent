@@ -180,4 +180,21 @@ abstract class GratisAiAgent_Abstract_Ability extends WP_Ability {
 	 * @return array<string, mixed> Meta array.
 	 */
 	abstract protected function meta(): array;
+
+	/**
+	 * Executes the ability callback directly, bypassing permission checks.
+	 *
+	 * Used by static proxy methods for backwards-compatible test access.
+	 * Unlike execute(), this method does not check permissions, validate input
+	 * against the schema, or fire WordPress hooks. It calls execute_callback()
+	 * directly, matching the behaviour of the old static method approach.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param mixed $input The input data.
+	 * @return mixed|\WP_Error The result of the ability execution, or WP_Error on failure.
+	 */
+	public function run( $input = null ) {
+		return $this->execute_callback( $input );
+	}
 }
