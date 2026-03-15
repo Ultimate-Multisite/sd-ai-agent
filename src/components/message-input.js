@@ -70,7 +70,7 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 			const fact = trimmed.slice( 10 ).trim();
 			if ( fact ) {
 				apiFetch( {
-					path: '/gratis-ai-agent/v1/memory',
+					path: '/ai-agent/v1/memory',
 					method: 'POST',
 					data: { category: 'general', content: fact },
 				} )
@@ -78,7 +78,7 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 						if ( onSlashCommand ) {
 							onSlashCommand(
 								'notice',
-								__( 'Memory saved.', 'gratis-ai-agent' )
+								__( 'Memory saved.', 'ai-agent' )
 							);
 						}
 					} )
@@ -86,10 +86,7 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 						if ( onSlashCommand ) {
 							onSlashCommand(
 								'notice',
-								__(
-									'Failed to save memory.',
-									'gratis-ai-agent'
-								)
+								__( 'Failed to save memory.', 'ai-agent' )
 							);
 						}
 					} );
@@ -103,7 +100,7 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 			const topic = trimmed.slice( 8 ).trim();
 			if ( topic ) {
 				apiFetch( {
-					path: '/gratis-ai-agent/v1/memory/forget',
+					path: '/ai-agent/v1/memory/forget',
 					method: 'POST',
 					data: { topic },
 				} )
@@ -115,21 +112,12 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 								count > 0
 									? `${ count } ${
 											count === 1
-												? __(
-														'memory',
-														'gratis-ai-agent'
-												  )
-												: __(
-														'memories',
-														'gratis-ai-agent'
-												  )
-									  } ${ __(
-											'deleted.',
-											'gratis-ai-agent'
-									  ) }`
+												? __( 'memory', 'ai-agent' )
+												: __( 'memories', 'ai-agent' )
+									  } ${ __( 'deleted.', 'ai-agent' ) }`
 									: __(
 											'No matching memories found.',
-											'gratis-ai-agent'
+											'ai-agent'
 									  )
 							);
 						}
@@ -138,10 +126,7 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 						if ( onSlashCommand ) {
 							onSlashCommand(
 								'notice',
-								__(
-									'Failed to forget memories.',
-									'gratis-ai-agent'
-								)
+								__( 'Failed to forget memories.', 'ai-agent' )
 							);
 						}
 					} );
@@ -253,9 +238,7 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 
 	return (
 		<div
-			className={ `gratis-ai-agent-input-area ${
-				compact ? 'is-compact' : ''
-			}` }
+			className={ `ai-agent-input-area ${ compact ? 'is-compact' : '' }` }
 		>
 			{ showSlash && (
 				<SlashCommandMenu
@@ -266,11 +249,11 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 			) }
 			<textarea
 				ref={ textareaRef }
-				className="gratis-ai-agent-input"
+				className="ai-agent-input"
 				rows={ 1 }
 				placeholder={ __(
 					'Type a message or / for commands…',
-					'gratis-ai-agent'
+					'ai-agent'
 				) }
 				value={ text }
 				onChange={ ( e ) => setText( e.target.value ) }
@@ -281,18 +264,18 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 				<Button
 					variant="secondary"
 					onClick={ stopGeneration }
-					className="gratis-ai-agent-stop-btn"
-					label={ __( 'Stop', 'gratis-ai-agent' ) }
+					className="ai-agent-stop-btn"
+					label={ __( 'Stop', 'ai-agent' ) }
 				>
-					{ __( 'Stop', 'gratis-ai-agent' ) }
+					{ __( 'Stop', 'ai-agent' ) }
 				</Button>
 			) : (
 				<Button
 					variant="primary"
 					onClick={ handleSend }
 					disabled={ ! text.trim() }
-					className="gratis-ai-agent-send-btn"
-					label={ __( 'Send', 'gratis-ai-agent' ) }
+					className="ai-agent-send-btn"
+					label={ __( 'Send', 'ai-agent' ) }
 					icon={ <Icon icon={ arrowUp } /> }
 				/>
 			) }

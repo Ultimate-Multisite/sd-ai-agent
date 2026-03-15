@@ -12,11 +12,12 @@
 		"lint:php": "composer phpcs",
 		"lint:php:fix": "composer phpcbf",
 		"lint": "npm run lint:js && npm run lint:css && npm run lint:php",
+		"test:js": "wp-scripts test-unit-js",
 		"test:unit": "wp-scripts test-unit-js",
 		"test:e2e": "wp-scripts test-e2e",
 		"test:php": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/gratis-ai-agent && php vendor/bin/phpunit'",
 		"test:php:testdox": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/gratis-ai-agent && php vendor/bin/phpunit --testdox'",
-		"test:php:coverage": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/gratis-ai-agent && php vendor/bin/phpunit --coverage-text'",
+		"test:php:coverage": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/gratis-ai-agent && php -d pcov.enabled=1 vendor/bin/phpunit --coverage-text'",
 		"wp-env": "wp-env",
 		"wp-env:start": "wp-env start",
 		"wp-env:stop": "wp-env stop",
@@ -25,9 +26,10 @@
 	},
 	"devDependencies": {
 		"@wordpress/env": "^10.39.0",
-		"@wordpress/scripts": "^31.2.0",
+		"@wordpress/scripts": "^31.6.0",
 		"husky": "^9.1.7",
-		"lint-staged": "^16.4.0"
+		"lint-staged": "^16.4.0",
+		"react-dom": "^18.3.1"
 	},
 	"dependencies": {
 		"@wordpress/api-fetch": "^7.36.0",
@@ -46,7 +48,28 @@
 	},
 	"overrides": {
 		"react": "^18.3.1",
-		"react-dom": "^18.3.1"
+		"react-dom": "^18.3.1",
+		"@wp-playground/blueprints": {
+			"ajv": "^8.18.0"
+		},
+		"@wp-playground/cli": {
+			"ajv": "^8.18.0"
+		},
+		"@wp-playground/tools": {
+			"ajv": "^8.18.0"
+		},
+		"@typescript-eslint/typescript-estree": {
+			"minimatch": "^9.0.7"
+		},
+		"markdownlint-cli": {
+			"minimatch": "^3.1.5"
+		},
+		"flatted": "^3.4.0",
+		"immutable": "^5.1.5",
+		"serialize-javascript": "^7.0.4",
+		"svgo": "^3.3.3",
+		"webpack-dev-server": "^5.2.3",
+		"yauzl": "^3.2.1"
 	},
 	"lint-staged": {
 		"src/**/*.{js,jsx}": [

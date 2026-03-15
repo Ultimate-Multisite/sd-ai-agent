@@ -200,7 +200,7 @@ class SeoAuditUrlAbility extends AbstractAbility {
 	 * @param string $url         The audited URL.
 	 * @param int    $status_code HTTP status code.
 	 * @param string $html        Raw HTML.
-	 * @return array Structured SEO data.
+	 * @return array<string, mixed> Structured SEO data.
 	 */
 	private function parse_seo_elements( string $url, int $status_code, string $html ): array {
 		$result = [
@@ -452,7 +452,7 @@ class SeoAnalyzeContentAbility extends AbstractAbility {
 	 *
 	 * @param \WP_Post $post          The post to analyze.
 	 * @param string   $focus_keyword Optional focus keyword.
-	 * @return array Analysis data.
+	 * @return array<string, mixed> Analysis data.
 	 */
 	private function analyze_post_seo( \WP_Post $post, string $focus_keyword ): array {
 		$content    = $post->post_content;

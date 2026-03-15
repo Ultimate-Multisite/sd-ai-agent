@@ -5,3 +5,5 @@ vendor/
 screenshots/
 .aidevops.json
 .beads
+coverage.xml
+coverage-html/

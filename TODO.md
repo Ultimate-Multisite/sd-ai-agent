@@ -40,7 +40,7 @@
 
 ### Streaming Responses (P0)
 
-- [ ] t054 Add streaming response support via SSE @dave #feature ~8h logged:2026-03-15
+- [x] t054 Add streaming response support via SSE @dave #feature ~8h logged:2026-03-15 pr:#268 completed:2026-03-15
   - Custom REST endpoint with `Content-Type: text/event-stream`, output buffer bypass
   - Frontend EventSource API with reconnection; typing indicator; stop button
   - Fall back to current polling pattern if SSE fails
@@ -67,31 +67,31 @@
 
 ### Code Quality & Dev Environment (P1)
 
-- [ ] t006 Fix npm audit vulnerabilities (21 issues: 7 moderate, 14 high) @dave #security ~2h logged:2026-03-14
+- [x] t006 Fix npm audit vulnerabilities (21 issues: 7 moderate, 14 high) @dave #security ~2h logged:2026-03-14 pr:#262 completed:2026-03-15
 - [x] t007 Add pre-commit hooks via husky + lint-staged for PHP/JS/CSS @dave #quality ~2h logged:2026-03-14 pr:#84 completed:2026-03-15
 - [x] t008 Make CI workflows non-continue-on-error @dave #ci ~1h logged:2026-03-14 pr:#83 completed:2026-03-15
 - [x] t009 Tighten PHPCS: re-enable EscapeOutput, add nonce verification rules @dave #quality ~4h logged:2026-03-14 pr:#87 completed:2026-03-15
-- [ ] t010 Raise PHPStan level from 5 to 6, fix new errors @dave #quality ~4h logged:2026-03-14
+- [x] t010 Raise PHPStan level from 5 to 6, fix new errors @dave #quality ~4h logged:2026-03-14 pr:#266 completed:2026-03-15
 - [x] t011 Add PHPDoc blocks to all classes/methods @dave #quality ~8h logged:2026-03-14 pr:#89 completed:2026-03-15
 
 ### Testing Infrastructure (P1)
 
 - [x] t012 Set up wp-env based test runner for local and CI @dave #testing ~4h logged:2026-03-14 pr:#88 completed:2026-03-15
-- [ ] t013 Add integration tests for all Abilities classes @dave #testing ~8h logged:2026-03-14 blocked-by:t012
-- [ ] t014 Add integration tests for AgentLoop (mock AI responses) @dave #testing ~6h logged:2026-03-14 blocked-by:t012
-- [ ] t015 Add integration tests for RestController endpoints @dave #testing ~4h logged:2026-03-14 blocked-by:t012
-- [ ] t016 Add integration tests for Database schema and migrations @dave #testing ~3h logged:2026-03-14 blocked-by:t012
-- [ ] t017 Add integration tests for Automations system @dave #testing ~4h logged:2026-03-14 blocked-by:t012
-- [ ] t018 Add JS unit tests with @wordpress/scripts test-unit-js @dave #testing ~6h logged:2026-03-14
-- [ ] t019 Add code coverage reporting to CI @dave #ci ~2h logged:2026-03-14 blocked-by:t012
+- [x] t013 Add integration tests for all Abilities classes @dave #testing ~8h logged:2026-03-14 blocked-by:t012 pr:#276 completed:2026-03-15
+- [x] t014 Add integration tests for AgentLoop (mock AI responses) @dave #testing ~6h logged:2026-03-14 blocked-by:t012 pr:#274 completed:2026-03-15
+- [x] t015 Add integration tests for RestController endpoints @dave #testing ~4h logged:2026-03-14 blocked-by:t012 pr:#275 completed:2026-03-15
+- [x] t016 Add integration tests for Database schema and migrations @dave #testing ~3h logged:2026-03-14 blocked-by:t012 pr:#273 completed:2026-03-15
+- [x] t017 Add integration tests for Automations system @dave #testing ~4h logged:2026-03-14 blocked-by:t012 pr:#270 completed:2026-03-15
+- [x] t018 Add JS unit tests with @wordpress/scripts test-unit-js @dave #testing ~6h logged:2026-03-14 pr:#272 completed:2026-03-15
+- [x] t019 Add code coverage reporting to CI @dave #ci ~2h logged:2026-03-14 blocked-by:t012 pr:#264 completed:2026-03-15
 - [ ] t020 Add E2E tests with wp-env + Playwright for chat UI @dave #testing ~8h logged:2026-03-14 blocked-by:t012
 
 ### Ability Quality Improvements (P1)
 
-- [ ] t029 Standardize error handling: return WP_Error not arrays with 'error' key @dave #refactor ~4h logged:2026-03-14
+- [x] t029 Standardize error handling: return WP_Error not arrays with 'error' key @dave #refactor ~4h logged:2026-03-14 pr:#269 completed:2026-03-15
 - [ ] t030 Add output_schema to all abilities @dave #quality ~4h logged:2026-03-14
 - [ ] t031 Add meta.annotations (readonly, destructive, idempotent) to all abilities @dave #quality ~3h logged:2026-03-14
-- [ ] t032 Add meta.show_in_rest = true where appropriate @dave #quality ~2h logged:2026-03-14
+- [x] t032 Add meta.show_in_rest = true where appropriate @dave #quality ~2h logged:2026-03-14 pr:#298 completed:2026-03-15
 
 ### Git Change Tracking & Undo (P1)
 
@@ -119,18 +119,18 @@
 
 ### Architecture & Modernization (P2)
 
-- [ ] t046 Extract send_prompt_direct() to dedicated OpenAI proxy class @dave #refactor ~4h logged:2026-03-14
-- [ ] t047 Extract credential management to CredentialResolver class @dave #refactor ~3h logged:2026-03-14
-- [ ] t048 Replace hardcoded model fallback with configurable default @dave #refactor ~1h logged:2026-03-14
-- [ ] t049 Add proper dependency injection instead of static method calls @dave #refactor ~4h logged:2026-03-14
-- [ ] t050 Add event/hook system for ability execution (before/after hooks) @dave #refactor ~3h logged:2026-03-14
+- [x] t046 Extract send_prompt_direct() to dedicated OpenAI proxy class @dave #refactor ~4h logged:2026-03-14 ref=GH#239 pr:#281 pr:#281 completed:2026-03-15
+- [x] t047 Extract credential management to CredentialResolver class @dave #refactor ~3h logged:2026-03-14 pr:#280 completed:2026-03-15
+- [x] t048 Replace hardcoded model fallback with configurable default @dave #refactor ~1h logged:2026-03-14 pr:#278 completed:2026-03-15
+- [x] t049 Add proper dependency injection instead of static method calls @dave #refactor ~4h logged:2026-03-14 pr:#344 ref=GH#320 pr:#344 completed:2026-03-15
+- [x] t050 Add event/hook system for ability execution (before/after hooks) @dave #refactor ~3h logged:2026-03-14 pr:#337 completed:2026-03-15
 
 ### Frontend/UI Improvements (P2)
 
 - [ ] t051 Add screen-meta integration (chat in WP admin Help/Screen Options) @dave #ui ~4h logged:2026-03-14
 - [ ] t053 Add CodeMirror integration for code display in chat @dave #ui ~2h logged:2026-03-14
-- [ ] t055 Add proper error boundaries in React components @dave #quality ~3h logged:2026-03-14
-- [ ] t056 Add TypeScript types or JSDoc to JS codebase @dave #quality ~8h logged:2026-03-14
+- [x] t055 Add proper error boundaries in React components @dave #quality ~3h logged:2026-03-14 pr:#279 completed:2026-03-15
+- [x] t056 Add TypeScript types or JSDoc to JS codebase @dave #quality ~8h logged:2026-03-14 pr:#341 completed:2026-03-15
 
 ### Multi-User & Collaboration (P2)
 
@@ -158,12 +158,12 @@
 - [ ] t086 Google Search Console integration: SEO insights ability @dave #feature ~4h logged:2026-03-15
 - [ ] t087 Slack/Discord notification forwarding for automation results @dave #feature ~3h logged:2026-03-15
 - [ ] t088 Webhook API: trigger AI conversations from external systems @dave #feature ~4h logged:2026-03-15
-- [ ] t089 MCP server: expose abilities as MCP tools for external AI clients @dave #feature ~6h logged:2026-03-15
+- [x] t089 MCP server: expose abilities as MCP tools for external AI clients @dave #feature ~6h logged:2026-03-15 pr:#404 completed:2026-03-15
 
 ### Documentation & Packaging (P2)
 
 - [x] t057 Add CONTRIBUTING.md with dev setup, testing, and PR guidelines @dave #docs ~1h logged:2026-03-14 pr:#167 completed:2026-03-15
-- [ ] t058 Add WordPress Playground blueprint for instant demo @dave #devops ~2h logged:2026-03-14
+- [x] t058 Add WordPress Playground blueprint for instant demo @dave #devops ~2h logged:2026-03-14 pr:#403 ref=GH#400
 - [x] t059 Update .distignore for clean plugin packaging @dave #devops ~1h logged:2026-03-14 pr:#168 completed:2026-03-15
 
 ## Done

@@ -15,10 +15,12 @@ namespace GratisAiAgent\Core;
 use GratisAiAgent\Knowledge\Knowledge;
 use GratisAiAgent\Models\Memory;
 use GratisAiAgent\Models\Skill;
+use GratisAiAgent\REST\SseStreamer;
 use GratisAiAgent\Tools\ToolDiscovery;
 use GratisAiAgent\Tools\ToolProfiles;
 use WP_AI_Client_Ability_Function_Resolver;
 use WP_Error;
+use GratisAiAgent\Core\CredentialResolver;
 use WordPress\AiClient\Messages\DTO\Message;
 use WordPress\AiClient\Messages\DTO\MessagePart;
 use WordPress\AiClient\Messages\DTO\ModelMessage;
@@ -49,7 +51,7 @@ class AgentLoop {
 	/** @var string AI model ID. */
 	private $model_id;
 
-	/** @var array Logged tool call activity. */
+	/** @var list<array<string, mixed>> Logged tool call activity. */
 	private $tool_call_log = [];
 
 	/** @var float */
@@ -61,35 +63,43 @@ class AgentLoop {
 	/** @var int Number of loop iterations used. */
 	private $iterations_used = 0;
 
-	/** @var array Token usage accumulator. */
+	/** @var array<string, int> Token usage accumulator. */
 	private $token_usage = [
 		'prompt'     => 0,
 		'completion' => 0,
 	];
 
-	/** @var array Tool permission levels from settings. */
+	/** @var array<string, string> Tool permission levels from settings. */
 	private $tool_permissions = [];
 
-	/** @var array Page context from the widget. */
+	/** @var array<string, mixed> Page context from the widget. */
 	private $page_context = [];
 
 	/** @var WP_AI_Client_Ability_Function_Resolver|null */
 	private $ability_resolver = null;
 
+	/** @var SseStreamer|null Optional SSE streamer for token-by-token output. */
+	private ?SseStreamer $sse_streamer = null;
+
+	/** @var Settings Injected settings dependency. */
+	private $settings_service;
+
 	/**
-	 * @param string    $user_message The user's prompt.
-	 * @param string[]  $abilities    Ability names to enable (empty = all).
-	 * @param Message[] $history     Prior messages for multi-turn.
-	 * @param array     $options      Optional overrides: system_instruction, max_iterations, provider_id, model_id, temperature, max_output_tokens, page_context.
+	 * @param string               $user_message     The user's prompt.
+	 * @param string[]             $abilities         Ability names to enable (empty = all).
+	 * @param Message[]            $history           Prior messages for multi-turn.
+	 * @param array<string, mixed> $options           Optional overrides: system_instruction, max_iterations, provider_id, model_id, temperature, max_output_tokens, page_context.
+	 * @param Settings|null        $settings_service  Injected Settings service (uses static Settings::get() when null).
 	 */
-	public function __construct( string $user_message, array $abilities = [], array $history = [], array $options = [] ) {
-		$this->user_message = $user_message;
-		$this->abilities    = $abilities;
-		$this->history      = $history;
-		$this->page_context = $options['page_context'] ?? [];
+	public function __construct( string $user_message, array $abilities = [], array $history = [], array $options = [], ?Settings $settings_service = null ) {
+		$this->user_message     = $user_message;
+		$this->abilities        = $abilities;
+		$this->history          = $history;
+		$this->page_context     = $options['page_context'] ?? [];
+		$this->settings_service = $settings_service ?? new Settings();
 
 		// Merge explicit options with saved settings as fallbacks.
-		$settings = Settings::get();
+		$settings = $this->settings_service->get();
 
 		$this->provider_id       = $options['provider_id'] ?? ( $settings['default_provider'] ?: '' );
 		$this->model_id          = $options['model_id'] ?? ( $settings['default_model'] ?: '' );
@@ -106,12 +116,17 @@ class AgentLoop {
 			'prompt'     => 0,
 			'completion' => 0,
 		];
+
+		// Optional SSE streamer for token-by-token output.
+		if ( isset( $options['sse_streamer'] ) && $options['sse_streamer'] instanceof SseStreamer ) {
+			$this->sse_streamer = $options['sse_streamer'];
+		}
 	}
 
 	/**
 	 * Run the agentic loop.
 	 *
-	 * @return array{reply: string, history: array, tool_calls: array}|WP_Error
+	 * @return array{reply: string, history: list<mixed>, tool_calls: list<array<string, mixed>>}|WP_Error
 	 */
 	public function run() {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
@@ -135,7 +150,7 @@ class AgentLoop {
 	 *
 	 * @param bool $confirmed Whether the user approved the tool call.
 	 * @param int  $remaining_iterations Remaining loop iterations.
-	 * @return array|WP_Error
+	 * @return array<string, mixed>|WP_Error
 	 */
 	public function resume_after_confirmation( bool $confirmed, int $remaining_iterations ) {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
@@ -172,7 +187,7 @@ class AgentLoop {
 	 * Inner loop: send prompts, handle tool calls, repeat.
 	 *
 	 * @param int $iterations Max iterations remaining.
-	 * @return array|WP_Error
+	 * @return array<string, mixed>|WP_Error
 	 */
 	private function run_loop( int $iterations ) {
 		while ( $iterations > 0 ) {
@@ -180,7 +195,7 @@ class AgentLoop {
 			++$this->iterations_used;
 
 			// Smart conversation trimming before each LLM call.
-			$max_turns = (int) Settings::get( 'max_history_turns' );
+			$max_turns = (int) $this->settings_service->get( 'max_history_turns' );
 			if ( $max_turns > 0 ) {
 				$this->history = ConversationTrimmer::trim( $this->history, $max_turns );
 			}
@@ -221,6 +236,17 @@ class AgentLoop {
 
 			// Log tool calls and check for confirmation requirement.
 			$this->log_tool_calls( $assistant_message );
+
+			// Emit tool_call events via SSE if streaming.
+			if ( null !== $this->sse_streamer ) {
+				foreach ( $assistant_message->getParts() as $part ) {
+					$call = $part->getFunctionCall();
+					if ( $call ) {
+						$this->sse_streamer->send_tool_call( $call->getName(), $call->getArgs() ?: [] );
+					}
+				}
+			}
+
 			$confirm_needed = $this->get_tools_needing_confirmation( $assistant_message );
 
 			if ( ! empty( $confirm_needed ) ) {
@@ -240,6 +266,16 @@ class AgentLoop {
 			$response_message = $this->get_ability_resolver()->execute_abilities( $assistant_message );
 			$this->history[]  = $response_message;
 			$this->log_tool_responses( $response_message );
+
+			// Emit tool_result events via SSE if streaming.
+			if ( null !== $this->sse_streamer ) {
+				foreach ( $response_message->getParts() as $part ) {
+					$fr = $part->getFunctionResponse();
+					if ( $fr ) {
+						$this->sse_streamer->send_tool_result( $fr->getName(), $fr->getResponse() );
+					}
+				}
+			}
 		}
 
 		// Exhausted iterations — return what we have so callers can inspect the log.
@@ -297,8 +333,7 @@ class AgentLoop {
 		try {
 			$registry = \WordPress\AiClient\AiClient::defaultRegistry();
 			if ( ! $registry->hasProvider( $provider_id ) ) {
-				$endpoint_url = get_option( 'openai_compat_endpoint_url', '' );
-				if ( ! empty( $endpoint_url ) ) {
+				if ( CredentialResolver::isOpenAiCompatConfigured() ) {
 					return $this->send_prompt_direct();
 				}
 				return new WP_Error(
@@ -346,7 +381,7 @@ class AgentLoop {
 	 * Shared by send_prompt_direct(), send_prompt_openai(), and
 	 * send_prompt_google() (which uses Google's OpenAI-compatible endpoint).
 	 *
-	 * @return array
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function build_openai_messages(): array {
 		$messages = [];
@@ -455,7 +490,7 @@ class AgentLoop {
 	 * Shared by send_prompt_direct(), send_prompt_openai(), and
 	 * send_prompt_google().
 	 *
-	 * @return array
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function build_openai_tools(): array {
 		$tools     = [];
@@ -848,33 +883,35 @@ class AgentLoop {
 	 * @return SimpleAiResult|WP_Error
 	 */
 	private function send_prompt_direct() {
-		$endpoint_url = rtrim( (string) get_option( 'openai_compat_endpoint_url', '' ), '/' );
-		if ( empty( $endpoint_url ) ) {
+		$endpoint_url = CredentialResolver::getOpenAiCompatEndpointUrl();
+		if ( '' === $endpoint_url ) {
 			return new WP_Error( 'gratis_ai_agent_no_endpoint', __( 'OpenAI-compatible endpoint URL is not configured.', 'gratis-ai-agent' ) );
 		}
 
 		// Resolve model for the OpenAI-compatible endpoint.
-		// Priority: explicit selection → connector default → hardcoded fallback.
+		// Priority: explicit selection → connector default → configurable plugin default.
 		$model_id = $this->model_id;
 		if ( empty( $model_id ) && function_exists( 'OpenAiCompatibleConnector\\get_default_model' ) ) {
 			$model_id = \OpenAiCompatibleConnector\get_default_model();
 		}
 		if ( empty( $model_id ) ) {
-			$model_id = 'claude-sonnet-4';
+			$model_id = Settings::get_default_model();
 		}
 
 		$messages = $this->build_openai_messages();
 		$tools    = $this->build_openai_tools();
 
-		$api_key = (string) get_option( 'openai_compat_api_key', 'no-key' );
-		$timeout = (int) get_option( 'openai_compat_timeout', 600 );
+		$api_key = CredentialResolver::getOpenAiCompatApiKey();
+		$timeout = CredentialResolver::getOpenAiCompatTimeout();
+
+		$use_streaming = null !== $this->sse_streamer;
 
 		$request_body = [
 			'model'       => $model_id,
 			'messages'    => $messages,
 			'temperature' => (float) $this->temperature,
 			'max_tokens'  => (int) $this->max_output_tokens,
-			'stream'      => false,
+			'stream'      => $use_streaming,
 		];
 
 		if ( ! empty( $tools ) ) {
@@ -887,6 +924,11 @@ class AgentLoop {
 		// in the JSON string. This catches edge cases where PHP's type juggling
 		// converts stdClass back to an empty array during serialization.
 		$encoded_body = str_replace( '"properties":[]', '"properties":{}', $encoded_body );
+
+		// When streaming, use PHP stream context to read the SSE response line-by-line.
+		if ( $use_streaming ) {
+			return $this->send_prompt_direct_streaming( $endpoint_url, $api_key, $encoded_body, $timeout );
+		}
 
 		$response = wp_remote_post(
 			$endpoint_url . '/chat/completions',
@@ -920,13 +962,156 @@ class AgentLoop {
 	}
 
 	/**
+	 * Send a streaming prompt to the OpenAI-compatible endpoint.
+	 *
+	 * Opens a persistent HTTP connection, reads the SSE stream line-by-line,
+	 * emits each text delta token via the SseStreamer, and returns a
+	 * SimpleAiResult with the fully-assembled text once the stream ends.
+	 *
+	 * @param string $endpoint_url  Base URL of the OpenAI-compatible endpoint.
+	 * @param string $api_key       API key (may be 'no-key').
+	 * @param string $encoded_body  JSON-encoded request body (stream=true already set).
+	 * @param int    $timeout       Request timeout in seconds.
+	 * @return SimpleAiResult|WP_Error
+	 */
+	private function send_prompt_direct_streaming( string $endpoint_url, string $api_key, string $encoded_body, int $timeout ) {
+		$url = $endpoint_url . '/chat/completions';
+
+		$context = stream_context_create(
+			[
+				'http' => [
+					'method'        => 'POST',
+					'header'        => implode(
+						"\r\n",
+						[
+							'Content-Type: application/json',
+							'Authorization: Bearer ' . ( $api_key ?: 'no-key' ),
+							'Accept: text/event-stream',
+						]
+					),
+					'content'       => $encoded_body,
+					'timeout'       => $timeout,
+					'ignore_errors' => true,
+				],
+				'ssl'  => [
+					'verify_peer'      => false,
+					'verify_peer_name' => false,
+				],
+			]
+		);
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- streaming HTTP requires fopen
+		$stream = fopen( $url, 'r', false, $context );
+
+		if ( false === $stream ) {
+			return new WP_Error( 'ai_agent_stream_open_failed', __( 'Failed to open streaming connection to AI endpoint.', 'gratis-ai-agent' ) );
+		}
+
+		$full_text        = '';
+		$tool_calls_delta = [];
+
+		// phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition -- standard stream-reading pattern
+		while ( ! feof( $stream ) ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fgets -- streaming HTTP requires fgets
+			$line = fgets( $stream );
+
+			if ( false === $line ) {
+				break;
+			}
+
+			$line = rtrim( $line );
+
+			// SSE lines start with "data: ".
+			if ( strpos( $line, 'data: ' ) !== 0 ) {
+				continue;
+			}
+
+			$json_str = substr( $line, 6 );
+
+			if ( '[DONE]' === $json_str ) {
+				break;
+			}
+
+			$chunk = json_decode( $json_str, true );
+
+			if ( ! is_array( $chunk ) ) {
+				continue;
+			}
+
+			$delta = $chunk['choices'][0]['delta'] ?? [];
+
+			// Text token delta.
+			if ( isset( $delta['content'] ) && is_string( $delta['content'] ) && '' !== $delta['content'] ) {
+				$full_text .= $delta['content'];
+				if ( null !== $this->sse_streamer ) {
+					$this->sse_streamer->send_token( $delta['content'] );
+				}
+			}
+
+			// Tool call deltas — accumulate across chunks.
+			if ( ! empty( $delta['tool_calls'] ) ) {
+				foreach ( $delta['tool_calls'] as $tc_delta ) {
+					$idx = $tc_delta['index'] ?? 0;
+
+					if ( ! isset( $tool_calls_delta[ $idx ] ) ) {
+						$tool_calls_delta[ $idx ] = [
+							'id'       => '',
+							'type'     => 'function',
+							'function' => [
+								'name'      => '',
+								'arguments' => '',
+							],
+						];
+					}
+
+					if ( ! empty( $tc_delta['id'] ) ) {
+						$tool_calls_delta[ $idx ]['id'] = $tc_delta['id'];
+					}
+					if ( ! empty( $tc_delta['function']['name'] ) ) {
+						$tool_calls_delta[ $idx ]['function']['name'] .= $tc_delta['function']['name'];
+					}
+					if ( isset( $tc_delta['function']['arguments'] ) ) {
+						$tool_calls_delta[ $idx ]['function']['arguments'] .= $tc_delta['function']['arguments'];
+					}
+				}
+			}
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- paired with fopen above
+		fclose( $stream );
+
+		// Build a synthetic full-response array for SimpleAiResult.
+		$synthetic_data = [
+			'choices' => [
+				[
+					'message' => [
+						'role'    => 'assistant',
+						'content' => $full_text,
+					],
+				],
+			],
+		];
+
+		// Attach assembled tool calls if any.
+		if ( ! empty( $tool_calls_delta ) ) {
+			$assembled = [];
+			foreach ( $tool_calls_delta as $tc ) {
+				$assembled[] = $tc;
+			}
+			$synthetic_data['choices'][0]['message']['tool_calls'] = $assembled;
+		}
+
+		return new SimpleAiResult( $full_text, $synthetic_data );
+	}
+
+	/**
 	 * Recursively sanitize a tool schema for OpenAI compatibility.
 	 *
 	 * Ensures that 'properties' fields are JSON objects (not arrays),
 	 * removes empty 'required' arrays, and handles nested schemas.
 	 *
-	 * @param array $tool The tool definition.
-	 * @return array The sanitized tool definition.
+	 * @param array<string, mixed> $tool The tool definition.
+	 * @return array<string, mixed> The sanitized tool definition.
 	 */
 	private function sanitize_tool_schema( array $tool ): array {
 		if ( isset( $tool['function']['parameters'] ) ) {
@@ -1059,9 +1244,9 @@ class AgentLoop {
 		}
 
 		// Source 2: AI Experiments plugin credentials option.
-		$credentials = get_option( 'wp_ai_client_provider_credentials', [] );
+		$credentials = CredentialResolver::getAiExperimentsCredentials();
 
-		if ( is_array( $credentials ) && ! empty( $credentials ) ) {
+		if ( ! empty( $credentials ) ) {
 			foreach ( $credentials as $provider_id => $api_key ) {
 				if ( ! is_string( $api_key ) || '' === $api_key ) {
 					continue;
@@ -1082,11 +1267,7 @@ class AgentLoop {
 		$compat_provider = 'ai-provider-for-any-openai-compatible';
 
 		if ( $registry->hasProvider( $compat_provider ) && null === $registry->getProviderRequestAuthentication( $compat_provider ) ) {
-			$api_key = get_option( 'openai_compat_api_key', '' );
-
-			if ( empty( $api_key ) ) {
-				$api_key = 'no-key';
-			}
+			$api_key = CredentialResolver::getOpenAiCompatApiKey();
 
 			$registry->setProviderRequestAuthentication(
 				$compat_provider,
@@ -1099,7 +1280,7 @@ class AgentLoop {
 	 * Check which tool calls in an assistant message require user confirmation.
 	 *
 	 * @param Message $message The assistant's tool-call message.
-	 * @return array Array of tool details needing confirmation (empty if none).
+	 * @return list<array<string, mixed>> Array of tool details needing confirmation (empty if none).
 	 */
 	private function get_tools_needing_confirmation( Message $message ): array {
 		if ( empty( $this->tool_permissions ) ) {
@@ -1162,7 +1343,7 @@ class AgentLoop {
 				}
 			);
 		} else {
-			$disabled = Settings::get( 'disabled_abilities' );
+			$disabled = $this->settings_service->get( 'disabled_abilities' );
 			if ( ! empty( $disabled ) && is_array( $disabled ) ) {
 				$all = array_filter(
 					$all,
@@ -1184,7 +1365,7 @@ class AgentLoop {
 		}
 
 		// Apply tool profile filter.
-		$active_profile = Settings::get( 'active_tool_profile' );
+		$active_profile = $this->settings_service->get( 'active_tool_profile' );
 		if ( ! empty( $active_profile ) && 'all' !== $active_profile ) {
 			$all = ToolProfiles::filter_abilities( $all, $active_profile );
 		}
@@ -1271,7 +1452,7 @@ class AgentLoop {
 	/**
 	 * Serialize conversation history to transportable arrays.
 	 *
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	private function serialize_history(): array {
 		return array_map(
@@ -1285,7 +1466,7 @@ class AgentLoop {
 	/**
 	 * Deserialize conversation history from arrays back to Message objects.
 	 *
-	 * @param array $data Serialized history arrays.
+	 * @param array<string, mixed> $data Serialized history arrays.
 	 * @return Message[]
 	 */
 	public static function deserialize_history( array $data ): array {
@@ -1300,7 +1481,7 @@ class AgentLoop {
 	/**
 	 * Build the system instruction, incorporating custom prompt and memories.
 	 *
-	 * @param array $settings Plugin settings.
+	 * @param array<string, mixed> $settings Plugin settings.
 	 * @return string
 	 */
 	private function build_system_instruction( array $settings ): string {

@@ -190,7 +190,7 @@ class ContentAnalyzeAbility extends AbstractAbility {
 	 *
 	 * @param \WP_Post[] $posts     Array of posts.
 	 * @param string     $post_type Post type being analyzed.
-	 * @return array Analysis data.
+	 * @return array<string, mixed> Analysis data.
 	 */
 	private function analyze_content_strategy( array $posts, string $post_type ): array {
 		$total = count( $posts );
@@ -374,7 +374,7 @@ class ContentPerformanceReportAbility extends AbstractAbility {
 	 * Generate a content performance report.
 	 *
 	 * @param int $days Number of days to look back.
-	 * @return array Report data.
+	 * @return array<string, mixed> Report data.
 	 */
 	private function generate_performance_report( int $days ): array {
 		$after_date = gmdate( 'Y-m-d H:i:s', strtotime( "-{$days} days" ) );

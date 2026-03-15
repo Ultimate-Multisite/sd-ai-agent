@@ -185,7 +185,7 @@ class ImportStockImageAbility extends AbstractAbility {
 	 * @param string $keyword Search keyword.
 	 * @param int    $width   Image width.
 	 * @param int    $height  Image height.
-	 * @return array|\WP_Error Result array or WP_Error on failure.
+	 * @return array<string, mixed>|\WP_Error Result array or WP_Error on failure.
 	 */
 	private function download_and_import( string $keyword, int $width, int $height ) {
 		// Build a deterministic-ish lock so the same keyword doesn't always

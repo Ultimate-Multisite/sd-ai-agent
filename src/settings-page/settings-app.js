@@ -21,6 +21,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import STORE_NAME from '../store';
+import ErrorBoundary from '../components/error-boundary';
 import ProvidersManager from './providers-manager';
 import MemoryManager from './memory-manager';
 import SkillManager from './skill-manager';
@@ -315,14 +316,28 @@ export default function SettingsApp() {
 										) }
 										__nextHasNoMarginBottom
 									/>
-									<MemoryManager />
+									<ErrorBoundary
+										label={ __(
+											'Memory manager',
+											'gratis-ai-agent'
+										) }
+									>
+										<MemoryManager />
+									</ErrorBoundary>
 								</div>
 							);
 
 						case 'skills':
 							return (
 								<div className="gratis-ai-agent-settings-section">
-									<SkillManager />
+									<ErrorBoundary
+										label={ __(
+											'Skill manager',
+											'gratis-ai-agent'
+										) }
+									>
+										<SkillManager />
+									</ErrorBoundary>
 								</div>
 							);
 
@@ -365,35 +380,70 @@ export default function SettingsApp() {
 										) }
 										__nextHasNoMarginBottom
 									/>
-									<KnowledgeManager />
+									<ErrorBoundary
+										label={ __(
+											'Knowledge manager',
+											'ai-agent'
+										) }
+									>
+										<KnowledgeManager />
+									</ErrorBoundary>
 								</div>
 							);
 
 						case 'custom-tools':
 							return (
 								<div className="gratis-ai-agent-settings-section">
-									<CustomToolsManager />
+									<ErrorBoundary
+										label={ __(
+											'Custom tools manager',
+											'gratis-ai-agent'
+										) }
+									>
+										<CustomToolsManager />
+									</ErrorBoundary>
 								</div>
 							);
 
 						case 'tool-profiles':
 							return (
 								<div className="gratis-ai-agent-settings-section">
-									<ToolProfilesManager />
+									<ErrorBoundary
+										label={ __(
+											'Tool profiles manager',
+											'gratis-ai-agent'
+										) }
+									>
+										<ToolProfilesManager />
+									</ErrorBoundary>
 								</div>
 							);
 
 						case 'automations':
 							return (
 								<div className="gratis-ai-agent-settings-section">
-									<AutomationsManager />
+									<ErrorBoundary
+										label={ __(
+											'Automations manager',
+											'gratis-ai-agent'
+										) }
+									>
+										<AutomationsManager />
+									</ErrorBoundary>
 								</div>
 							);
 
 						case 'events':
 							return (
 								<div className="gratis-ai-agent-settings-section">
-									<EventsManager />
+									<ErrorBoundary
+										label={ __(
+											'Events manager',
+											'gratis-ai-agent'
+										) }
+									>
+										<EventsManager />
+									</ErrorBoundary>
 								</div>
 							);
 
@@ -482,7 +532,14 @@ export default function SettingsApp() {
 						case 'usage':
 							return (
 								<div className="gratis-ai-agent-settings-section">
-									<UsageDashboard />
+									<ErrorBoundary
+										label={ __(
+											'Usage dashboard',
+											'gratis-ai-agent'
+										) }
+									>
+										<UsageDashboard />
+									</ErrorBoundary>
 								</div>
 							);
 

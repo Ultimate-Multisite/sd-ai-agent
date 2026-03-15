@@ -10,6 +10,7 @@
 	},
 	"rules": {
 		"jsdoc/require-jsdoc": "off",
+		"jsdoc/no-undefined-types": [ "error", { "definedTypes": [ "JSX" ] } ],
 		"@wordpress/no-unsafe-wp-apis": "warn",
 		"no-console": "warn"
 	},
@@ -17,5 +18,19 @@
 		"build/",
 		"node_modules/",
 		"vendor/"
+	],
+	"overrides": [
+		{
+			"files": [ "**/__tests__/**/*.js", "**/*.test.js", "**/*.spec.js" ],
+			"env": {
+				"jest": true
+			},
+			"rules": {
+				"import/no-extraneous-dependencies": [
+					"error",
+					{ "devDependencies": true }
+				]
+			}
+		}
 	]
 }

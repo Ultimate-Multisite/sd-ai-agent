@@ -324,8 +324,8 @@ class AnalyzeHeadersAbility extends AbstractAbility {
 	/**
 	 * Check security-related headers.
 	 *
-	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array $headers Response headers.
-	 * @return array Security header analysis.
+	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array<string, mixed> $headers Response headers.
+	 * @return list<array<string, mixed>> Security header analysis.
 	 */
 	private function check_security_headers( $headers ): array {
 		$checks = [
@@ -372,8 +372,8 @@ class AnalyzeHeadersAbility extends AbstractAbility {
 	/**
 	 * Check performance-related headers.
 	 *
-	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array $headers Response headers.
-	 * @return array Performance header analysis.
+	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array<string, mixed> $headers Response headers.
+	 * @return list<array<string, mixed>> Performance header analysis.
 	 */
 	private function check_performance_headers( $headers ): array {
 		$results = [];
@@ -405,8 +405,8 @@ class AnalyzeHeadersAbility extends AbstractAbility {
 	/**
 	 * Detect CDN indicators from headers.
 	 *
-	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array $headers Response headers.
-	 * @return array CDN detection results.
+	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array<string, mixed> $headers Response headers.
+	 * @return list<array<string, mixed>> CDN detection results.
 	 */
 	private function detect_cdn( $headers ): array {
 		$indicators = [

@@ -27,6 +27,7 @@ use GratisAiAgent\Knowledge\KnowledgeDatabase;
 use GratisAiAgent\Models\Memory;
 use GratisAiAgent\Models\Skill;
 use GratisAiAgent\Tools\CustomToolExecutor;
+use GratisAiAgent\REST\SseStreamer;
 use GratisAiAgent\Tools\CustomTools;
 use GratisAiAgent\Tools\ToolProfiles;
 use WP_Error;
@@ -48,17 +49,94 @@ class RestController {
 	 */
 	const JOB_TTL = 600;
 
+	/** @var Settings Injected settings dependency. */
+	private Settings $settings;
+
+	/** @var Database Injected database dependency. */
+	private Database $database;
+
+	/**
+	 * Constructor — accepts injected dependencies for testability.
+	 *
+	 * @param Settings|null $settings  Settings service (defaults to new Settings()).
+	 * @param Database|null $database  Database service (defaults to new Database()).
+	 */
+	public function __construct( ?Settings $settings = null, ?Database $database = null ) {
+		$this->settings = $settings ?? new Settings();
+		$this->database = $database ?? new Database();
+	}
+
 	/**
 	 * Register REST routes.
+	 *
+	 * Creates a controller instance and registers instance methods as callbacks,
+	 * enabling constructor injection of dependencies.
 	 */
 	public static function register_routes(): void {
+		// MCP (Model Context Protocol) endpoint.
+		McpController::register_routes();
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/stream',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ __CLASS__, 'handle_stream' ],
+				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'args'                => [
+					'message'            => [
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+					'session_id'         => [
+						'required'          => false,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
+					'abilities'          => [
+						'required' => false,
+						'type'     => 'array',
+						'default'  => [],
+					],
+					'system_instruction' => [
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_textarea_field',
+					],
+					'max_iterations'     => [
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 10,
+						'sanitize_callback' => 'absint',
+					],
+					'provider_id'        => [
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+					'model_id'           => [
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+					'page_context'       => [
+						'required' => false,
+						'type'     => 'object',
+						'default'  => [],
+					],
+				],
+			]
+		);
+
+		$instance = new self();
 		register_rest_route(
 			self::NAMESPACE,
 			'/run',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ __CLASS__, 'handle_run' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_run' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 				'args'                => [
 					'message'            => [
 						'required'          => true,
@@ -115,8 +193,8 @@ class RestController {
 			'/job/(?P<id>[a-f0-9-]+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ __CLASS__, 'handle_job_status' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_job_status' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 				'args'                => [
 					'id' => [
 						'required'          => true,
@@ -132,8 +210,8 @@ class RestController {
 			'/process',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ __CLASS__, 'handle_process' ],
-				'permission_callback' => [ __CLASS__, 'check_process_permission' ],
+				'callback'            => [ $instance, 'handle_process' ],
+				'permission_callback' => [ $instance, 'check_process_permission' ],
 				'args'                => [
 					'job_id' => [
 						'required'          => true,
@@ -154,8 +232,8 @@ class RestController {
 			'/abilities',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ __CLASS__, 'handle_abilities' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_abilities' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 			]
 		);
 
@@ -165,8 +243,8 @@ class RestController {
 			'/providers',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ __CLASS__, 'handle_providers' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_providers' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 			]
 		);
 
@@ -177,13 +255,13 @@ class RestController {
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ __CLASS__, 'handle_get_settings' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_get_settings' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 				],
 				[
 					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ __CLASS__, 'handle_update_settings' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_update_settings' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 				],
 			]
 		);
@@ -195,8 +273,8 @@ class RestController {
 			[
 				[
 					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ __CLASS__, 'handle_set_claude_max_token' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_set_claude_max_token' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'token' => [
 							'required'          => true,
@@ -265,13 +343,13 @@ class RestController {
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ __CLASS__, 'handle_list_memory' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_list_memory' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 				],
 				[
 					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ __CLASS__, 'handle_create_memory' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_create_memory' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'category' => [
 							'required'          => true,
@@ -294,8 +372,8 @@ class RestController {
 			[
 				[
 					'methods'             => 'PATCH',
-					'callback'            => [ __CLASS__, 'handle_update_memory' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_update_memory' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'id'       => [
 							'required'          => true,
@@ -316,8 +394,8 @@ class RestController {
 				],
 				[
 					'methods'             => WP_REST_Server::DELETABLE,
-					'callback'            => [ __CLASS__, 'handle_delete_memory' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_delete_memory' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'id' => [
 							'required'          => true,
@@ -336,13 +414,13 @@ class RestController {
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ __CLASS__, 'handle_list_skills' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_list_skills' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 				],
 				[
 					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ __CLASS__, 'handle_create_skill' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_create_skill' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'slug'        => [
 							'required'          => true,
@@ -376,8 +454,8 @@ class RestController {
 			[
 				[
 					'methods'             => 'PATCH',
-					'callback'            => [ __CLASS__, 'handle_update_skill' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_update_skill' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'id'          => [
 							'required'          => true,
@@ -407,8 +485,8 @@ class RestController {
 				],
 				[
 					'methods'             => WP_REST_Server::DELETABLE,
-					'callback'            => [ __CLASS__, 'handle_delete_skill' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_delete_skill' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'id' => [
 							'required'          => true,
@@ -426,8 +504,8 @@ class RestController {
 			[
 				[
 					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ __CLASS__, 'handle_reset_skill' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_reset_skill' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'id' => [
 							'required'          => true,
@@ -446,8 +524,8 @@ class RestController {
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ __CLASS__, 'handle_list_sessions' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_list_sessions' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'status' => [
 							'required'          => false,
@@ -473,8 +551,8 @@ class RestController {
 				],
 				[
 					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ __CLASS__, 'handle_create_session' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_create_session' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'title'       => [
 							'required'          => false,
@@ -504,8 +582,8 @@ class RestController {
 			'/sessions/folders',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ __CLASS__, 'handle_list_folders' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_list_folders' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 			]
 		);
 
@@ -514,8 +592,8 @@ class RestController {
 			'/sessions/bulk',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ __CLASS__, 'handle_bulk_sessions' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_bulk_sessions' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 				'args'                => [
 					'ids'    => [
 						'required' => true,
@@ -540,8 +618,8 @@ class RestController {
 			'/sessions/trash',
 			[
 				'methods'             => WP_REST_Server::DELETABLE,
-				'callback'            => [ __CLASS__, 'handle_empty_trash' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_empty_trash' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 			]
 		);
 
@@ -551,8 +629,8 @@ class RestController {
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ __CLASS__, 'handle_get_session' ],
-					'permission_callback' => [ __CLASS__, 'check_session_permission' ],
+					'callback'            => [ $instance, 'handle_get_session' ],
+					'permission_callback' => [ $instance, 'check_session_permission' ],
 					'args'                => [
 						'id' => [
 							'required'          => true,
@@ -563,8 +641,8 @@ class RestController {
 				],
 				[
 					'methods'             => 'PATCH',
-					'callback'            => [ __CLASS__, 'handle_update_session' ],
-					'permission_callback' => [ __CLASS__, 'check_session_permission' ],
+					'callback'            => [ $instance, 'handle_update_session' ],
+					'permission_callback' => [ $instance, 'check_session_permission' ],
 					'args'                => [
 						'id'     => [
 							'required'          => true,
@@ -594,8 +672,8 @@ class RestController {
 				],
 				[
 					'methods'             => WP_REST_Server::DELETABLE,
-					'callback'            => [ __CLASS__, 'handle_delete_session' ],
-					'permission_callback' => [ __CLASS__, 'check_session_permission' ],
+					'callback'            => [ $instance, 'handle_delete_session' ],
+					'permission_callback' => [ $instance, 'check_session_permission' ],
 					'args'                => [
 						'id' => [
 							'required'          => true,
@@ -613,8 +691,8 @@ class RestController {
 			'/usage',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ __CLASS__, 'handle_get_usage' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_get_usage' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 				'args'                => [
 					'period'     => [
 						'required'          => false,
@@ -641,8 +719,8 @@ class RestController {
 			'/sessions/(?P<id>\d+)/export',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ __CLASS__, 'handle_export_session' ],
-				'permission_callback' => [ __CLASS__, 'check_session_permission' ],
+				'callback'            => [ $instance, 'handle_export_session' ],
+				'permission_callback' => [ $instance, 'check_session_permission' ],
 				'args'                => [
 					'id'     => [
 						'required'          => true,
@@ -665,8 +743,8 @@ class RestController {
 			'/sessions/import',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ __CLASS__, 'handle_import_session' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_import_session' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 			]
 		);
 
@@ -676,8 +754,8 @@ class RestController {
 			'/memory/forget',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ __CLASS__, 'handle_forget_memory' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_forget_memory' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 				'args'                => [
 					'topic' => [
 						'required'          => true,
@@ -695,13 +773,13 @@ class RestController {
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ __CLASS__, 'handle_list_collections' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_list_collections' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 				],
 				[
 					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ __CLASS__, 'handle_create_collection' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_create_collection' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'name'          => [
 							'required'          => true,
@@ -740,8 +818,8 @@ class RestController {
 			[
 				[
 					'methods'             => 'PATCH',
-					'callback'            => [ __CLASS__, 'handle_update_collection' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_update_collection' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'id'            => [
 							'required'          => true,
@@ -770,8 +848,8 @@ class RestController {
 				],
 				[
 					'methods'             => WP_REST_Server::DELETABLE,
-					'callback'            => [ __CLASS__, 'handle_delete_collection' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_delete_collection' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'id' => [
 							'required'          => true,
@@ -788,8 +866,8 @@ class RestController {
 			'/knowledge/collections/(?P<id>\d+)/sources',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ __CLASS__, 'handle_list_sources' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_list_sources' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 				'args'                => [
 					'id' => [
 						'required'          => true,
@@ -805,8 +883,8 @@ class RestController {
 			'/knowledge/collections/(?P<id>\d+)/index',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ __CLASS__, 'handle_index_collection' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_index_collection' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 				'args'                => [
 					'id' => [
 						'required'          => true,
@@ -822,8 +900,8 @@ class RestController {
 			'/knowledge/upload',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ __CLASS__, 'handle_knowledge_upload' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_knowledge_upload' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 			]
 		);
 
@@ -832,8 +910,8 @@ class RestController {
 			'/knowledge/sources/(?P<id>\d+)',
 			[
 				'methods'             => WP_REST_Server::DELETABLE,
-				'callback'            => [ __CLASS__, 'handle_delete_source' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_delete_source' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 				'args'                => [
 					'id' => [
 						'required'          => true,
@@ -849,8 +927,8 @@ class RestController {
 			'/knowledge/search',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ __CLASS__, 'handle_knowledge_search' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_knowledge_search' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 				'args'                => [
 					'q'          => [
 						'required'          => true,
@@ -871,8 +949,8 @@ class RestController {
 			'/knowledge/stats',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ __CLASS__, 'handle_knowledge_stats' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_knowledge_stats' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 			]
 		);
 
@@ -882,8 +960,8 @@ class RestController {
 			'/job/(?P<id>[a-f0-9-]+)/confirm',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ __CLASS__, 'handle_confirm_tool' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_confirm_tool' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 				'args'                => [
 					'id'           => [
 						'required'          => true,
@@ -904,8 +982,8 @@ class RestController {
 			'/job/(?P<id>[a-f0-9-]+)/reject',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ __CLASS__, 'handle_reject_tool' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_reject_tool' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 				'args'                => [
 					'id' => [
 						'required'          => true,
@@ -923,13 +1001,13 @@ class RestController {
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ __CLASS__, 'handle_list_custom_tools' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_list_custom_tools' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 				],
 				[
 					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ __CLASS__, 'handle_create_custom_tool' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_create_custom_tool' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'name'         => [
 							'required'          => true,
@@ -978,8 +1056,8 @@ class RestController {
 			[
 				[
 					'methods'             => 'PATCH',
-					'callback'            => [ __CLASS__, 'handle_update_custom_tool' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_update_custom_tool' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'id' => [
 							'required'          => true,
@@ -990,8 +1068,8 @@ class RestController {
 				],
 				[
 					'methods'             => WP_REST_Server::DELETABLE,
-					'callback'            => [ __CLASS__, 'handle_delete_custom_tool' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_delete_custom_tool' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'id' => [
 							'required'          => true,
@@ -1008,8 +1086,8 @@ class RestController {
 			'/custom-tools/(?P<id>\d+)/test',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ __CLASS__, 'handle_test_custom_tool' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_test_custom_tool' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 				'args'                => [
 					'id'    => [
 						'required'          => true,
@@ -1032,13 +1110,13 @@ class RestController {
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ __CLASS__, 'handle_list_tool_profiles' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_list_tool_profiles' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 				],
 				[
 					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ __CLASS__, 'handle_save_tool_profile' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_save_tool_profile' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'slug'        => [
 							'required'          => true,
@@ -1071,8 +1149,8 @@ class RestController {
 			'/tool-profiles/(?P<slug>[a-z0-9-]+)',
 			[
 				'methods'             => WP_REST_Server::DELETABLE,
-				'callback'            => [ __CLASS__, 'handle_delete_tool_profile' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_delete_tool_profile' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 				'args'                => [
 					'slug' => [
 						'required'          => true,
@@ -1090,13 +1168,13 @@ class RestController {
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ __CLASS__, 'handle_list_automations' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_list_automations' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 				],
 				[
 					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ __CLASS__, 'handle_create_automation' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_create_automation' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'name'     => [
 							'required'          => true,
@@ -1124,8 +1202,8 @@ class RestController {
 			[
 				[
 					'methods'             => 'PATCH',
-					'callback'            => [ __CLASS__, 'handle_update_automation' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_update_automation' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'id' => [
 							'required'          => true,
@@ -1136,8 +1214,8 @@ class RestController {
 				],
 				[
 					'methods'             => WP_REST_Server::DELETABLE,
-					'callback'            => [ __CLASS__, 'handle_delete_automation' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_delete_automation' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'id' => [
 							'required'          => true,
@@ -1154,8 +1232,8 @@ class RestController {
 			'/automations/(?P<id>\d+)/run',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ __CLASS__, 'handle_run_automation' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_run_automation' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 				'args'                => [
 					'id' => [
 						'required'          => true,
@@ -1171,8 +1249,8 @@ class RestController {
 			'/automations/(?P<id>\d+)/logs',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ __CLASS__, 'handle_automation_logs' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_automation_logs' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 				'args'                => [
 					'id' => [
 						'required'          => true,
@@ -1188,8 +1266,8 @@ class RestController {
 			'/automation-templates',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ __CLASS__, 'handle_automation_templates' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_automation_templates' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 			]
 		);
 
@@ -1200,13 +1278,13 @@ class RestController {
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ __CLASS__, 'handle_list_event_automations' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_list_event_automations' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 				],
 				[
 					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ __CLASS__, 'handle_create_event_automation' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_create_event_automation' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'name'            => [
 							'required'          => true,
@@ -1233,8 +1311,8 @@ class RestController {
 			[
 				[
 					'methods'             => 'PATCH',
-					'callback'            => [ __CLASS__, 'handle_update_event_automation' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_update_event_automation' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'id' => [
 							'required'          => true,
@@ -1245,8 +1323,8 @@ class RestController {
 				],
 				[
 					'methods'             => WP_REST_Server::DELETABLE,
-					'callback'            => [ __CLASS__, 'handle_delete_event_automation' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
+					'callback'            => [ $instance, 'handle_delete_event_automation' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'id' => [
 							'required'          => true,
@@ -1263,8 +1341,8 @@ class RestController {
 			'/event-triggers',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ __CLASS__, 'handle_list_event_triggers' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_list_event_triggers' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 			]
 		);
 
@@ -1273,8 +1351,8 @@ class RestController {
 			'/automation-logs',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ __CLASS__, 'handle_list_all_logs' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'callback'            => [ $instance, 'handle_list_all_logs' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
 			]
 		);
 	}
@@ -1282,7 +1360,7 @@ class RestController {
 	/**
 	 * Permission check — admin only.
 	 */
-	public static function check_permission(): bool {
+	public function check_permission(): bool {
 		return current_user_can( 'manage_options' );
 	}
 
@@ -1291,13 +1369,13 @@ class RestController {
 	 *
 	 * Verifies manage_options + session ownership.
 	 */
-	public static function check_session_permission( WP_REST_Request $request ): bool {
+	public function check_session_permission( WP_REST_Request $request ): bool {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return false;
 		}
 
 		$session_id = absint( $request->get_param( 'id' ) );
-		$session    = Database::get_session( $session_id );
+		$session    = $this->database->get_session( $session_id );
 
 		if ( ! $session ) {
 			return false;
@@ -1312,7 +1390,7 @@ class RestController {
 	 * Validates a one-time token stored in the job transient instead of
 	 * requiring cookie-based auth (the loopback request has no session).
 	 */
-	public static function check_process_permission( WP_REST_Request $request ): bool {
+	public function check_process_permission( WP_REST_Request $request ): bool {
 		$job_id = $request->get_param( 'job_id' );
 		$token  = $request->get_param( 'token' );
 
@@ -1337,7 +1415,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_run( WP_REST_Request $request ) {
+	public function handle_run( WP_REST_Request $request ) {
 		$job_id = wp_generate_uuid4();
 		$token  = wp_generate_password( 40, false );
 
@@ -1394,7 +1472,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_job_status( WP_REST_Request $request ) {
+	public function handle_job_status( WP_REST_Request $request ) {
 		$job_id = $request->get_param( 'id' );
 		$job    = get_transient( self::JOB_PREFIX . $job_id );
 
@@ -1454,7 +1532,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_confirm_tool( WP_REST_Request $request ) {
+	public function handle_confirm_tool( WP_REST_Request $request ) {
 		$job_id = $request->get_param( 'id' );
 		$job    = get_transient( self::JOB_PREFIX . $job_id );
 
@@ -1472,15 +1550,15 @@ class RestController {
 
 		// "Always allow" — update tool_permissions to auto.
 		if ( $request->get_param( 'always_allow' ) && ! empty( $job['pending_tools'] ) ) {
-			$settings = Settings::get();
+			$settings = $this->settings->get();
 			$perms    = $settings['tool_permissions'] ?? [];
 			foreach ( $job['pending_tools'] as $tool ) {
 				$perms[ $tool['name'] ] = 'auto';
 			}
-			Settings::update( [ 'tool_permissions' => $perms ] );
+			$this->settings->update( [ 'tool_permissions' => $perms ] );
 		}
 
-		return self::resume_job( $job_id, $job, 'confirm' );
+		return $this->resume_job( $job_id, $job, 'confirm' );
 	}
 
 	/**
@@ -1489,7 +1567,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_reject_tool( WP_REST_Request $request ) {
+	public function handle_reject_tool( WP_REST_Request $request ) {
 		$job_id = $request->get_param( 'id' );
 		$job    = get_transient( self::JOB_PREFIX . $job_id );
 
@@ -1505,15 +1583,15 @@ class RestController {
 			return new WP_Error( 'gratis_ai_agent_forbidden', __( 'Not authorized.', 'gratis-ai-agent' ), [ 'status' => 403 ] );
 		}
 
-		return self::resume_job( $job_id, $job, 'reject' );
+		return $this->resume_job( $job_id, $job, 'reject' );
 	}
 
 	/**
 	 * Resume a paused job after confirmation or rejection.
 	 *
-	 * @param string $job_id Job identifier.
-	 * @param array  $job    Job transient data.
-	 * @param string $action 'confirm' or 'reject'.
+	 * @param string               $job_id Job identifier.
+	 * @param array<string, mixed> $job    Job transient data.
+	 * @param string               $action 'confirm' or 'reject'.
 	 * @return WP_REST_Response
 	 */
 	private static function resume_job( string $job_id, array $job, string $action ): WP_REST_Response {
@@ -1561,7 +1639,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response
 	 */
-	public static function handle_process( WP_REST_Request $request ): WP_REST_Response {
+	public function handle_process( WP_REST_Request $request ): WP_REST_Response {
 		ignore_user_abort( true );
 		// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- Agent loops need extended execution time.
 		set_time_limit( 600 );
@@ -1585,7 +1663,7 @@ class RestController {
 		// Load history from session if session_id is provided.
 		$history = [];
 		if ( $session_id ) {
-			$session = Database::get_session( $session_id );
+			$session = $this->database->get_session( $session_id );
 			if ( $session ) {
 				$session_messages = json_decode( $session->messages, true ) ?: [];
 				if ( ! empty( $session_messages ) ) {
@@ -1688,7 +1766,7 @@ class RestController {
 
 				// The full history from the loop includes existing + new messages.
 				// Slice off only the new ones to append.
-				$session        = Database::get_session( $session_id );
+				$session        = $this->database->get_session( $session_id );
 				$existing_count = 0;
 				if ( $session ) {
 					$existing_messages = json_decode( $session->messages, true ) ?: [];
@@ -1698,12 +1776,12 @@ class RestController {
 				$full_history = $result['history'] ?? [];
 				$appended     = array_slice( $full_history, $existing_count );
 
-				Database::append_to_session( $session_id, $appended, $result['tool_calls'] ?? [] );
+				$this->database->append_to_session( $session_id, $appended, $result['tool_calls'] ?? [] );
 
 				// Persist token usage.
 				$token_usage = $result['token_usage'] ?? [];
 				if ( ! empty( $token_usage ) ) {
-					Database::update_session_tokens(
+					$this->database->update_session_tokens(
 						$session_id,
 						$token_usage['prompt'] ?? 0,
 						$token_usage['completion'] ?? 0
@@ -1718,7 +1796,7 @@ class RestController {
 
 				if ( $prompt_t > 0 || $completion_t > 0 ) {
 					$cost = CostCalculator::calculate_cost( $model_id, $prompt_t, $completion_t );
-					Database::log_usage(
+					$this->database->log_usage(
 						[
 							'user_id'           => $job['user_id'] ?? 0,
 							'session_id'        => $session_id,
@@ -1737,7 +1815,7 @@ class RestController {
 					if ( mb_strlen( $params['message'] ) > 60 ) {
 						$title .= '...';
 					}
-					Database::update_session( $session_id, [ 'title' => $title ] );
+					$this->database->update_session( $session_id, [ 'title' => $title ] );
 				}
 			}
 		}
@@ -1750,11 +1828,196 @@ class RestController {
 	}
 
 	/**
+	 * Handle POST /stream — run the agent loop and stream tokens via SSE.
+	 *
+	 * This endpoint bypasses the normal WP_REST_Response system and emits
+	 * a raw text/event-stream response. The agent loop runs synchronously
+	 * in the same request, streaming each text token as it is produced.
+	 *
+	 * SSE event types emitted:
+	 *   - token              {"token": "..."}
+	 *   - tool_call          {"name": "...", "args": {...}}
+	 *   - tool_result        {"name": "...", "result": ...}
+	 *   - confirmation_required {"job_id": "...", "pending_tools": [...]}
+	 *   - done               {"session_id": N, "token_usage": {...}, ...}
+	 *   - error              {"code": "...", "message": "..."}
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return void This method exits after streaming; it never returns a WP_REST_Response.
+	 */
+	public static function handle_stream( WP_REST_Request $request ): void {
+		$streamer = new SseStreamer();
+		$streamer->start();
+
+		$session_id = absint( $request->get_param( 'session_id' ) );
+		$params     = [
+			'message'            => $request->get_param( 'message' ),
+			'abilities'          => $request->get_param( 'abilities' ) ?? [],
+			'system_instruction' => $request->get_param( 'system_instruction' ),
+			'max_iterations'     => $request->get_param( 'max_iterations' ) ?? 10,
+			'provider_id'        => $request->get_param( 'provider_id' ),
+			'model_id'           => $request->get_param( 'model_id' ),
+			'page_context'       => $request->get_param( 'page_context' ) ?? [],
+		];
+
+		// Load conversation history from session.
+		$history = [];
+		if ( $session_id ) {
+			$session = Database::get_session( $session_id );
+			if ( $session ) {
+				$session_messages = json_decode( $session->messages, true ) ?: [];
+				if ( ! empty( $session_messages ) ) {
+					try {
+						$history = AgentLoop::deserialize_history( $session_messages );
+					} catch ( \Exception $e ) {
+						$history = [];
+					}
+				}
+			}
+		}
+
+		$options = [
+			'max_iterations' => $params['max_iterations'],
+		];
+
+		if ( ! empty( $params['system_instruction'] ) ) {
+			$options['system_instruction'] = $params['system_instruction'];
+		}
+		if ( ! empty( $params['provider_id'] ) ) {
+			$options['provider_id'] = $params['provider_id'];
+		}
+		if ( ! empty( $params['model_id'] ) ) {
+			$options['model_id'] = $params['model_id'];
+		}
+		if ( ! empty( $params['page_context'] ) ) {
+			$options['page_context'] = $params['page_context'];
+		}
+
+		// Attach the SSE streamer so AgentLoop can emit tokens as they arrive.
+		$options['sse_streamer'] = $streamer;
+
+		$loop   = new AgentLoop( $params['message'], $params['abilities'], $history, $options );
+		$result = $loop->run();
+
+		if ( is_wp_error( $result ) ) {
+			$streamer->send_error( $result->get_error_message(), $result->get_error_code() );
+			exit;
+		}
+
+		// Handle tool confirmation pause — emit a confirmation_required event
+		// so the frontend can show the confirmation dialog, then the user
+		// confirms/rejects via the existing /job/{id}/confirm|reject endpoints.
+		if ( ! empty( $result['awaiting_confirmation'] ) ) {
+			// Persist the paused state as a job transient so the confirm/reject
+			// endpoints can resume it.
+			$job_id = wp_generate_uuid4();
+			$token  = wp_generate_password( 40, false );
+
+			$job = [
+				'status'             => 'awaiting_confirmation',
+				'token'              => $token,
+				'user_id'            => get_current_user_id(),
+				'pending_tools'      => $result['pending_tools'] ?? [],
+				'confirmation_state' => [
+					'history'              => $result['history'] ?? [],
+					'tool_call_log'        => $result['tool_call_log'] ?? [],
+					'token_usage'          => $result['token_usage'] ?? [
+						'prompt'     => 0,
+						'completion' => 0,
+					],
+					'iterations_remaining' => $result['iterations_remaining'] ?? 5,
+				],
+				'params'             => $params,
+			];
+
+			set_transient( self::JOB_PREFIX . $job_id, $job, self::JOB_TTL );
+
+			$streamer->send_confirmation_required( $job_id, $result['pending_tools'] ?? [] );
+			exit;
+		}
+
+		// Persist to session.
+		if ( $session_id && ! empty( $result ) ) {
+			$session        = Database::get_session( $session_id );
+			$existing_count = 0;
+			if ( $session ) {
+				$existing_messages = json_decode( $session->messages, true ) ?: [];
+				$existing_count    = count( $existing_messages );
+			}
+
+			$full_history = $result['history'] ?? [];
+			$appended     = array_slice( $full_history, $existing_count );
+
+			Database::append_to_session( $session_id, $appended, $result['tool_calls'] ?? [] );
+
+			$token_usage = $result['token_usage'] ?? [];
+			if ( ! empty( $token_usage ) ) {
+				Database::update_session_tokens(
+					$session_id,
+					$token_usage['prompt'] ?? 0,
+					$token_usage['completion'] ?? 0
+				);
+			}
+
+			// Log usage.
+			$prompt_t     = $token_usage['prompt'] ?? 0;
+			$completion_t = $token_usage['completion'] ?? 0;
+			if ( $prompt_t > 0 || $completion_t > 0 ) {
+				$model_id = $params['model_id'] ?? '';
+				$cost     = CostCalculator::calculate_cost( $model_id, $prompt_t, $completion_t );
+				Database::log_usage(
+					[
+						'user_id'           => get_current_user_id(),
+						'session_id'        => $session_id,
+						'provider_id'       => $params['provider_id'] ?? '',
+						'model_id'          => $model_id,
+						'prompt_tokens'     => $prompt_t,
+						'completion_tokens' => $completion_t,
+						'cost_usd'          => $cost,
+					]
+				);
+			}
+
+			// Auto-generate title.
+			if ( $session && empty( $session->title ) ) {
+				$title = mb_substr( $params['message'], 0, 60 );
+				if ( mb_strlen( $params['message'] ) > 60 ) {
+					$title .= '...';
+				}
+				Database::update_session( $session_id, [ 'title' => $title ] );
+			}
+		}
+
+		$token_usage = $result['token_usage'] ?? [
+			'prompt'     => 0,
+			'completion' => 0,
+		];
+		$model_id    = $result['model_id'] ?? ( $params['model_id'] ?? '' );
+
+		$streamer->send_done(
+			[
+				'session_id'      => $session_id ?: null,
+				'token_usage'     => $token_usage,
+				'model_id'        => $model_id,
+				'iterations_used' => $result['iterations_used'] ?? 0,
+				'cost_estimate'   => CostCalculator::calculate_cost(
+					$model_id,
+					(int) ( $token_usage['prompt'] ?? 0 ),
+					(int) ( $token_usage['completion'] ?? 0 )
+				),
+				'tool_calls'      => $result['tool_calls'] ?? [],
+			]
+		);
+
+		exit;
+	}
+
+	/**
 	 * Handle the /abilities endpoint — list available abilities.
 	 *
 	 * @return WP_REST_Response
 	 */
-	public static function handle_abilities(): WP_REST_Response {
+	public function handle_abilities(): WP_REST_Response {
 		if ( ! function_exists( 'wp_get_abilities' ) ) {
 			return new WP_REST_Response( [], 200 );
 		}
@@ -1786,7 +2049,7 @@ class RestController {
 	 *
 	 * @return WP_REST_Response
 	 */
-	public static function handle_providers(): WP_REST_Response {
+	public function handle_providers(): WP_REST_Response {
 		$providers = [];
 
 		// Direct providers (OpenAI, Anthropic, Google) — listed first, no WP SDK required.
@@ -1895,7 +2158,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response
 	 */
-	public static function handle_list_sessions( WP_REST_Request $request ): WP_REST_Response {
+	public function handle_list_sessions( WP_REST_Request $request ): WP_REST_Response {
 		$filters = [];
 
 		if ( $request->has_param( 'status' ) ) {
@@ -1911,7 +2174,7 @@ class RestController {
 			$filters['pinned'] = $request->get_param( 'pinned' );
 		}
 
-		$sessions = Database::list_sessions( get_current_user_id(), $filters );
+		$sessions = $this->database->list_sessions( get_current_user_id(), $filters );
 
 		return new WP_REST_Response( $sessions, 200 );
 	}
@@ -1921,8 +2184,8 @@ class RestController {
 	 *
 	 * @return WP_REST_Response
 	 */
-	public static function handle_list_folders(): WP_REST_Response {
-		$folders = Database::list_folders( get_current_user_id() );
+	public function handle_list_folders(): WP_REST_Response {
+		$folders = $this->database->list_folders( get_current_user_id() );
 
 		return new WP_REST_Response( $folders, 200 );
 	}
@@ -1933,7 +2196,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_bulk_sessions( WP_REST_Request $request ) {
+	public function handle_bulk_sessions( WP_REST_Request $request ) {
 		$ids    = array_map( 'absint', $request->get_param( 'ids' ) );
 		$action = $request->get_param( 'action' );
 
@@ -1961,7 +2224,7 @@ class RestController {
 				return new WP_Error( 'gratis_ai_agent_invalid_action', __( 'Invalid bulk action.', 'gratis-ai-agent' ), [ 'status' => 400 ] );
 		}
 
-		$count = Database::bulk_update_sessions( $ids, get_current_user_id(), $data );
+		$count = $this->database->bulk_update_sessions( $ids, get_current_user_id(), $data );
 
 		return new WP_REST_Response( [ 'updated' => $count ], 200 );
 	}
@@ -1971,8 +2234,8 @@ class RestController {
 	 *
 	 * @return WP_REST_Response
 	 */
-	public static function handle_empty_trash(): WP_REST_Response {
-		$count = Database::empty_trash( get_current_user_id() );
+	public function handle_empty_trash(): WP_REST_Response {
+		$count = $this->database->empty_trash( get_current_user_id() );
 
 		return new WP_REST_Response( [ 'deleted' => $count ], 200 );
 	}
@@ -1983,9 +2246,9 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_get_session( WP_REST_Request $request ) {
+	public function handle_get_session( WP_REST_Request $request ) {
 		$session_id = absint( $request->get_param( 'id' ) );
-		$session    = Database::get_session( $session_id );
+		$session    = $this->database->get_session( $session_id );
 
 		if ( ! $session ) {
 			return new WP_Error(
@@ -2020,8 +2283,8 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_create_session( WP_REST_Request $request ) {
-		$session_id = Database::create_session(
+	public function handle_create_session( WP_REST_Request $request ) {
+		$session_id = $this->database->create_session(
 			[
 				'user_id'     => get_current_user_id(),
 				'title'       => $request->get_param( 'title' ),
@@ -2038,7 +2301,7 @@ class RestController {
 			);
 		}
 
-		$session = Database::get_session( $session_id );
+		$session = $this->database->get_session( $session_id );
 
 		return new WP_REST_Response(
 			[
@@ -2061,7 +2324,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_update_session( WP_REST_Request $request ) {
+	public function handle_update_session( WP_REST_Request $request ) {
 		$session_id = absint( $request->get_param( 'id' ) );
 
 		$data = [];
@@ -2085,7 +2348,7 @@ class RestController {
 			return new WP_Error( 'gratis_ai_agent_no_data', __( 'No fields to update.', 'gratis-ai-agent' ), [ 'status' => 400 ] );
 		}
 
-		$updated = Database::update_session( $session_id, $data );
+		$updated = $this->database->update_session( $session_id, $data );
 
 		if ( ! $updated ) {
 			return new WP_Error(
@@ -2095,7 +2358,7 @@ class RestController {
 			);
 		}
 
-		$session = Database::get_session( $session_id );
+		$session = $this->database->get_session( $session_id );
 
 		return new WP_REST_Response(
 			[
@@ -2119,10 +2382,10 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_delete_session( WP_REST_Request $request ) {
+	public function handle_delete_session( WP_REST_Request $request ) {
 		$session_id = absint( $request->get_param( 'id' ) );
 
-		$deleted = Database::delete_session( $session_id );
+		$deleted = $this->database->delete_session( $session_id );
 
 		if ( ! $deleted ) {
 			return new WP_Error(
@@ -2142,7 +2405,7 @@ class RestController {
 	 *
 	 * @return WP_REST_Response
 	 */
-	public static function handle_list_skills(): WP_REST_Response {
+	public function handle_list_skills(): WP_REST_Response {
 		$skills = Skill::get_all();
 
 		$list = array_map(
@@ -2172,7 +2435,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_create_skill( WP_REST_Request $request ) {
+	public function handle_create_skill( WP_REST_Request $request ) {
 		$slug = $request->get_param( 'slug' );
 
 		// Check for duplicate slug.
@@ -2229,7 +2492,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_update_skill( WP_REST_Request $request ) {
+	public function handle_update_skill( WP_REST_Request $request ) {
 		$id   = absint( $request->get_param( 'id' ) );
 		$data = [];
 
@@ -2281,7 +2544,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_delete_skill( WP_REST_Request $request ) {
+	public function handle_delete_skill( WP_REST_Request $request ) {
 		$id     = absint( $request->get_param( 'id' ) );
 		$result = Skill::delete( $id );
 
@@ -2310,7 +2573,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_reset_skill( WP_REST_Request $request ) {
+	public function handle_reset_skill( WP_REST_Request $request ) {
 		$id    = absint( $request->get_param( 'id' ) );
 		$reset = Skill::reset_builtin( $id );
 
@@ -2346,8 +2609,8 @@ class RestController {
 	/**
 	 * Handle GET /settings.
 	 */
-	public static function handle_get_settings(): WP_REST_Response {
-		$settings = Settings::get();
+	public function handle_get_settings(): WP_REST_Response {
+		$settings = $this->settings->get();
 
 		// Include built-in defaults so the UI can show them as placeholders.
 		$settings['_defaults'] = [
@@ -2373,16 +2636,16 @@ class RestController {
 	 *
 	 * @param WP_REST_Request $request The request object.
 	 */
-	public static function handle_update_settings( WP_REST_Request $request ): WP_REST_Response {
+	public function handle_update_settings( WP_REST_Request $request ): WP_REST_Response {
 		$data = $request->get_json_params();
 
 		if ( empty( $data ) || ! is_array( $data ) ) {
 			return new WP_REST_Response( [ 'error' => 'No data provided.' ], 400 );
 		}
 
-		Settings::update( $data );
+		$this->settings->update( $data );
 
-		return new WP_REST_Response( Settings::get(), 200 );
+		return new WP_REST_Response( $this->settings->get(), 200 );
 	}
 
 	/**
@@ -2393,7 +2656,7 @@ class RestController {
 	 *
 	 * @param WP_REST_Request $request The request object.
 	 */
-	public static function handle_set_claude_max_token( WP_REST_Request $request ): WP_REST_Response {
+	public function handle_set_claude_max_token( WP_REST_Request $request ): WP_REST_Response {
 		$token = $request->get_param( 'token' );
 
 		// Allow clearing the token by passing an empty string.
@@ -2602,7 +2865,7 @@ class RestController {
 	 *
 	 * @param WP_REST_Request $request The request object.
 	 */
-	public static function handle_list_memory( WP_REST_Request $request ): WP_REST_Response {
+	public function handle_list_memory( WP_REST_Request $request ): WP_REST_Response {
 		$category = $request->get_param( 'category' );
 		$memories = Memory::get_all( $category ?: null );
 
@@ -2626,8 +2889,9 @@ class RestController {
 	 * Handle POST /memory — create a memory.
 	 *
 	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_create_memory( WP_REST_Request $request ) {
+	public function handle_create_memory( WP_REST_Request $request ) {
 		$category = $request->get_param( 'category' );
 		$content  = $request->get_param( 'content' );
 
@@ -2651,8 +2915,9 @@ class RestController {
 	 * Handle PATCH /memory/{id} — update a memory.
 	 *
 	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_update_memory( WP_REST_Request $request ) {
+	public function handle_update_memory( WP_REST_Request $request ) {
 		$id   = absint( $request->get_param( 'id' ) );
 		$data = [];
 
@@ -2682,8 +2947,9 @@ class RestController {
 	 * Handle DELETE /memory/{id} — delete a memory.
 	 *
 	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_delete_memory( WP_REST_Request $request ) {
+	public function handle_delete_memory( WP_REST_Request $request ) {
 		$id      = absint( $request->get_param( 'id' ) );
 		$deleted = Memory::delete( $id );
 
@@ -2702,7 +2968,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response
 	 */
-	public static function handle_get_usage( WP_REST_Request $request ): WP_REST_Response {
+	public function handle_get_usage( WP_REST_Request $request ): WP_REST_Response {
 		$filters = [
 			'user_id' => get_current_user_id(),
 		];
@@ -2717,7 +2983,7 @@ class RestController {
 			$filters['end_date'] = $request->get_param( 'end_date' );
 		}
 
-		$summary = Database::get_usage_summary( $filters );
+		$summary = $this->database->get_usage_summary( $filters );
 
 		return new WP_REST_Response( $summary, 200 );
 	}
@@ -2729,7 +2995,7 @@ class RestController {
 	 *
 	 * @return WP_REST_Response
 	 */
-	public static function handle_list_collections(): WP_REST_Response {
+	public function handle_list_collections(): WP_REST_Response {
 		$collections = KnowledgeDatabase::list_collections();
 
 		$list = array_map(
@@ -2760,7 +3026,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_create_collection( WP_REST_Request $request ) {
+	public function handle_create_collection( WP_REST_Request $request ) {
 		$slug = $request->get_param( 'slug' );
 
 		// Check for duplicate slug.
@@ -2817,7 +3083,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_update_collection( WP_REST_Request $request ) {
+	public function handle_update_collection( WP_REST_Request $request ) {
 		$id   = absint( $request->get_param( 'id' ) );
 		$data = [];
 
@@ -2870,7 +3136,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_delete_collection( WP_REST_Request $request ) {
+	public function handle_delete_collection( WP_REST_Request $request ) {
 		$id      = absint( $request->get_param( 'id' ) );
 		$deleted = KnowledgeDatabase::delete_collection( $id );
 
@@ -2891,7 +3157,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response
 	 */
-	public static function handle_list_sources( WP_REST_Request $request ): WP_REST_Response {
+	public function handle_list_sources( WP_REST_Request $request ): WP_REST_Response {
 		$id      = absint( $request->get_param( 'id' ) );
 		$sources = KnowledgeDatabase::get_sources_for_collection( $id );
 
@@ -2923,7 +3189,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_index_collection( WP_REST_Request $request ) {
+	public function handle_index_collection( WP_REST_Request $request ) {
 		$id     = absint( $request->get_param( 'id' ) );
 		$result = Knowledge::reindex_collection( $id );
 
@@ -2940,7 +3206,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_knowledge_upload( WP_REST_Request $request ) {
+	public function handle_knowledge_upload( WP_REST_Request $request ) {
 		$files = $request->get_file_params();
 
 		if ( empty( $files['file'] ) ) {
@@ -2998,7 +3264,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_delete_source( WP_REST_Request $request ) {
+	public function handle_delete_source( WP_REST_Request $request ) {
 		$id      = absint( $request->get_param( 'id' ) );
 		$deleted = Knowledge::delete_source( $id );
 
@@ -3019,7 +3285,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response
 	 */
-	public static function handle_knowledge_search( WP_REST_Request $request ): WP_REST_Response {
+	public function handle_knowledge_search( WP_REST_Request $request ): WP_REST_Response {
 		$query      = $request->get_param( 'q' );
 		$collection = $request->get_param( 'collection' );
 
@@ -3038,7 +3304,7 @@ class RestController {
 	 *
 	 * @return WP_REST_Response
 	 */
-	public static function handle_knowledge_stats(): WP_REST_Response {
+	public function handle_knowledge_stats(): WP_REST_Response {
 		$collections  = KnowledgeDatabase::list_collections();
 		$total_chunks = KnowledgeDatabase::get_total_chunk_count();
 
@@ -3069,7 +3335,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response
 	 */
-	public static function handle_forget_memory( WP_REST_Request $request ): WP_REST_Response {
+	public function handle_forget_memory( WP_REST_Request $request ): WP_REST_Response {
 		$topic   = $request->get_param( 'topic' );
 		$deleted = Memory::forget_by_topic( $topic );
 
@@ -3090,10 +3356,10 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_export_session( WP_REST_Request $request ) {
+	public function handle_export_session( WP_REST_Request $request ) {
 		$session_id = absint( $request->get_param( 'id' ) );
 		$format     = $request->get_param( 'format' ) ?: 'json';
-		$session    = Database::get_session( $session_id );
+		$session    = $this->database->get_session( $session_id );
 
 		if ( ! $session ) {
 			return new WP_Error( 'gratis_ai_agent_session_not_found', __( 'Session not found.', 'gratis-ai-agent' ), [ 'status' => 404 ] );
@@ -3110,7 +3376,7 @@ class RestController {
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public static function handle_import_session( WP_REST_Request $request ) {
+	public function handle_import_session( WP_REST_Request $request ) {
 		$data = $request->get_json_params();
 
 		if ( empty( $data ) ) {
@@ -3123,7 +3389,7 @@ class RestController {
 			return $session_id;
 		}
 
-		$session = Database::get_session( $session_id );
+		$session = $this->database->get_session( $session_id );
 
 		return new WP_REST_Response(
 			[
@@ -3143,14 +3409,14 @@ class RestController {
 	/**
 	 * List custom tools.
 	 */
-	public static function handle_list_custom_tools(): WP_REST_Response {
+	public function handle_list_custom_tools(): WP_REST_Response {
 		return new WP_REST_Response( CustomTools::list(), 200 );
 	}
 
 	/**
 	 * Create a custom tool.
 	 */
-	public static function handle_create_custom_tool( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	public function handle_create_custom_tool( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$data = $request->get_json_params();
 		$id   = CustomTools::create( $data );
 
@@ -3164,7 +3430,7 @@ class RestController {
 	/**
 	 * Update a custom tool.
 	 */
-	public static function handle_update_custom_tool( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	public function handle_update_custom_tool( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$id   = absint( $request->get_param( 'id' ) );
 		$data = $request->get_json_params();
 
@@ -3178,7 +3444,7 @@ class RestController {
 	/**
 	 * Delete a custom tool.
 	 */
-	public static function handle_delete_custom_tool( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	public function handle_delete_custom_tool( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$id = absint( $request->get_param( 'id' ) );
 
 		if ( ! CustomTools::delete( $id ) ) {
@@ -3191,7 +3457,7 @@ class RestController {
 	/**
 	 * Test-execute a custom tool with provided input.
 	 */
-	public static function handle_test_custom_tool( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	public function handle_test_custom_tool( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$id    = absint( $request->get_param( 'id' ) );
 		$input = $request->get_param( 'input' ) ?: [];
 		$tool  = CustomTools::get( $id );
@@ -3210,14 +3476,14 @@ class RestController {
 	/**
 	 * List tool profiles.
 	 */
-	public static function handle_list_tool_profiles(): WP_REST_Response {
+	public function handle_list_tool_profiles(): WP_REST_Response {
 		return new WP_REST_Response( ToolProfiles::list(), 200 );
 	}
 
 	/**
 	 * Save (create or update) a tool profile.
 	 */
-	public static function handle_save_tool_profile( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	public function handle_save_tool_profile( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$data = $request->get_json_params();
 
 		if ( ! ToolProfiles::save( $data ) ) {
@@ -3230,7 +3496,7 @@ class RestController {
 	/**
 	 * Delete a tool profile.
 	 */
-	public static function handle_delete_tool_profile( WP_REST_Request $request ): WP_REST_Response {
+	public function handle_delete_tool_profile( WP_REST_Request $request ): WP_REST_Response {
 		$slug = $request->get_param( 'slug' );
 		ToolProfiles::delete( $slug );
 
@@ -3242,14 +3508,14 @@ class RestController {
 	/**
 	 * List scheduled automations.
 	 */
-	public static function handle_list_automations(): WP_REST_Response {
+	public function handle_list_automations(): WP_REST_Response {
 		return new WP_REST_Response( Automations::list(), 200 );
 	}
 
 	/**
 	 * Create a scheduled automation.
 	 */
-	public static function handle_create_automation( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	public function handle_create_automation( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$data = $request->get_json_params();
 		$id   = Automations::create( $data );
 
@@ -3263,7 +3529,7 @@ class RestController {
 	/**
 	 * Update a scheduled automation.
 	 */
-	public static function handle_update_automation( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	public function handle_update_automation( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$id   = absint( $request->get_param( 'id' ) );
 		$data = $request->get_json_params();
 
@@ -3277,7 +3543,7 @@ class RestController {
 	/**
 	 * Delete a scheduled automation.
 	 */
-	public static function handle_delete_automation( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	public function handle_delete_automation( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$id = absint( $request->get_param( 'id' ) );
 
 		if ( ! Automations::delete( $id ) ) {
@@ -3290,7 +3556,7 @@ class RestController {
 	/**
 	 * Manually run a scheduled automation.
 	 */
-	public static function handle_run_automation( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	public function handle_run_automation( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$id     = absint( $request->get_param( 'id' ) );
 		$result = AutomationRunner::run( $id );
 
@@ -3304,7 +3570,7 @@ class RestController {
 	/**
 	 * Get logs for a specific automation.
 	 */
-	public static function handle_automation_logs( WP_REST_Request $request ): WP_REST_Response {
+	public function handle_automation_logs( WP_REST_Request $request ): WP_REST_Response {
 		$id   = absint( $request->get_param( 'id' ) );
 		$logs = AutomationLogs::list_for_automation( $id );
 
@@ -3314,7 +3580,7 @@ class RestController {
 	/**
 	 * Get automation templates.
 	 */
-	public static function handle_automation_templates(): WP_REST_Response {
+	public function handle_automation_templates(): WP_REST_Response {
 		return new WP_REST_Response( Automations::get_templates(), 200 );
 	}
 
@@ -3323,14 +3589,14 @@ class RestController {
 	/**
 	 * List event automations.
 	 */
-	public static function handle_list_event_automations(): WP_REST_Response {
+	public function handle_list_event_automations(): WP_REST_Response {
 		return new WP_REST_Response( EventAutomations::list(), 200 );
 	}
 
 	/**
 	 * Create an event automation.
 	 */
-	public static function handle_create_event_automation( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	public function handle_create_event_automation( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$data = $request->get_json_params();
 		$id   = EventAutomations::create( $data );
 
@@ -3344,7 +3610,7 @@ class RestController {
 	/**
 	 * Update an event automation.
 	 */
-	public static function handle_update_event_automation( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	public function handle_update_event_automation( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$id   = absint( $request->get_param( 'id' ) );
 		$data = $request->get_json_params();
 
@@ -3358,7 +3624,7 @@ class RestController {
 	/**
 	 * Delete an event automation.
 	 */
-	public static function handle_delete_event_automation( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	public function handle_delete_event_automation( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$id = absint( $request->get_param( 'id' ) );
 
 		if ( ! EventAutomations::delete( $id ) ) {
@@ -3371,14 +3637,14 @@ class RestController {
 	/**
 	 * List available event triggers from the registry.
 	 */
-	public static function handle_list_event_triggers(): WP_REST_Response {
+	public function handle_list_event_triggers(): WP_REST_Response {
 		return new WP_REST_Response( EventTriggerRegistry::get_all(), 200 );
 	}
 
 	/**
 	 * List recent automation logs across all automations.
 	 */
-	public static function handle_list_all_logs(): WP_REST_Response {
+	public function handle_list_all_logs(): WP_REST_Response {
 		return new WP_REST_Response( AutomationLogs::list_recent(), 200 );
 	}
 }

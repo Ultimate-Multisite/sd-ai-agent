@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace GratisAiAgent\Core;
 
+use GratisAiAgent\Core\CredentialResolver;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -136,7 +138,7 @@ class Settings {
 	/**
 	 * Default settings.
 	 *
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public static function get_defaults(): array {
 		return [
@@ -208,7 +210,7 @@ class Settings {
 	 * Returns an array of provider metadata arrays, each with:
 	 *   - id, name, configured (bool), models (array), has_key (bool)
 	 *
-	 * @return array
+	 * @return array<int, array<string, mixed>>
 	 */
 	public static function get_configured_direct_providers(): array {
 		$result = [];
@@ -228,29 +230,61 @@ class Settings {
 	/**
 	 * Get the stored Claude Max OAuth access token.
 	 *
-	 * The token is stored in its own option rather than the general settings
-	 * blob so that it can be excluded from REST API exposure and treated as a
-	 * credential (not a preference).
+	 * Delegates to {@see CredentialResolver::getClaudeMaxToken()} so that all
+	 * credential reads are centralised in one place.
 	 *
 	 * @return string Empty string when not configured.
 	 */
 	public static function get_claude_max_token(): string {
-		return (string) get_option( self::CLAUDE_MAX_TOKEN_OPTION, '' );
+		return CredentialResolver::getClaudeMaxToken();
 	}
 
 	/**
 	 * Persist the Claude Max OAuth access token.
 	 *
+	 * Delegates to {@see CredentialResolver::setClaudeMaxToken()}.
 	 * Pass an empty string to clear the credential.
 	 *
 	 * @param string $token The OAuth access token (sk-ant-oat01-… or similar).
 	 * @return bool True on success.
 	 */
 	public static function set_claude_max_token( string $token ): bool {
-		if ( '' === $token ) {
-			return delete_option( self::CLAUDE_MAX_TOKEN_OPTION );
+		return CredentialResolver::setClaudeMaxToken( $token );
+	}
+
+	/**
+	 * Resolve the effective default model ID.
+	 *
+	 * Resolution order (first non-empty value wins):
+	 *   1. `default_model` setting saved by the site administrator.
+	 *   2. Value returned by the `gratis_ai_agent_default_model` filter (allows
+	 *      developers to override the default programmatically).
+	 *   3. The `GRATIS_AI_AGENT_DEFAULT_MODEL` constant defined in the plugin root.
+	 *
+	 * Example — override the default model from a theme or mu-plugin:
+	 *
+	 *   add_filter( 'gratis_ai_agent_default_model', function ( string $model ): string {
+	 *       return 'gpt-4o';
+	 *   } );
+	 *
+	 * @return string Non-empty model ID.
+	 */
+	public static function get_default_model(): string {
+		$settings = self::get();
+		$model    = (string) ( $settings['default_model'] ?? '' );
+
+		if ( '' === $model ) {
+			$builtin = defined( 'GRATIS_AI_AGENT_DEFAULT_MODEL' ) ? (string) GRATIS_AI_AGENT_DEFAULT_MODEL : 'claude-sonnet-4';
+
+			/**
+			 * Filter the default model ID used when no model is configured in settings.
+			 *
+			 * @param string $model The built-in fallback model ID (GRATIS_AI_AGENT_DEFAULT_MODEL).
+			 */
+			$model = (string) apply_filters( 'gratis_ai_agent_default_model', $builtin );
 		}
-		return update_option( self::CLAUDE_MAX_TOKEN_OPTION, $token );
+
+		return $model;
 	}
 
 	/**
@@ -274,7 +308,7 @@ class Settings {
 	/**
 	 * Partial-update settings (merge incoming data with existing).
 	 *
-	 * @param array $data Key-value pairs to update.
+	 * @param array<string, mixed> $data Key-value pairs to update.
 	 * @return bool
 	 */
 	public static function update( array $data ): bool {
