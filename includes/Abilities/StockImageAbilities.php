@@ -28,7 +28,7 @@ class StockImageAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_import( array $input ) {
+	public static function handle_import( array $input = [] ) {
 		$ability = new ImportStockImageAbility( 'gratis-ai-agent/import-stock-image' );
 		return $ability->execute( $input );
 	}

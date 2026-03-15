@@ -26,7 +26,7 @@ class KnowledgeAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_knowledge_search( array $input ) {
+	public static function handle_knowledge_search( array $input = [] ) {
 		$ability = new KnowledgeSearchAbility( 'gratis-ai-agent/knowledge-search' );
 		return $ability->execute( $input );
 	}

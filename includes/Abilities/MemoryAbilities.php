@@ -26,7 +26,7 @@ class MemoryAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_memory_save( array $input ) {
+	public static function handle_memory_save( array $input = [] ) {
 		$ability = new MemorySaveAbility( 'gratis-ai-agent/memory-save' );
 		return $ability->execute( $input );
 	}
@@ -37,7 +37,7 @@ class MemoryAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_memory_list( array $input ) {
+	public static function handle_memory_list( array $input = [] ) {
 		$ability = new MemoryListAbility( 'gratis-ai-agent/memory-list' );
 		return $ability->execute( $input );
 	}
@@ -48,7 +48,7 @@ class MemoryAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_memory_delete( array $input ) {
+	public static function handle_memory_delete( array $input = [] ) {
 		$ability = new MemoryDeleteAbility( 'gratis-ai-agent/memory-delete' );
 		return $ability->execute( $input );
 	}
@@ -191,7 +191,7 @@ class MemoryListAbility extends AbstractAbility {
 		];
 	}
 
-	protected function execute_callback( $input ) {
+	protected function execute_callback( $input = null ) {
 		$memories = Memory::get_all();
 
 		if ( empty( $memories ) ) {
@@ -210,7 +210,7 @@ class MemoryListAbility extends AbstractAbility {
 		return [ 'memories' => $list ];
 	}
 
-	protected function permission_callback( $input ): bool {
+	protected function permission_callback( $input = null ): bool {
 		return current_user_can( 'manage_options' );
 	}
 

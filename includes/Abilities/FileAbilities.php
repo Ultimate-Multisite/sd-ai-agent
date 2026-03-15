@@ -30,7 +30,7 @@ class FileAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_read_file( array $input ) {
+	public static function handle_read_file( array $input = [] ) {
 		$ability = new FileReadAbility( 'gratis-ai-agent/file-read' );
 		return $ability->execute( $input );
 	}
@@ -41,7 +41,7 @@ class FileAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_write_file( array $input ) {
+	public static function handle_write_file( array $input = [] ) {
 		$ability = new FileWriteAbility( 'gratis-ai-agent/file-write' );
 		return $ability->execute( $input );
 	}
@@ -52,7 +52,7 @@ class FileAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_edit_file( array $input ) {
+	public static function handle_edit_file( array $input = [] ) {
 		$ability = new FileEditAbility( 'gratis-ai-agent/file-edit' );
 		return $ability->execute( $input );
 	}
@@ -63,7 +63,7 @@ class FileAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_delete_file( array $input ) {
+	public static function handle_delete_file( array $input = [] ) {
 		$ability = new FileDeleteAbility( 'gratis-ai-agent/file-delete' );
 		return $ability->execute( $input );
 	}
@@ -74,7 +74,7 @@ class FileAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_list_directory( array $input ) {
+	public static function handle_list_directory( array $input = [] ) {
 		$ability = new FileListAbility( 'gratis-ai-agent/file-list' );
 		return $ability->execute( $input );
 	}
@@ -85,7 +85,7 @@ class FileAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_search_files( array $input ) {
+	public static function handle_search_files( array $input = [] ) {
 		$ability = new FileSearchAbility( 'gratis-ai-agent/file-search' );
 		return $ability->execute( $input );
 	}
@@ -96,7 +96,7 @@ class FileAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_search_content( array $input ) {
+	public static function handle_search_content( array $input = [] ) {
 		$ability = new ContentSearchAbility( 'gratis-ai-agent/content-search' );
 		return $ability->execute( $input );
 	}

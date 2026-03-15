@@ -38,7 +38,7 @@ class AbilityDiscoveryAbilities {
 	 * @param array<string,mixed> $input Input args (supports 'category' filter).
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_list_abilities( array $input ) {
+	public static function handle_list_abilities( array $input = [] ) {
 		$ability = new DiscoveryListAbility( 'gratis-ai-agent/discovery-list' );
 		return $ability->execute( $input );
 	}
@@ -49,7 +49,7 @@ class AbilityDiscoveryAbilities {
 	 * @param array<string,mixed> $input Input args (requires 'ability' key).
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_get_ability( array $input ) {
+	public static function handle_get_ability( array $input = [] ) {
 		$ability = new DiscoveryGetAbility( 'gratis-ai-agent/discovery-get' );
 		return $ability->execute( $input );
 	}
@@ -60,7 +60,7 @@ class AbilityDiscoveryAbilities {
 	 * @param array<string,mixed> $input Input args (requires 'ability' key).
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_execute_ability( array $input ) {
+	public static function handle_execute_ability( array $input = [] ) {
 		$ability = new DiscoveryExecuteAbility( 'gratis-ai-agent/discovery-execute' );
 		return $ability->execute( $input );
 	}

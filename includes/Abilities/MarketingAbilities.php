@@ -25,7 +25,7 @@ class MarketingAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_fetch_url( array $input ) {
+	public static function handle_fetch_url( array $input = [] ) {
 		$ability = new FetchUrlAbility( 'gratis-ai-agent/fetch-url' );
 		return $ability->execute( $input );
 	}
@@ -36,7 +36,7 @@ class MarketingAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_analyze_headers( array $input ) {
+	public static function handle_analyze_headers( array $input = [] ) {
 		$ability = new AnalyzeHeadersAbility( 'gratis-ai-agent/analyze-headers' );
 		return $ability->execute( $input );
 	}

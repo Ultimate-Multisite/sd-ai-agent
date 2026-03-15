@@ -26,7 +26,7 @@ class SkillAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_skill_load( array $input ) {
+	public static function handle_skill_load( array $input = [] ) {
 		$ability = new SkillLoadAbility( 'gratis-ai-agent/skill-load' );
 		return $ability->execute( $input );
 	}
@@ -37,7 +37,7 @@ class SkillAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_skill_list( array $input ) {
+	public static function handle_skill_list( array $input = [] ) {
 		$ability = new SkillListAbility( 'gratis-ai-agent/skill-list' );
 		return $ability->execute( $input );
 	}
@@ -183,7 +183,7 @@ class SkillListAbility extends AbstractAbility {
 		];
 	}
 
-	protected function execute_callback( $input ) {
+	protected function execute_callback( $input = null ) {
 		$skills = Skill::get_all( true );
 
 		if ( empty( $skills ) ) {
@@ -202,7 +202,7 @@ class SkillListAbility extends AbstractAbility {
 		return [ 'skills' => $list ];
 	}
 
-	protected function permission_callback( $input ): bool {
+	protected function permission_callback( $input = null ): bool {
 		return current_user_can( 'manage_options' );
 	}
 

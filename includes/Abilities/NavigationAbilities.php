@@ -27,7 +27,7 @@ class NavigationAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_navigate( array $input ) {
+	public static function handle_navigate( array $input = [] ) {
 		$ability = new NavigateAbility( 'gratis-ai-agent/navigate' );
 		return $ability->execute( $input );
 	}
@@ -38,7 +38,7 @@ class NavigationAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_get_page_html( array $input ) {
+	public static function handle_get_page_html( array $input = [] ) {
 		$ability = new GetPageHtmlAbility( 'gratis-ai-agent/get-page-html' );
 		return $ability->execute( $input );
 	}

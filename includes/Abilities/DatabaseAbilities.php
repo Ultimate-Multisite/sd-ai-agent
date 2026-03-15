@@ -28,7 +28,7 @@ class DatabaseAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_db_query( array $input ) {
+	public static function handle_db_query( array $input = [] ) {
 		$ability = new DatabaseQueryAbility( 'gratis-ai-agent/db-query' );
 		return $ability->execute( $input );
 	}

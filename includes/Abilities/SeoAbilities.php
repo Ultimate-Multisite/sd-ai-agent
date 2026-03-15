@@ -25,7 +25,7 @@ class SeoAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_audit_url( array $input ) {
+	public static function handle_audit_url( array $input = [] ) {
 		$ability = new SeoAuditUrlAbility( 'gratis-ai-agent/seo-audit-url' );
 		return $ability->execute( $input );
 	}
@@ -36,7 +36,7 @@ class SeoAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_analyze_content( array $input ) {
+	public static function handle_analyze_content( array $input = [] ) {
 		$ability = new SeoAnalyzeContentAbility( 'gratis-ai-agent/seo-analyze-content' );
 		return $ability->execute( $input );
 	}

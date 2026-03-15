@@ -27,7 +27,7 @@ class WordPressAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_get_plugins( array $input ) {
+	public static function handle_get_plugins( array $input = [] ) {
 		$ability = new GetPluginsAbility( 'gratis-ai-agent/get-plugins' );
 		return $ability->execute( $input );
 	}
@@ -38,7 +38,7 @@ class WordPressAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_get_themes( array $input ) {
+	public static function handle_get_themes( array $input = [] ) {
 		$ability = new GetThemesAbility( 'gratis-ai-agent/get-themes' );
 		return $ability->execute( $input );
 	}
@@ -49,7 +49,7 @@ class WordPressAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_install_plugin( array $input ) {
+	public static function handle_install_plugin( array $input = [] ) {
 		$ability = new InstallPluginAbility( 'gratis-ai-agent/install-plugin' );
 		return $ability->execute( $input );
 	}
@@ -60,7 +60,7 @@ class WordPressAbilities {
 	 * @param array<string,mixed> $input Input args.
 	 * @return array<string,mixed>|\WP_Error
 	 */
-	public static function handle_run_php( array $input ) {
+	public static function handle_run_php( array $input = [] ) {
 		$ability = new RunPhpAbility( 'gratis-ai-agent/run-php' );
 		return $ability->execute( $input );
 	}
@@ -140,7 +140,7 @@ class GetPluginsAbility extends AbstractAbility {
 		];
 	}
 
-	protected function execute_callback( $input ) {
+	protected function execute_callback( $input = null ) {
 		if ( ! function_exists( 'get_plugins' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
@@ -167,7 +167,7 @@ class GetPluginsAbility extends AbstractAbility {
 		];
 	}
 
-	protected function permission_callback( $input ): bool {
+	protected function permission_callback( $input = null ): bool {
 		return current_user_can( 'activate_plugins' );
 	}
 
@@ -204,7 +204,7 @@ class GetThemesAbility extends AbstractAbility {
 		];
 	}
 
-	protected function execute_callback( $input ) {
+	protected function execute_callback( $input = null ) {
 		$all_themes   = wp_get_themes();
 		$active_theme = get_stylesheet();
 
@@ -227,7 +227,7 @@ class GetThemesAbility extends AbstractAbility {
 		];
 	}
 
-	protected function permission_callback( $input ): bool {
+	protected function permission_callback( $input = null ): bool {
 		return current_user_can( 'switch_themes' );
 	}
 
