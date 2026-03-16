@@ -49,7 +49,7 @@
 
 - [ ] t068 Add AI image generation ability (DALL-E / Stable Diffusion) @superdav42 #feature ~6h logged:2026-03-15
   - New ability: `generate-image` from text prompt; upload to media library; return attachment ID
-- [ ] t069 Enhance StockImageAbilities: auto-select images during content creation @superdav42 #feature ~3h logged:2026-03-15
+- [x] t069 Enhance StockImageAbilities: auto-select images during content creation @superdav42 #feature ~3h logged:2026-03-15 pr:#449 completed:2026-03-16
   - Auto-attach featured image when creating posts/pages; search by style/mood
 
 ### WooCommerce Integration (P1)
