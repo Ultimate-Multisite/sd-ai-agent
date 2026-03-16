@@ -86,6 +86,14 @@
 	color: #757575;
 }
 
+.gratis-ability-category {
+	font-size: 11px;
+	color: #757575;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	margin: 0 0 6px;
+}
+
 .gratis-ability-notice {
 	margin: 0 !important;
 	padding: 8px 12px !important;
@@ -93,6 +101,24 @@
 
 .gratis-ability-notice a {
 	margin-left: 4px;
+}
+
+.gratis-ability-schema-toggle {
+	margin-top: 8px;
+}
+
+.gratis-ability-schema {
+	background: #f6f7f7;
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	font-size: 11px;
+	line-height: 1.5;
+	margin: 8px 0 0;
+	max-height: 200px;
+	overflow: auto;
+	padding: 8px;
+	white-space: pre-wrap;
+	word-break: break-all;
 }
 
 /* Responsive: single column on narrow screens */

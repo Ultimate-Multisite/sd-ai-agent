@@ -2709,8 +2709,8 @@ class RestController {
 	/**
 	 * Handle the /abilities/explorer endpoint — richer ability data for the Abilities Explorer admin page.
 	 *
-	 * Returns full descriptions, input parameter counts, meta flags (readonly, destructive),
-	 * and configuration status (whether required API keys are present).
+	 * Returns full descriptions, input parameter counts, annotations (readonly/destructive/idempotent),
+	 * output_schema, show_in_rest, and configuration status (whether required API keys are present).
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -2734,6 +2734,7 @@ class RestController {
 		foreach ( $abilities as $ability ) {
 			$input_schema = $ability->get_input_schema();
 			$meta         = $ability->get_meta();
+			$annotations  = $meta['annotations'] ?? [];
 
 			// Count required parameters from input schema.
 			$required_params = [];
@@ -2772,9 +2773,13 @@ class RestController {
 				'required_params'   => $required_params,
 				'is_configured'     => $is_configured,
 				'required_api_keys' => $required_api_keys,
-				'is_readonly'       => (bool) ( $meta['readonly'] ?? false ),
-				'is_destructive'    => (bool) ( $meta['destructive'] ?? false ),
-				'is_idempotent'     => (bool) ( $meta['idempotent'] ?? false ),
+				'annotations'       => [
+					'readonly'    => (bool) ( $annotations['readonly'] ?? false ),
+					'destructive' => (bool) ( $annotations['destructive'] ?? false ),
+					'idempotent'  => (bool) ( $annotations['idempotent'] ?? false ),
+				],
+				'output_schema'     => $ability->get_output_schema(),
+				'show_in_rest'      => (bool) ( $meta['show_in_rest'] ?? false ),
 			];
 		}
 

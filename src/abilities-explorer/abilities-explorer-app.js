@@ -2,7 +2,7 @@
  * Abilities Explorer App
  *
  * Lists all registered WordPress abilities with name, description,
- * configuration status, required API keys, and meta flags.
+ * configuration status, required API keys, annotations, and output schema.
  */
 
 /**
@@ -21,6 +21,7 @@ import {
 	Flex,
 	FlexItem,
 	FlexBlock,
+	Button,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
@@ -28,38 +29,29 @@ import apiFetch from '@wordpress/api-fetch';
 /* global gratisAiAgentAbilities */
 
 /**
- * Badge colour helper — maps a category slug to a colour variant.
+ * Renders a badge only when the annotation is active.
  *
- * @param {string} category Ability category slug.
- * @return {string} Badge intent string.
+ * @param {Object}  props
+ * @param {string}  props.label  Badge label text.
+ * @param {boolean} props.active Whether to render the badge.
+ * @param {string}  props.intent Badge colour intent.
  */
-function categoryIntent( category ) {
-	const map = {
-		'gratis-ai-agent': 'info',
-		memory: 'info',
-		seo: 'warning',
-		content: 'success',
-		marketing: 'success',
-		database: 'error',
-		file: 'warning',
-		git: 'warning',
-		woocommerce: 'info',
-	};
-	for ( const key of Object.keys( map ) ) {
-		if ( category.includes( key ) ) {
-			return map[ key ];
-		}
+function AnnotationBadge( { label, active, intent } ) {
+	if ( ! active ) {
+		return null;
 	}
-	return 'default';
+	return <Badge intent={ intent }>{ label }</Badge>;
 }
 
 /**
- * Single ability card component.
+ * Single ability card component with expandable output schema.
  *
  * @param {Object} props
  * @param {Object} props.ability Ability data object from the REST API.
  */
 function AbilityCard( { ability } ) {
+	const [ expanded, setExpanded ] = useState( false );
+
 	const {
 		name,
 		label,
@@ -69,8 +61,9 @@ function AbilityCard( { ability } ) {
 		required_params: requiredParams,
 		is_configured: isConfigured,
 		required_api_keys: requiredApiKeys,
-		is_readonly: isReadonly,
-		is_destructive: isDestructive,
+		annotations = {},
+		output_schema: outputSchema,
+		show_in_rest: showInRest,
 	} = ability;
 
 	return (
@@ -85,11 +78,6 @@ function AbilityCard( { ability } ) {
 					</FlexBlock>
 					<FlexItem>
 						<Flex gap={ 1 } wrap={ true }>
-							<FlexItem>
-								<Badge intent={ categoryIntent( category ) }>
-									{ category }
-								</Badge>
-							</FlexItem>
 							<FlexItem>
 								{ isConfigured ? (
 									<Badge intent="success">
@@ -107,20 +95,40 @@ function AbilityCard( { ability } ) {
 									</Badge>
 								) }
 							</FlexItem>
-							{ isDestructive && (
-								<FlexItem>
-									<Badge intent="error">
-										{ __(
-											'Destructive',
-											'gratis-ai-agent'
-										) }
-									</Badge>
-								</FlexItem>
-							) }
-							{ isReadonly && (
+							<FlexItem>
+								<AnnotationBadge
+									label={ __(
+										'destructive',
+										'gratis-ai-agent'
+									) }
+									active={ annotations.destructive }
+									intent="error"
+								/>
+							</FlexItem>
+							<FlexItem>
+								<AnnotationBadge
+									label={ __(
+										'readonly',
+										'gratis-ai-agent'
+									) }
+									active={ annotations.readonly }
+									intent="info"
+								/>
+							</FlexItem>
+							<FlexItem>
+								<AnnotationBadge
+									label={ __(
+										'idempotent',
+										'gratis-ai-agent'
+									) }
+									active={ annotations.idempotent }
+									intent="success"
+								/>
+							</FlexItem>
+							{ showInRest && (
 								<FlexItem>
 									<Badge intent="default">
-										{ __( 'Read-only', 'gratis-ai-agent' ) }
+										{ __( 'REST', 'gratis-ai-agent' ) }
 									</Badge>
 								</FlexItem>
 							) }
@@ -129,6 +137,7 @@ function AbilityCard( { ability } ) {
 				</Flex>
 			</CardHeader>
 			<CardBody>
+				<p className="gratis-ability-category">{ category }</p>
 				<p className="gratis-ability-description">
 					{ description ||
 						__( 'No description available.', 'gratis-ai-agent' ) }
@@ -174,6 +183,27 @@ function AbilityCard( { ability } ) {
 							</a>
 						) }
 					</Notice>
+				) }
+				{ outputSchema && Object.keys( outputSchema ).length > 0 && (
+					<div className="gratis-ability-schema-toggle">
+						<Button
+							variant="link"
+							onClick={ () => setExpanded( ( v ) => ! v ) }
+							aria-expanded={ expanded }
+						>
+							{ expanded
+								? __( 'Hide output schema', 'gratis-ai-agent' )
+								: __(
+										'Show output schema',
+										'gratis-ai-agent'
+								  ) }
+						</Button>
+						{ expanded && (
+							<pre className="gratis-ability-schema">
+								{ JSON.stringify( outputSchema, null, 2 ) }
+							</pre>
+						) }
+					</div>
 				) }
 			</CardBody>
 		</Card>

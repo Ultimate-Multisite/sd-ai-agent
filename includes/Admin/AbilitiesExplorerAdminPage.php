@@ -62,6 +62,8 @@ class AbilitiesExplorerAdminPage {
 			$asset['version']
 		);
 
+		wp_style_add_data( 'gratis-ai-agent-abilities-explorer', 'rtl', 'replace' );
+
 		wp_enqueue_script(
 			'gratis-ai-agent-abilities-explorer',
 			GRATIS_AI_AGENT_URL . 'build/abilities-explorer.js',
@@ -69,6 +71,8 @@ class AbilitiesExplorerAdminPage {
 			$asset['version'],
 			true
 		);
+
+		wp_set_script_translations( 'gratis-ai-agent-abilities-explorer', 'gratis-ai-agent' );
 
 		wp_localize_script(
 			'gratis-ai-agent-abilities-explorer',
