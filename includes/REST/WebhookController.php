@@ -707,7 +707,7 @@ class WebhookController {
 	 * @param string $provider_id        Provider ID override.
 	 * @param string $model_id           Model ID override.
 	 * @param int    $max_iterations     Max agent loop iterations.
-	 * @return WP_REST_Response|WP_Error
+	 * @return WP_REST_Response
 	 */
 	private function dispatch_sync(
 		int $webhook_id,

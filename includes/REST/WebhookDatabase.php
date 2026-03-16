@@ -202,7 +202,7 @@ CREATE TABLE {$logs_table} (
 	 * @param int                  $webhook_id        Webhook ID.
 	 * @param string               $status            'success' or 'error'.
 	 * @param string               $reply             AI reply text.
-	 * @param array<string, mixed> $tool_calls        Tool call log.
+	 * @param list<array<string, mixed>> $tool_calls   Tool call log.
 	 * @param int                  $prompt_tokens     Prompt token count.
 	 * @param int                  $completion_tokens Completion token count.
 	 * @param int                  $duration_ms       Execution duration in milliseconds.
