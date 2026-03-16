@@ -15,6 +15,9 @@
 		"test:js": "wp-scripts test-unit-js",
 		"test:unit": "wp-scripts test-unit-js",
 		"test:e2e": "wp-scripts test-e2e",
+		"test:e2e:playwright": "playwright test",
+		"test:e2e:playwright:ui": "playwright test --ui",
+		"test:e2e:playwright:debug": "playwright test --debug",
 		"test:php": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/gratis-ai-agent && php vendor/bin/phpunit'",
 		"test:php:testdox": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/gratis-ai-agent && php vendor/bin/phpunit --testdox'",
 		"test:php:coverage": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/gratis-ai-agent && php -d pcov.enabled=1 vendor/bin/phpunit --coverage-text'",
@@ -25,6 +28,8 @@
 		"prepare": "husky"
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.58.2",
+		"@wordpress/e2e-test-utils-playwright": "^1.41.0",
 		"@wordpress/env": "^10.39.0",
 		"@wordpress/scripts": "^31.6.0",
 		"husky": "^9.1.7",

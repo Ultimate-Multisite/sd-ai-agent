@@ -282,7 +282,7 @@ export default function SessionSidebar() {
 				{ ! isSharedTab && (
 					<input
 						type="text"
-						className="ai-agent-sidebar-search"
+						className="gratis-ai-agent-sidebar-search"
 						placeholder={ __(
 							'Search conversations…',
 							'ai-agent'

@@ -7,3 +7,7 @@ screenshots/
 .beads
 coverage.xml
 coverage-html/
+# Playwright
+playwright-report/
+test-results/
+blob-report/

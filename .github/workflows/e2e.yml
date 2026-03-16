@@ -1,0 +1,124 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl, zip
+          tools: composer:v2
+          coverage: none
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Build plugin assets
+        run: npm run build
+
+      - name: Start wp-env
+        run: npm run wp-env:start
+        env:
+          WP_ENV_HOME: /tmp/wp-env
+
+      - name: Wait for wp-env to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:8888/wp-login.php | grep -q "200"; then
+              echo "wp-env is ready"
+              break
+            fi
+            echo "Waiting for wp-env... attempt $i"
+            sleep 5
+          done
+
+      - name: Configure plugin for E2E tests
+        run: |
+          # Mark onboarding complete so the main chat UI renders (not the wizard).
+          # Disable site_builder_mode so the FAB renders instead of the full-screen
+          # SiteBuilderOverlay (wp-env is a fresh install, which auto-enables it).
+          npx wp-env run cli wp option update gratis_ai_agent_settings \
+            '{"onboarding_complete":true,"site_builder_mode":false}' --format=json
+
+          # Prevent FreshInstallDetector from re-enabling site_builder_mode on
+          # every page load. The wp-env environment is always a "fresh install"
+          # (default theme, only sample posts), so isFreshInstall() returns true
+          # and FloatingWidget::enqueue_widget_assets() re-enables site_builder_mode
+          # even after we set it to false above. Setting this transient to '0'
+          # caches the detection result as "not fresh" for 5 minutes.
+          npx wp-env run cli wp transient set gratis_ai_agent_fresh_install 0 300
+
+          # Create a real post so the site is no longer detected as a fresh install
+          # even after the transient expires (belt-and-suspenders).
+          npx wp-env run cli wp post create --post_title='E2E Test Post' \
+            --post_status=publish --post_type=post
+        env:
+          WP_ENV_HOME: /tmp/wp-env
+
+      - name: Run Playwright E2E tests
+        run: npm run test:e2e:playwright
+        env:
+          WP_BASE_URL: http://localhost:8888
+          WP_ADMIN_USER: admin
+          WP_ADMIN_PASSWORD: password
+          CI: true
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 7
+
+      - name: Stop wp-env
+        if: always()
+        run: npm run wp-env:stop
+        env:
+          WP_ENV_HOME: /tmp/wp-env
