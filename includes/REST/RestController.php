@@ -498,6 +498,24 @@ class RestController {
 			]
 		);
 
+		// Google Search Console credentials endpoint (credential — never returned in GET /settings).
+		register_rest_route(
+			self::NAMESPACE,
+			'/settings/gsc-credentials',
+			[
+				[
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => [ __CLASS__, 'handle_set_gsc_credentials' ],
+					'permission_callback' => [ __CLASS__, 'check_admin_permission' ],
+				],
+				[
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => [ __CLASS__, 'handle_delete_gsc_credentials' ],
+					'permission_callback' => [ __CLASS__, 'check_admin_permission' ],
+				],
+			]
+		);
+
 		// Memory endpoints.
 		register_rest_route(
 			self::NAMESPACE,
@@ -3646,6 +3664,14 @@ class RestController {
 		}
 		$settings['_provider_keys'] = $provider_keys;
 
+		// Indicate whether GSC credentials are configured (boolean + type only, no credential values).
+		$gsc_creds                    = Settings::get_gsc_credentials();
+		$settings['_gsc_credentials'] = [
+			'configured'       => Settings::has_gsc_credentials(),
+			'type'             => $gsc_creds['type'] ?? null,
+			'default_site_url' => $gsc_creds['default_site_url'] ?? null,
+		];
+
 		return new WP_REST_Response( $settings, 200 );
 	}
 
@@ -3784,6 +3810,115 @@ class RestController {
 			[
 				'saved'   => true,
 				'has_key' => ! empty( $api_key ),
+			],
+			200
+		);
+	}
+
+	/**
+	 * Handle POST /settings/gsc-credentials — save Google Search Console credentials.
+	 *
+	 * Accepts either a service-account JSON key (as a JSON string or object) or
+	 * a plain OAuth2 access token. Credentials are stored in a dedicated WordPress
+	 * option and never returned through GET /settings.
+	 *
+	 * Request body (JSON):
+	 *   { "type": "service_account", "credentials_json": "<JSON string>", "default_site_url": "https://..." }
+	 *   { "type": "access_token", "access_token": "<token>", "default_site_url": "https://..." }
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 */
+	public static function handle_set_gsc_credentials( WP_REST_Request $request ): WP_REST_Response {
+		$params = $request->get_json_params();
+
+		if ( empty( $params ) || ! is_array( $params ) ) {
+			return new WP_REST_Response( [ 'error' => 'No data provided.' ], 400 );
+		}
+
+		$type         = sanitize_text_field( $params['type'] ?? '' );
+		$default_site = esc_url_raw( $params['default_site_url'] ?? '' );
+
+		if ( 'service_account' === $type ) {
+			$credentials_json = $params['credentials_json'] ?? '';
+
+			// Accept either a JSON string or a pre-decoded object/array.
+			if ( is_string( $credentials_json ) ) {
+				$decoded = json_decode( $credentials_json, true );
+			} else {
+				$decoded = $credentials_json;
+			}
+
+			if ( ! is_array( $decoded ) ) {
+				return new WP_REST_Response( [ 'error' => 'Invalid service account JSON.' ], 400 );
+			}
+
+			$required = [ 'client_email', 'private_key' ];
+			foreach ( $required as $field ) {
+				if ( empty( $decoded[ $field ] ) ) {
+					return new WP_REST_Response(
+						/* translators: %s: field name */
+						[ 'error' => sprintf( 'Missing required field: %s', $field ) ],
+						400
+					);
+				}
+			}
+
+			$creds = [
+				'type'             => 'service_account',
+				'client_email'     => sanitize_email( $decoded['client_email'] ),
+				'private_key'      => $decoded['private_key'],
+				'default_site_url' => $default_site,
+			];
+
+		} elseif ( 'access_token' === $type ) {
+			$access_token = sanitize_text_field( $params['access_token'] ?? '' );
+
+			if ( empty( $access_token ) ) {
+				return new WP_REST_Response( [ 'error' => 'access_token is required.' ], 400 );
+			}
+
+			$creds = [
+				'type'             => 'access_token',
+				'access_token'     => $access_token,
+				'default_site_url' => $default_site,
+			];
+
+		} else {
+			return new WP_REST_Response(
+				[ 'error' => 'type must be "service_account" or "access_token".' ],
+				400
+			);
+		}
+
+		$success = Settings::set_gsc_credentials( $creds );
+
+		if ( ! $success ) {
+			return new WP_REST_Response( [ 'error' => 'Failed to save GSC credentials.' ], 500 );
+		}
+
+		return new WP_REST_Response(
+			[
+				'saved'            => true,
+				'type'             => $creds['type'],
+				'has_credentials'  => true,
+				'default_site_url' => $creds['default_site_url'],
+			],
+			200
+		);
+	}
+
+	/**
+	 * Handle DELETE /settings/gsc-credentials — remove Google Search Console credentials.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 */
+	public static function handle_delete_gsc_credentials( WP_REST_Request $request ): WP_REST_Response {
+		Settings::set_gsc_credentials( [] );
+
+		return new WP_REST_Response(
+			[
+				'deleted'         => true,
+				'has_credentials' => false,
 			],
 			200
 		);
