@@ -28,6 +28,9 @@ const HTTP_METHODS = [
 	{ label: 'DELETE', value: 'DELETE' },
 ];
 
+/**
+ *
+ */
 function emptyForm() {
 	return {
 		slug: '',
@@ -40,6 +43,9 @@ function emptyForm() {
 	};
 }
 
+/**
+ *
+ */
 export default function CustomToolsManager() {
 	const [ tools, setTools ] = useState( [] );
 	const [ loaded, setLoaded ] = useState( false );

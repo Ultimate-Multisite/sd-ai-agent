@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace GratisAiAgent\Core;
 
+use GratisAiAgent\Core\ChangeLogger;
 use GratisAiAgent\Knowledge\Knowledge;
 use GratisAiAgent\Models\Memory;
 use GratisAiAgent\Models\Skill;
@@ -87,6 +88,9 @@ class AgentLoop {
 	/** @var Settings Injected settings dependency. */
 	private $settings_service;
 
+	/** @var int Session ID for change attribution (0 = no session). */
+	private int $session_id = 0;
+
 	/**
 	 * @param string               $user_message     The user's prompt.
 	 * @param string[]             $abilities         Ability names to enable (empty = all).
@@ -116,6 +120,7 @@ class AgentLoop {
 		$this->tool_permissions = $settings['tool_permissions'] ?? [];
 		$this->yolo_mode        = (bool) ( $settings['yolo_mode'] ?? false );
 		$this->tool_call_log    = $options['tool_call_log'] ?? [];
+		$this->session_id       = (int) ( $options['session_id'] ?? 0 );
 		$this->token_usage      = $options['token_usage'] ?? [
 			'prompt'     => 0,
 			'completion' => 0,
@@ -169,8 +174,10 @@ class AgentLoop {
 		if ( $confirmed ) {
 			// The last message in history is the model's tool call message.
 			$assistant_message = end( $this->history );
-			$response_message  = $this->get_ability_resolver()->execute_abilities( $assistant_message );
-			$this->history[]   = $response_message;
+			ChangeLogger::begin( $this->session_id, 'confirmed-tool' );
+			$response_message = $this->get_ability_resolver()->execute_abilities( $assistant_message );
+			ChangeLogger::end();
+			$this->history[] = $response_message;
 			$this->log_tool_responses( $response_message );
 		} else {
 			// Remove the model's tool call message and tell the model the call was rejected.
@@ -267,8 +274,10 @@ class AgentLoop {
 			}
 
 			// Execute the ability calls and get the function response message.
+			ChangeLogger::begin( $this->session_id );
 			$response_message = $this->get_ability_resolver()->execute_abilities( $assistant_message );
-			$this->history[]  = $response_message;
+			ChangeLogger::end();
+			$this->history[] = $response_message;
 			$this->log_tool_responses( $response_message );
 
 			// Emit tool_result events via SSE if streaming.

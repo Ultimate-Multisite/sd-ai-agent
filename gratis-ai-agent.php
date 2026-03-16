@@ -61,11 +61,13 @@ use GratisAiAgent\Abilities\ToolCapabilities;
 use GratisAiAgent\Abilities\WooCommerceAbilities;
 use GratisAiAgent\Abilities\WordPressAbilities;
 use GratisAiAgent\Admin\AdminPage;
+use GratisAiAgent\Admin\ChangesAdminPage;
 use GratisAiAgent\Admin\FloatingWidget;
 use GratisAiAgent\Automations\AutomationRunner;
 use GratisAiAgent\Models\GitTrackerManager;
 use GratisAiAgent\Automations\EventTriggerHandler;
 use GratisAiAgent\CLI\CliCommand;
+use GratisAiAgent\Core\ChangeLogger;
 use GratisAiAgent\Core\Database;
 use GratisAiAgent\Core\OnboardingManager;
 use GratisAiAgent\Core\Settings;
@@ -99,6 +101,7 @@ add_action(
 
 add_action( 'rest_api_init', [ RestController::class, 'register_routes' ] );
 add_action( 'admin_menu', [ AdminPage::class, 'register' ] );
+add_action( 'admin_menu', [ ChangesAdminPage::class, 'register' ] );
 add_action( 'admin_menu', [ Settings::class, 'register' ] );
 
 // Register ability category.
@@ -183,6 +186,9 @@ add_action( 'gratis_ai_agent_run_event_automation', [ EventTriggerHandler::class
 
 // Git change tracking — snapshot files before AI modifications, enable revert.
 GitTrackerManager::register();
+
+// Change logger — hooks into WordPress core to record AI-made changes.
+ChangeLogger::register();
 
 // Floating widget on all admin pages.
 FloatingWidget::register();

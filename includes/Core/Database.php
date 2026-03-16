@@ -104,6 +104,14 @@ class Database {
 	}
 
 	/**
+	 * Get the changes log table name.
+	 */
+	public static function changes_log_table_name(): string {
+		global $wpdb;
+		return $wpdb->prefix . 'gratis_ai_agent_changes_log';
+	}
+
+	/**
 	 * Install or upgrade the database table.
 	 */
 	public static function install(): void {
@@ -128,6 +136,7 @@ class Database {
 		$event_automations_table      = self::event_automations_table_name();
 		$conversation_templates_table = self::conversation_templates_table_name();
 		$git_tracked_files_table      = self::git_tracked_files_table_name();
+		$changes_log_table            = self::changes_log_table_name();
 		$charset                      = $wpdb->get_charset_collate();
 
 		// Knowledge tables.
@@ -308,6 +317,28 @@ class Database {
 			KEY package_slug (package_slug),
 			KEY file_type (file_type),
 			KEY status (status)
+		) {$charset};
+
+		CREATE TABLE {$changes_log_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			session_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			object_type varchar(50) NOT NULL DEFAULT '',
+			object_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			object_title varchar(255) NOT NULL DEFAULT '',
+			ability_name varchar(100) NOT NULL DEFAULT '',
+			field_name varchar(100) NOT NULL DEFAULT '',
+			before_value longtext NOT NULL,
+			after_value longtext NOT NULL,
+			reverted tinyint(1) NOT NULL DEFAULT 0,
+			reverted_at datetime DEFAULT NULL,
+			created_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			KEY session_id (session_id),
+			KEY user_id (user_id),
+			KEY object_type_id (object_type, object_id),
+			KEY reverted (reverted),
+			KEY created_at (created_at)
 		) {$charset};";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';

@@ -25,6 +25,7 @@ use GratisAiAgent\Core\Export;
 use GratisAiAgent\Core\Settings;
 use GratisAiAgent\Knowledge\Knowledge;
 use GratisAiAgent\Knowledge\KnowledgeDatabase;
+use GratisAiAgent\Models\ChangesLog;
 use GratisAiAgent\Models\ConversationTemplate;
 use GratisAiAgent\Models\Memory;
 use GratisAiAgent\Models\Skill;
@@ -1493,6 +1494,125 @@ class RestController {
 				],
 			]
 		);
+
+		// ─── Changes log endpoints ───────────────────────────────────
+		register_rest_route(
+			self::NAMESPACE,
+			'/changes',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $instance, 'handle_list_changes' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
+				'args'                => [
+					'session_id'  => [
+						'required'          => false,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
+					'object_type' => [
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					],
+					'reverted'    => [
+						'required' => false,
+						'type'     => 'boolean',
+					],
+					'per_page'    => [
+						'required' => false,
+						'type'     => 'integer',
+						'default'  => 50,
+					],
+					'page'        => [
+						'required' => false,
+						'type'     => 'integer',
+						'default'  => 1,
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/changes/(?P<id>\d+)',
+			[
+				[
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => [ $instance, 'handle_get_change' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
+					'args'                => [
+						'id' => [
+							'required'          => true,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						],
+					],
+				],
+				[
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => [ $instance, 'handle_delete_change' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
+					'args'                => [
+						'id' => [
+							'required'          => true,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						],
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/changes/(?P<id>\d+)/diff',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $instance, 'handle_get_change_diff' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
+				'args'                => [
+					'id' => [
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/changes/(?P<id>\d+)/revert',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $instance, 'handle_revert_change' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
+				'args'                => [
+					'id' => [
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/changes/export',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $instance, 'handle_export_changes' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
+				'args'                => [
+					'ids' => [
+						'required' => true,
+						'type'     => 'array',
+						'items'    => [ 'type' => 'integer' ],
+					],
+				],
+			]
+		);
 	}
 
 	/**
@@ -1842,6 +1962,11 @@ class RestController {
 
 		if ( ! empty( $params['page_context'] ) ) {
 			$options['page_context'] = $params['page_context'];
+		}
+
+		// Pass session_id to AgentLoop for change attribution.
+		if ( ! empty( $params['session_id'] ) ) {
+			$options['session_id'] = (int) $params['session_id'];
 		}
 
 		// Record start time for webhook duration tracking.
@@ -3997,7 +4122,7 @@ class RestController {
 			return new WP_Error( 'delete_failed', __( 'Failed to delete conversation template. Built-in templates cannot be deleted.', 'gratis-ai-agent' ), [ 'status' => 400 ] );
 		}
 
-		return new WP_REST_Response( [ 'deleted' => true ], 200 );
+	return new WP_REST_Response( [ 'deleted' => true ], 200 );
 	}
 
 	// ─── Site Builder handlers ───────────────────────────────────
@@ -4078,5 +4203,250 @@ class RestController {
 		$result = NotificationDispatcher::test( $type, $webhook_url );
 
 		return new WP_REST_Response( $result, $result['success'] ? 200 : 422 );
+	}
+
+	// ─── Changes log handlers ────────────────────────────────────────────────
+
+	/**
+	 * List change records with optional filters.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response
+	 */
+	public function handle_list_changes( WP_REST_Request $request ): WP_REST_Response {
+		$filters = [
+			'per_page' => (int) $request->get_param( 'per_page' ),
+			'page'     => (int) $request->get_param( 'page' ),
+		];
+
+		$session_id = $request->get_param( 'session_id' );
+		if ( $session_id ) {
+			$filters['session_id'] = (int) $session_id;
+		}
+
+		$object_type = $request->get_param( 'object_type' );
+		if ( $object_type ) {
+			$filters['object_type'] = sanitize_key( $object_type );
+		}
+
+		$reverted = $request->get_param( 'reverted' );
+		if ( null !== $reverted ) {
+			$filters['reverted'] = (bool) $reverted;
+		}
+
+		$result = ChangesLog::list( $filters );
+
+		return new WP_REST_Response(
+			[
+				'items'    => $result['items'],
+				'total'    => $result['total'],
+				'per_page' => $filters['per_page'],
+				'page'     => $filters['page'],
+			],
+			200
+		);
+	}
+
+	/**
+	 * Get a single change record.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function handle_get_change( WP_REST_Request $request ) {
+		$id     = (int) $request->get_param( 'id' );
+		$change = ChangesLog::get( $id );
+
+		if ( ! $change ) {
+			return new WP_Error( 'not_found', __( 'Change record not found.', 'gratis-ai-agent' ), [ 'status' => 404 ] );
+		}
+
+		return new WP_REST_Response( $change, 200 );
+	}
+
+	/**
+	 * Get the diff for a single change record.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function handle_get_change_diff( WP_REST_Request $request ) {
+		$id     = (int) $request->get_param( 'id' );
+		$change = ChangesLog::get( $id );
+
+		if ( ! $change ) {
+			return new WP_Error( 'not_found', __( 'Change record not found.', 'gratis-ai-agent' ), [ 'status' => 404 ] );
+		}
+
+		$diff = ChangesLog::generate_diff( $change->before_value, $change->after_value );
+
+		return new WP_REST_Response(
+			[
+				'id'           => $change->id,
+				'before_value' => $change->before_value,
+				'after_value'  => $change->after_value,
+				'diff'         => $diff,
+			],
+			200
+		);
+	}
+
+	/**
+	 * Revert a single change — restores the before_value to the object.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function handle_revert_change( WP_REST_Request $request ) {
+		$id     = (int) $request->get_param( 'id' );
+		$change = ChangesLog::get( $id );
+
+		if ( ! $change ) {
+			return new WP_Error( 'not_found', __( 'Change record not found.', 'gratis-ai-agent' ), [ 'status' => 404 ] );
+		}
+
+		if ( $change->reverted ) {
+			return new WP_Error( 'already_reverted', __( 'This change has already been reverted.', 'gratis-ai-agent' ), [ 'status' => 409 ] );
+		}
+
+		$result = $this->apply_revert( $change );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		ChangesLog::mark_reverted( $id );
+
+		return new WP_REST_Response(
+			[
+				'success' => true,
+				'message' => __( 'Change reverted successfully.', 'gratis-ai-agent' ),
+				'id'      => $id,
+			],
+			200
+		);
+	}
+
+	/**
+	 * Apply the revert operation for a change record.
+	 *
+	 * Dispatches to the appropriate WordPress API based on object_type.
+	 *
+	 * @param object $change Change record row.
+	 * @return true|WP_Error True on success, WP_Error on failure.
+	 */
+	private function apply_revert( object $change ) {
+		switch ( $change->object_type ) {
+			case 'post':
+				$result = wp_update_post(
+					[
+						'ID'                => (int) $change->object_id,
+						$change->field_name => $change->before_value,
+					],
+					true
+				);
+				if ( is_wp_error( $result ) ) {
+					return $result;
+				}
+				return true;
+
+			case 'option':
+				update_option( $change->field_name, $change->before_value );
+				return true;
+
+			case 'term':
+				$result = wp_update_term(
+					(int) $change->object_id,
+					$change->field_name,
+					[ 'name' => $change->before_value ]
+				);
+				if ( is_wp_error( $result ) ) {
+					return $result;
+				}
+				return true;
+
+			case 'user':
+				$result = wp_update_user(
+					[
+						'ID'                => (int) $change->object_id,
+						$change->field_name => $change->before_value,
+					]
+				);
+				if ( is_wp_error( $result ) ) {
+					return $result;
+				}
+				return true;
+
+			default:
+				/**
+				 * Allow third-party code to handle revert for custom object types.
+				 *
+				 * @param true|WP_Error $result  Default WP_Error (unhandled).
+				 * @param object        $change  Change record row.
+				 */
+				$result = apply_filters(
+					'gratis_ai_agent_revert_change',
+					new WP_Error(
+						'unsupported_object_type',
+						sprintf(
+							/* translators: %s: object type slug */
+							__( 'Revert is not supported for object type "%s".', 'gratis-ai-agent' ),
+							$change->object_type
+						),
+						[ 'status' => 422 ]
+					),
+					$change
+				);
+				return $result;
+		}
+	}
+
+	/**
+	 * Export selected changes as a patch file.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function handle_export_changes( WP_REST_Request $request ) {
+		$ids = array_map( 'absint', (array) $request->get_param( 'ids' ) );
+
+		if ( empty( $ids ) ) {
+			return new WP_Error( 'no_ids', __( 'No change IDs provided.', 'gratis-ai-agent' ), [ 'status' => 400 ] );
+		}
+
+		$patch = ChangesLog::generate_patch( $ids );
+
+		return new WP_REST_Response(
+			[
+				'patch'    => $patch,
+				'filename' => 'ai-changes-' . gmdate( 'Y-m-d-His' ) . '.patch',
+			],
+			200
+		);
+	}
+
+	/**
+	 * Delete a change record.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function handle_delete_change( WP_REST_Request $request ) {
+		$id     = (int) $request->get_param( 'id' );
+		$change = ChangesLog::get( $id );
+
+		if ( ! $change ) {
+			return new WP_Error( 'not_found', __( 'Change record not found.', 'gratis-ai-agent' ), [ 'status' => 404 ] );
+		}
+
+		ChangesLog::delete( $id );
+
+		return new WP_REST_Response(
+			[
+				'deleted' => true,
+				'id'      => $id,
+			],
+			200
+		);
 	}
 }

@@ -54,6 +54,13 @@ jest.mock( '../../store', () => 'ai-agent' );
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+/**
+ *
+ * @param root0
+ * @param root0.percentage
+ * @param root0.isWarning
+ * @param root0.tokenUsage
+ */
 function setupMocks( {
 	percentage = 10,
 	isWarning = false,

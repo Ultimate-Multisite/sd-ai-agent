@@ -20,6 +20,9 @@ import apiFetch from '@wordpress/api-fetch';
 
 const API_BASE = '/ai-agent/v1/knowledge';
 
+/**
+ *
+ */
 export default function KnowledgeManager() {
 	const [ collections, setCollections ] = useState( [] );
 	const [ loading, setLoading ] = useState( true );

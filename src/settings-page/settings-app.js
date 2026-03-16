@@ -32,6 +32,9 @@ import ToolProfilesManager from './tool-profiles-manager';
 import AutomationsManager from './automations-manager';
 import EventsManager from './events-manager';
 
+/**
+ *
+ */
 export default function SettingsApp() {
 	const { fetchSettings, fetchProviders, saveSettings } =
 		useDispatch( STORE_NAME );
