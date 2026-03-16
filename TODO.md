@@ -6,7 +6,7 @@
   - Rename main file, text domain, namespace, constants, REST namespace, DB tables, options, CSS classes, ability names, CLI command, build assets, config files, CI/docs
   - Add activation hook migration for existing installs (detect old option/table names and rename)
 
-- [ ] t091 Shared conversations: multiple admins can view/continue same session @superdav42 #feature ~6h logged:2026-03-16 ref=GH#387
+- [x] t091 Shared conversations: multiple admins can view/continue same session @superdav42 #feature ~6h logged:2026-03-16 ref=GH#387 pr:#474 completed:2026-03-16
 
 ## Backlog
 
