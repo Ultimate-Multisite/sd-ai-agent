@@ -31,7 +31,7 @@
 
 ### Floating Widget & Frontend (P0)
 
-- [ ] t066 Show floating widget on frontend for logged-in admins @superdav42 #feature ~3h logged:2026-03-15
+- [x] t066 Show floating widget on frontend for logged-in admins @superdav42 #feature ~3h logged:2026-03-15 pr:#458 completed:2026-03-16
   - Register `wp_enqueue_scripts` hook with capability check
   - Frontend page context: current URL, post ID, template, query vars
   - Setting to enable/disable (default: enabled for admins)
