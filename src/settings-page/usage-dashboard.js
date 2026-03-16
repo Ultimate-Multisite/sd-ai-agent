@@ -8,7 +8,7 @@ import apiFetch from '@wordpress/api-fetch';
 
 /**
  *
- * @param cost
+ * @param {number|string} cost
  */
 function formatCost( cost ) {
 	const num = parseFloat( cost ) || 0;
@@ -20,7 +20,7 @@ function formatCost( cost ) {
 
 /**
  *
- * @param tokens
+ * @param {number|string} tokens
  */
 function formatTokens( tokens ) {
 	const num = parseInt( tokens, 10 ) || 0;

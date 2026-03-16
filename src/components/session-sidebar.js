@@ -119,7 +119,7 @@ function SessionItem( { session, isActive } ) {
 
 /**
  *
- * @param filter
+ * @param {string} filter
  */
 function getEmptyMessage( filter ) {
 	if ( filter === 'trash' ) {

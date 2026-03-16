@@ -82,11 +82,11 @@ const mockProviders = [
 
 /**
  *
- * @param root0
- * @param root0.providers
- * @param root0.selectedProviderId
- * @param root0.selectedModelId
- * @param root0.models
+ * @param {Object} root0
+ * @param {Array}  root0.providers
+ * @param {string} root0.selectedProviderId
+ * @param {string} root0.selectedModelId
+ * @param {Array}  root0.models
  */
 function setupMocks( {
 	providers = mockProviders,

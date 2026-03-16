@@ -69,9 +69,9 @@ describe( 'SHORTCUTS', () => {
 function captureHandlerFor( shortcuts, isMac ) {
 	/**
 	 *
-	 * @param e
-	 * @param combo
-	 * @param mac
+	 * @param {KeyboardEvent} e
+	 * @param {string}        combo
+	 * @param {boolean}       mac
 	 */
 	function matchesCombo( e, combo, mac ) {
 		const parts = combo.toLowerCase().split( '+' );
