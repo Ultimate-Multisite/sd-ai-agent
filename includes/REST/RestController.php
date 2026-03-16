@@ -248,6 +248,17 @@ class RestController {
 			]
 		);
 
+		// Alerts endpoint — proactive issues surfaced as a badge count on the FAB.
+		register_rest_route(
+			self::NAMESPACE,
+			'/alerts',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $instance, 'handle_alerts' ],
+				'permission_callback' => [ $instance, 'check_permission' ],
+			]
+		);
+
 		// Settings endpoints.
 		register_rest_route(
 			self::NAMESPACE,
@@ -3646,5 +3657,63 @@ class RestController {
 	 */
 	public function handle_list_all_logs(): WP_REST_Response {
 		return new WP_REST_Response( AutomationLogs::list_recent(), 200 );
+	}
+
+	/**
+	 * Handle GET /alerts — return proactive issues that should surface as a
+	 * notification badge on the floating action button.
+	 *
+	 * Each alert has:
+	 *   - type    (string) machine-readable key, e.g. 'no_provider'
+	 *   - message (string) human-readable description
+	 *
+	 * @return WP_REST_Response { count: int, alerts: array<array{type: string, message: string}> }
+	 */
+	public function handle_alerts(): WP_REST_Response {
+		$alerts = [];
+
+		// Check whether at least one AI provider is configured.
+		$has_provider = false;
+
+		// Direct providers (API key stored in plugin options).
+		foreach ( Settings::DIRECT_PROVIDERS as $provider_id => $meta ) {
+			if ( '' !== Settings::get_provider_key( $provider_id ) ) {
+				$has_provider = true;
+				break;
+			}
+		}
+
+		// WP SDK providers (AI Experiments plugin, OpenAI-compatible connector, etc.).
+		if ( ! $has_provider && class_exists( '\\WordPress\\AiClient\\AiClient' ) ) {
+			try {
+				$registry     = \WordPress\AiClient\AiClient::defaultRegistry();
+				$provider_ids = $registry->getRegisteredProviderIds();
+				AgentLoop::ensure_provider_credentials_static();
+				foreach ( $provider_ids as $provider_id ) {
+					$auth = $registry->getProviderRequestAuthentication( $provider_id );
+					if ( null !== $auth ) {
+						$has_provider = true;
+						break;
+					}
+				}
+			} catch ( \Throwable $e ) {
+				// Registry unavailable — treat as no provider.
+			}
+		}
+
+		if ( ! $has_provider ) {
+			$alerts[] = [
+				'type'    => 'no_provider',
+				'message' => __( 'No AI provider configured. Add an API key in Settings.', 'gratis-ai-agent' ),
+			];
+		}
+
+		return new WP_REST_Response(
+			[
+				'count'  => count( $alerts ),
+				'alerts' => $alerts,
+			],
+			200
+		);
 	}
 }
