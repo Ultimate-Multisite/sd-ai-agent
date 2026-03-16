@@ -75,9 +75,21 @@ jobs:
           # Mark onboarding complete so the main chat UI renders (not the wizard).
           # Disable site_builder_mode so the FAB renders instead of the full-screen
           # SiteBuilderOverlay (wp-env is a fresh install, which auto-enables it).
-          # Playwright tests run against the development environment (port 8888).
           npx wp-env run cli wp option update gratis_ai_agent_settings \
             '{"onboarding_complete":true,"site_builder_mode":false}' --format=json
+
+          # Prevent FreshInstallDetector from re-enabling site_builder_mode on
+          # every page load. The wp-env environment is always a "fresh install"
+          # (default theme, only sample posts), so isFreshInstall() returns true
+          # and FloatingWidget::enqueue_widget_assets() re-enables site_builder_mode
+          # even after we set it to false above. Setting this transient to '0'
+          # caches the detection result as "not fresh" for 5 minutes.
+          npx wp-env run cli wp transient set gratis_ai_agent_fresh_install 0 300
+
+          # Create a real post so the site is no longer detected as a fresh install
+          # even after the transient expires (belt-and-suspenders).
+          npx wp-env run cli wp post create --post_title='E2E Test Post' \
+            --post_status=publish --post_type=post
         env:
           WP_ENV_HOME: /tmp/wp-env
 
