@@ -1,7 +1,7 @@
 /* Floating Widget — available on all admin pages */
 
 /* FAB button */
-.ai-agent-fab {
+.gratis-ai-agent-fab {
 	position: fixed;
 	bottom: 24px;
 	right: 24px;
@@ -20,18 +20,38 @@
 	transition: transform 0.15s, box-shadow 0.15s;
 }
 
-.ai-agent-fab:hover {
+/* Notification badge on the FAB */
+.gratis-ai-agent-fab-badge {
+	position: absolute;
+	top: -4px;
+	right: -4px;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 4px;
+	border-radius: 9px;
+	background: #d63638;
+	color: #fff;
+	font-size: 10px;
+	font-weight: 700;
+	line-height: 18px;
+	text-align: center;
+	pointer-events: none;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+	box-sizing: border-box;
+}
+
+.gratis-ai-agent-fab:hover {
 	transform: scale(1.08);
 	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
 	background: var(--wp-admin-theme-color, #2271b1);
 	color: #fff;
 }
 
-.ai-agent-fab:active {
+.gratis-ai-agent-fab:active {
 	transform: scale(0.96);
 }
 
-.ai-agent-fab svg {
+.gratis-ai-agent-fab svg {
 	fill: currentcolor;
 }
 
@@ -389,7 +409,7 @@
 		border-radius: 4px;
 	}
 
-	.ai-agent-fab {
+	.gratis-ai-agent-fab {
 		bottom: 16px;
 		right: 16px;
 		width: 48px;

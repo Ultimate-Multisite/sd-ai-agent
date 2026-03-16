@@ -93,6 +93,9 @@ const DEFAULT_STATE = {
 	// Streaming state — token buffer for the in-progress assistant message.
 	streamingText: '',
 	isStreaming: false,
+
+	// Proactive alerts — count of issues surfaced as a badge on the FAB.
+	alertCount: 0,
 };
 
 const actions = {
@@ -399,6 +402,9 @@ const actions = {
 	setStreamAbortController( controller ) {
 		return { type: 'SET_STREAM_ABORT_CONTROLLER', controller };
 	},
+	setAlertCount( count ) {
+		return { type: 'SET_ALERT_COUNT', count };
+	},
 
 	// ─── Thunks ──────────────────────────────────────────────────
 
@@ -435,6 +441,20 @@ const actions = {
 				}
 			} catch {
 				dispatch.setProviders( [] );
+			}
+		};
+	},
+
+	fetchAlerts() {
+		return async ( { dispatch } ) => {
+			try {
+				const data = await apiFetch( {
+					path: '/gratis-ai-agent/v1/alerts',
+				} );
+				dispatch.setAlertCount( data.count || 0 );
+			} catch {
+				// Non-fatal — badge simply stays at 0 on error.
+				dispatch.setAlertCount( 0 );
 			}
 		};
 	},
@@ -1955,6 +1975,10 @@ const selectors = {
 		return state.streamAbortController || null;
 	},
 
+	getAlertCount( state ) {
+		return state.alertCount;
+	},
+
 	/**
 	 * Calculate the context window usage as a percentage (0–100+).
 	 *
@@ -2105,6 +2129,8 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return { ...state, isStreaming: action.streaming };
 		case 'SET_STREAM_ABORT_CONTROLLER':
 			return { ...state, streamAbortController: action.controller };
+		case 'SET_ALERT_COUNT':
+			return { ...state, alertCount: action.count };
 		default:
 			return state;
 	}

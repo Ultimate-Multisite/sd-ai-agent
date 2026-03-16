@@ -23,7 +23,7 @@ import './style.css';
  * @return {JSX.Element} The floating widget element.
  */
 function FloatingWidget() {
-	const { fetchProviders, fetchSessions, setPageContext } =
+	const { fetchProviders, fetchSessions, fetchAlerts, setPageContext } =
 		useDispatch( STORE_NAME );
 	const isOpen = useSelect(
 		( select ) => select( STORE_NAME ).isFloatingOpen(),
@@ -34,6 +34,13 @@ function FloatingWidget() {
 		fetchProviders();
 		fetchSessions();
 	}, [ fetchProviders, fetchSessions ] );
+
+	// Fetch alerts on mount and refresh every 5 minutes.
+	useEffect( () => {
+		fetchAlerts();
+		const interval = setInterval( fetchAlerts, 5 * 60 * 1000 );
+		return () => clearInterval( interval );
+	}, [ fetchAlerts ] );
 
 	// Gather page context on mount.
 	useEffect( () => {
