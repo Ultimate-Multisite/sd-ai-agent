@@ -14,6 +14,7 @@ import apiFetch from '@wordpress/api-fetch';
 import STORE_NAME from '../store';
 import SlashCommandMenu from './slash-command-menu';
 import useSpeechRecognition from './use-speech-recognition';
+import ConversationTemplateMenu from './conversation-template-menu';
 
 /**
  * Message input area with auto-resize, slash command menu, and send/stop controls.
@@ -31,6 +32,7 @@ import useSpeechRecognition from './use-speech-recognition';
 export default function MessageInput( { compact = false, onSlashCommand } ) {
 	const [ text, setText ] = useState( '' );
 	const [ showSlash, setShowSlash ] = useState( false );
+	const [ showTemplates, setShowTemplates ] = useState( false );
 	const textareaRef = useRef( null );
 	const sending = useSelect(
 		( select ) => select( STORE_NAME ).isSending(),
@@ -250,6 +252,15 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 		]
 	);
 
+	const handleTemplateSelect = useCallback( ( prompt ) => {
+		setText( ( prev ) => ( prev ? prev + '\n' + prompt : prompt ) );
+		setShowTemplates( false );
+		setTimeout(
+			() => textareaRef.current?.focus( { preventScroll: true } ),
+			0
+		);
+	}, [] );
+
 	const handleKeyDown = useCallback(
 		( e ) => {
 			// Don't intercept if slash menu is handling arrow keys.
@@ -268,6 +279,12 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 		<div
 			className={ `ai-agent-input-area ${ compact ? 'is-compact' : '' }` }
 		>
+			{ showTemplates && (
+				<ConversationTemplateMenu
+					onSelect={ handleTemplateSelect }
+					onClose={ () => setShowTemplates( false ) }
+				/>
+			) }
 			{ showSlash && (
 				<SlashCommandMenu
 					filter={ text }
@@ -275,64 +292,76 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 					onClose={ () => setShowSlash( false ) }
 				/>
 			) }
-			<textarea
-				ref={ textareaRef }
-				className="ai-agent-input"
-				rows={ 1 }
-				placeholder={ __(
-					'Type a message or / for commands…',
-					'ai-agent'
-				) }
-				value={ text }
-				onChange={ ( e ) => setText( e.target.value ) }
-				onKeyDown={ handleKeyDown }
-				disabled={ sending }
-			/>
-			{ isSpeechSupported && ! sending && (
+			<div className="ai-agent-input-row">
 				<Button
-					onClick={ toggleListening }
-					className={ `ai-agent-mic-btn${
-						isListening ? ' is-listening' : ''
-					}` }
-					label={
-						isListening
-							? __( 'Stop recording', 'ai-agent' )
-							: __( 'Start voice input', 'ai-agent' )
-					}
-					icon={
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 24 24"
-							width="18"
-							height="18"
-							fill="currentColor"
-							aria-hidden="true"
-							focusable="false"
-						>
-							<path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.93V20H9v2h6v-2h-2v-2.07A7 7 0 0 0 19 11h-2z" />
-						</svg>
-					}
-				/>
-			) }
-			{ sending ? (
-				<Button
-					variant="secondary"
-					onClick={ stopGeneration }
-					className="ai-agent-stop-btn"
-					label={ __( 'Stop', 'ai-agent' ) }
+					variant="tertiary"
+					onClick={ () => setShowTemplates( ( v ) => ! v ) }
+					className="ai-agent-templates-btn"
+					label={ __( 'Templates', 'gratis-ai-agent' ) }
+					isSmall
+					disabled={ sending }
 				>
-					{ __( 'Stop', 'ai-agent' ) }
+					{ __( 'Templates', 'gratis-ai-agent' ) }
 				</Button>
-			) : (
-				<Button
-					variant="primary"
-					onClick={ handleSend }
-					disabled={ ! text.trim() }
-					className="ai-agent-send-btn"
-					label={ __( 'Send', 'ai-agent' ) }
-					icon={ <Icon icon={ arrowUp } /> }
+				<textarea
+					ref={ textareaRef }
+					className="ai-agent-input"
+					rows={ 1 }
+					placeholder={ __(
+						'Type a message or / for commands…',
+						'gratis-ai-agent'
+					) }
+					value={ text }
+					onChange={ ( e ) => setText( e.target.value ) }
+					onKeyDown={ handleKeyDown }
+					disabled={ sending }
 				/>
-			) }
+				{ isSpeechSupported && ! sending && (
+					<Button
+						onClick={ toggleListening }
+						className={ `ai-agent-mic-btn${
+							isListening ? ' is-listening' : ''
+						}` }
+						label={
+							isListening
+								? __( 'Stop recording', 'gratis-ai-agent' )
+								: __( 'Start voice input', 'gratis-ai-agent' )
+						}
+						icon={
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 24 24"
+								width="18"
+								height="18"
+								fill="currentColor"
+								aria-hidden="true"
+								focusable="false"
+							>
+								<path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.93V20H9v2h6v-2h-2v-2.07A7 7 0 0 0 19 11h-2z" />
+							</svg>
+						}
+					/>
+				) }
+				{ sending ? (
+					<Button
+						variant="secondary"
+						onClick={ stopGeneration }
+						className="ai-agent-stop-btn"
+						label={ __( 'Stop', 'gratis-ai-agent' ) }
+					>
+						{ __( 'Stop', 'gratis-ai-agent' ) }
+					</Button>
+				) : (
+					<Button
+						variant="primary"
+						onClick={ handleSend }
+						disabled={ ! text.trim() }
+						className="ai-agent-send-btn"
+						label={ __( 'Send', 'gratis-ai-agent' ) }
+						icon={ <Icon icon={ arrowUp } /> }
+					/>
+				) }
+			</div>
 		</div>
 	);
 }
