@@ -68,26 +68,26 @@ class EditorialAbilities {
 		wp_register_ability(
 			'ai-agent/generate-title',
 			[
-				'label'               => __( 'Generate Title Suggestions', 'ai-agent' ),
-				'description'         => __( 'Generate SEO-optimised title suggestions for a post or arbitrary content. Accepts a post ID or raw content string.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Generate Title Suggestions', 'gratis-ai-agent' ),
+				'description'         => __( 'Generate SEO-optimised title suggestions for a post or arbitrary content. Accepts a post ID or raw content string.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
 						'content'    => [
 							'type'        => 'string',
-							'description' => __( 'Content to generate title suggestions for.', 'ai-agent' ),
+							'description' => __( 'Content to generate title suggestions for.', 'gratis-ai-agent' ),
 						],
 						'post_id'    => [
 							'type'        => 'integer',
-							'description' => __( 'Post ID whose content will be used. Overrides the content parameter when both are provided.', 'ai-agent' ),
+							'description' => __( 'Post ID whose content will be used. Overrides the content parameter when both are provided.', 'gratis-ai-agent' ),
 						],
 						'candidates' => [
 							'type'        => 'integer',
 							'minimum'     => 1,
 							'maximum'     => 10,
 							'default'     => 3,
-							'description' => __( 'Number of title suggestions to generate (1–10, default 3).', 'ai-agent' ),
+							'description' => __( 'Number of title suggestions to generate (1–10, default 3).', 'gratis-ai-agent' ),
 						],
 					],
 				],
@@ -96,7 +96,7 @@ class EditorialAbilities {
 					'properties' => [
 						'titles' => [
 							'type'        => 'array',
-							'description' => __( 'Generated title suggestions.', 'ai-agent' ),
+							'description' => __( 'Generated title suggestions.', 'gratis-ai-agent' ),
 							'items'       => [ 'type' => 'string' ],
 						],
 					],
@@ -125,7 +125,7 @@ class EditorialAbilities {
 	 */
 	public static function handle_generate_title( array $input ) {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
-			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'ai-agent' ) );
+			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'gratis-ai-agent' ) );
 		}
 
 		$candidates = max( 1, min( 10, (int) ( $input['candidates'] ?? 3 ) ) );
@@ -137,7 +137,7 @@ class EditorialAbilities {
 		}
 
 		if ( empty( $context ) ) {
-			return new WP_Error( 'content_not_provided', __( 'Content is required to generate title suggestions.', 'ai-agent' ) );
+			return new WP_Error( 'content_not_provided', __( 'Content is required to generate title suggestions.', 'gratis-ai-agent' ) );
 		}
 
 		$system_instruction = <<<'INSTRUCTION'
@@ -172,7 +172,7 @@ INSTRUCTION;
 		}
 
 		if ( empty( $result ) ) {
-			return new WP_Error( 'no_results', __( 'No title suggestions were generated.', 'ai-agent' ) );
+			return new WP_Error( 'no_results', __( 'No title suggestions were generated.', 'gratis-ai-agent' ) );
 		}
 
 		return [
@@ -196,25 +196,25 @@ INSTRUCTION;
 		wp_register_ability(
 			'ai-agent/generate-excerpt',
 			[
-				'label'               => __( 'Generate Excerpt', 'ai-agent' ),
-				'description'         => __( 'Generate a concise, SEO-friendly excerpt (~55 words) for a post or arbitrary content.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Generate Excerpt', 'gratis-ai-agent' ),
+				'description'         => __( 'Generate a concise, SEO-friendly excerpt (~55 words) for a post or arbitrary content.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
 						'content' => [
 							'type'        => 'string',
-							'description' => __( 'Content to generate an excerpt for.', 'ai-agent' ),
+							'description' => __( 'Content to generate an excerpt for.', 'gratis-ai-agent' ),
 						],
 						'context' => [
 							'type'        => 'string',
-							'description' => __( 'Additional context or a post ID to enrich the excerpt generation.', 'ai-agent' ),
+							'description' => __( 'Additional context or a post ID to enrich the excerpt generation.', 'gratis-ai-agent' ),
 						],
 					],
 				],
 				'output_schema'       => [
 					'type'        => 'string',
-					'description' => __( 'Generated excerpt (plain text, ~55 words).', 'ai-agent' ),
+					'description' => __( 'Generated excerpt (plain text, ~55 words).', 'gratis-ai-agent' ),
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_generate_excerpt' ],
 				'permission_callback' => [ __CLASS__, 'permission_edit_posts' ],
@@ -240,7 +240,7 @@ INSTRUCTION;
 	 */
 	public static function handle_generate_excerpt( array $input ) {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
-			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'ai-agent' ) );
+			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'gratis-ai-agent' ) );
 		}
 
 		$content = self::resolve_content( $input['content'] ?? '', $input['context'] ?? '' );
@@ -249,7 +249,7 @@ INSTRUCTION;
 		}
 
 		if ( empty( $content['text'] ) ) {
-			return new WP_Error( 'content_not_provided', __( 'Content is required to generate an excerpt.', 'ai-agent' ) );
+			return new WP_Error( 'content_not_provided', __( 'Content is required to generate an excerpt.', 'gratis-ai-agent' ) );
 		}
 
 		$system_instruction = <<<'INSTRUCTION'
@@ -289,7 +289,7 @@ INSTRUCTION;
 		}
 
 		if ( empty( $result ) ) {
-			return new WP_Error( 'no_results', __( 'No excerpt was generated.', 'ai-agent' ) );
+			return new WP_Error( 'no_results', __( 'No excerpt was generated.', 'gratis-ai-agent' ) );
 		}
 
 		return sanitize_textarea_field( trim( $result, ' "\'' ) );
@@ -306,31 +306,31 @@ INSTRUCTION;
 		wp_register_ability(
 			'ai-agent/summarize-content',
 			[
-				'label'               => __( 'Summarize Content', 'ai-agent' ),
-				'description'         => __( 'Generate a factual, neutral summary of a post or content at short (1 sentence), medium (2–3 sentences), or long (4–6 sentences) length.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Summarize Content', 'gratis-ai-agent' ),
+				'description'         => __( 'Generate a factual, neutral summary of a post or content at short (1 sentence), medium (2–3 sentences), or long (4–6 sentences) length.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
 						'content' => [
 							'type'        => 'string',
-							'description' => __( 'Content to summarize.', 'ai-agent' ),
+							'description' => __( 'Content to summarize.', 'gratis-ai-agent' ),
 						],
 						'context' => [
 							'type'        => 'string',
-							'description' => __( 'Additional context or a post ID to enrich the summary.', 'ai-agent' ),
+							'description' => __( 'Additional context or a post ID to enrich the summary.', 'gratis-ai-agent' ),
 						],
 						'length'  => [
 							'type'        => 'string',
 							'enum'        => [ 'short', 'medium', 'long' ],
 							'default'     => 'medium',
-							'description' => __( 'Desired summary length: short (1 sentence), medium (2–3 sentences), long (4–6 sentences).', 'ai-agent' ),
+							'description' => __( 'Desired summary length: short (1 sentence), medium (2–3 sentences), long (4–6 sentences).', 'gratis-ai-agent' ),
 						],
 					],
 				],
 				'output_schema'       => [
 					'type'        => 'string',
-					'description' => __( 'Generated summary (plain text).', 'ai-agent' ),
+					'description' => __( 'Generated summary (plain text).', 'gratis-ai-agent' ),
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_summarize_content' ],
 				'permission_callback' => [ __CLASS__, 'permission_edit_posts' ],
@@ -356,7 +356,7 @@ INSTRUCTION;
 	 */
 	public static function handle_summarize_content( array $input ) {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
-			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'ai-agent' ) );
+			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'gratis-ai-agent' ) );
 		}
 
 		$length = in_array( $input['length'] ?? 'medium', [ 'short', 'medium', 'long' ], true )
@@ -369,7 +369,7 @@ INSTRUCTION;
 		}
 
 		if ( empty( $content['text'] ) ) {
-			return new WP_Error( 'content_not_provided', __( 'Content is required to generate a summary.', 'ai-agent' ) );
+			return new WP_Error( 'content_not_provided', __( 'Content is required to generate a summary.', 'gratis-ai-agent' ) );
 		}
 
 		$length_desc = '2–3 sentences; 25–80 words';
@@ -402,7 +402,7 @@ INSTRUCTION;
 		}
 
 		if ( empty( $result ) ) {
-			return new WP_Error( 'no_results', __( 'No summary was generated.', 'ai-agent' ) );
+			return new WP_Error( 'no_results', __( 'No summary was generated.', 'gratis-ai-agent' ) );
 		}
 
 		return sanitize_text_field( trim( $result ) );
@@ -419,32 +419,32 @@ INSTRUCTION;
 		wp_register_ability(
 			'ai-agent/review-block',
 			[
-				'label'               => __( 'Review Block Content', 'ai-agent' ),
-				'description'         => __( 'Review a Gutenberg block\'s content for accessibility, readability, grammar, and SEO issues. Returns actionable suggestions.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Review Block Content', 'gratis-ai-agent' ),
+				'description'         => __( 'Review a Gutenberg block\'s content for accessibility, readability, grammar, and SEO issues. Returns actionable suggestions.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
 						'block_type'     => [
 							'type'        => 'string',
-							'description' => __( 'The block type, e.g. core/paragraph, core/heading.', 'ai-agent' ),
+							'description' => __( 'The block type, e.g. core/paragraph, core/heading.', 'gratis-ai-agent' ),
 						],
 						'block_content'  => [
 							'type'        => 'string',
-							'description' => __( 'The plain-text content of the block to review.', 'ai-agent' ),
+							'description' => __( 'The plain-text content of the block to review.', 'gratis-ai-agent' ),
 						],
 						'context'        => [
 							'type'        => 'string',
-							'description' => __( 'Surrounding content to improve review relevance.', 'ai-agent' ),
+							'description' => __( 'Surrounding content to improve review relevance.', 'gratis-ai-agent' ),
 						],
 						'post_id'        => [
 							'type'        => 'integer',
-							'description' => __( 'ID of the post being reviewed.', 'ai-agent' ),
+							'description' => __( 'ID of the post being reviewed.', 'gratis-ai-agent' ),
 						],
 						'existing_notes' => [
 							'type'        => 'array',
 							'items'       => [ 'type' => 'string' ],
-							'description' => __( 'Existing note texts for this block from prior review runs, used to avoid repeating suggestions.', 'ai-agent' ),
+							'description' => __( 'Existing note texts for this block from prior review runs, used to avoid repeating suggestions.', 'gratis-ai-agent' ),
 						],
 						'review_types'   => [
 							'type'        => 'array',
@@ -452,7 +452,7 @@ INSTRUCTION;
 								'type' => 'string',
 								'enum' => [ 'accessibility', 'readability', 'grammar', 'seo' ],
 							],
-							'description' => __( 'Review types to perform (accessibility, readability, grammar, seo). Defaults to all four.', 'ai-agent' ),
+							'description' => __( 'Review types to perform (accessibility, readability, grammar, seo). Defaults to all four.', 'gratis-ai-agent' ),
 						],
 					],
 					'required'   => [ 'block_type', 'block_content' ],
@@ -462,7 +462,7 @@ INSTRUCTION;
 					'properties' => [
 						'suggestions' => [
 							'type'        => 'array',
-							'description' => __( 'Review suggestions for the block.', 'ai-agent' ),
+							'description' => __( 'Review suggestions for the block.', 'gratis-ai-agent' ),
 							'items'       => [
 								'type'       => 'object',
 								'properties' => [
@@ -497,14 +497,14 @@ INSTRUCTION;
 	 */
 	public static function handle_review_block( array $input ) {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
-			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'ai-agent' ) );
+			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'gratis-ai-agent' ) );
 		}
 
 		$block_type    = sanitize_text_field( $input['block_type'] ?? '' );
 		$block_content = sanitize_text_field( $input['block_content'] ?? '' );
 
 		if ( empty( $block_content ) ) {
-			return new WP_Error( 'block_content_required', __( 'Block content is required to perform a review.', 'ai-agent' ) );
+			return new WP_Error( 'block_content_required', __( 'Block content is required to perform a review.', 'gratis-ai-agent' ) );
 		}
 
 		$supported_types = [ 'accessibility', 'readability', 'grammar', 'seo' ];
@@ -678,7 +678,7 @@ INSTRUCTION;
 		if ( ! current_user_can( 'edit_posts' ) ) {
 			return new WP_Error(
 				'insufficient_capabilities',
-				__( 'You do not have permission to use AI editorial abilities.', 'ai-agent' )
+				__( 'You do not have permission to use AI editorial abilities.', 'gratis-ai-agent' )
 			);
 		}
 		return true;
@@ -705,7 +705,7 @@ INSTRUCTION;
 				return new WP_Error(
 					'post_not_found',
 					/* translators: %d: Post ID. */
-					sprintf( __( 'Post with ID %d not found.', 'ai-agent' ), absint( $context_or_post_id ) )
+					sprintf( __( 'Post with ID %d not found.', 'gratis-ai-agent' ), absint( $context_or_post_id ) )
 				);
 			}
 
@@ -748,7 +748,7 @@ INSTRUCTION;
 				return new WP_Error(
 					'post_not_found',
 					/* translators: %d: Post ID. */
-					sprintf( __( 'Post with ID %d not found.', 'ai-agent' ), absint( $input['post_id'] ) )
+					sprintf( __( 'Post with ID %d not found.', 'gratis-ai-agent' ), absint( $input['post_id'] ) )
 				);
 			}
 

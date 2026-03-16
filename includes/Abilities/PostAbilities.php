@@ -39,9 +39,9 @@ class PostAbilities {
 		wp_register_ability(
 			'ai-agent/get-post',
 			[
-				'label'               => __( 'Get Post', 'ai-agent' ),
-				'description'         => __( 'Retrieve a WordPress post by ID. Returns title, content, excerpt, status, author, categories, tags, featured image, and meta.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Get Post', 'gratis-ai-agent' ),
+				'description'         => __( 'Retrieve a WordPress post by ID. Returns title, content, excerpt, status, author, categories, tags, featured image, and meta.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -92,9 +92,9 @@ class PostAbilities {
 		wp_register_ability(
 			'ai-agent/create-post',
 			[
-				'label'               => __( 'Create Post', 'ai-agent' ),
-				'description'         => __( 'Create a new WordPress post or custom post type entry. Supports title, content, excerpt, status, categories, tags, and meta fields.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Create Post', 'gratis-ai-agent' ),
+				'description'         => __( 'Create a new WordPress post or custom post type entry. Supports title, content, excerpt, status, categories, tags, and meta fields.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -165,9 +165,9 @@ class PostAbilities {
 		wp_register_ability(
 			'ai-agent/update-post',
 			[
-				'label'               => __( 'Update Post', 'ai-agent' ),
-				'description'         => __( 'Update an existing WordPress post. Only provided fields are changed; omitted fields are left as-is.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Update Post', 'gratis-ai-agent' ),
+				'description'         => __( 'Update an existing WordPress post. Only provided fields are changed; omitted fields are left as-is.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -237,9 +237,9 @@ class PostAbilities {
 		wp_register_ability(
 			'ai-agent/delete-post',
 			[
-				'label'               => __( 'Delete Post', 'ai-agent' ),
-				'description'         => __( 'Move a WordPress post to the trash, or permanently delete it. Defaults to trash (recoverable). Set force_delete to true for permanent deletion.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Delete Post', 'gratis-ai-agent' ),
+				'description'         => __( 'Move a WordPress post to the trash, or permanently delete it. Defaults to trash (recoverable). Set force_delete to true for permanent deletion.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -292,7 +292,7 @@ class PostAbilities {
 		$post_type = sanitize_text_field( $input['post_type'] ?? 'any' );
 
 		if ( ! $post_id ) {
-			return new WP_Error( 'ai_agent_empty_post_id', __( 'post_id is required.', 'ai-agent' ) );
+			return new WP_Error( 'ai_agent_empty_post_id', __( 'post_id is required.', 'gratis-ai-agent' ) );
 		}
 
 		$post = get_post( $post_id );
@@ -301,7 +301,7 @@ class PostAbilities {
 			return new WP_Error(
 				'ai_agent_post_not_found',
 				/* translators: %d: post ID */
-				sprintf( __( 'Post %d not found.', 'ai-agent' ), $post_id )
+				sprintf( __( 'Post %d not found.', 'gratis-ai-agent' ), $post_id )
 			);
 		}
 
@@ -309,7 +309,7 @@ class PostAbilities {
 			return new WP_Error(
 				'ai_agent_post_type_mismatch',
 				/* translators: 1: post ID, 2: expected type, 3: actual type */
-				sprintf( __( 'Post %1$d is of type "%2$s", not "%3$s".', 'ai-agent' ), $post_id, $post->post_type, $post_type )
+				sprintf( __( 'Post %1$d is of type "%2$s", not "%3$s".', 'gratis-ai-agent' ), $post_id, $post->post_type, $post_type )
 			);
 		}
 
@@ -356,7 +356,7 @@ class PostAbilities {
 		$site_url  = $input['site_url'] ?? '';
 
 		if ( empty( $title ) ) {
-			return new WP_Error( 'ai_agent_empty_title', __( 'Post title is required.', 'ai-agent' ) );
+			return new WP_Error( 'ai_agent_empty_title', __( 'Post title is required.', 'gratis-ai-agent' ) );
 		}
 
 		$allowed_statuses = [ 'draft', 'publish', 'pending', 'private', 'future' ];
@@ -442,7 +442,7 @@ class PostAbilities {
 		$site_url = $input['site_url'] ?? '';
 
 		if ( ! $post_id ) {
-			return new WP_Error( 'ai_agent_empty_post_id', __( 'post_id is required.', 'ai-agent' ) );
+			return new WP_Error( 'ai_agent_empty_post_id', __( 'post_id is required.', 'gratis-ai-agent' ) );
 		}
 
 		$switched = false;
@@ -468,7 +468,7 @@ class PostAbilities {
 			return new WP_Error(
 				'ai_agent_post_not_found',
 				/* translators: %d: post ID */
-				sprintf( __( 'Post %d not found.', 'ai-agent' ), $post_id )
+				sprintf( __( 'Post %d not found.', 'gratis-ai-agent' ), $post_id )
 			);
 		}
 
@@ -545,7 +545,7 @@ class PostAbilities {
 		$site_url     = $input['site_url'] ?? '';
 
 		if ( ! $post_id ) {
-			return new WP_Error( 'ai_agent_empty_post_id', __( 'post_id is required.', 'ai-agent' ) );
+			return new WP_Error( 'ai_agent_empty_post_id', __( 'post_id is required.', 'gratis-ai-agent' ) );
 		}
 
 		$switched = false;
@@ -571,7 +571,7 @@ class PostAbilities {
 			return new WP_Error(
 				'ai_agent_post_not_found',
 				/* translators: %d: post ID */
-				sprintf( __( 'Post %d not found.', 'ai-agent' ), $post_id )
+				sprintf( __( 'Post %d not found.', 'gratis-ai-agent' ), $post_id )
 			);
 		}
 
@@ -586,7 +586,7 @@ class PostAbilities {
 			return new WP_Error(
 				'ai_agent_delete_failed',
 				/* translators: %d: post ID */
-				sprintf( __( 'Failed to delete post %d.', 'ai-agent' ), $post_id )
+				sprintf( __( 'Failed to delete post %d.', 'gratis-ai-agent' ), $post_id )
 			);
 		}
 

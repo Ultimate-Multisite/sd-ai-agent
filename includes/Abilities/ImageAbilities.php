@@ -75,23 +75,23 @@ class ImageAbilities {
 		wp_register_ability(
 			'ai-agent/generate-alt-text',
 			[
-				'label'               => __( 'Generate Alt Text', 'ai-agent' ),
-				'description'         => __( 'Use a vision AI model to generate descriptive, accessibility-compliant alt text for an image. Accepts an attachment ID or image URL.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Generate Alt Text', 'gratis-ai-agent' ),
+				'description'         => __( 'Use a vision AI model to generate descriptive, accessibility-compliant alt text for an image. Accepts an attachment ID or image URL.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
 						'attachment_id' => [
 							'type'        => 'integer',
-							'description' => __( 'Attachment ID of the image to generate alt text for.', 'ai-agent' ),
+							'description' => __( 'Attachment ID of the image to generate alt text for.', 'gratis-ai-agent' ),
 						],
 						'image_url'     => [
 							'type'        => 'string',
-							'description' => __( 'URL or data URI of the image. Used when attachment_id is not provided.', 'ai-agent' ),
+							'description' => __( 'URL or data URI of the image. Used when attachment_id is not provided.', 'gratis-ai-agent' ),
 						],
 						'context'       => [
 							'type'        => 'string',
-							'description' => __( 'Optional context about the image or surrounding content to improve alt text relevance.', 'ai-agent' ),
+							'description' => __( 'Optional context about the image or surrounding content to improve alt text relevance.', 'gratis-ai-agent' ),
 						],
 					],
 				],
@@ -100,7 +100,7 @@ class ImageAbilities {
 					'properties' => [
 						'alt_text' => [
 							'type'        => 'string',
-							'description' => __( 'Generated alt text for the image (≤ 125 characters).', 'ai-agent' ),
+							'description' => __( 'Generated alt text for the image (≤ 125 characters).', 'gratis-ai-agent' ),
 						],
 					],
 				],
@@ -128,7 +128,7 @@ class ImageAbilities {
 	 */
 	public static function handle_generate_alt_text( array $input ) {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
-			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'ai-agent' ) );
+			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'gratis-ai-agent' ) );
 		}
 
 		$context = sanitize_textarea_field( $input['context'] ?? '' );
@@ -159,7 +159,7 @@ For images containing text, include the text in your description if it is essent
 Respond with only the alt text, nothing else.
 INSTRUCTION;
 
-		$prompt = __( 'Generate alt text for this image.', 'ai-agent' );
+		$prompt = __( 'Generate alt text for this image.', 'gratis-ai-agent' );
 		if ( ! empty( $context ) ) {
 			$prompt .= "\n\n<additional-context>" . $context . '</additional-context>';
 		}
@@ -181,7 +181,7 @@ INSTRUCTION;
 		}
 
 		if ( empty( $result ) ) {
-			return new WP_Error( 'no_results', __( 'No alt text was generated.', 'ai-agent' ) );
+			return new WP_Error( 'no_results', __( 'No alt text was generated.', 'gratis-ai-agent' ) );
 		}
 
 		$alt_text = trim( (string) $result, '"\'.' );
@@ -205,30 +205,30 @@ INSTRUCTION;
 		wp_register_ability(
 			'ai-agent/generate-image-prompt',
 			[
-				'label'               => __( 'Generate Image Prompt', 'ai-agent' ),
-				'description'         => __( 'Generate a self-contained image-generation prompt from post content or arbitrary text. Suitable for passing directly to an image generation model.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Generate Image Prompt', 'gratis-ai-agent' ),
+				'description'         => __( 'Generate a self-contained image-generation prompt from post content or arbitrary text. Suitable for passing directly to an image generation model.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
 						'content' => [
 							'type'        => 'string',
-							'description' => __( 'Content to use as inspiration for the generated image.', 'ai-agent' ),
+							'description' => __( 'Content to use as inspiration for the generated image.', 'gratis-ai-agent' ),
 						],
 						'context' => [
 							'type'        => 'string',
-							'description' => __( 'Additional context or a post ID to enrich the prompt.', 'ai-agent' ),
+							'description' => __( 'Additional context or a post ID to enrich the prompt.', 'gratis-ai-agent' ),
 						],
 						'style'   => [
 							'type'        => 'string',
-							'description' => __( 'Optional style instructions to apply to the generated image (e.g. "photorealistic", "watercolour painting").', 'ai-agent' ),
+							'description' => __( 'Optional style instructions to apply to the generated image (e.g. "photorealistic", "watercolour painting").', 'gratis-ai-agent' ),
 						],
 					],
 					'required'   => [ 'content' ],
 				],
 				'output_schema'       => [
 					'type'        => 'string',
-					'description' => __( 'The image generation prompt.', 'ai-agent' ),
+					'description' => __( 'The image generation prompt.', 'gratis-ai-agent' ),
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_generate_image_prompt' ],
 				'permission_callback' => [ __CLASS__, 'permission_edit_posts' ],
@@ -254,7 +254,7 @@ INSTRUCTION;
 	 */
 	public static function handle_generate_image_prompt( array $input ) {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
-			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'ai-agent' ) );
+			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'gratis-ai-agent' ) );
 		}
 
 		$raw_content = sanitize_text_field( $input['content'] ?? '' );
@@ -268,7 +268,7 @@ INSTRUCTION;
 				return new WP_Error(
 					'post_not_found',
 					/* translators: %d: Post ID. */
-					sprintf( __( 'Post with ID %d not found.', 'ai-agent' ), absint( $context_input ) )
+					sprintf( __( 'Post with ID %d not found.', 'gratis-ai-agent' ), absint( $context_input ) )
 				);
 			}
 			$content = ! empty( $raw_content ) ? wp_strip_all_tags( $raw_content ) : wp_strip_all_tags( $post->post_content );
@@ -287,7 +287,7 @@ INSTRUCTION;
 		}
 
 		if ( empty( $content ) ) {
-			return new WP_Error( 'content_not_provided', __( 'Content is required to generate an image prompt.', 'ai-agent' ) );
+			return new WP_Error( 'content_not_provided', __( 'Content is required to generate an image prompt.', 'gratis-ai-agent' ) );
 		}
 
 		$system_instruction = <<<'INSTRUCTION'
@@ -342,7 +342,7 @@ INSTRUCTION;
 		}
 
 		if ( empty( $result ) ) {
-			return new WP_Error( 'no_results', __( 'No image prompt was generated.', 'ai-agent' ) );
+			return new WP_Error( 'no_results', __( 'No image prompt was generated.', 'gratis-ai-agent' ) );
 		}
 
 		return sanitize_text_field( trim( (string) $result ) );
@@ -359,35 +359,35 @@ INSTRUCTION;
 		wp_register_ability(
 			'ai-agent/import-base64-image',
 			[
-				'label'               => __( 'Import Base64 Image', 'ai-agent' ),
-				'description'         => __( 'Import a base64-encoded image into the WordPress media library. Returns the attachment ID, URL, and metadata.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Import Base64 Image', 'gratis-ai-agent' ),
+				'description'         => __( 'Import a base64-encoded image into the WordPress media library. Returns the attachment ID, URL, and metadata.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
 						'data'        => [
 							'type'        => 'string',
-							'description' => __( 'Base64-encoded image data to import.', 'ai-agent' ),
+							'description' => __( 'Base64-encoded image data to import.', 'gratis-ai-agent' ),
 						],
 						'filename'    => [
 							'type'        => 'string',
-							'description' => __( 'Filename for the imported image (without extension).', 'ai-agent' ),
+							'description' => __( 'Filename for the imported image (without extension).', 'gratis-ai-agent' ),
 						],
 						'title'       => [
 							'type'        => 'string',
-							'description' => __( 'Title for the media library attachment.', 'ai-agent' ),
+							'description' => __( 'Title for the media library attachment.', 'gratis-ai-agent' ),
 						],
 						'description' => [
 							'type'        => 'string',
-							'description' => __( 'Description for the media library attachment.', 'ai-agent' ),
+							'description' => __( 'Description for the media library attachment.', 'gratis-ai-agent' ),
 						],
 						'alt_text'    => [
 							'type'        => 'string',
-							'description' => __( 'Alt text for the image.', 'ai-agent' ),
+							'description' => __( 'Alt text for the image.', 'gratis-ai-agent' ),
 						],
 						'mime_type'   => [
 							'type'        => 'string',
-							'description' => __( 'MIME type of the image (e.g. image/png, image/jpeg). Auto-detected if omitted.', 'ai-agent' ),
+							'description' => __( 'MIME type of the image (e.g. image/png, image/jpeg). Auto-detected if omitted.', 'gratis-ai-agent' ),
 						],
 					],
 					'required'   => [ 'data' ],
@@ -397,27 +397,27 @@ INSTRUCTION;
 					'properties' => [
 						'id'          => [
 							'type'        => 'integer',
-							'description' => __( 'Attachment ID.', 'ai-agent' ),
+							'description' => __( 'Attachment ID.', 'gratis-ai-agent' ),
 						],
 						'url'         => [
 							'type'        => 'string',
-							'description' => __( 'Attachment URL.', 'ai-agent' ),
+							'description' => __( 'Attachment URL.', 'gratis-ai-agent' ),
 						],
 						'filename'    => [
 							'type'        => 'string',
-							'description' => __( 'Attachment filename.', 'ai-agent' ),
+							'description' => __( 'Attachment filename.', 'gratis-ai-agent' ),
 						],
 						'title'       => [
 							'type'        => 'string',
-							'description' => __( 'Attachment title.', 'ai-agent' ),
+							'description' => __( 'Attachment title.', 'gratis-ai-agent' ),
 						],
 						'description' => [
 							'type'        => 'string',
-							'description' => __( 'Attachment description.', 'ai-agent' ),
+							'description' => __( 'Attachment description.', 'gratis-ai-agent' ),
 						],
 						'alt_text'    => [
 							'type'        => 'string',
-							'description' => __( 'Attachment alt text.', 'ai-agent' ),
+							'description' => __( 'Attachment alt text.', 'gratis-ai-agent' ),
 						],
 					],
 				],
@@ -447,7 +447,7 @@ INSTRUCTION;
 		$data = $input['data'] ?? '';
 
 		if ( empty( $data ) ) {
-			return new WP_Error( 'missing_data', __( 'Base64 image data is required.', 'ai-agent' ) );
+			return new WP_Error( 'missing_data', __( 'Base64 image data is required.', 'gratis-ai-agent' ) );
 		}
 
 		// Strip data URI prefix if present (e.g. "data:image/png;base64,").
@@ -461,7 +461,7 @@ INSTRUCTION;
 
 		$decoded = base64_decode( $data, true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- decoding user-supplied image data, not obfuscation
 		if ( false === $decoded ) {
-			return new WP_Error( 'invalid_base64', __( 'Failed to decode base64 image data.', 'ai-agent' ) );
+			return new WP_Error( 'invalid_base64', __( 'Failed to decode base64 image data.', 'gratis-ai-agent' ) );
 		}
 
 		// Detect MIME type from binary data if not provided.
@@ -471,7 +471,7 @@ INSTRUCTION;
 		}
 
 		if ( empty( $mime_type ) || ! str_starts_with( $mime_type, 'image/' ) ) {
-			return new WP_Error( 'invalid_image', __( 'The provided data is not a recognised image type.', 'ai-agent' ) );
+			return new WP_Error( 'invalid_image', __( 'The provided data is not a recognised image type.', 'gratis-ai-agent' ) );
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -484,7 +484,7 @@ INSTRUCTION;
 
 		if ( false === $written ) {
 			wp_delete_file( $temp_file );
-			return new WP_Error( 'write_failed', __( 'Failed to write image data to a temporary file.', 'ai-agent' ) );
+			return new WP_Error( 'write_failed', __( 'Failed to write image data to a temporary file.', 'gratis-ai-agent' ) );
 		}
 
 		$extension = wp_get_default_extension_for_mime_type( $mime_type ) ?: 'bin';
@@ -550,7 +550,7 @@ INSTRUCTION;
 		if ( ! current_user_can( 'upload_files' ) ) {
 			return new WP_Error(
 				'insufficient_capabilities',
-				__( 'You do not have permission to use AI image abilities.', 'ai-agent' )
+				__( 'You do not have permission to use AI image abilities.', 'gratis-ai-agent' )
 			);
 		}
 		return true;
@@ -568,7 +568,7 @@ INSTRUCTION;
 		if ( ! current_user_can( 'edit_posts' ) ) {
 			return new WP_Error(
 				'insufficient_capabilities',
-				__( 'You do not have permission to use AI image abilities.', 'ai-agent' )
+				__( 'You do not have permission to use AI image abilities.', 'gratis-ai-agent' )
 			);
 		}
 		return true;
@@ -610,7 +610,7 @@ INSTRUCTION;
 			return self::download_to_data_uri( $url );
 		}
 
-		return new WP_Error( 'no_image_provided', __( 'Either attachment_id or image_url must be provided.', 'ai-agent' ) );
+		return new WP_Error( 'no_image_provided', __( 'Either attachment_id or image_url must be provided.', 'gratis-ai-agent' ) );
 	}
 
 	/**
@@ -628,12 +628,12 @@ INSTRUCTION;
 			return new WP_Error(
 				'invalid_attachment',
 				/* translators: %d: Attachment ID. */
-				sprintf( __( 'Attachment with ID %d not found.', 'ai-agent' ), $attachment_id )
+				sprintf( __( 'Attachment with ID %d not found.', 'gratis-ai-agent' ), $attachment_id )
 			);
 		}
 
 		if ( ! wp_attachment_is_image( $attachment_id ) ) {
-			return new WP_Error( 'not_an_image', __( 'The specified attachment is not an image.', 'ai-agent' ) );
+			return new WP_Error( 'not_an_image', __( 'The specified attachment is not an image.', 'gratis-ai-agent' ) );
 		}
 
 		$file_path = get_attached_file( $attachment_id );
@@ -649,7 +649,7 @@ INSTRUCTION;
 			?: wp_get_attachment_image_src( $attachment_id, 'full' );
 
 		if ( ! $image_src || empty( $image_src[0] ) ) {
-			return new WP_Error( 'image_url_not_found', __( 'Could not retrieve image URL from attachment.', 'ai-agent' ) );
+			return new WP_Error( 'image_url_not_found', __( 'Could not retrieve image URL from attachment.', 'gratis-ai-agent' ) );
 		}
 
 		return self::download_to_data_uri( $image_src[0] );
@@ -699,7 +699,7 @@ INSTRUCTION;
 		wp_delete_file( $temp_file );
 
 		if ( ! $data_uri ) {
-			return new WP_Error( 'file_read_error', __( 'Could not read the downloaded image file.', 'ai-agent' ) );
+			return new WP_Error( 'file_read_error', __( 'Could not read the downloaded image file.', 'gratis-ai-agent' ) );
 		}
 
 		return $data_uri;

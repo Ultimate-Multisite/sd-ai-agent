@@ -39,9 +39,9 @@ class UserAbilities {
 		wp_register_ability(
 			'ai-agent/list-users',
 			[
-				'label'               => __( 'List Users', 'ai-agent' ),
-				'description'         => __( 'List WordPress users with optional filtering by role, search term, or number. Returns ID, login, email, display name, roles, and registration date.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'List Users', 'gratis-ai-agent' ),
+				'description'         => __( 'List WordPress users with optional filtering by role, search term, or number. Returns ID, login, email, display name, roles, and registration date.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -84,9 +84,9 @@ class UserAbilities {
 		wp_register_ability(
 			'ai-agent/create-user',
 			[
-				'label'               => __( 'Create User', 'ai-agent' ),
-				'description'         => __( 'Create a new WordPress user with the specified username, email, role, and optional display name. Returns the new user ID.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Create User', 'gratis-ai-agent' ),
+				'description'         => __( 'Create a new WordPress user with the specified username, email, role, and optional display name. Returns the new user ID.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -139,9 +139,9 @@ class UserAbilities {
 		wp_register_ability(
 			'ai-agent/update-user-role',
 			[
-				'label'               => __( 'Update User Role', 'ai-agent' ),
-				'description'         => __( 'Change the role of an existing WordPress user. Provide either user_id or user_email to identify the user.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Update User Role', 'gratis-ai-agent' ),
+				'description'         => __( 'Change the role of an existing WordPress user. Provide either user_id or user_email to identify the user.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -249,18 +249,18 @@ class UserAbilities {
 		$send_email   = (bool) ( $input['send_email'] ?? false );
 
 		if ( empty( $username ) ) {
-			return new WP_Error( 'ai_agent_empty_username', __( 'Username is required.', 'ai-agent' ) );
+			return new WP_Error( 'ai_agent_empty_username', __( 'Username is required.', 'gratis-ai-agent' ) );
 		}
 
 		if ( empty( $email ) || ! is_email( $email ) ) {
-			return new WP_Error( 'ai_agent_invalid_email', __( 'A valid email address is required.', 'ai-agent' ) );
+			return new WP_Error( 'ai_agent_invalid_email', __( 'A valid email address is required.', 'gratis-ai-agent' ) );
 		}
 
 		if ( username_exists( $username ) ) {
 			return new WP_Error(
 				'ai_agent_username_exists',
 				/* translators: %s: username */
-				sprintf( __( 'Username "%s" is already taken.', 'ai-agent' ), $username )
+				sprintf( __( 'Username "%s" is already taken.', 'gratis-ai-agent' ), $username )
 			);
 		}
 
@@ -268,7 +268,7 @@ class UserAbilities {
 			return new WP_Error(
 				'ai_agent_email_exists',
 				/* translators: %s: email address */
-				sprintf( __( 'Email "%s" is already registered.', 'ai-agent' ), $email )
+				sprintf( __( 'Email "%s" is already registered.', 'gratis-ai-agent' ), $email )
 			);
 		}
 
@@ -278,7 +278,7 @@ class UserAbilities {
 			return new WP_Error(
 				'ai_agent_invalid_role',
 				/* translators: %s: role slug */
-				sprintf( __( 'Role "%s" does not exist.', 'ai-agent' ), $role )
+				sprintf( __( 'Role "%s" does not exist.', 'gratis-ai-agent' ), $role )
 			);
 		}
 
@@ -325,7 +325,7 @@ class UserAbilities {
 		$new_role   = sanitize_text_field( $input['role'] ?? '' );
 
 		if ( empty( $new_role ) ) {
-			return new WP_Error( 'ai_agent_empty_role', __( 'Role is required.', 'ai-agent' ) );
+			return new WP_Error( 'ai_agent_empty_role', __( 'Role is required.', 'gratis-ai-agent' ) );
 		}
 
 		// Validate role exists.
@@ -334,7 +334,7 @@ class UserAbilities {
 			return new WP_Error(
 				'ai_agent_invalid_role',
 				/* translators: %s: role slug */
-				sprintf( __( 'Role "%s" does not exist.', 'ai-agent' ), $new_role )
+				sprintf( __( 'Role "%s" does not exist.', 'gratis-ai-agent' ), $new_role )
 			);
 		}
 
@@ -347,7 +347,7 @@ class UserAbilities {
 		}
 
 		if ( ! ( $user instanceof WP_User ) ) {
-			return new WP_Error( 'ai_agent_user_not_found', __( 'User not found. Provide a valid user_id or user_email.', 'ai-agent' ) );
+			return new WP_Error( 'ai_agent_user_not_found', __( 'User not found. Provide a valid user_id or user_email.', 'gratis-ai-agent' ) );
 		}
 
 		// Prevent demoting the last administrator.
@@ -361,7 +361,7 @@ class UserAbilities {
 			if ( $admin_count <= 1 ) {
 				return new WP_Error(
 					'ai_agent_last_admin',
-					__( 'Cannot change the role of the last administrator.', 'ai-agent' )
+					__( 'Cannot change the role of the last administrator.', 'gratis-ai-agent' )
 				);
 			}
 		}
