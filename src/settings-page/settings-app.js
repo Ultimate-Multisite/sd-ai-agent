@@ -912,16 +912,16 @@ export default function SettingsApp() {
 							);
 
 						case 'branding':
-						return (
-							<div className="gratis-ai-agent-settings-section">
-								<BrandingManager
-									local={ local }
-									updateField={ updateField }
-								/>
-							</div>
-						);
+							return (
+								<div className="gratis-ai-agent-settings-section">
+									<BrandingManager
+										local={ local }
+										updateField={ updateField }
+									/>
+								</div>
+							);
 
-					case 'tts':
+						case 'tts':
 							return (
 								<div className="gratis-ai-agent-settings-section">
 									{ ! isTTSSupported && (
