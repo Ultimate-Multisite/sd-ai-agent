@@ -10,6 +10,9 @@
 		"SCRIPT_DEBUG": true,
 		"WP_ENVIRONMENT_TYPE": "development"
 	},
+	"mappings": {
+		"wp-content/mu-plugins": "./tests/mu-plugins"
+	},
 	"env": {
 		"tests": {
 			"config": {

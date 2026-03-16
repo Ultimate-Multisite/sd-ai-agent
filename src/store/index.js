@@ -170,10 +170,28 @@ const actions = {
 	/**
 	 * Clear the active session (start a new chat).
 	 *
-	 * @return {Object} Redux action.
+	 * Also cancels any in-flight request so the UI returns to idle state
+	 * immediately, allowing the empty state to render without waiting for
+	 * the current job to complete or error.
+	 *
+	 * @return {Function} Redux thunk.
 	 */
 	clearCurrentSession() {
-		return { type: 'CLEAR_CURRENT_SESSION' };
+		return async ( { dispatch, select } ) => {
+			// Cancel any active SSE stream.
+			const controller = select.getStreamAbortController();
+			if ( controller ) {
+				controller.abort();
+				dispatch.setStreamAbortController( null );
+			}
+			// Stop polling / sending state.
+			dispatch.setCurrentJobId( null );
+			dispatch.setSending( false );
+			dispatch.setIsStreaming( false );
+			dispatch.setStreamingText( '' );
+			// Clear the session.
+			dispatch( { type: 'CLEAR_CURRENT_SESSION' } );
+		};
 	},
 
 	/**
