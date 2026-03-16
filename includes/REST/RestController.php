@@ -28,6 +28,7 @@ use GratisAiAgent\Models\Memory;
 use GratisAiAgent\Models\Skill;
 use GratisAiAgent\Tools\CustomToolExecutor;
 use GratisAiAgent\REST\SseStreamer;
+use GratisAiAgent\REST\WebhookDatabase;
 use GratisAiAgent\Tools\CustomTools;
 use GratisAiAgent\Tools\ToolProfiles;
 use WP_Error;
@@ -75,6 +76,9 @@ class RestController {
 	public static function register_routes(): void {
 		// MCP (Model Context Protocol) endpoint.
 		McpController::register_routes();
+
+		// Webhook API endpoints.
+		WebhookController::register_routes();
 
 		register_rest_route(
 			self::NAMESPACE,
@@ -1717,6 +1721,9 @@ class RestController {
 			$options['page_context'] = $params['page_context'];
 		}
 
+		// Record start time for webhook duration tracking.
+		$start_ms = (int) round( microtime( true ) * 1000 );
+
 		// Check if this is a resume from a tool confirmation/rejection.
 		$is_resume = ! empty( $job['resume'] );
 
@@ -1751,6 +1758,21 @@ class RestController {
 		if ( is_wp_error( $result ) ) {
 			$job['status'] = 'error';
 			$job['error']  = $result->get_error_message();
+
+			// Log webhook execution failure.
+			if ( ! empty( $job['webhook_id'] ) ) {
+				$duration_ms = $start_ms > 0 ? (int) round( microtime( true ) * 1000 ) - $start_ms : 0;
+				WebhookDatabase::log_execution(
+					(int) $job['webhook_id'],
+					'error',
+					'',
+					[],
+					0,
+					0,
+					$duration_ms,
+					$result->get_error_message()
+				);
+			}
 		} elseif ( ! empty( $result['awaiting_confirmation'] ) ) {
 			$job['status']             = 'awaiting_confirmation';
 			$job['pending_tools']      = $result['pending_tools'] ?? [];
@@ -1828,6 +1850,25 @@ class RestController {
 					}
 					$this->database->update_session( $session_id, [ 'title' => $title ] );
 				}
+			}
+
+			// Log webhook execution success.
+			if ( ! empty( $job['webhook_id'] ) ) {
+				$token_usage = $result['token_usage'] ?? [
+					'prompt'     => 0,
+					'completion' => 0,
+				];
+				$duration_ms = $start_ms > 0 ? (int) round( microtime( true ) * 1000 ) - $start_ms : 0;
+				WebhookDatabase::log_execution(
+					(int) $job['webhook_id'],
+					'success',
+					$result['reply'] ?? '',
+					$result['tool_calls'] ?? [],
+					(int) ( $token_usage['prompt'] ?? 0 ),
+					(int) ( $token_usage['completion'] ?? 0 ),
+					$duration_ms,
+					''
+				);
 			}
 		}
 

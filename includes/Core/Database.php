@@ -11,12 +11,13 @@ namespace GratisAiAgent\Core;
 
 use GratisAiAgent\Knowledge\KnowledgeDatabase;
 use GratisAiAgent\Models\Skill;
+use GratisAiAgent\REST\WebhookDatabase;
 use GratisAiAgent\Tools\CustomTools;
 
 class Database {
 
 	const DB_VERSION_OPTION = 'gratis_ai_agent_db_version';
-	const DB_VERSION        = '8.0.0';
+	const DB_VERSION        = '9.0.0';
 
 	/**
 	 * Get the sessions table name.
@@ -112,6 +113,9 @@ class Database {
 
 		// Knowledge tables.
 		$sql = KnowledgeDatabase::get_schema( $charset );
+
+		// Webhook tables.
+		$sql .= WebhookDatabase::get_schema( $charset );
 
 		$sql .= "\n\nCREATE TABLE {$table} (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
