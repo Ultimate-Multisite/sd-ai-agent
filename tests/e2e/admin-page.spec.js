@@ -110,13 +110,18 @@ test.describe( 'Admin Page - Session Management', () => {
 		// Wait for input to clear (message submitted).
 		await expect( input ).toHaveValue( '' );
 
+		// Wait for the send/stop cycle to complete before clicking New Chat.
+		// The send button replaces the stop button when sending=false.
+		const sendButton = getSendButton( page );
+		await expect( sendButton ).toBeVisible( { timeout: 15_000 } );
+
 		// Click new chat.
 		const newChatButton = page.locator( '.ai-agent-new-chat-btn' );
 		await newChatButton.click();
 
 		// Empty state should reappear.
 		const emptyState = page.locator( '.ai-agent-empty-state' );
-		await expect( emptyState ).toBeVisible();
+		await expect( emptyState ).toBeVisible( { timeout: 5_000 } );
 	} );
 
 	test( 'session list shows sessions after a message is sent', async ( {
@@ -126,11 +131,13 @@ test.describe( 'Admin Page - Session Management', () => {
 		await input.fill( 'Create a session' );
 		await input.press( 'Enter' );
 
-		// Wait for the session to appear in the sidebar.
-		const sessionList = page.locator( '.ai-agent-session-list' );
-		await expect( sessionList ).toBeVisible();
+		// Wait for the send/stop cycle to complete — the session list refreshes
+		// after the run completes (or errors). The send button reappears when
+		// sending=false, which is when fetchSessions is dispatched.
+		const sendButton = getSendButton( page );
+		await expect( sendButton ).toBeVisible( { timeout: 15_000 } );
 
-		// At least one session item should appear.
+		// At least one session item should appear in the sidebar.
 		const sessionItems = page.locator( '.ai-agent-session-item' );
 		await expect( sessionItems ).toHaveCount( 1, { timeout: 10_000 } );
 	} );
@@ -147,11 +154,16 @@ test.describe( 'Admin Page - Keyboard Shortcuts', () => {
 		await input.fill( 'Some text' );
 		await input.press( 'Enter' );
 
+		// Wait for the send/stop cycle to complete before triggering the shortcut.
+		// The send button replaces the stop button when sending=false.
+		const sendButton = getSendButton( page );
+		await expect( sendButton ).toBeVisible( { timeout: 15_000 } );
+
 		// Trigger new chat shortcut.
 		await page.keyboard.press( 'ControlOrMeta+n' );
 
 		const emptyState = page.locator( '.ai-agent-empty-state' );
-		await expect( emptyState ).toBeVisible();
+		await expect( emptyState ).toBeVisible( { timeout: 5_000 } );
 	} );
 
 	test( 'Ctrl+K / Cmd+K focuses the sidebar search', async ( { page } ) => {

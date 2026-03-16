@@ -1416,6 +1416,11 @@ const actions = {
 						},
 					],
 				} );
+				// Refresh session list — the session was already created above,
+				// so the sidebar should reflect it even when the run fails.
+				if ( sessionId ) {
+					dispatch.fetchSessions();
+				}
 				dispatch.setSending( false );
 			}
 		};
