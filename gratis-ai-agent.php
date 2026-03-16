@@ -47,7 +47,9 @@ use GratisAiAgent\Abilities\AiImageAbilities;
 use GratisAiAgent\Abilities\BlockAbilities;
 use GratisAiAgent\Abilities\ContentAbilities;
 use GratisAiAgent\Abilities\DatabaseAbilities;
+use GratisAiAgent\Abilities\EditorialAbilities;
 use GratisAiAgent\Abilities\FileAbilities;
+use GratisAiAgent\Abilities\ImageAbilities;
 use GratisAiAgent\Abilities\GitAbilities;
 use GratisAiAgent\Abilities\GoogleAnalyticsAbilities;
 use GratisAiAgent\Abilities\KnowledgeAbilities;
@@ -193,6 +195,12 @@ UserAbilities::register();
 
 // Media library abilities (list, upload from URL, delete).
 MediaAbilities::register();
+
+// Editorial AI abilities (title generation, excerpt generation, summarization, block review).
+EditorialAbilities::register();
+
+// Image AI abilities (alt text generation, image prompt generation, import base64 image).
+ImageAbilities::register();
 
 // Site builder abilities (detect fresh install, manage site builder mode).
 SiteBuilderAbilities::register();
