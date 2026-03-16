@@ -1269,7 +1269,7 @@ class WooGetStoreStatsAbility extends AbstractAbility {
 
 		// Sort top products by quantity sold.
 		usort( $product_sales, static fn( $a, $b ) => $b['quantity'] <=> $a['quantity'] );
-		$top_products = array_slice( array_values( $product_sales ), 0, $top_limit );
+		$top_products = array_slice( $product_sales, 0, $top_limit );
 
 		// Order counts by status.
 		$all_statuses = wc_get_order_statuses();
