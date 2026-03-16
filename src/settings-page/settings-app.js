@@ -436,6 +436,137 @@ export default function SettingsApp() {
 										) }
 										__nextHasNoMarginBottom
 									/>
+									<hr />
+									<h3>
+										{ __(
+											'AI Image Generation',
+											'gratis-ai-agent'
+										) }
+									</h3>
+									<p className="description">
+										{ __(
+											'Settings for the Generate AI Image ability (DALL-E 3). Requires an OpenAI API key configured in the Providers tab.',
+											'gratis-ai-agent'
+										) }
+									</p>
+									<SelectControl
+										label={ __(
+											'Default Image Size',
+											'gratis-ai-agent'
+										) }
+										value={
+											local.image_generation_size ||
+											'1024x1024'
+										}
+										options={ [
+											{
+												label: __(
+													'Square (1024×1024)',
+													'gratis-ai-agent'
+												),
+												value: '1024x1024',
+											},
+											{
+												label: __(
+													'Landscape (1792×1024)',
+													'gratis-ai-agent'
+												),
+												value: '1792x1024',
+											},
+											{
+												label: __(
+													'Portrait (1024×1792)',
+													'gratis-ai-agent'
+												),
+												value: '1024x1792',
+											},
+										] }
+										onChange={ ( v ) =>
+											updateField(
+												'image_generation_size',
+												v
+											)
+										}
+										help={ __(
+											'Default dimensions for generated images. Can be overridden per request.',
+											'gratis-ai-agent'
+										) }
+										__nextHasNoMarginBottom
+									/>
+									<SelectControl
+										label={ __(
+											'Default Image Quality',
+											'gratis-ai-agent'
+										) }
+										value={
+											local.image_generation_quality ||
+											'standard'
+										}
+										options={ [
+											{
+												label: __(
+													'Standard',
+													'gratis-ai-agent'
+												),
+												value: 'standard',
+											},
+											{
+												label: __(
+													'HD (higher detail, higher cost)',
+													'gratis-ai-agent'
+												),
+												value: 'hd',
+											},
+										] }
+										onChange={ ( v ) =>
+											updateField(
+												'image_generation_quality',
+												v
+											)
+										}
+										help={ __(
+											'HD produces finer details and greater consistency but costs more per image.',
+											'gratis-ai-agent'
+										) }
+										__nextHasNoMarginBottom
+									/>
+									<SelectControl
+										label={ __(
+											'Default Image Style',
+											'gratis-ai-agent'
+										) }
+										value={
+											local.image_generation_style ||
+											'vivid'
+										}
+										options={ [
+											{
+												label: __(
+													'Vivid (hyper-real, dramatic)',
+													'gratis-ai-agent'
+												),
+												value: 'vivid',
+											},
+											{
+												label: __(
+													'Natural (subdued, realistic)',
+													'gratis-ai-agent'
+												),
+												value: 'natural',
+											},
+										] }
+										onChange={ ( v ) =>
+											updateField(
+												'image_generation_style',
+												v
+											)
+										}
+										help={ __(
+											'Vivid is hyper-real and dramatic; Natural is more subdued and realistic.',
+											'gratis-ai-agent'
+										) }
+										__nextHasNoMarginBottom
+									/>
 								</div>
 							);
 
