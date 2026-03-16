@@ -40,7 +40,7 @@ class BlockAbilities {
 			[
 				'label'               => __( 'Markdown to Blocks', 'gratis-ai-agent' ),
 				'description'         => __( 'Convert markdown text into serialized Gutenberg block HTML ready for post_content. Best for text-heavy content like blog posts and articles.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -71,7 +71,7 @@ class BlockAbilities {
 			[
 				'label'               => __( 'List Block Types', 'gratis-ai-agent' ),
 				'description'         => __( 'List registered Gutenberg block types. Filter by category or search term. Returns block names, titles, descriptions, and categories.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -116,7 +116,7 @@ class BlockAbilities {
 			[
 				'label'               => __( 'Get Block Type', 'gratis-ai-agent' ),
 				'description'         => __( 'Get detailed metadata for a specific block type including attributes schema, supports, styles, and variations.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -153,7 +153,7 @@ class BlockAbilities {
 			[
 				'label'               => __( 'List Block Patterns', 'gratis-ai-agent' ),
 				'description'         => __( 'List registered block patterns. Filter by category or search. Returns pattern names, titles, descriptions, and optionally full content.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -196,7 +196,7 @@ class BlockAbilities {
 			[
 				'label'               => __( 'List Block Templates', 'gratis-ai-agent' ),
 				'description'         => __( 'List block templates available in the current theme. Returns template slugs, titles, and descriptions.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -226,7 +226,7 @@ class BlockAbilities {
 			[
 				'label'               => __( 'Create Block Content', 'gratis-ai-agent' ),
 				'description'         => __( 'Build serialized Gutenberg block HTML from a structured block array. Best for layouts with columns, buttons, groups, and other complex blocks. Each block needs blockName, optional attrs, content, and innerBlocks.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -257,7 +257,7 @@ class BlockAbilities {
 			[
 				'label'               => __( 'Parse Block Content', 'gratis-ai-agent' ),
 				'description'         => __( 'Parse existing Gutenberg block content into a structured block tree. Provide either a post_id to read from the database, or raw content string.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [

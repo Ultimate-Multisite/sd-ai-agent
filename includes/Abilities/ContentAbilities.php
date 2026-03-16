@@ -35,7 +35,7 @@ class ContentAbilities {
 			[
 				'label'               => __( 'Analyze Content Strategy', 'gratis-ai-agent' ),
 				'description'         => __( 'Analyze content strategy: publishing frequency, word counts, category distribution, missing featured images, and content gaps.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -82,7 +82,7 @@ class ContentAbilities {
 			[
 				'label'               => __( 'Content Performance Report', 'gratis-ai-agent' ),
 				'description'         => __( 'Generate a content performance summary for a given time period: posts published, category breakdown, word counts, drafts pending.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [

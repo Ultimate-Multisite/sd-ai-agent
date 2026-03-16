@@ -35,7 +35,7 @@ class SeoAbilities {
 			[
 				'label'               => __( 'SEO Audit URL', 'gratis-ai-agent' ),
 				'description'         => __( 'Fetch a URL and analyze its SEO elements: title, meta description, headings, images, Open Graph, structured data, and common issues.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -85,7 +85,7 @@ class SeoAbilities {
 			[
 				'label'               => __( 'SEO Analyze Content', 'gratis-ai-agent' ),
 				'description'         => __( 'Analyze a post\'s content for SEO quality: keyword density, title length, heading structure, links, readability, and meta description.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [

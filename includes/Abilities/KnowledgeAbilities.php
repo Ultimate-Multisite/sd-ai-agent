@@ -37,7 +37,7 @@ class KnowledgeAbilities {
 			[
 				'label'               => __( 'Search Knowledge Base', 'gratis-ai-agent' ),
 				'description'         => __( 'Search the knowledge base for relevant information. Use this to find indexed documents, posts, and uploaded files.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [

@@ -35,7 +35,7 @@ class MarketingAbilities {
 			[
 				'label'               => __( 'Fetch URL', 'gratis-ai-agent' ),
 				'description'         => __( 'Fetch a URL and return HTTP status, headers, page title, meta description, and head content. Useful for competitive analysis and tech stack discovery.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -71,7 +71,7 @@ class MarketingAbilities {
 			[
 				'label'               => __( 'Analyze HTTP Headers', 'gratis-ai-agent' ),
 				'description'         => __( 'Analyze a URL\'s HTTP security and performance headers: HSTS, CSP, X-Frame-Options, caching, CDN indicators.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [

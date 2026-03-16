@@ -37,7 +37,7 @@ class SkillAbilities {
 			[
 				'label'               => __( 'Load Skill', 'gratis-ai-agent' ),
 				'description'         => __( 'Load the full instructions for a specific skill guide by its slug.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -68,7 +68,7 @@ class SkillAbilities {
 			[
 				'label'               => __( 'List Skills', 'gratis-ai-agent' ),
 				'description'         => __( 'List all available skill guides with their slugs, names, and descriptions.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => new \stdClass(),

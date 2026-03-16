@@ -38,7 +38,7 @@ class StockImageAbilities {
 			[
 				'label'               => __( 'Import Stock Image', 'gratis-ai-agent' ),
 				'description'         => __( 'Import a stock image into the media library by keyword. Returns attachment ID and URL. Use site_url to target a subsite.', 'gratis-ai-agent' ),
-				'category'            => 'ai-agent',
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
