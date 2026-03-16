@@ -4,10 +4,10 @@ declare(strict_types=1);
 /**
  * Marketing and competitive analysis abilities for the AI agent.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Abilities;
+namespace GratisAiAgent\Abilities;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -104,8 +104,8 @@ class MarketingAbilities {
 	/**
 	 * Handle the fetch-url ability call.
 	 *
-	 * @param array $input Input with url.
-	 * @return array Fetch results.
+	 * @param array<string,mixed> $input Input with url.
+	 * @return array<string,mixed> Fetch results.
 	 */
 	public static function handle_fetch_url( array $input ): array {
 		$url = esc_url_raw( $input['url'] ?? '' );
@@ -182,8 +182,8 @@ class MarketingAbilities {
 	/**
 	 * Handle the analyze-headers ability call.
 	 *
-	 * @param array $input Input with url.
-	 * @return array Header analysis results.
+	 * @param array<string,mixed> $input Input with url.
+	 * @return array<string,mixed> Header analysis results.
 	 */
 	public static function handle_analyze_headers( array $input ): array {
 		$url = esc_url_raw( $input['url'] ?? '' );
@@ -229,8 +229,8 @@ class MarketingAbilities {
 	/**
 	 * Check security-related headers.
 	 *
-	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array $headers Response headers.
-	 * @return array Security header analysis.
+	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array<string,mixed> $headers Response headers.
+	 * @return array<int,mixed> Security header analysis.
 	 */
 	private static function check_security_headers( $headers ): array {
 		$checks = [
@@ -277,8 +277,8 @@ class MarketingAbilities {
 	/**
 	 * Check performance-related headers.
 	 *
-	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array $headers Response headers.
-	 * @return array Performance header analysis.
+	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array<string,mixed> $headers Response headers.
+	 * @return array<int,mixed> Performance header analysis.
 	 */
 	private static function check_performance_headers( $headers ): array {
 		$results = [];
@@ -310,8 +310,8 @@ class MarketingAbilities {
 	/**
 	 * Detect CDN indicators from headers.
 	 *
-	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array $headers Response headers.
-	 * @return array CDN detection results.
+	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array<string,mixed> $headers Response headers.
+	 * @return array<int,mixed> CDN detection results.
 	 */
 	private static function detect_cdn( $headers ): array {
 		$indicators = [

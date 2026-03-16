@@ -7,10 +7,10 @@ declare(strict_types=1);
  * Provides a simple keyword-based image import tool that avoids the complexity
  * of the WP-CLI media/import schema (porcelain typing, redirect URLs, etc.).
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Abilities;
+namespace GratisAiAgent\Abilities;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -82,8 +82,8 @@ class StockImageAbilities {
 	/**
 	 * Handle the import-stock-image ability call.
 	 *
-	 * @param array $input Input with keyword, optional site_url, width, height.
-	 * @return array Result with attachment_id, url, alt, title or error.
+	 * @param array<string,mixed> $input Input with keyword, optional site_url, width, height.
+	 * @return array<string,mixed> Result with attachment_id, url, alt, title or error.
 	 */
 	public static function handle_import( array $input ): array {
 		$keyword  = sanitize_text_field( $input['keyword'] ?? '' );
@@ -131,7 +131,7 @@ class StockImageAbilities {
 	 * @param string $keyword Search keyword.
 	 * @param int    $width   Image width.
 	 * @param int    $height  Image height.
-	 * @return array Result array.
+	 * @return array<string,mixed> Result array.
 	 */
 	private static function download_and_import( string $keyword, int $width, int $height ): array {
 		// Build a deterministic-ish lock so the same keyword doesn't always

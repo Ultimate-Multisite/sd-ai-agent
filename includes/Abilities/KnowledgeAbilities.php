@@ -4,12 +4,12 @@ declare(strict_types=1);
 /**
  * Register knowledge-related WordPress abilities (tools) for the AI agent.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Abilities;
+namespace GratisAiAgent\Abilities;
 
-use AiAgent\Knowledge\Knowledge;
+use GratisAiAgent\Knowledge\Knowledge;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -71,8 +71,8 @@ class KnowledgeAbilities {
 	/**
 	 * Handle the knowledge-search ability call.
 	 *
-	 * @param array $input Input with query and optional collection.
-	 * @return array Result.
+	 * @param array<string,mixed> $input Input with query and optional collection.
+	 * @return array<string,mixed> Result.
 	 */
 	public static function handle_knowledge_search( array $input ): array {
 		$query = $input['query'] ?? '';

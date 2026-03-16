@@ -4,12 +4,12 @@ declare(strict_types=1);
 /**
  * Register skill-related WordPress abilities (tools) for the AI agent.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Abilities;
+namespace GratisAiAgent\Abilities;
 
-use AiAgent\Models\Skill;
+use GratisAiAgent\Models\Skill;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -90,8 +90,8 @@ class SkillAbilities {
 	/**
 	 * Handle the skill-load ability call.
 	 *
-	 * @param array $input Input with slug.
-	 * @return array Result with skill content.
+	 * @param array<string,mixed> $input Input with slug.
+	 * @return array<string,mixed> Result with skill content.
 	 */
 	public static function handle_skill_load( array $input ): array {
 		$slug = $input['slug'] ?? '';
@@ -120,7 +120,7 @@ class SkillAbilities {
 	/**
 	 * Handle the skill-list ability call.
 	 *
-	 * @return array Result with skills index.
+	 * @return array<string,mixed> Result with skills index.
 	 */
 	public static function handle_skill_list(): array {
 		$skills = Skill::get_all( true );
