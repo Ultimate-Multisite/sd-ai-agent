@@ -86,7 +86,7 @@
 - [x] t017 Add integration tests for Automations system @superdav42 #testing ~4h logged:2026-03-14 blocked-by:t012 pr:#270 completed:2026-03-15
 - [x] t018 Add JS unit tests with @wordpress/scripts test-unit-js @superdav42 #testing ~6h logged:2026-03-14 pr:#272 completed:2026-03-15
 - [x] t019 Add code coverage reporting to CI @superdav42 #ci ~2h logged:2026-03-14 blocked-by:t012 pr:#264 completed:2026-03-15
-- [ ] t020 Add E2E tests with wp-env + Playwright for chat UI @superdav42 #testing ~8h logged:2026-03-14 blocked-by:t012
+- [x] t020 Add E2E tests with wp-env + Playwright for chat UI @superdav42 #testing ~8h logged:2026-03-14 blocked-by:t012 pr:#445 completed:2026-03-16
 
 ### Ability Quality Improvements (P1)
 
