@@ -349,6 +349,28 @@ class Database {
 			KEY status (status)
 		) {$charset};
 
+		CREATE TABLE {$changes_log_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			session_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			object_type varchar(50) NOT NULL DEFAULT '',
+			object_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			object_title varchar(255) NOT NULL DEFAULT '',
+			ability_name varchar(100) NOT NULL DEFAULT '',
+			field_name varchar(100) NOT NULL DEFAULT '',
+			before_value longtext NOT NULL,
+			after_value longtext NOT NULL,
+			reverted tinyint(1) NOT NULL DEFAULT 0,
+			reverted_at datetime DEFAULT NULL,
+			created_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			KEY session_id (session_id),
+			KEY user_id (user_id),
+			KEY object_type_id (object_type, object_id),
+			KEY reverted (reverted),
+			KEY created_at (created_at)
+		) {$charset};
+
 		CREATE TABLE {$agents_table} (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			slug varchar(100) NOT NULL,
