@@ -24,6 +24,7 @@ use GratisAiAgent\Core\Export;
 use GratisAiAgent\Core\Settings;
 use GratisAiAgent\Knowledge\Knowledge;
 use GratisAiAgent\Knowledge\KnowledgeDatabase;
+use GratisAiAgent\Models\ConversationTemplate;
 use GratisAiAgent\Models\Memory;
 use GratisAiAgent\Models\Skill;
 use GratisAiAgent\Tools\CustomToolExecutor;
@@ -1368,6 +1369,73 @@ class RestController {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $instance, 'handle_list_all_logs' ],
 				'permission_callback' => [ $instance, 'check_permission' ],
+			]
+		);
+
+		// ─── Conversation Templates endpoints ────────────────────────
+		register_rest_route(
+			self::NAMESPACE,
+			'/conversation-templates',
+			[
+				[
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => [ $instance, 'handle_list_conversation_templates' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
+					'args'                => [
+						'category' => [
+							'required'          => false,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+					],
+				],
+				[
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => [ $instance, 'handle_create_conversation_template' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
+					'args'                => [
+						'name'   => [
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+						'prompt' => [
+							'required' => true,
+							'type'     => 'string',
+						],
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/conversation-templates/(?P<id>\d+)',
+			[
+				[
+					'methods'             => 'PATCH',
+					'callback'            => [ $instance, 'handle_update_conversation_template' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
+					'args'                => [
+						'id' => [
+							'required'          => true,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						],
+					],
+				],
+				[
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => [ $instance, 'handle_delete_conversation_template' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
+					'args'                => [
+						'id' => [
+							'required'          => true,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						],
+					],
+				],
 			]
 		);
 	}
@@ -3756,5 +3824,58 @@ class RestController {
 			],
 			200
 		);
+	}
+
+	// ─── Conversation Templates handlers ────────────────────────
+
+	/**
+	 * List conversation templates, optionally filtered by category.
+	 */
+	public function handle_list_conversation_templates( WP_REST_Request $request ): WP_REST_Response {
+		$category  = $request->get_param( 'category' );
+		$templates = ConversationTemplate::get_all( $category ?: null );
+
+		return new WP_REST_Response( $templates, 200 );
+	}
+
+	/**
+	 * Create a conversation template.
+	 */
+	public function handle_create_conversation_template( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$data = $request->get_json_params();
+		$id   = ConversationTemplate::create( $data );
+
+		if ( false === $id ) {
+			return new WP_Error( 'create_failed', __( 'Failed to create conversation template.', 'gratis-ai-agent' ), [ 'status' => 400 ] );
+		}
+
+		return new WP_REST_Response( ConversationTemplate::get( $id ), 201 );
+	}
+
+	/**
+	 * Update a conversation template.
+	 */
+	public function handle_update_conversation_template( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$id   = absint( $request->get_param( 'id' ) );
+		$data = $request->get_json_params();
+
+		if ( ! ConversationTemplate::update( $id, $data ) ) {
+			return new WP_Error( 'update_failed', __( 'Failed to update conversation template.', 'gratis-ai-agent' ), [ 'status' => 400 ] );
+		}
+
+		return new WP_REST_Response( ConversationTemplate::get( $id ), 200 );
+	}
+
+	/**
+	 * Delete a conversation template. Built-in templates cannot be deleted.
+	 */
+	public function handle_delete_conversation_template( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$id = absint( $request->get_param( 'id' ) );
+
+		if ( ! ConversationTemplate::delete( $id ) ) {
+			return new WP_Error( 'delete_failed', __( 'Failed to delete conversation template. Built-in templates cannot be deleted.', 'gratis-ai-agent' ), [ 'status' => 400 ] );
+		}
+
+		return new WP_REST_Response( [ 'deleted' => true ], 200 );
 	}
 }

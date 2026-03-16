@@ -673,3 +673,40 @@
 	padding: 2px 10px !important;
 	height: auto !important;
 }
+
+/* Floating panel: input row adjustments */
+.ai-agent-floating-panel .ai-agent-input-row {
+	display: flex;
+	align-items: flex-end;
+	gap: 4px;
+	width: 100%;
+	position: relative;
+}
+
+.ai-agent-floating-panel .ai-agent-input-row .ai-agent-input {
+	flex: 1;
+	padding-right: 8px;
+}
+
+.ai-agent-floating-panel .ai-agent-input-row .ai-agent-send-btn,
+.ai-agent-floating-panel .ai-agent-input-row .ai-agent-stop-btn {
+	position: static;
+	flex-shrink: 0;
+}
+
+.ai-agent-floating-panel .ai-agent-templates-btn {
+	font-size: 11px;
+	padding: 2px 6px;
+	height: 28px;
+	align-self: flex-end;
+	margin-bottom: 2px;
+}
+
+/* Floating panel: template menu */
+.ai-agent-floating-panel .gratis-ai-agent-template-menu {
+	max-height: 280px;
+}
+
+.ai-agent-floating-panel .gratis-ai-agent-template-menu__grid {
+	grid-template-columns: 1fr 1fr;
+}

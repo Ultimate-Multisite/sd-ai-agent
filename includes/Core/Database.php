@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace GratisAiAgent\Core;
 
 use GratisAiAgent\Knowledge\KnowledgeDatabase;
+use GratisAiAgent\Models\ConversationTemplate;
 use GratisAiAgent\Models\Skill;
 use GratisAiAgent\REST\WebhookDatabase;
 use GratisAiAgent\Tools\CustomTools;
@@ -87,6 +88,14 @@ class Database {
 	}
 
 	/**
+	 * Get the conversation templates table name.
+	 */
+	public static function conversation_templates_table_name(): string {
+		global $wpdb;
+		return $wpdb->prefix . 'gratis_ai_agent_conversation_templates';
+	}
+
+	/**
 	 * Install or upgrade the database table.
 	 */
 	public static function install(): void {
@@ -101,15 +110,16 @@ class Database {
 			return;
 		}
 
-		$table                   = self::table_name();
-		$usage_table             = self::usage_table_name();
-		$memories_table          = self::memories_table_name();
-		$skills_table            = self::skills_table_name();
-		$custom_tools_table      = self::custom_tools_table_name();
-		$automations_table       = self::automations_table_name();
-		$automation_logs_table   = self::automation_logs_table_name();
-		$event_automations_table = self::event_automations_table_name();
-		$charset                 = $wpdb->get_charset_collate();
+		$table                        = self::table_name();
+		$usage_table                  = self::usage_table_name();
+		$memories_table               = self::memories_table_name();
+		$skills_table                 = self::skills_table_name();
+		$custom_tools_table           = self::custom_tools_table_name();
+		$automations_table            = self::automations_table_name();
+		$automation_logs_table        = self::automation_logs_table_name();
+		$event_automations_table      = self::event_automations_table_name();
+		$conversation_templates_table = self::conversation_templates_table_name();
+		$charset                      = $wpdb->get_charset_collate();
 
 		// Knowledge tables.
 		$sql = KnowledgeDatabase::get_schema( $charset );
@@ -252,6 +262,24 @@ class Database {
 			PRIMARY KEY  (id),
 			KEY hook_name (hook_name),
 			KEY enabled (enabled)
+		) {$charset};
+
+		CREATE TABLE {$conversation_templates_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			slug varchar(100) NOT NULL,
+			name varchar(255) NOT NULL,
+			description text NOT NULL DEFAULT '',
+			prompt longtext NOT NULL,
+			category varchar(50) NOT NULL DEFAULT 'general',
+			icon varchar(100) NOT NULL DEFAULT 'admin-comments',
+			is_builtin tinyint(1) NOT NULL DEFAULT 0,
+			sort_order int(11) NOT NULL DEFAULT 0,
+			created_at datetime NOT NULL,
+			updated_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY slug (slug),
+			KEY category (category),
+			KEY is_builtin (is_builtin)
 		) {$charset};";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -267,6 +295,9 @@ class Database {
 
 		// Seed built-in skills.
 		Skill::seed_builtins();
+
+		// Seed built-in conversation templates.
+		ConversationTemplate::seed_builtins();
 
 		// Seed example custom tools.
 		CustomTools::seed_examples();

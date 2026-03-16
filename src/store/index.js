@@ -77,6 +77,10 @@ const DEFAULT_STATE = {
 	skills: [],
 	skillsLoaded: false,
 
+	// Conversation templates
+	conversationTemplates: [],
+	conversationTemplatesLoaded: false,
+
 	// Token usage (current session)
 	tokenUsage: { prompt: 0, completion: 0 },
 
@@ -264,6 +268,9 @@ const actions = {
 	 */
 	setSkills( skills ) {
 		return { type: 'SET_SKILLS', skills };
+	},
+	setConversationTemplates( templates ) {
+		return { type: 'SET_CONVERSATION_TEMPLATES', templates };
 	},
 
 	/**
@@ -1625,6 +1632,56 @@ const actions = {
 		};
 	},
 
+	// ─── Conversation Templates thunks ───────────────────────────
+
+	fetchConversationTemplates( category = null ) {
+		return async ( { dispatch } ) => {
+			try {
+				const path = category
+					? `/gratis-ai-agent/v1/conversation-templates?category=${ encodeURIComponent(
+							category
+					  ) }`
+					: '/gratis-ai-agent/v1/conversation-templates';
+				const templates = await apiFetch( { path } );
+				dispatch.setConversationTemplates( templates );
+			} catch {
+				dispatch.setConversationTemplates( [] );
+			}
+		};
+	},
+
+	createConversationTemplate( data ) {
+		return async ( { dispatch } ) => {
+			await apiFetch( {
+				path: '/gratis-ai-agent/v1/conversation-templates',
+				method: 'POST',
+				data,
+			} );
+			dispatch.fetchConversationTemplates();
+		};
+	},
+
+	updateConversationTemplate( id, data ) {
+		return async ( { dispatch } ) => {
+			await apiFetch( {
+				path: `/gratis-ai-agent/v1/conversation-templates/${ id }`,
+				method: 'PATCH',
+				data,
+			} );
+			dispatch.fetchConversationTemplates();
+		};
+	},
+
+	deleteConversationTemplate( id ) {
+		return async ( { dispatch } ) => {
+			await apiFetch( {
+				path: `/gratis-ai-agent/v1/conversation-templates/${ id }`,
+				method: 'DELETE',
+			} );
+			dispatch.fetchConversationTemplates();
+		};
+	},
+
 	// ─── Compact thunk ───────────────────────────────────────────
 
 	/**
@@ -1859,6 +1916,14 @@ const selectors = {
 		return state.skillsLoaded;
 	},
 
+	// Conversation templates
+	getConversationTemplates( state ) {
+		return state.conversationTemplates;
+	},
+	getConversationTemplatesLoaded( state ) {
+		return state.conversationTemplatesLoaded;
+	},
+
 	// Session filters
 
 	/**
@@ -2091,6 +2156,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				...state,
 				skills: action.skills,
 				skillsLoaded: true,
+			};
+		case 'SET_CONVERSATION_TEMPLATES':
+			return {
+				...state,
+				conversationTemplates: action.templates,
+				conversationTemplatesLoaded: true,
 			};
 		case 'SET_TOKEN_USAGE':
 			return { ...state, tokenUsage: action.tokenUsage };
