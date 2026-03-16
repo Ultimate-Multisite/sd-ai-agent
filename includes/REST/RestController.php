@@ -673,7 +673,7 @@ class RestController {
 				[
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => [ $instance, 'handle_list_agents' ],
-					'permission_callback' => [ $instance, 'check_permission' ],
+					'permission_callback' => [ $instance, 'check_chat_permission' ],
 				],
 				[
 					'methods'             => WP_REST_Server::CREATABLE,
@@ -2406,8 +2406,9 @@ class RestController {
 				}
 
 				// Log to usage tracking table.
-				$provider_id  = $params['provider_id'] ?? '';
-				$model_id     = $params['model_id'] ?? '';
+				// Use resolved options (which include agent overrides) rather than raw params.
+				$provider_id  = $options['provider_id'] ?? $params['provider_id'] ?? '';
+				$model_id     = $options['model_id'] ?? $params['model_id'] ?? '';
 				$prompt_t     = $token_usage['prompt'] ?? 0;
 				$completion_t = $token_usage['completion'] ?? 0;
 
@@ -2603,16 +2604,17 @@ class RestController {
 			}
 
 			// Log usage.
+			// Use resolved options (which include agent overrides) rather than raw params.
 			$prompt_t     = $token_usage['prompt'] ?? 0;
 			$completion_t = $token_usage['completion'] ?? 0;
 			if ( $prompt_t > 0 || $completion_t > 0 ) {
-				$model_id = $params['model_id'] ?? '';
+				$model_id = $options['model_id'] ?? $params['model_id'] ?? '';
 				$cost     = CostCalculator::calculate_cost( $model_id, $prompt_t, $completion_t );
 				Database::log_usage(
 					[
 						'user_id'           => get_current_user_id(),
 						'session_id'        => $session_id,
-						'provider_id'       => $params['provider_id'] ?? '',
+						'provider_id'       => $options['provider_id'] ?? $params['provider_id'] ?? '',
 						'model_id'          => $model_id,
 						'prompt_tokens'     => $prompt_t,
 						'completion_tokens' => $completion_t,
@@ -3307,11 +3309,28 @@ class RestController {
 	/**
 	 * Handle GET /agents — list all agents.
 	 *
+	 * Returns only public-safe fields (id, slug, name, description, avatar_icon,
+	 * enabled, greeting) so that chat users cannot read system_prompt or
+	 * provider/model configuration.
+	 *
 	 * @return WP_REST_Response
 	 */
 	public function handle_list_agents(): WP_REST_Response {
 		$agents = Agent::get_all();
-		$list   = array_map( [ Agent::class, 'to_array' ], $agents );
+		$list   = array_map(
+			static function ( object $agent ): array {
+				return [
+					'id'          => (int) $agent->id,
+					'slug'        => $agent->slug,
+					'name'        => $agent->name,
+					'description' => $agent->description,
+					'avatar_icon' => $agent->avatar_icon,
+					'greeting'    => $agent->greeting,
+					'enabled'     => (bool) $agent->enabled,
+				];
+			},
+			$agents
+		);
 		return new WP_REST_Response( $list, 200 );
 	}
 

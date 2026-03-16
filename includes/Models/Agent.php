@@ -213,7 +213,7 @@ class Agent {
 			[ '%d' ]
 		);
 
-		return $result !== false;
+		return is_int( $result ) && $result > 0;
 	}
 
 	/**
@@ -232,7 +232,7 @@ class Agent {
 			[ '%d' ]
 		);
 
-		return $result !== false;
+		return is_int( $result ) && $result > 0;
 	}
 
 	/**
