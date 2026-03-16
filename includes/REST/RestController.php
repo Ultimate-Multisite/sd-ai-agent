@@ -3559,8 +3559,8 @@ class RestController {
 		$settings['_provider_keys'] = $provider_keys;
 
 		// Indicate whether GSC credentials are configured (boolean + type only, no credential values).
-		$gsc_creds                       = Settings::get_gsc_credentials();
-		$settings['_gsc_credentials']    = [
+		$gsc_creds                    = Settings::get_gsc_credentials();
+		$settings['_gsc_credentials'] = [
 			'configured'       => Settings::has_gsc_credentials(),
 			'type'             => $gsc_creds['type'] ?? null,
 			'default_site_url' => $gsc_creds['default_site_url'] ?? null,
@@ -3729,8 +3729,8 @@ class RestController {
 			return new WP_REST_Response( [ 'error' => 'No data provided.' ], 400 );
 		}
 
-		$type            = sanitize_text_field( $params['type'] ?? '' );
-		$default_site    = esc_url_raw( $params['default_site_url'] ?? '' );
+		$type         = sanitize_text_field( $params['type'] ?? '' );
+		$default_site = esc_url_raw( $params['default_site_url'] ?? '' );
 
 		if ( 'service_account' === $type ) {
 			$credentials_json = $params['credentials_json'] ?? '';

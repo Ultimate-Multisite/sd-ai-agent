@@ -201,15 +201,15 @@ class GscAbilities {
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
-						'site_url'   => [
+						'site_url'         => [
 							'type'        => 'string',
 							'description' => 'The property URL in Google Search Console. Defaults to the WordPress site URL.',
 						],
-						'start_date' => [
+						'start_date'       => [
 							'type'        => 'string',
 							'description' => 'Start date in YYYY-MM-DD format. Defaults to 28 days ago.',
 						],
-						'end_date'   => [
+						'end_date'         => [
 							'type'        => 'string',
 							'description' => 'End date in YYYY-MM-DD format. Defaults to yesterday.',
 						],
@@ -359,9 +359,9 @@ class GscAbilities {
 
 		// Fetch overall metrics for this query.
 		$summary_body = [
-			'startDate'        => $start,
-			'endDate'          => $end,
-			'dimensions'       => [ 'query' ],
+			'startDate'             => $start,
+			'endDate'               => $end,
+			'dimensions'            => [ 'query' ],
 			'dimensionFilterGroups' => [
 				[
 					'filters' => [
@@ -373,7 +373,7 @@ class GscAbilities {
 					],
 				],
 			],
-			'rowLimit'         => 1,
+			'rowLimit'              => 1,
 		];
 
 		$summary_rows = self::query_search_analytics( $token, $site_url, $summary_body );
@@ -394,9 +394,9 @@ class GscAbilities {
 
 		// Fetch pages ranking for this query.
 		$pages_body = [
-			'startDate'        => $start,
-			'endDate'          => $end,
-			'dimensions'       => [ 'page' ],
+			'startDate'             => $start,
+			'endDate'               => $end,
+			'dimensions'            => [ 'page' ],
 			'dimensionFilterGroups' => [
 				[
 					'filters' => [
@@ -408,7 +408,7 @@ class GscAbilities {
 					],
 				],
 			],
-			'rowLimit'         => 10,
+			'rowLimit'              => 10,
 		];
 
 		$page_rows = self::query_search_analytics( $token, $site_url, $pages_body );
@@ -495,8 +495,8 @@ class GscAbilities {
 
 			$prev_rows = self::query_search_analytics( $token, $site_url, $prev_body );
 			if ( ! is_wp_error( $prev_rows ) && ! empty( $prev_rows[0] ) ) {
-				$r                    = $prev_rows[0];
-				$result['previous']   = [
+				$r                  = $prev_rows[0];
+				$result['previous'] = [
 					'start_date'  => $prev_start,
 					'end_date'    => $prev_end,
 					'clicks'      => (int) ( $r['clicks'] ?? 0 ),
@@ -506,8 +506,8 @@ class GscAbilities {
 				];
 
 				// Compute deltas.
-				if ( ! empty( $current ) && ! empty( $result['previous'] ) ) {
-					$prev = $result['previous'];
+				if ( ! empty( $current ) ) {
+					$prev             = $result['previous'];
 					$result['change'] = [
 						'clicks'      => $current['clicks'] - $prev['clicks'],
 						'impressions' => $current['impressions'] - $prev['impressions'],
@@ -668,7 +668,14 @@ class GscAbilities {
 			);
 		}
 
-		$header  = self::base64url_encode( (string) wp_json_encode( [ 'alg' => 'RS256', 'typ' => 'JWT' ] ) );
+		$header  = self::base64url_encode(
+			(string) wp_json_encode(
+				[
+					'alg' => 'RS256',
+					'typ' => 'JWT',
+				]
+			)
+		);
 		$payload = self::base64url_encode(
 			(string) wp_json_encode(
 				[
@@ -708,7 +715,7 @@ class GscAbilities {
 	 * @return string
 	 */
 	private static function base64url_encode( string $data ): string {
-		return rtrim( strtr( base64_encode( $data ), '+/', '-_' ), '=' );
+		return rtrim( strtr( base64_encode( $data ), '+/', '-_' ), '=' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Used for JWT base64url encoding (RFC 4648 §5), not obfuscation.
 	}
 
 	/**
@@ -750,11 +757,11 @@ class GscAbilities {
 			);
 		}
 
-		$code         = wp_remote_retrieve_response_code( $response );
+		$code          = wp_remote_retrieve_response_code( $response );
 		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		if ( 200 !== $code ) {
-			$error_msg = $response_body['error']['message'] ?? 'Unknown GSC API error';
+			$error_msg    = $response_body['error']['message'] ?? 'Unknown GSC API error';
 			$error_status = $response_body['error']['status'] ?? (string) $code;
 
 			if ( 403 === $code ) {
