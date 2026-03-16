@@ -370,6 +370,20 @@ class Database {
 			KEY enabled (enabled)
 		) {$charset};
 
+		CREATE TABLE {$modified_files_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			plugin_slug varchar(255) NOT NULL DEFAULT '',
+			file_path varchar(1000) NOT NULL DEFAULT '',
+			action varchar(20) NOT NULL DEFAULT 'write',
+			session_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			modified_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			KEY plugin_slug (plugin_slug),
+			KEY session_id (session_id),
+			KEY modified_at (modified_at)
+		) {$charset};
+
 		CREATE TABLE {$shared_sessions_table} (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			session_id bigint(20) unsigned NOT NULL,
@@ -948,7 +962,8 @@ class Database {
 				'permission'          => $permission,
 				'created_at'          => current_time( 'mysql', true ),
 			],
-			[ '%d', '%d', '%d', '%s', '%s', '%s' ]		);
+			[ '%d', '%d', '%d', '%s', '%s', '%s' ]
+		);
 
 		return $result ? (int) $wpdb->insert_id : false;
 	}
