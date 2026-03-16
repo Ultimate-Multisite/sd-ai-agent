@@ -13,6 +13,7 @@ import apiFetch from '@wordpress/api-fetch';
  */
 import STORE_NAME from '../store';
 import SlashCommandMenu from './slash-command-menu';
+import useSpeechRecognition from './use-speech-recognition';
 
 /**
  * Message input area with auto-resize, slash command menu, and send/stop controls.
@@ -51,6 +52,20 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 		exportSession,
 		setDebugMode,
 	} = useDispatch( STORE_NAME );
+
+	// Push-to-talk: append recognised speech to the textarea.
+	const handleSpeechResult = useCallback( ( transcript ) => {
+		setText( ( prev ) => ( prev ? prev + ' ' + transcript : transcript ) );
+	}, [] );
+
+	const {
+		isListening,
+		isSupported: isSpeechSupported,
+		toggleListening,
+	} = useSpeechRecognition( {
+		interimResults: true,
+		onResult: handleSpeechResult,
+	} );
 
 	// Auto-resize textarea to fit content.
 	useEffect( () => {
@@ -273,6 +288,32 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 				onKeyDown={ handleKeyDown }
 				disabled={ sending }
 			/>
+			{ isSpeechSupported && ! sending && (
+				<Button
+					onClick={ toggleListening }
+					className={ `ai-agent-mic-btn${
+						isListening ? ' is-listening' : ''
+					}` }
+					label={
+						isListening
+							? __( 'Stop recording', 'ai-agent' )
+							: __( 'Start voice input', 'ai-agent' )
+					}
+					icon={
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							width="18"
+							height="18"
+							fill="currentColor"
+							aria-hidden="true"
+							focusable="false"
+						>
+							<path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.93V20H9v2h6v-2h-2v-2.07A7 7 0 0 0 19 11h-2z" />
+						</svg>
+					}
+				/>
+			) }
 			{ sending ? (
 				<Button
 					variant="secondary"
