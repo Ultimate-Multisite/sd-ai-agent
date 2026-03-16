@@ -67,6 +67,12 @@ describe( 'SHORTCUTS', () => {
  * @return {Function} Keydown event handler.
  */
 function captureHandlerFor( shortcuts, isMac ) {
+	/**
+	 *
+	 * @param {KeyboardEvent} e
+	 * @param {string}        combo
+	 * @param {boolean}       mac
+	 */
 	function matchesCombo( e, combo, mac ) {
 		const parts = combo.toLowerCase().split( '+' );
 		let needMod = false;

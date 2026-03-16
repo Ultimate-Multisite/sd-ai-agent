@@ -14,6 +14,9 @@ import { __ } from '@wordpress/i18n';
 import { trash, pencil, plus } from '@wordpress/icons';
 import apiFetch from '@wordpress/api-fetch';
 
+/**
+ *
+ */
 function emptyForm() {
 	return {
 		name: '',
@@ -27,6 +30,9 @@ function emptyForm() {
 	};
 }
 
+/**
+ *
+ */
 export default function EventsManager() {
 	const [ events, setEvents ] = useState( [] );
 	const [ loaded, setLoaded ] = useState( false );

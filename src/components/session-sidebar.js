@@ -117,6 +117,10 @@ function SessionItem( { session, isActive } ) {
 	);
 }
 
+/**
+ *
+ * @param {string} filter
+ */
 function getEmptyMessage( filter ) {
 	if ( filter === 'trash' ) {
 		return __( 'Trash is empty', 'ai-agent' );

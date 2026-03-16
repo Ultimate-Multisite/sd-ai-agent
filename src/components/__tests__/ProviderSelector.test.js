@@ -80,6 +80,14 @@ const mockProviders = [
 	},
 ];
 
+/**
+ *
+ * @param {Object} root0
+ * @param {Array}  root0.providers
+ * @param {string} root0.selectedProviderId
+ * @param {string} root0.selectedModelId
+ * @param {Array}  root0.models
+ */
 function setupMocks( {
 	providers = mockProviders,
 	selectedProviderId = 'openai',

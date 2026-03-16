@@ -50,6 +50,7 @@ class DatabaseSchemaTest extends WP_UnitTestCase {
 		'gratis_ai_agent_webhook_logs',
 		'gratis_ai_agent_conversation_templates',
 		'gratis_ai_agent_git_tracked_files',
+		'gratis_ai_agent_changes_log',
 	];
 
 	/**

@@ -17,6 +17,9 @@ import { trash, pencil, plus, backup } from '@wordpress/icons';
  */
 import STORE_NAME from '../store';
 
+/**
+ *
+ */
 export default function SkillManager() {
 	const { fetchSkills, createSkill, updateSkill, deleteSkill, resetSkill } =
 		useDispatch( STORE_NAME );

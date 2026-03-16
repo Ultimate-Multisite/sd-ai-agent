@@ -19,6 +19,9 @@ import apiFetch from '@wordpress/api-fetch';
  */
 import STORE_NAME from '../store';
 
+/**
+ *
+ */
 export default function ToolProfilesManager() {
 	const { saveSettings } = useDispatch( STORE_NAME );
 	const { settings } = useSelect(

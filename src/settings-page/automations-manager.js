@@ -32,6 +32,9 @@ const SCHEDULE_OPTIONS = [
 	{ label: __( 'Weekly', 'ai-agent' ), value: 'weekly' },
 ];
 
+/**
+ *
+ */
 function emptyForm() {
 	return {
 		name: '',
@@ -45,6 +48,9 @@ function emptyForm() {
 	};
 }
 
+/**
+ *
+ */
 export default function AutomationsManager() {
 	const [ automations, setAutomations ] = useState( [] );
 	const [ loaded, setLoaded ] = useState( false );

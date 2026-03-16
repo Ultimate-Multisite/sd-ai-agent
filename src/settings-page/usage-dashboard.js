@@ -6,6 +6,10 @@ import { Spinner, SelectControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 
+/**
+ *
+ * @param {number|string} cost
+ */
 function formatCost( cost ) {
 	const num = parseFloat( cost ) || 0;
 	if ( num < 0.01 ) {
@@ -14,6 +18,10 @@ function formatCost( cost ) {
 	return '$' + num.toFixed( 2 );
 }
 
+/**
+ *
+ * @param {number|string} tokens
+ */
 function formatTokens( tokens ) {
 	const num = parseInt( tokens, 10 ) || 0;
 	if ( num >= 1_000_000 ) {
@@ -25,6 +33,9 @@ function formatTokens( tokens ) {
 	return num.toString();
 }
 
+/**
+ *
+ */
 export default function UsageDashboard() {
 	const [ period, setPeriod ] = useState( '30d' );
 	const [ data, setData ] = useState( null );

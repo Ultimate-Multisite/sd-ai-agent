@@ -26,6 +26,9 @@ const CATEGORIES = [
 	{ label: __( 'Workflows', 'ai-agent' ), value: 'workflows' },
 ];
 
+/**
+ *
+ */
 export default function MemoryManager() {
 	const { fetchMemories, createMemory, updateMemory, deleteMemory } =
 		useDispatch( STORE_NAME );
