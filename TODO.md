@@ -57,7 +57,7 @@
 - [x] t070 WooCommerce abilities: product CRUD, order queries, store stats @superdav42 #feature ~8h logged:2026-03-15 pr:#450 completed:2026-03-16
   - Conditionally register on WooCommerce detection
   - create-product, list-products, get-orders, store-stats, update-product via Woo REST API
-- [ ] t071 WooCommerce onboarding: detect store and offer AI product creation @superdav42 #feature ~3h logged:2026-03-15 blocked-by:t063,t070
+- [x] t071 WooCommerce onboarding: detect store and offer AI product creation @superdav42 #feature ~3h logged:2026-03-15 blocked-by:t063,t070 pr:#443 completed:2026-03-16
 
 ### Rich Output & Artifacts (P1)
 
