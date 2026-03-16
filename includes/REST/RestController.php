@@ -895,6 +895,12 @@ class RestController {
 							'default'           => '',
 							'sanitize_callback' => 'sanitize_text_field',
 						],
+						'agent_id'    => [
+							'required'          => false,
+							'type'              => 'integer',
+							'default'           => 0,
+							'sanitize_callback' => 'absint',
+						],
 					],
 				],
 			]
@@ -2984,12 +2990,29 @@ class RestController {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function handle_create_session( WP_REST_Request $request ) {
+		$provider_id = $request->get_param( 'provider_id' ) ?? '';
+		$model_id    = $request->get_param( 'model_id' ) ?? '';
+
+		// If an agent is selected, resolve its provider/model overrides so the
+		// session is stored with the agent's effective provider/model rather than
+		// the caller's pre-agent selection.
+		$agent_id = (int) ( $request->get_param( 'agent_id' ) ?? 0 );
+		if ( $agent_id > 0 ) {
+			$agent_options = Agent::get_loop_options( $agent_id );
+			if ( ! empty( $agent_options['provider_id'] ) ) {
+				$provider_id = $agent_options['provider_id'];
+			}
+			if ( ! empty( $agent_options['model_id'] ) ) {
+				$model_id = $agent_options['model_id'];
+			}
+		}
+
 		$session_id = $this->database->create_session(
 			[
 				'user_id'     => get_current_user_id(),
 				'title'       => $request->get_param( 'title' ),
-				'provider_id' => $request->get_param( 'provider_id' ),
-				'model_id'    => $request->get_param( 'model_id' ),
+				'provider_id' => $provider_id,
+				'model_id'    => $model_id,
 			]
 		);
 

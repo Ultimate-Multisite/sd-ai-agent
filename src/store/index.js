@@ -866,7 +866,7 @@ const actions = {
 						sessionData.agent_id = agentIdForSession;
 					}
 					const session = await apiFetch( {
-						path: '/ai-agent/v1/sessions',
+						path: '/gratis-ai-agent/v1/sessions',
 						method: 'POST',
 						data: sessionData,
 					} );
