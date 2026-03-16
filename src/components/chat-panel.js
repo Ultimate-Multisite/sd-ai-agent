@@ -98,28 +98,28 @@ export default function ChatPanel( { compact = false, onSlashCommand } ) {
 			>
 				<div className="gratis-ai-agent-header">
 					<ProviderSelector compact={ compact } />
-				<AgentSelector compact={ compact } />
-				{ isTTSSupported && (
-					<Button
-						onClick={ handleTtsToggle }
-						className={ `ai-agent-tts-btn${
-							ttsEnabled ? ' is-active' : ''
-						}` }
-						label={
-							ttsEnabled
-								? __(
-										'Disable text-to-speech',
-										'gratis-ai-agent'
-								  )
-								: __(
-										'Enable text-to-speech',
-										'gratis-ai-agent'
-								  )
-						}
-						showTooltip
-						icon={ <SpeakerIcon enabled={ ttsEnabled } /> }
-					/>
-				) }
+					<AgentSelector compact={ compact } />
+					{ isTTSSupported && (
+						<Button
+							onClick={ handleTtsToggle }
+							className={ `ai-agent-tts-btn${
+								ttsEnabled ? ' is-active' : ''
+							}` }
+							label={
+								ttsEnabled
+									? __(
+											'Disable text-to-speech',
+											'gratis-ai-agent'
+									  )
+									: __(
+											'Enable text-to-speech',
+											'gratis-ai-agent'
+									  )
+							}
+							showTooltip
+							icon={ <SpeakerIcon enabled={ ttsEnabled } /> }
+						/>
+					) }
 					{ debugMode && (
 						<span className="gratis-ai-agent-debug-badge">
 							{ __( 'DEBUG', 'gratis-ai-agent' ) }
