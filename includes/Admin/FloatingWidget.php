@@ -126,5 +126,19 @@ class FloatingWidget {
 				'siteBuilderMode' => $site_builder,
 			]
 		);
+
+		// Pass white-label branding values to the widget (t075).
+		$branding = Settings::get();
+		wp_localize_script(
+			'gratis-ai-agent-floating-widget',
+			'gratisAiAgentBranding',
+			array(
+				'agentName'       => (string) ( $branding['agent_name'] ?? '' ),
+				'primaryColor'    => (string) ( $branding['brand_primary_color'] ?? '' ),
+				'textColor'       => (string) ( $branding['brand_text_color'] ?? '' ),
+				'logoUrl'         => (string) ( $branding['brand_logo_url'] ?? '' ),
+				'greetingMessage' => (string) ( $branding['greeting_message'] ?? '' ),
+			)
+		);
 	}
 }

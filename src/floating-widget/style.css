@@ -55,6 +55,14 @@
 	fill: currentcolor;
 }
 
+/* White-label logo inside the FAB (t075) */
+.gratis-ai-agent-fab-logo {
+	width: 24px;
+	height: 24px;
+	object-fit: contain;
+	border-radius: 2px;
+}
+
 /* Floating panel */
 .ai-agent-floating-panel {
 	position: fixed;
@@ -147,6 +155,16 @@
 .ai-agent-floating-title {
 	font-size: 14px;
 	font-weight: 600;
+}
+
+/* White-label logo inside the title bar (t075) */
+.ai-agent-floating-titlebar-logo {
+	width: 20px;
+	height: 20px;
+	object-fit: contain;
+	border-radius: 2px;
+	margin-right: 6px;
+	flex-shrink: 0;
 }
 
 .ai-agent-floating-titlebar-actions {

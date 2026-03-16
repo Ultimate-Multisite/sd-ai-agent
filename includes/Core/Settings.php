@@ -169,6 +169,11 @@ class Settings {
 			'image_generation_size'    => '1024x1024',
 			'image_generation_quality' => 'standard',
 			'image_generation_style'   => 'vivid',
+			// White-label / branding settings (t075).
+			'agent_name'               => '',
+			'brand_primary_color'      => '',
+			'brand_text_color'         => '',
+			'brand_logo_url'           => '',
 		];
 	}
 

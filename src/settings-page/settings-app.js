@@ -33,6 +33,7 @@ import AutomationsManager from './automations-manager';
 import EventsManager from './events-manager';
 import RolePermissionsManager from './role-permissions-manager';
 import AgentBuilder from './agent-builder';
+import BrandingManager from './branding-manager';
 
 /**
  *
@@ -276,6 +277,11 @@ export default function SettingsApp() {
 		{
 			name: 'usage',
 			title: __( 'Usage', 'gratis-ai-agent' ),
+			className: 'gratis-ai-agent-settings-tab',
+		},
+		{
+			name: 'branding',
+			title: __( 'Branding', 'gratis-ai-agent' ),
 			className: 'gratis-ai-agent-settings-tab',
 		},
 		{
@@ -871,6 +877,16 @@ export default function SettingsApp() {
 									>
 										<UsageDashboard />
 									</ErrorBoundary>
+								</div>
+							);
+
+						case 'branding':
+							return (
+								<div className="gratis-ai-agent-settings-section">
+									<BrandingManager
+										local={ local }
+										updateField={ updateField }
+									/>
 								</div>
 							);
 
