@@ -12,7 +12,7 @@
 
 ### Onboarding & First-Run Experience (P0)
 
-- [ ] t060 Detect fresh WordPress install and trigger site builder mode @superdav42 #feature ~3h logged:2026-03-15
+- [x] t060 Detect fresh WordPress install and trigger site builder mode @superdav42 #feature ~3h logged:2026-03-15 pr:#454 completed:2026-03-16
   - Check post count, theme, and whether any real content exists
   - Set `site_builder_mode` flag; floating widget opens automatically in expanded mode
 - [x] t061 Site builder conversation flow: interview user then generate full site @superdav42 #feature ~12h logged:2026-03-15 blocked-by:t060 pr:#455 completed:2026-03-16
