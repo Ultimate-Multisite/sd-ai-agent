@@ -16,6 +16,7 @@ import {
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { trash, pencil, plus } from '@wordpress/icons';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -65,11 +66,9 @@ export default function AgentBuilder() {
 		fetchAgents();
 		fetchProviders();
 		// Fetch tool profiles for the dropdown.
-		import( '@wordpress/api-fetch' ).then( ( { default: apiFetch } ) => {
-			apiFetch( { path: '/gratis-ai-agent/v1/tool-profiles' } )
-				.then( ( profiles ) => setToolProfiles( profiles || [] ) )
-				.catch( () => setToolProfiles( [] ) );
-		} );
+		apiFetch( { path: '/gratis-ai-agent/v1/tool-profiles' } )
+			.then( ( profiles ) => setToolProfiles( profiles || [] ) )
+			.catch( () => setToolProfiles( [] ) );
 	}, [ fetchAgents, fetchProviders ] );
 
 	const resetForm = useCallback( () => {

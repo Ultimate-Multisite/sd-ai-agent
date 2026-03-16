@@ -2020,6 +2020,7 @@ class RestController {
 				'provider_id'        => $request->get_param( 'provider_id' ),
 				'model_id'           => $request->get_param( 'model_id' ),
 				'page_context'       => $request->get_param( 'page_context' ),
+				'agent_id'           => $request->get_param( 'agent_id' ),
 			],
 		];
 
@@ -2493,6 +2494,7 @@ class RestController {
 			'provider_id'        => $request->get_param( 'provider_id' ),
 			'model_id'           => $request->get_param( 'model_id' ),
 			'page_context'       => $request->get_param( 'page_context' ) ?? [],
+			'agent_id'           => $request->get_param( 'agent_id' ),
 		];
 
 		// Load conversation history from session.

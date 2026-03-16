@@ -13,7 +13,6 @@ use GratisAiAgent\Knowledge\KnowledgeDatabase;
 use GratisAiAgent\Models\ConversationTemplate;
 use GratisAiAgent\Models\Skill;
 use GratisAiAgent\REST\WebhookDatabase;
-use GratisAiAgent\Models\Agent;
 use GratisAiAgent\Tools\CustomTools;
 
 class Database {
