@@ -10,6 +10,7 @@ import { Icon, comment } from '@wordpress/icons';
  * Internal dependencies
  */
 import STORE_NAME from '../store';
+import { getBranding, getBrandingStyle } from '../utils/branding';
 
 /**
  * Floating action button that opens the AI Agent chat panel.
@@ -26,13 +27,33 @@ export default function FloatingButton() {
 		[]
 	);
 
+	const branding = getBranding();
+	const fabStyle = getBrandingStyle();
+	const agentLabel = branding.agentName
+		? sprintf(
+				/* translators: %s: agent display name */
+				__( 'Open %s', 'gratis-ai-agent' ),
+				branding.agentName
+		  )
+		: __( 'Open Gratis AI Agent', 'gratis-ai-agent' );
+
 	return (
 		<Button
 			className="gratis-ai-agent-fab"
+			style={ fabStyle }
 			onClick={ () => setFloatingOpen( true ) }
-			label={ __( 'Open Gratis AI Agent', 'gratis-ai-agent' ) }
+			label={ agentLabel }
 		>
-			<Icon icon={ comment } size={ 24 } />
+			{ branding.logoUrl ? (
+				<img
+					src={ branding.logoUrl }
+					alt=""
+					className="gratis-ai-agent-fab-logo"
+					aria-hidden="true"
+				/>
+			) : (
+				<Icon icon={ comment } size={ 24 } />
+			) }
 			{ alertCount > 0 && (
 				<span
 					className="gratis-ai-agent-fab-badge"
