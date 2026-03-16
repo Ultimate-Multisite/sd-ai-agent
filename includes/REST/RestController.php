@@ -4122,7 +4122,7 @@ class RestController {
 			return new WP_Error( 'delete_failed', __( 'Failed to delete conversation template. Built-in templates cannot be deleted.', 'gratis-ai-agent' ), [ 'status' => 400 ] );
 		}
 
-	return new WP_REST_Response( [ 'deleted' => true ], 200 );
+		return new WP_REST_Response( [ 'deleted' => true ], 200 );
 	}
 
 	// ─── Site Builder handlers ───────────────────────────────────
