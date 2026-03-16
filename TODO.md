@@ -23,7 +23,7 @@
 - [x] t063 Smart onboarding: agent scans existing site on first activation @superdav42 #feature ~8h logged:2026-03-15 pr:#453 completed:2026-03-16
   - Background wp-cron scan: plugins, theme, post types, post count, categories, WooCommerce status
   - Store results as memories; detect site type; index first 50 posts into knowledge base
-- [ ] t064 Onboarding interview: ask user about site goals after scan @superdav42 #feature ~4h logged:2026-03-15 blocked-by:t063
+- [x] t064 Onboarding interview: ask user about site goals after scan @superdav42 #feature ~4h logged:2026-03-15 blocked-by:t063 pr:#457 completed:2026-03-16
   - Agent asks targeted questions based on scan results
   - Store answers as memories; suggest relevant automations
 - [ ] t065 Integrate provider setup into onboarding conversation @superdav42 #ui ~4h logged:2026-03-15
