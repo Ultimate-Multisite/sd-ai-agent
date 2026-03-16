@@ -28,7 +28,7 @@
 - [x] t064 Onboarding interview: ask user about site goals after scan @superdav42 #feature ~4h logged:2026-03-15 blocked-by:t063 pr:#457 completed:2026-03-16
   - Agent asks targeted questions based on scan results
   - Store answers as memories; suggest relevant automations
-- [ ] t065 Integrate provider setup into onboarding conversation @superdav42 #ui ~4h logged:2026-03-15
+- [x] t065 Integrate provider setup into onboarding conversation @superdav42 #ui ~4h logged:2026-03-15 pr:#456 completed:2026-03-16
   - Replace 4-step wizard with conversational flow; agent guides provider setup in chat
 
 ### Floating Widget & Frontend (P0)
