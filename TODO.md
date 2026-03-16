@@ -147,7 +147,7 @@
 
 ### Custom Agent Builder (P2)
 
-- [ ] t082 Agent builder UI: specialized agents with custom prompts, tools, models @superdav42 #feature ~8h logged:2026-03-15 ref=GH#392 pr:#437
+- [x] t082 Agent builder UI: specialized agents with custom prompts, tools, models @superdav42 #feature ~8h logged:2026-03-15 ref=GH#392 pr:#437 pr:#437 completed:2026-03-16
 
 ### Voice Interface (P3)
 
