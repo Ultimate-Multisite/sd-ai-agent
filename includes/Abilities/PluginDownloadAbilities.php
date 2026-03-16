@@ -145,9 +145,9 @@ class ListModifiedPluginsAbility extends AbstractAbility {
 		$plugins = [];
 
 		foreach ( $rows as $row ) {
-			$slug      = $row->plugin_slug ?? '';
-			$nonce     = wp_create_nonce( 'gratis_ai_agent_download_plugin_' . $slug );
-			$rest_url  = rest_url( 'gratis-ai-agent/v1/download-plugin/' . rawurlencode( $slug ) );
+			$slug         = $row->plugin_slug ?? '';
+			$nonce        = wp_create_nonce( 'gratis_ai_agent_download_plugin_' . $slug );
+			$rest_url     = rest_url( 'gratis-ai-agent/v1/download-plugin/' . rawurlencode( $slug ) );
 			$download_url = add_query_arg( '_wpnonce', $nonce, $rest_url );
 
 			$plugins[] = [

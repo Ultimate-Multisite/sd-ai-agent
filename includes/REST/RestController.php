@@ -4723,7 +4723,7 @@ class RestController {
 
 		$zip = new \ZipArchive();
 		if ( true !== $zip->open( $tmp_file, \ZipArchive::OVERWRITE ) ) {
-			@unlink( $tmp_file ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Cleanup on failure.
+			wp_delete_file( $tmp_file );
 			return new WP_Error( 'zip_open_failed', __( 'Failed to open zip archive for writing.', 'gratis-ai-agent' ), [ 'status' => 500 ] );
 		}
 
@@ -4739,9 +4739,9 @@ class RestController {
 		header( 'Pragma: no-cache' );
 		header( 'Expires: 0' );
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_readfile -- Streaming local temp file; WP_Filesystem does not support streaming output.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Streaming local temp file; WP_Filesystem does not support streaming output.
 		readfile( $tmp_file );
-		@unlink( $tmp_file ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Cleanup after streaming.
+		wp_delete_file( $tmp_file );
 		exit;
 	}
 

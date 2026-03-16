@@ -918,14 +918,17 @@ class Database {
 
 		$table = self::modified_files_table_name();
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table query; table name from internal method.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table query; table name from internal method.
 		$rows = $wpdb->get_results(
-			"SELECT plugin_slug,
-			        COUNT(*) AS modification_count,
-			        MAX(modified_at) AS last_modified
-			 FROM {$table}
-			 GROUP BY plugin_slug
-			 ORDER BY last_modified DESC"
+			$wpdb->prepare(
+				'SELECT plugin_slug,
+				        COUNT(*) AS modification_count,
+				        MAX(modified_at) AS last_modified
+				 FROM %i
+				 GROUP BY plugin_slug
+				 ORDER BY last_modified DESC',
+				$table
+			)
 		);
 
 		return $rows ?? [];
@@ -942,10 +945,11 @@ class Database {
 
 		$table = self::modified_files_table_name();
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table query; table name from internal method.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table query; table name from internal method.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$table} WHERE plugin_slug = %s ORDER BY modified_at DESC",
+				'SELECT * FROM %i WHERE plugin_slug = %s ORDER BY modified_at DESC',
+				$table,
 				$plugin_slug
 			)
 		);
