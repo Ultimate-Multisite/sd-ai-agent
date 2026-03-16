@@ -50,6 +50,7 @@ use GratisAiAgent\Abilities\DatabaseAbilities;
 use GratisAiAgent\Abilities\FileAbilities;
 use GratisAiAgent\Abilities\GitAbilities;
 use GratisAiAgent\Abilities\GoogleAnalyticsAbilities;
+use GratisAiAgent\Abilities\GscAbilities;
 use GratisAiAgent\Abilities\KnowledgeAbilities;
 use GratisAiAgent\Abilities\PluginDownloadAbilities;
 use GratisAiAgent\Abilities\MarketingAbilities;
@@ -149,6 +150,7 @@ AiImageAbilities::register();
 
 // SEO, content, and marketing abilities.
 SeoAbilities::register();
+GscAbilities::register();
 ContentAbilities::register();
 MarketingAbilities::register();
 

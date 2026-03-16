@@ -39,6 +39,13 @@ class Settings {
 	const PROVIDER_KEYS_OPTION = 'gratis_ai_agent_provider_keys';
 
 	/**
+	 * Option name for Google Search Console credentials.
+	 * Stored separately from general settings to avoid leaking credentials
+	 * through the GET /settings endpoint.
+	 */
+	const GSC_CREDENTIALS_OPTION = 'gratis_ai_agent_gsc_credentials';
+
+	/**
 	 * Supported direct providers with their metadata.
 	 */
 	const DIRECT_PROVIDERS = [
@@ -232,6 +239,50 @@ class Settings {
 			];
 		}
 		return $result;
+	}
+
+	/**
+	 * Get the stored Google Search Console credentials.
+	 *
+	 * Returns an associative array with the credential type and fields, or an
+	 * empty array when not configured. The raw credential values are NEVER
+	 * returned through GET /settings — only a boolean presence flag is exposed.
+	 *
+	 * Supported shapes:
+	 *   Service account: ['type' => 'service_account', 'client_email' => '...', 'private_key' => '...', 'default_site_url' => '...']
+	 *   Access token:    ['type' => 'access_token', 'access_token' => '...', 'default_site_url' => '...']
+	 *
+	 * @return array<string, mixed> Credential array or empty array.
+	 */
+	public static function get_gsc_credentials(): array {
+		$creds = get_option( self::GSC_CREDENTIALS_OPTION, [] );
+		return is_array( $creds ) ? $creds : [];
+	}
+
+	/**
+	 * Persist Google Search Console credentials.
+	 *
+	 * Pass an empty array to clear the credentials.
+	 *
+	 * @param array<string, mixed> $credentials Credential array (see get_gsc_credentials() for shape).
+	 * @return bool True on success.
+	 */
+	public static function set_gsc_credentials( array $credentials ): bool {
+		if ( empty( $credentials ) ) {
+			return delete_option( self::GSC_CREDENTIALS_OPTION );
+		}
+
+		return update_option( self::GSC_CREDENTIALS_OPTION, $credentials );
+	}
+
+	/**
+	 * Check whether GSC credentials are configured.
+	 *
+	 * @return bool
+	 */
+	public static function has_gsc_credentials(): bool {
+		$creds = self::get_gsc_credentials();
+		return ! empty( $creds['type'] );
 	}
 
 	/**
