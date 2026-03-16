@@ -13,60 +13,12 @@ const {
 	goToAdminDashboard,
 	getFloatingButton,
 	getFloatingPanel,
-	getMessageInput,
-	getSendButton,
-	getChatPanel,
 } = require( './utils/wp-admin' );
 
 test.describe( 'Floating Widget', () => {
 	test.beforeEach( async ( { page } ) => {
-		// Capture JS console errors and uncaught exceptions for CI visibility.
-		// The ErrorBoundary catches React crashes silently — this surfaces them.
-		const consoleErrors = [];
-		page.on( 'console', ( msg ) => {
-			if ( msg.type() === 'error' ) {
-				consoleErrors.push( msg.text() );
-			}
-		} );
-		page.on( 'pageerror', ( err ) => {
-			consoleErrors.push( err.message );
-		} );
-
 		await loginToWordPress( page );
 		await goToAdminDashboard( page );
-
-		// Diagnostic: dump page state to CI output so we can see what's
-		// actually rendered when the FAB is expected but not found.
-		const diag = await page.evaluate( () => {
-			const scripts = [ ...document.querySelectorAll( 'script[src]' ) ]
-				.map( ( s ) => s.src )
-				.filter( ( s ) => s.includes( 'gratis-ai-agent' ) );
-			const styles = [ ...document.querySelectorAll( 'link[rel="stylesheet"]' ) ]
-				.map( ( l ) => l.href )
-				.filter( ( h ) => h.includes( 'gratis-ai-agent' ) );
-			const root = document.getElementById( 'gratis-ai-agent-floating-root' );
-			const fab = document.querySelector( '.gratis-ai-agent-fab' );
-			const overlay = document.querySelector( '.ai-agent-site-builder-overlay' );
-			const errorBoundary = document.querySelector( '.ai-agent-error-boundary' );
-			return {
-				scripts,
-				styles,
-				hasRoot: !! root,
-				rootHTML: root ? root.innerHTML.substring( 0, 500 ) : null,
-				hasFab: !! fab,
-				hasOverlay: !! overlay,
-				hasErrorBoundary: !! errorBoundary,
-				url: window.location.href,
-			};
-		} );
-		// eslint-disable-next-line no-console
-		console.log( 'FLOATING-WIDGET DIAG:', JSON.stringify( diag ) );
-
-		// Log any JS errors so they appear in CI output even when tests fail.
-		if ( consoleErrors.length ) {
-			// eslint-disable-next-line no-console
-			console.log( 'JS errors on page:', JSON.stringify( consoleErrors ) );
-		}
 	} );
 
 	test( 'FAB button is visible on admin pages', async ( { page } ) => {
@@ -90,10 +42,13 @@ test.describe( 'Floating Widget', () => {
 		const fab = getFloatingButton( page );
 		await fab.click();
 
-		const chatPanel = getChatPanel( page );
+		const panel = getFloatingPanel( page );
+		// Scope to the floating panel to avoid strict-mode violations when
+		// screen-meta also renders a chat panel on the same page.
+		const chatPanel = panel.locator( '.gratis-ai-agent-chat-panel' );
 		await expect( chatPanel ).toBeVisible();
 
-		const input = getMessageInput( page );
+		const input = panel.locator( '.ai-agent-input' );
 		await expect( input ).toBeVisible();
 	} );
 
@@ -104,8 +59,8 @@ test.describe( 'Floating Widget', () => {
 		const panel = getFloatingPanel( page );
 		await expect( panel ).toBeVisible();
 
-		// Click the Close button in the title bar.
-		const closeButton = page.getByLabel( 'Close' );
+		// Click the Close button in the floating panel title bar.
+		const closeButton = panel.getByLabel( 'Close' );
 		await closeButton.click();
 
 		await expect( panel ).not.toBeVisible();
@@ -121,14 +76,14 @@ test.describe( 'Floating Widget', () => {
 		const panel = getFloatingPanel( page );
 		await expect( panel ).toBeVisible();
 
-		const minimizeButton = page.getByLabel( 'Minimize' );
+		const minimizeButton = panel.getByLabel( 'Minimize' );
 		await minimizeButton.click();
 
 		// Panel element stays in DOM but body is hidden (is-minimized class).
 		await expect( panel ).toHaveClass( /is-minimized/ );
 
 		// Chat panel body should not be visible.
-		const chatPanel = getChatPanel( page );
+		const chatPanel = panel.locator( '.gratis-ai-agent-chat-panel' );
 		await expect( chatPanel ).not.toBeVisible();
 	} );
 
@@ -136,28 +91,33 @@ test.describe( 'Floating Widget', () => {
 		const fab = getFloatingButton( page );
 		await fab.click();
 
+		const panel = getFloatingPanel( page );
+
 		// Minimize first.
-		const minimizeButton = page.getByLabel( 'Minimize' );
+		const minimizeButton = panel.getByLabel( 'Minimize' );
 		await minimizeButton.click();
 
-		const panel = getFloatingPanel( page );
 		await expect( panel ).toHaveClass( /is-minimized/ );
 
 		// Expand.
-		const expandButton = page.getByLabel( 'Expand' );
+		const expandButton = panel.getByLabel( 'Expand' );
 		await expandButton.click();
 
 		await expect( panel ).not.toHaveClass( /is-minimized/ );
 
-		const chatPanel = getChatPanel( page );
+		const chatPanel = panel.locator( '.gratis-ai-agent-chat-panel' );
 		await expect( chatPanel ).toBeVisible();
 	} );
+
+	// All tests below scope locators to the floating panel to avoid
+	// strict-mode violations when screen-meta also renders a chat panel.
 
 	test( 'message input accepts text', async ( { page } ) => {
 		const fab = getFloatingButton( page );
 		await fab.click();
 
-		const input = getMessageInput( page );
+		const panel = getFloatingPanel( page );
+		const input = panel.locator( '.ai-agent-input' );
 		await input.fill( 'Hello, AI Agent!' );
 
 		await expect( input ).toHaveValue( 'Hello, AI Agent!' );
@@ -167,8 +127,9 @@ test.describe( 'Floating Widget', () => {
 		const fab = getFloatingButton( page );
 		await fab.click();
 
-		const input = getMessageInput( page );
-		const sendButton = getSendButton( page );
+		const panel = getFloatingPanel( page );
+		const input = panel.locator( '.ai-agent-input' );
+		const sendButton = panel.locator( '.ai-agent-send-btn' );
 
 		// Send button should be disabled (or absent) when input is empty.
 		await expect( sendButton ).toBeDisabled();
@@ -183,7 +144,8 @@ test.describe( 'Floating Widget', () => {
 		const fab = getFloatingButton( page );
 		await fab.click();
 
-		const input = getMessageInput( page );
+		const panel = getFloatingPanel( page );
+		const input = panel.locator( '.ai-agent-input' );
 		await input.fill( 'Test message via Enter' );
 		await input.press( 'Enter' );
 
@@ -195,11 +157,12 @@ test.describe( 'Floating Widget', () => {
 		const fab = getFloatingButton( page );
 		await fab.click();
 
-		const input = getMessageInput( page );
+		const panel = getFloatingPanel( page );
+		const input = panel.locator( '.ai-agent-input' );
 		await input.fill( '/' );
 
 		// Slash command menu should appear.
-		const slashMenu = page.locator( '.ai-agent-slash-menu' );
+		const slashMenu = panel.locator( '.ai-agent-slash-menu' );
 		await expect( slashMenu ).toBeVisible();
 	} );
 
@@ -209,10 +172,11 @@ test.describe( 'Floating Widget', () => {
 		const fab = getFloatingButton( page );
 		await fab.click();
 
-		const input = getMessageInput( page );
+		const panel = getFloatingPanel( page );
+		const input = panel.locator( '.ai-agent-input' );
 		await input.fill( '/' );
 
-		const slashMenu = page.locator( '.ai-agent-slash-menu' );
+		const slashMenu = panel.locator( '.ai-agent-slash-menu' );
 		await expect( slashMenu ).toBeVisible();
 
 		await input.fill( '/remember something' );
