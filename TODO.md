@@ -96,7 +96,7 @@
 ### Git Change Tracking & Undo (P1)
 
 - [x] t033 Port GitTracker class: store original files as git blobs, track changes @superdav42 #feature ~6h logged:2026-03-14 ref=GH#431 pr:#442 verified:2026-03-16
-- [ ] t034 Port GitTrackerManager: manage trackers across plugins/themes @superdav42 #feature ~3h logged:2026-03-14
+- [x] t034 Port GitTrackerManager: manage trackers across plugins/themes @superdav42 #feature ~3h logged:2026-03-14 ref=GH#432 pr:#451 verified:2026-03-16
 - [ ] t035 Add Changes Admin page: view diffs, revert changes, export patches @superdav42 #feature ~8h logged:2026-03-14 blocked-by:t033,t034 ref=GH#433 pr:#447
 - [ ] t036 Add plugin download links for AI-modified plugins @superdav42 #feature ~2h logged:2026-03-14 ref=GH#434 pr:#441
 
