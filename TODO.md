@@ -136,7 +136,7 @@
 
 - [ ] t077 Shared conversations: multiple admins can view/continue same session @superdav42 #feature ~6h logged:2026-03-15
 - [ ] t078 Role-based AI permissions: restrict abilities by WordPress user role @superdav42 #feature ~4h logged:2026-03-15
-- [ ] t079 Conversation templates: pre-built prompts for common tasks @superdav42 #feature ~3h logged:2026-03-15
+- [ ] t079 Conversation templates: pre-built prompts for common tasks @superdav42 #feature ~3h logged:2026-03-15 ref=GH#389 pr:#413
 
 ### Proactive Site Intelligence (P2)
 
