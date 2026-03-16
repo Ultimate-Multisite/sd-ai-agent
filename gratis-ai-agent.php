@@ -43,6 +43,7 @@ if ( file_exists( GRATIS_AI_AGENT_DIR . '/vendor/autoload_packages.php' ) ) {
 require_once GRATIS_AI_AGENT_DIR . '/compat/load.php';
 
 use GratisAiAgent\Abilities\AbilityDiscoveryAbilities;
+use GratisAiAgent\Abilities\AiImageAbilities;
 use GratisAiAgent\Abilities\BlockAbilities;
 use GratisAiAgent\Abilities\ContentAbilities;
 use GratisAiAgent\Abilities\DatabaseAbilities;
@@ -142,6 +143,9 @@ AbilityDiscoveryAbilities::register();
 
 // Stock image import ability.
 StockImageAbilities::register();
+
+// AI image generation ability (DALL-E 3).
+AiImageAbilities::register();
 
 // SEO, content, and marketing abilities.
 SeoAbilities::register();

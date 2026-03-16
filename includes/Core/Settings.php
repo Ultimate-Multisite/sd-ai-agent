@@ -166,6 +166,9 @@ class Settings {
 			'site_builder_mode'        => false,
 			'show_on_frontend'         => false,
 			'keyboard_shortcut'        => 'alt+a',
+			'image_generation_size'    => '1024x1024',
+			'image_generation_quality' => 'standard',
+			'image_generation_style'   => 'vivid',
 		];
 	}
 
