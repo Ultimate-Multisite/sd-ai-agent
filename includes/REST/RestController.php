@@ -30,6 +30,7 @@ use GratisAiAgent\Knowledge\KnowledgeDatabase;
 use GratisAiAgent\Models\ChangesLog;
 use GratisAiAgent\Models\ConversationTemplate;
 use GratisAiAgent\Models\Memory;
+use GratisAiAgent\Models\Agent;
 use GratisAiAgent\Models\Skill;
 use GratisAiAgent\Core\FreshInstallDetector;
 use GratisAiAgent\Tools\CustomToolExecutor;
@@ -135,6 +136,11 @@ class RestController {
 						'type'     => 'object',
 						'default'  => [],
 					],
+					'agent_id'           => [
+						'required'          => false,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
 				],
 			]
 		);
@@ -193,6 +199,11 @@ class RestController {
 						'required' => false,
 						'type'     => 'object',
 						'default'  => [],
+					],
+					'agent_id'           => [
+						'required'          => false,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
 					],
 				],
 			]
@@ -642,6 +653,181 @@ class RestController {
 				[
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => [ $instance, 'handle_reset_skill' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
+					'args'                => [
+						'id' => [
+							'required'          => true,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						],
+					],
+				],
+			]
+		);
+
+		// Agents endpoints.
+		register_rest_route(
+			self::NAMESPACE,
+			'/agents',
+			[
+				[
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => [ $instance, 'handle_list_agents' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
+				],
+				[
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => [ $instance, 'handle_create_agent' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
+					'args'                => [
+						'slug'           => [
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_title',
+						],
+						'name'           => [
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+						'description'    => [
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_textarea_field',
+						],
+						'system_prompt'  => [
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_textarea_field',
+						],
+						'provider_id'    => [
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+						'model_id'       => [
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+						'tool_profile'   => [
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+						'temperature'    => [
+							'required' => false,
+							'type'     => 'number',
+						],
+						'max_iterations' => [
+							'required' => false,
+							'type'     => 'integer',
+						],
+						'greeting'       => [
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_textarea_field',
+						],
+						'avatar_icon'    => [
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/agents/(?P<id>\d+)',
+			[
+				[
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => [ $instance, 'handle_get_agent' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
+					'args'                => [
+						'id' => [
+							'required'          => true,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						],
+					],
+				],
+				[
+					'methods'             => 'PATCH',
+					'callback'            => [ $instance, 'handle_update_agent' ],
+					'permission_callback' => [ $instance, 'check_permission' ],
+					'args'                => [
+						'id'             => [
+							'required'          => true,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						],
+						'name'           => [
+							'required'          => false,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+						'description'    => [
+							'required'          => false,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_textarea_field',
+						],
+						'system_prompt'  => [
+							'required'          => false,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_textarea_field',
+						],
+						'provider_id'    => [
+							'required'          => false,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+						'model_id'       => [
+							'required'          => false,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+						'tool_profile'   => [
+							'required'          => false,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+						'temperature'    => [
+							'required' => false,
+							'type'     => 'number',
+						],
+						'max_iterations' => [
+							'required' => false,
+							'type'     => 'integer',
+						],
+						'greeting'       => [
+							'required'          => false,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_textarea_field',
+						],
+						'avatar_icon'    => [
+							'required'          => false,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+						'enabled'        => [
+							'required' => false,
+							'type'     => 'boolean',
+						],
+					],
+				],
+				[
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => [ $instance, 'handle_delete_agent' ],
 					'permission_callback' => [ $instance, 'check_permission' ],
 					'args'                => [
 						'id' => [
@@ -2112,6 +2298,12 @@ class RestController {
 			$options['session_id'] = (int) $params['session_id'];
 		}
 
+		// Apply agent overrides (agent_id takes precedence over individual params).
+		if ( ! empty( $params['agent_id'] ) ) {
+			$agent_options = Agent::get_loop_options( (int) $params['agent_id'] );
+			$options       = array_merge( $options, $agent_options );
+		}
+
 		// Record start time for webhook duration tracking.
 		$start_ms = (int) round( microtime( true ) * 1000 );
 
@@ -2334,6 +2526,12 @@ class RestController {
 		}
 		if ( ! empty( $params['page_context'] ) ) {
 			$options['page_context'] = $params['page_context'];
+		}
+
+		// Apply agent overrides (agent_id takes precedence over individual params).
+		if ( ! empty( $params['agent_id'] ) ) {
+			$agent_options = Agent::get_loop_options( (int) $params['agent_id'] );
+			$options       = array_merge( $options, $agent_options );
 		}
 
 		// Attach the SSE streamer so AgentLoop can emit tokens as they arrive.
@@ -3100,6 +3298,153 @@ class RestController {
 			],
 			200
 		);
+	}
+
+	// ─── Agents ──────────────────────────────────────────────────────
+
+	/**
+	 * Handle GET /agents — list all agents.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function handle_list_agents(): WP_REST_Response {
+		$agents = Agent::get_all();
+		$list   = array_map( [ Agent::class, 'to_array' ], $agents );
+		return new WP_REST_Response( $list, 200 );
+	}
+
+	/**
+	 * Handle GET /agents/{id} — get a single agent.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function handle_get_agent( WP_REST_Request $request ) {
+		$id    = absint( $request->get_param( 'id' ) );
+		$agent = Agent::get( $id );
+
+		if ( ! $agent ) {
+			return new WP_Error(
+				'gratis_ai_agent_agent_not_found',
+				__( 'Agent not found.', 'gratis-ai-agent' ),
+				[ 'status' => 404 ]
+			);
+		}
+
+		return new WP_REST_Response( Agent::to_array( $agent ), 200 );
+	}
+
+	/**
+	 * Handle POST /agents — create a new agent.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function handle_create_agent( WP_REST_Request $request ) {
+		$slug = $request->get_param( 'slug' );
+
+		// Check for duplicate slug.
+		$existing = Agent::get_by_slug( $slug );
+		if ( $existing ) {
+			return new WP_Error(
+				'gratis_ai_agent_agent_slug_exists',
+				__( 'An agent with this slug already exists.', 'gratis-ai-agent' ),
+				[ 'status' => 409 ]
+			);
+		}
+
+		$id = Agent::create(
+			[
+				'slug'           => $slug,
+				'name'           => $request->get_param( 'name' ),
+				'description'    => $request->get_param( 'description' ) ?? '',
+				'system_prompt'  => $request->get_param( 'system_prompt' ) ?? '',
+				'provider_id'    => $request->get_param( 'provider_id' ) ?? '',
+				'model_id'       => $request->get_param( 'model_id' ) ?? '',
+				'tool_profile'   => $request->get_param( 'tool_profile' ) ?? '',
+				'temperature'    => $request->get_param( 'temperature' ),
+				'max_iterations' => $request->get_param( 'max_iterations' ),
+				'greeting'       => $request->get_param( 'greeting' ) ?? '',
+				'avatar_icon'    => $request->get_param( 'avatar_icon' ) ?? '',
+				'enabled'        => true,
+			]
+		);
+
+		if ( false === $id ) {
+			return new WP_Error(
+				'gratis_ai_agent_agent_create_failed',
+				__( 'Failed to create agent.', 'gratis-ai-agent' ),
+				[ 'status' => 500 ]
+			);
+		}
+
+		$agent = Agent::get( $id );
+		return new WP_REST_Response( Agent::to_array( $agent ), 201 );
+	}
+
+	/**
+	 * Handle PATCH /agents/{id} — update an agent.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function handle_update_agent( WP_REST_Request $request ) {
+		$id   = absint( $request->get_param( 'id' ) );
+		$data = [];
+
+		$fields = [
+			'name',
+			'description',
+			'system_prompt',
+			'provider_id',
+			'model_id',
+			'tool_profile',
+			'temperature',
+			'max_iterations',
+			'greeting',
+			'avatar_icon',
+			'enabled',
+		];
+
+		foreach ( $fields as $field ) {
+			if ( $request->has_param( $field ) ) {
+				$data[ $field ] = $request->get_param( $field );
+			}
+		}
+
+		$updated = Agent::update( $id, $data );
+
+		if ( ! $updated ) {
+			return new WP_Error(
+				'gratis_ai_agent_agent_update_failed',
+				__( 'Failed to update agent.', 'gratis-ai-agent' ),
+				[ 'status' => 500 ]
+			);
+		}
+
+		$agent = Agent::get( $id );
+		return new WP_REST_Response( Agent::to_array( $agent ), 200 );
+	}
+
+	/**
+	 * Handle DELETE /agents/{id} — delete an agent.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function handle_delete_agent( WP_REST_Request $request ) {
+		$id     = absint( $request->get_param( 'id' ) );
+		$result = Agent::delete( $id );
+
+		if ( ! $result ) {
+			return new WP_Error(
+				'gratis_ai_agent_agent_delete_failed',
+				__( 'Failed to delete agent or agent not found.', 'gratis-ai-agent' ),
+				[ 'status' => 500 ]
+			);
+		}
+
+		return new WP_REST_Response( [ 'deleted' => true ], 200 );
 	}
 
 	// ─── Settings ────────────────────────────────────────────────────
