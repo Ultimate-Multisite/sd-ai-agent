@@ -85,6 +85,7 @@ export default function FolderPicker( { currentFolder, onSelect, onClose } ) {
 					<button
 						type="button"
 						onClick={ () => onSelect( newFolder.trim() ) }
+						onClick={ () => onSelect( newFolder.trim() ) }
 					>
 						{ __( 'Create', 'ai-agent' ) }
 					</button>
