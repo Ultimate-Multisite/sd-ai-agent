@@ -210,11 +210,14 @@ export default function CodeBlock( { language, children } ) {
 					className="ai-agent-code-copy"
 					onClick={ handleCopy }
 					type="button"
-					aria-label={ __( 'Copy code to clipboard', 'ai-agent' ) }
+					aria-label={ __(
+						'Copy code to clipboard',
+						'gratis-ai-agent'
+					) }
 				>
 					{ copied
-						? __( 'Copied!', 'ai-agent' )
-						: __( 'Copy', 'ai-agent' ) }
+						? __( 'Copied!', 'gratis-ai-agent' )
+						: __( 'Copy', 'gratis-ai-agent' ) }
 				</button>
 			</div>
 			{ /* CodeMirror mounts into this div */ }

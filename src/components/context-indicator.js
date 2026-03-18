@@ -67,12 +67,12 @@ export default function ContextIndicator() {
 			<div className="ai-agent-context-stats">
 				<span className="ai-agent-context-tokens">
 					{ formatTokens( totalTokens ) }{ ' ' }
-					{ __( 'tokens', 'ai-agent' ) }
+					{ __( 'tokens', 'gratis-ai-agent' ) }
 					<span className="ai-agent-context-detail">
 						({ formatTokens( tokenUsage.prompt ) }{ ' ' }
-						{ __( 'in', 'ai-agent' ) } /{ ' ' }
+						{ __( 'in', 'gratis-ai-agent' ) } /{ ' ' }
 						{ formatTokens( tokenUsage.completion ) }{ ' ' }
-						{ __( 'out', 'ai-agent' ) })
+						{ __( 'out', 'gratis-ai-agent' ) })
 					</span>
 				</span>
 				<span className="ai-agent-context-pct">
@@ -91,7 +91,10 @@ export default function ContextIndicator() {
 			{ isWarning && (
 				<div className="ai-agent-context-warning">
 					<span>
-						{ __( 'Context window is getting full.', 'ai-agent' ) }
+						{ __(
+							'Context window is getting full.',
+							'gratis-ai-agent'
+						) }
 					</span>
 					<div className="ai-agent-context-warning-actions">
 						<Button
@@ -99,14 +102,14 @@ export default function ContextIndicator() {
 							size="small"
 							onClick={ compactConversation }
 						>
-							{ __( 'Compact', 'ai-agent' ) }
+							{ __( 'Compact', 'gratis-ai-agent' ) }
 						</Button>
 						<Button
 							variant="secondary"
 							size="small"
 							onClick={ clearCurrentSession }
 						>
-							{ __( 'New Chat', 'ai-agent' ) }
+							{ __( 'New Chat', 'gratis-ai-agent' ) }
 						</Button>
 					</div>
 				</div>

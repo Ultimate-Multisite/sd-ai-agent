@@ -16,52 +16,61 @@ import { __ } from '@wordpress/i18n';
 const COMMANDS = [
 	{
 		name: '/new',
-		description: __( 'Start a new chat', 'ai-agent' ),
+		description: __( 'Start a new chat', 'gratis-ai-agent' ),
 		action: 'new',
 	},
 	{
 		name: '/model',
-		description: __( 'Switch model (type model name after)', 'ai-agent' ),
+		description: __(
+			'Switch model (type model name after)',
+			'gratis-ai-agent'
+		),
 		action: 'model',
 	},
 	{
 		name: '/remember',
 		description: __(
 			'Save a fact to memory (type fact after)',
-			'ai-agent'
+			'gratis-ai-agent'
 		),
 		action: 'remember',
 	},
 	{
 		name: '/forget',
-		description: __( 'Forget memories matching a topic', 'ai-agent' ),
+		description: __(
+			'Forget memories matching a topic',
+			'gratis-ai-agent'
+		),
 		action: 'forget',
 	},
 	{
 		name: '/clear',
-		description: __( 'Clear conversation', 'ai-agent' ),
+		description: __( 'Clear conversation', 'gratis-ai-agent' ),
 		action: 'clear',
 	},
 	{
 		name: '/export',
-		description: __( 'Export current conversation', 'ai-agent' ),
+		description: __( 'Export current conversation', 'gratis-ai-agent' ),
 		action: 'export',
 	},
 	{
 		name: '/compact',
-		description: __( 'Compact conversation to save context', 'ai-agent' ),
+		description: __(
+			'Compact conversation to save context',
+			'gratis-ai-agent'
+		),
 		action: 'compact',
 	},
 	{
 		name: '/help',
-		description: __( 'Show keyboard shortcuts', 'ai-agent' ),
+		description: __( 'Show keyboard shortcuts', 'gratis-ai-agent' ),
 		action: 'help',
 	},
 	{
 		name: '/debug',
 		description: __(
 			'Toggle debug mode (per-response metrics)',
-			'ai-agent'
+			'gratis-ai-agent'
 		),
 		action: 'debug',
 	},

@@ -42,7 +42,7 @@ export default function ProviderSelector( { compact = false } ) {
 
 	if ( ! providerOptions.length ) {
 		providerOptions.push( {
-			label: __( '(no providers)', 'ai-agent' ),
+			label: __( '(no providers)', 'gratis-ai-agent' ),
 			value: '',
 		} );
 	}
@@ -52,7 +52,7 @@ export default function ProviderSelector( { compact = false } ) {
 				label: m.name || m.id,
 				value: m.id,
 		  } ) )
-		: [ { label: __( '(default)', 'ai-agent' ), value: '' } ];
+		: [ { label: __( '(default)', 'gratis-ai-agent' ), value: '' } ];
 
 	const onProviderChange = ( value ) => {
 		setSelectedProvider( value );
@@ -71,7 +71,7 @@ export default function ProviderSelector( { compact = false } ) {
 			}` }
 		>
 			<SelectControl
-				label={ compact ? null : __( 'Provider', 'ai-agent' ) }
+				label={ compact ? null : __( 'Provider', 'gratis-ai-agent' ) }
 				value={ selectedProviderId }
 				options={ providerOptions }
 				onChange={ onProviderChange }
@@ -79,7 +79,7 @@ export default function ProviderSelector( { compact = false } ) {
 				size={ compact ? 'compact' : 'default' }
 			/>
 			<SelectControl
-				label={ compact ? null : __( 'Model', 'ai-agent' ) }
+				label={ compact ? null : __( 'Model', 'gratis-ai-agent' ) }
 				value={ selectedModelId }
 				options={ modelOptions }
 				onChange={ setSelectedModel }

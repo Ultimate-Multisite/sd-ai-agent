@@ -953,7 +953,7 @@ const actions = {
 	 * Send a message and stream the response token-by-token via SSE.
 	 *
 	 * Uses the Fetch API with a ReadableStream reader to consume the
-	 * text/event-stream response from POST /ai-agent/v1/stream.
+	 * text/event-stream response from POST /gratis-ai-agent/v1/stream.
 	 *
 	 * @param {string} message The user message to send.
 	 */

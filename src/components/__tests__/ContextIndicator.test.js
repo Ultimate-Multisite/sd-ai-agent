@@ -50,7 +50,7 @@ jest.mock( '@wordpress/components', () => {
 } );
 
 // Mock store.
-jest.mock( '../../store', () => 'ai-agent' );
+jest.mock( '../../store', () => 'gratis-ai-agent' );
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

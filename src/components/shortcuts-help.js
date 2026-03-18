@@ -55,7 +55,7 @@ export default function ShortcutsHelp( { onClose } ) {
 		<div className="ai-agent-shortcuts-overlay">
 			<div className="ai-agent-shortcuts-dialog" ref={ dialogRef }>
 				<div className="ai-agent-shortcuts-header">
-					<h3>{ __( 'Keyboard Shortcuts', 'ai-agent' ) }</h3>
+					<h3>{ __( 'Keyboard Shortcuts', 'gratis-ai-agent' ) }</h3>
 					<button type="button" onClick={ onClose }>
 						&times;
 					</button>
@@ -75,32 +75,38 @@ export default function ShortcutsHelp( { onClose } ) {
 					) ) }
 				</div>
 				<div className="ai-agent-shortcuts-footer">
-					<h4>{ __( 'Slash Commands', 'ai-agent' ) }</h4>
+					<h4>{ __( 'Slash Commands', 'gratis-ai-agent' ) }</h4>
 					<div className="ai-agent-shortcut-row">
 						<span>/new</span>
-						<span>{ __( 'New chat', 'ai-agent' ) }</span>
+						<span>{ __( 'New chat', 'gratis-ai-agent' ) }</span>
 					</div>
 					<div className="ai-agent-shortcut-row">
 						<span>/model</span>
-						<span>{ __( 'Switch model', 'ai-agent' ) }</span>
+						<span>{ __( 'Switch model', 'gratis-ai-agent' ) }</span>
 					</div>
 					<div className="ai-agent-shortcut-row">
 						<span>/clear</span>
-						<span>{ __( 'Clear conversation', 'ai-agent' ) }</span>
+						<span>
+							{ __( 'Clear conversation', 'gratis-ai-agent' ) }
+						</span>
 					</div>
 					<div className="ai-agent-shortcut-row">
 						<span>/export</span>
-						<span>{ __( 'Export conversation', 'ai-agent' ) }</span>
+						<span>
+							{ __( 'Export conversation', 'gratis-ai-agent' ) }
+						</span>
 					</div>
 					<div className="ai-agent-shortcut-row">
 						<span>/compact</span>
 						<span>
-							{ __( 'Compact conversation', 'ai-agent' ) }
+							{ __( 'Compact conversation', 'gratis-ai-agent' ) }
 						</span>
 					</div>
 					<div className="ai-agent-shortcut-row">
 						<span>/help</span>
-						<span>{ __( 'Show shortcuts', 'ai-agent' ) }</span>
+						<span>
+							{ __( 'Show shortcuts', 'gratis-ai-agent' ) }
+						</span>
 					</div>
 				</div>
 			</div>

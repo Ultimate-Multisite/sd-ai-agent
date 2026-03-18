@@ -100,7 +100,7 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 			const fact = trimmed.slice( 10 ).trim();
 			if ( fact ) {
 				apiFetch( {
-					path: '/ai-agent/v1/memory',
+					path: '/gratis-ai-agent/v1/memory',
 					method: 'POST',
 					data: { category: 'general', content: fact },
 				} )
@@ -108,7 +108,7 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 						if ( onSlashCommand ) {
 							onSlashCommand(
 								'notice',
-								__( 'Memory saved.', 'ai-agent' )
+								__( 'Memory saved.', 'gratis-ai-agent' )
 							);
 						}
 					} )
@@ -116,7 +116,10 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 						if ( onSlashCommand ) {
 							onSlashCommand(
 								'notice',
-								__( 'Failed to save memory.', 'ai-agent' )
+								__(
+									'Failed to save memory.',
+									'gratis-ai-agent'
+								)
 							);
 						}
 					} );
@@ -130,7 +133,7 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 			const topic = trimmed.slice( 8 ).trim();
 			if ( topic ) {
 				apiFetch( {
-					path: '/ai-agent/v1/memory/forget',
+					path: '/gratis-ai-agent/v1/memory/forget',
 					method: 'POST',
 					data: { topic },
 				} )
@@ -142,12 +145,21 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 								count > 0
 									? `${ count } ${
 											count === 1
-												? __( 'memory', 'ai-agent' )
-												: __( 'memories', 'ai-agent' )
-									  } ${ __( 'deleted.', 'ai-agent' ) }`
+												? __(
+														'memory',
+														'gratis-ai-agent'
+												  )
+												: __(
+														'memories',
+														'gratis-ai-agent'
+												  )
+									  } ${ __(
+											'deleted.',
+											'gratis-ai-agent'
+									  ) }`
 									: __(
 											'No matching memories found.',
-											'ai-agent'
+											'gratis-ai-agent'
 									  )
 							);
 						}
@@ -156,7 +168,10 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 						if ( onSlashCommand ) {
 							onSlashCommand(
 								'notice',
-								__( 'Failed to forget memories.', 'ai-agent' )
+								__(
+									'Failed to forget memories.',
+									'gratis-ai-agent'
+								)
 							);
 						}
 					} );

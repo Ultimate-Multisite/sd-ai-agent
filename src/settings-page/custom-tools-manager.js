@@ -15,9 +15,9 @@ import { trash, pencil, plus, seen } from '@wordpress/icons';
 import apiFetch from '@wordpress/api-fetch';
 
 const TOOL_TYPES = [
-	{ label: __( 'HTTP Request', 'ai-agent' ), value: 'http' },
-	{ label: __( 'WordPress Action', 'ai-agent' ), value: 'action' },
-	{ label: __( 'WP-CLI Command', 'ai-agent' ), value: 'cli' },
+	{ label: __( 'HTTP Request', 'gratis-ai-agent' ), value: 'http' },
+	{ label: __( 'WordPress Action', 'gratis-ai-agent' ), value: 'action' },
+	{ label: __( 'WP-CLI Command', 'gratis-ai-agent' ), value: 'cli' },
 ];
 
 const HTTP_METHODS = [
@@ -58,7 +58,7 @@ export default function CustomToolsManager() {
 	const fetchTools = useCallback( async () => {
 		try {
 			const result = await apiFetch( {
-				path: '/ai-agent/v1/custom-tools',
+				path: '/gratis-ai-agent/v1/custom-tools',
 			} );
 			setTools( result );
 		} catch {
@@ -108,13 +108,13 @@ export default function CustomToolsManager() {
 			};
 			if ( editId ) {
 				await apiFetch( {
-					path: `/ai-agent/v1/custom-tools/${ editId }`,
+					path: `/gratis-ai-agent/v1/custom-tools/${ editId }`,
 					method: 'PATCH',
 					data,
 				} );
 			} else {
 				await apiFetch( {
-					path: '/ai-agent/v1/custom-tools',
+					path: '/gratis-ai-agent/v1/custom-tools',
 					method: 'POST',
 					data,
 				} );
@@ -123,13 +123,14 @@ export default function CustomToolsManager() {
 			fetchTools();
 			setNotice( {
 				status: 'success',
-				message: __( 'Tool saved.', 'ai-agent' ),
+				message: __( 'Tool saved.', 'gratis-ai-agent' ),
 			} );
 		} catch ( err ) {
 			setNotice( {
 				status: 'error',
 				message:
-					err.message || __( 'Failed to save tool.', 'ai-agent' ),
+					err.message ||
+					__( 'Failed to save tool.', 'gratis-ai-agent' ),
 			} );
 		}
 	}, [ form, editId, resetForm, fetchTools ] );
@@ -153,10 +154,12 @@ export default function CustomToolsManager() {
 		async ( id ) => {
 			if (
 				// eslint-disable-next-line no-alert
-				window.confirm( __( 'Delete this custom tool?', 'ai-agent' ) )
+				window.confirm(
+					__( 'Delete this custom tool?', 'gratis-ai-agent' )
+				)
 			) {
 				await apiFetch( {
-					path: `/ai-agent/v1/custom-tools/${ id }`,
+					path: `/gratis-ai-agent/v1/custom-tools/${ id }`,
 					method: 'DELETE',
 				} );
 				fetchTools();
@@ -168,7 +171,7 @@ export default function CustomToolsManager() {
 	const handleToggle = useCallback(
 		async ( tool ) => {
 			await apiFetch( {
-				path: `/ai-agent/v1/custom-tools/${ tool.id }`,
+				path: `/gratis-ai-agent/v1/custom-tools/${ tool.id }`,
 				method: 'PATCH',
 				data: { enabled: ! tool.enabled },
 			} );
@@ -184,7 +187,7 @@ export default function CustomToolsManager() {
 		setTestResult( null );
 		try {
 			const result = await apiFetch( {
-				path: `/ai-agent/v1/custom-tools/${ editId }/test`,
+				path: `/gratis-ai-agent/v1/custom-tools/${ editId }/test`,
 				method: 'POST',
 				data: { args: {} },
 			} );
@@ -202,25 +205,25 @@ export default function CustomToolsManager() {
 				return (
 					<>
 						<SelectControl
-							label={ __( 'HTTP Method', 'ai-agent' ) }
+							label={ __( 'HTTP Method', 'gratis-ai-agent' ) }
 							value={ cfg.method || 'GET' }
 							options={ HTTP_METHODS }
 							onChange={ ( v ) => updateConfig( 'method', v ) }
 							__nextHasNoMarginBottom
 						/>
 						<TextControl
-							label={ __( 'URL', 'ai-agent' ) }
+							label={ __( 'URL', 'gratis-ai-agent' ) }
 							value={ cfg.url || '' }
 							onChange={ ( v ) => updateConfig( 'url', v ) }
 							placeholder="https://api.example.com/endpoint?q={{query}}"
 							help={ __(
 								'Use {{param}} placeholders for dynamic values.',
-								'ai-agent'
+								'gratis-ai-agent'
 							) }
 							__nextHasNoMarginBottom
 						/>
 						<TextareaControl
-							label={ __( 'Headers (JSON)', 'ai-agent' ) }
+							label={ __( 'Headers (JSON)', 'gratis-ai-agent' ) }
 							value={
 								typeof cfg.headers === 'object'
 									? JSON.stringify( cfg.headers, null, 2 )
@@ -230,13 +233,13 @@ export default function CustomToolsManager() {
 							rows={ 3 }
 						/>
 						<TextareaControl
-							label={ __( 'Body Template', 'ai-agent' ) }
+							label={ __( 'Body Template', 'gratis-ai-agent' ) }
 							value={ cfg.body || '' }
 							onChange={ ( v ) => updateConfig( 'body', v ) }
 							rows={ 3 }
 							help={ __(
 								'Use {{param}} placeholders. Leave empty for GET requests.',
-								'ai-agent'
+								'gratis-ai-agent'
 							) }
 						/>
 					</>
@@ -246,13 +249,13 @@ export default function CustomToolsManager() {
 				return (
 					<>
 						<TextControl
-							label={ __( 'Hook Name', 'ai-agent' ) }
+							label={ __( 'Hook Name', 'gratis-ai-agent' ) }
 							value={ cfg.hook_name || '' }
 							onChange={ ( v ) => updateConfig( 'hook_name', v ) }
 							placeholder="my_custom_action"
 							help={ __(
 								'The WordPress action hook to call via do_action().',
-								'ai-agent'
+								'gratis-ai-agent'
 							) }
 							__nextHasNoMarginBottom
 						/>
@@ -263,13 +266,13 @@ export default function CustomToolsManager() {
 				return (
 					<>
 						<TextControl
-							label={ __( 'WP-CLI Command', 'ai-agent' ) }
+							label={ __( 'WP-CLI Command', 'gratis-ai-agent' ) }
 							value={ cfg.command || '' }
 							onChange={ ( v ) => updateConfig( 'command', v ) }
 							placeholder="cache flush"
 							help={ __(
 								'Command to run (without the "wp" prefix). Use {{param}} placeholders.',
-								'ai-agent'
+								'gratis-ai-agent'
 							) }
 							__nextHasNoMarginBottom
 						/>
@@ -285,11 +288,11 @@ export default function CustomToolsManager() {
 		<div className="ai-agent-custom-tools-manager">
 			<div className="ai-agent-skill-header">
 				<div>
-					<h3>{ __( 'Custom Tools', 'ai-agent' ) }</h3>
+					<h3>{ __( 'Custom Tools', 'gratis-ai-agent' ) }</h3>
 					<p className="description">
 						{ __(
 							'Create custom tools that the AI can use — HTTP APIs, WordPress actions, or WP-CLI commands.',
-							'ai-agent'
+							'gratis-ai-agent'
 						) }
 					</p>
 				</div>
@@ -300,7 +303,7 @@ export default function CustomToolsManager() {
 						onClick={ () => setShowForm( true ) }
 						size="compact"
 					>
-						{ __( 'Add Tool', 'ai-agent' ) }
+						{ __( 'Add Tool', 'gratis-ai-agent' ) }
 					</Button>
 				) }
 			</div>
@@ -319,34 +322,34 @@ export default function CustomToolsManager() {
 				<div className="ai-agent-skill-form">
 					{ ! editId && (
 						<TextControl
-							label={ __( 'Slug', 'ai-agent' ) }
+							label={ __( 'Slug', 'gratis-ai-agent' ) }
 							value={ form.slug }
 							onChange={ ( v ) => updateForm( 'slug', v ) }
 							help={ __(
 								'Unique identifier (lowercase, hyphens).',
-								'ai-agent'
+								'gratis-ai-agent'
 							) }
 							__nextHasNoMarginBottom
 						/>
 					) }
 					<TextControl
-						label={ __( 'Name', 'ai-agent' ) }
+						label={ __( 'Name', 'gratis-ai-agent' ) }
 						value={ form.name }
 						onChange={ ( v ) => updateForm( 'name', v ) }
 						__nextHasNoMarginBottom
 					/>
 					<TextControl
-						label={ __( 'Description', 'ai-agent' ) }
+						label={ __( 'Description', 'gratis-ai-agent' ) }
 						value={ form.description }
 						onChange={ ( v ) => updateForm( 'description', v ) }
 						help={ __(
 							'Explains to the AI when this tool should be used.',
-							'ai-agent'
+							'gratis-ai-agent'
 						) }
 						__nextHasNoMarginBottom
 					/>
 					<SelectControl
-						label={ __( 'Type', 'ai-agent' ) }
+						label={ __( 'Type', 'gratis-ai-agent' ) }
 						value={ form.type }
 						options={ TOOL_TYPES }
 						onChange={ ( v ) => {
@@ -371,13 +374,13 @@ export default function CustomToolsManager() {
 					{ renderConfigFields() }
 
 					<TextareaControl
-						label={ __( 'Input Schema (JSON)', 'ai-agent' ) }
+						label={ __( 'Input Schema (JSON)', 'gratis-ai-agent' ) }
 						value={ form.input_schema }
 						onChange={ ( v ) => updateForm( 'input_schema', v ) }
 						rows={ 4 }
 						help={ __(
 							'JSON Schema describing the parameters the AI should provide.',
-							'ai-agent'
+							'gratis-ai-agent'
 						) }
 					/>
 
@@ -392,8 +395,8 @@ export default function CustomToolsManager() {
 							size="compact"
 						>
 							{ editId
-								? __( 'Update', 'ai-agent' )
-								: __( 'Create', 'ai-agent' ) }
+								? __( 'Update', 'gratis-ai-agent' )
+								: __( 'Create', 'gratis-ai-agent' ) }
 						</Button>
 						{ editId && (
 							<Button
@@ -402,7 +405,7 @@ export default function CustomToolsManager() {
 								onClick={ handleTest }
 								size="compact"
 							>
-								{ __( 'Test', 'ai-agent' ) }
+								{ __( 'Test', 'gratis-ai-agent' ) }
 							</Button>
 						) }
 						<Button
@@ -410,7 +413,7 @@ export default function CustomToolsManager() {
 							onClick={ resetForm }
 							size="compact"
 						>
-							{ __( 'Cancel', 'ai-agent' ) }
+							{ __( 'Cancel', 'gratis-ai-agent' ) }
 						</Button>
 					</div>
 
@@ -422,8 +425,8 @@ export default function CustomToolsManager() {
 						>
 							<strong>
 								{ testResult.success
-									? __( 'Success', 'ai-agent' )
-									: __( 'Error', 'ai-agent' ) }
+									? __( 'Success', 'gratis-ai-agent' )
+									: __( 'Error', 'gratis-ai-agent' ) }
 							</strong>
 							<pre>
 								{ typeof testResult.output === 'object'
@@ -440,14 +443,16 @@ export default function CustomToolsManager() {
 			) }
 
 			{ ! loaded && (
-				<p className="description">{ __( 'Loading…', 'ai-agent' ) }</p>
+				<p className="description">
+					{ __( 'Loading…', 'gratis-ai-agent' ) }
+				</p>
 			) }
 
 			{ loaded && tools.length === 0 && ! showForm && (
 				<p className="description">
 					{ __(
 						'No custom tools yet. Create one or deactivate/reactivate the plugin to seed examples.',
-						'ai-agent'
+						'gratis-ai-agent'
 					) }
 				</p>
 			) }
@@ -487,13 +492,19 @@ export default function CustomToolsManager() {
 									<Button
 										icon={ pencil }
 										size="small"
-										label={ __( 'Edit', 'ai-agent' ) }
+										label={ __(
+											'Edit',
+											'gratis-ai-agent'
+										) }
 										onClick={ () => handleEdit( tool ) }
 									/>
 									<Button
 										icon={ trash }
 										size="small"
-										label={ __( 'Delete', 'ai-agent' ) }
+										label={ __(
+											'Delete',
+											'gratis-ai-agent'
+										) }
 										isDestructive
 										onClick={ () =>
 											handleDelete( tool.id )
