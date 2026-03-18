@@ -15,7 +15,7 @@ const container = document.getElementById( 'gratis-ai-agent-settings-root' );
 if ( container ) {
 	const root = createRoot( container );
 	root.render(
-		<ErrorBoundary label={ __( 'Settings', 'ai-agent' ) }>
+		<ErrorBoundary label={ __( 'Settings', 'gratis-ai-agent' ) }>
 			<SettingsApp />
 		</ErrorBoundary>
 	);

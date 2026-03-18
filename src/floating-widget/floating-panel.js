@@ -92,7 +92,7 @@ export default function FloatingPanel() {
 						<Button
 							icon={ plus }
 							size="small"
-							label={ __( 'New Chat', 'ai-agent' ) }
+							label={ __( 'New Chat', 'gratis-ai-agent' ) }
 							onClick={ clearCurrentSession }
 						/>
 					) }
@@ -100,7 +100,10 @@ export default function FloatingPanel() {
 						<Button
 							icon={ reset }
 							size="small"
-							label={ __( 'Reset Position & Size', 'ai-agent' ) }
+							label={ __(
+								'Reset Position & Size',
+								'gratis-ai-agent'
+							) }
 							onClick={ () => {
 								resetPosition();
 								resetSize();
@@ -112,15 +115,15 @@ export default function FloatingPanel() {
 						size="small"
 						label={
 							isMinimized
-								? __( 'Expand', 'ai-agent' )
-								: __( 'Minimize', 'ai-agent' )
+								? __( 'Expand', 'gratis-ai-agent' )
+								: __( 'Minimize', 'gratis-ai-agent' )
 						}
 						onClick={ () => setFloatingMinimized( ! isMinimized ) }
 					/>
 					<Button
 						icon={ close }
 						size="small"
-						label={ __( 'Close', 'ai-agent' ) }
+						label={ __( 'Close', 'gratis-ai-agent' ) }
 						onClick={ () => setFloatingOpen( false ) }
 					/>
 				</div>

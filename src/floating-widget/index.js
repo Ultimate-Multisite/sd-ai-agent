@@ -191,7 +191,7 @@ document.body.appendChild( wrapper );
 
 const root = createRoot( wrapper );
 root.render(
-	<ErrorBoundary label={ __( 'AI Agent widget', 'ai-agent' ) }>
+	<ErrorBoundary label={ __( 'AI Agent widget', 'gratis-ai-agent' ) }>
 		<FloatingWidget />
 	</ErrorBoundary>
 );

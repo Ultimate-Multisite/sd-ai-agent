@@ -79,7 +79,7 @@ export default function DebugPanel( { debug } ) {
 		summaryParts.push( formatCost( costEstimate ) );
 	}
 	const summary =
-		summaryParts.join( ' / ' ) || __( 'No metrics', 'ai-agent' );
+		summaryParts.join( ' / ' ) || __( 'No metrics', 'gratis-ai-agent' );
 
 	return (
 		<div className="ai-agent-debug-panel">
@@ -98,7 +98,7 @@ export default function DebugPanel( { debug } ) {
 					{ modelId && (
 						<div className="ai-agent-debug-row">
 							<span className="ai-agent-debug-label">
-								{ __( 'Model', 'ai-agent' ) }
+								{ __( 'Model', 'gratis-ai-agent' ) }
 							</span>
 							<span className="ai-agent-debug-value">
 								{ modelId }
@@ -107,7 +107,7 @@ export default function DebugPanel( { debug } ) {
 					) }
 					<div className="ai-agent-debug-row">
 						<span className="ai-agent-debug-label">
-							{ __( 'Response time', 'ai-agent' ) }
+							{ __( 'Response time', 'gratis-ai-agent' ) }
 						</span>
 						<span className="ai-agent-debug-value">
 							{ formatTime( responseTimeMs ) }
@@ -115,7 +115,7 @@ export default function DebugPanel( { debug } ) {
 					</div>
 					<div className="ai-agent-debug-row">
 						<span className="ai-agent-debug-label">
-							{ __( 'Tokens', 'ai-agent' ) }
+							{ __( 'Tokens', 'gratis-ai-agent' ) }
 						</span>
 						<span className="ai-agent-debug-value">
 							{ totalTokens.toLocaleString() }
@@ -132,7 +132,7 @@ export default function DebugPanel( { debug } ) {
 					{ tokensPerSecond > 0 && (
 						<div className="ai-agent-debug-row">
 							<span className="ai-agent-debug-label">
-								{ __( 'Speed', 'ai-agent' ) }
+								{ __( 'Speed', 'gratis-ai-agent' ) }
 							</span>
 							<span className="ai-agent-debug-value">
 								{ tokensPerSecond } tok/s
@@ -142,7 +142,7 @@ export default function DebugPanel( { debug } ) {
 					{ costEstimate > 0 && (
 						<div className="ai-agent-debug-row">
 							<span className="ai-agent-debug-label">
-								{ __( 'Cost', 'ai-agent' ) }
+								{ __( 'Cost', 'gratis-ai-agent' ) }
 							</span>
 							<span className="ai-agent-debug-value">
 								{ formatCost( costEstimate ) }
@@ -151,7 +151,7 @@ export default function DebugPanel( { debug } ) {
 					) }
 					<div className="ai-agent-debug-row">
 						<span className="ai-agent-debug-label">
-							{ __( 'Iterations', 'ai-agent' ) }
+							{ __( 'Iterations', 'gratis-ai-agent' ) }
 						</span>
 						<span className="ai-agent-debug-value">
 							{ iterationsUsed }
@@ -160,7 +160,7 @@ export default function DebugPanel( { debug } ) {
 					{ toolCallCount > 0 && (
 						<div className="ai-agent-debug-row">
 							<span className="ai-agent-debug-label">
-								{ __( 'Tool calls', 'ai-agent' ) }
+								{ __( 'Tool calls', 'gratis-ai-agent' ) }
 							</span>
 							<span className="ai-agent-debug-value">
 								{ toolCallCount }

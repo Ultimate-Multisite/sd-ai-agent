@@ -59,7 +59,7 @@ export default function ExportDialog( { sessionId, onClose } ) {
 		<div className="ai-agent-shortcuts-overlay">
 			<div className="ai-agent-export-dialog" ref={ dialogRef }>
 				<div className="ai-agent-export-header">
-					<h3>{ __( 'Export Conversation', 'ai-agent' ) }</h3>
+					<h3>{ __( 'Export Conversation', 'gratis-ai-agent' ) }</h3>
 					<button type="button" onClick={ onClose }>
 						&times;
 					</button>
@@ -78,11 +78,11 @@ export default function ExportDialog( { sessionId, onClose } ) {
 							onChange={ () => setFormat( 'json' ) }
 						/>
 						<span>
-							{ __( 'JSON', 'ai-agent' ) }
+							{ __( 'JSON', 'gratis-ai-agent' ) }
 							<span className="ai-agent-export-option-desc">
 								{ __(
 									'Full conversation data. Can be imported back.',
-									'ai-agent'
+									'gratis-ai-agent'
 								) }
 							</span>
 						</span>
@@ -100,11 +100,11 @@ export default function ExportDialog( { sessionId, onClose } ) {
 							onChange={ () => setFormat( 'markdown' ) }
 						/>
 						<span>
-							{ __( 'Markdown', 'ai-agent' ) }
+							{ __( 'Markdown', 'gratis-ai-agent' ) }
 							<span className="ai-agent-export-option-desc">
 								{ __(
 									'Human-readable format. Good for sharing.',
-									'ai-agent'
+									'gratis-ai-agent'
 								) }
 							</span>
 						</span>
@@ -116,14 +116,14 @@ export default function ExportDialog( { sessionId, onClose } ) {
 						className="button"
 						onClick={ onClose }
 					>
-						{ __( 'Cancel', 'ai-agent' ) }
+						{ __( 'Cancel', 'gratis-ai-agent' ) }
 					</button>
 					<button
 						type="button"
 						className="button button-primary"
 						onClick={ handleExport }
 					>
-						{ __( 'Download', 'ai-agent' ) }
+						{ __( 'Download', 'gratis-ai-agent' ) }
 					</button>
 				</div>
 			</div>

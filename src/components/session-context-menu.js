@@ -106,7 +106,7 @@ export default function SessionContextMenu( {
 						} }
 					/>
 					<button type="button" onClick={ handleRename }>
-						{ __( 'Save', 'ai-agent' ) }
+						{ __( 'Save', 'gratis-ai-agent' ) }
 					</button>
 				</div>
 			</div>
@@ -137,7 +137,7 @@ export default function SessionContextMenu( {
 							type="button"
 							onClick={ () => setIsRenaming( true ) }
 						>
-							{ __( 'Rename', 'ai-agent' ) }
+							{ __( 'Rename', 'gratis-ai-agent' ) }
 						</button>
 					) }
 					<button
@@ -148,15 +148,15 @@ export default function SessionContextMenu( {
 						} }
 					>
 						{ isPinned
-							? __( 'Unpin', 'ai-agent' )
-							: __( 'Pin', 'ai-agent' ) }
+							? __( 'Unpin', 'gratis-ai-agent' )
+							: __( 'Pin', 'gratis-ai-agent' ) }
 					</button>
 					{ isOwner && (
 						<button
 							type="button"
 							onClick={ () => setShowFolderPicker( true ) }
 						>
-							{ __( 'Move to Folder', 'ai-agent' ) }
+							{ __( 'Move to Folder', 'gratis-ai-agent' ) }
 						</button>
 					) }
 					<button
@@ -166,7 +166,7 @@ export default function SessionContextMenu( {
 							onClose();
 						} }
 					>
-						{ __( 'Export', 'ai-agent' ) }
+						{ __( 'Export', 'gratis-ai-agent' ) }
 					</button>
 					{ isOwner && (
 						<button
@@ -181,8 +181,8 @@ export default function SessionContextMenu( {
 							} }
 						>
 							{ isShared
-								? __( 'Unshare', 'ai-agent' )
-								: __( 'Share with Admins', 'ai-agent' ) }
+								? __( 'Unshare', 'gratis-ai-agent' )
+								: __( 'Share with Admins', 'gratis-ai-agent' ) }
 						</button>
 					) }
 					<hr />
@@ -196,7 +196,7 @@ export default function SessionContextMenu( {
 						onClose();
 					} }
 				>
-					{ __( 'Archive', 'ai-agent' ) }
+					{ __( 'Archive', 'gratis-ai-agent' ) }
 				</button>
 			) }
 			{ isOwner && ( isArchived || isTrashed ) && (
@@ -207,7 +207,7 @@ export default function SessionContextMenu( {
 						onClose();
 					} }
 				>
-					{ __( 'Restore', 'ai-agent' ) }
+					{ __( 'Restore', 'gratis-ai-agent' ) }
 				</button>
 			) }
 			{ isOwner && ! isTrashed && (
@@ -219,7 +219,7 @@ export default function SessionContextMenu( {
 						onClose();
 					} }
 				>
-					{ __( 'Move to Trash', 'ai-agent' ) }
+					{ __( 'Move to Trash', 'gratis-ai-agent' ) }
 				</button>
 			) }
 		</div>

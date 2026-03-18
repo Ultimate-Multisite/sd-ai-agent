@@ -32,7 +32,7 @@ function relativeTime( dateStr ) {
 	const diff = Math.floor( ( now - date ) / 1000 );
 
 	if ( diff < 60 ) {
-		return __( 'just now', 'ai-agent' );
+		return __( 'just now', 'gratis-ai-agent' );
 	}
 	if ( diff < 3600 ) {
 		return Math.floor( diff / 60 ) + 'm ago';
@@ -86,7 +86,7 @@ function SessionItem( { session, isActive, isOwner = true } ) {
 				{ isPinned && (
 					<span
 						className="ai-agent-pin-icon"
-						title={ __( 'Pinned', 'ai-agent' ) }
+						title={ __( 'Pinned', 'gratis-ai-agent' ) }
 					>
 						&#128204;
 					</span>
@@ -94,12 +94,12 @@ function SessionItem( { session, isActive, isOwner = true } ) {
 				{ isShared && (
 					<span
 						className="ai-agent-shared-icon"
-						title={ __( 'Shared with admins', 'ai-agent' ) }
+						title={ __( 'Shared with admins', 'gratis-ai-agent' ) }
 					>
 						&#128101;
 					</span>
 				) }
-				{ session.title || __( 'Untitled', 'ai-agent' ) }
+				{ session.title || __( 'Untitled', 'gratis-ai-agent' ) }
 			</div>
 			<div className="ai-agent-session-meta">
 				{ session.folder && (
@@ -115,7 +115,7 @@ function SessionItem( { session, isActive, isOwner = true } ) {
 					e.stopPropagation();
 					setShowMenu( ! showMenu );
 				} }
-				title={ __( 'More', 'ai-agent' ) }
+				title={ __( 'More', 'gratis-ai-agent' ) }
 				type="button"
 			>
 				&#8943;
@@ -136,15 +136,15 @@ function SessionItem( { session, isActive, isOwner = true } ) {
  */
 function getEmptyMessage( filter ) {
 	if ( filter === 'trash' ) {
-		return __( 'Trash is empty', 'ai-agent' );
+		return __( 'Trash is empty', 'gratis-ai-agent' );
 	}
 	if ( filter === 'archived' ) {
-		return __( 'No archived conversations', 'ai-agent' );
+		return __( 'No archived conversations', 'gratis-ai-agent' );
 	}
 	if ( filter === 'shared' ) {
-		return __( 'No shared conversations', 'ai-agent' );
+		return __( 'No shared conversations', 'gratis-ai-agent' );
 	}
-	return __( 'No conversations yet', 'ai-agent' );
+	return __( 'No conversations yet', 'gratis-ai-agent' );
 }
 
 /**
@@ -232,7 +232,9 @@ export default function SessionSidebar() {
 					importSession( data );
 				} catch {
 					// eslint-disable-next-line no-alert
-					window.alert( __( 'Invalid JSON file.', 'ai-agent' ) );
+					window.alert(
+						__( 'Invalid JSON file.', 'gratis-ai-agent' )
+					);
 				}
 			};
 			reader.readAsText( file );
@@ -242,10 +244,10 @@ export default function SessionSidebar() {
 	);
 
 	const filterTabs = [
-		{ key: 'active', label: __( 'Active', 'ai-agent' ) },
-		{ key: 'shared', label: __( 'Shared', 'ai-agent' ) },
-		{ key: 'archived', label: __( 'Archived', 'ai-agent' ) },
-		{ key: 'trash', label: __( 'Trash', 'ai-agent' ) },
+		{ key: 'active', label: __( 'Active', 'gratis-ai-agent' ) },
+		{ key: 'shared', label: __( 'Shared', 'gratis-ai-agent' ) },
+		{ key: 'archived', label: __( 'Archived', 'gratis-ai-agent' ) },
+		{ key: 'trash', label: __( 'Trash', 'gratis-ai-agent' ) },
 	];
 
 	// Determine which session list to render.
@@ -262,14 +264,14 @@ export default function SessionSidebar() {
 						onClick={ clearCurrentSession }
 						className="ai-agent-new-chat-btn"
 					>
-						{ __( 'New Chat', 'ai-agent' ) }
+						{ __( 'New Chat', 'gratis-ai-agent' ) }
 					</Button>
 					<Button
 						variant="tertiary"
 						icon={ upload }
 						onClick={ () => fileInputRef.current?.click() }
 						className="ai-agent-import-btn"
-						label={ __( 'Import', 'ai-agent' ) }
+						label={ __( 'Import', 'gratis-ai-agent' ) }
 					/>
 					<input
 						ref={ fileInputRef }
@@ -285,7 +287,7 @@ export default function SessionSidebar() {
 						className="gratis-ai-agent-sidebar-search"
 						placeholder={ __(
 							'Search conversations…',
-							'ai-agent'
+							'gratis-ai-agent'
 						) }
 						onChange={ handleSearchChange }
 					/>
@@ -320,7 +322,7 @@ export default function SessionSidebar() {
 						}` }
 						onClick={ () => setSessionFolder( '' ) }
 					>
-						{ __( 'All', 'ai-agent' ) }
+						{ __( 'All', 'gratis-ai-agent' ) }
 					</button>
 					{ folders.map( ( folder ) => (
 						<button

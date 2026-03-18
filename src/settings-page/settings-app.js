@@ -443,7 +443,7 @@ export default function SettingsApp() {
 										<ToggleControl
 											label={ __(
 												'YOLO Mode',
-												'ai-agent'
+												'gratis-ai-agent'
 											) }
 											checked={ !! local.yolo_mode }
 											onChange={ ( v ) =>
@@ -451,7 +451,7 @@ export default function SettingsApp() {
 											}
 											help={ __(
 												'Skip all confirmation dialogs for tool operations. Use with caution — destructive actions will run without prompting.',
-												'ai-agent'
+												'gratis-ai-agent'
 											) }
 											__nextHasNoMarginBottom
 										/>
@@ -459,7 +459,7 @@ export default function SettingsApp() {
 											<div className="ai-agent-yolo-warning">
 												{ __(
 													'Warning: YOLO mode is active. All tool confirmations are skipped automatically. Destructive operations will execute without asking.',
-													'ai-agent'
+													'gratis-ai-agent'
 												) }
 											</div>
 										) }
@@ -723,7 +723,7 @@ export default function SettingsApp() {
 									<ErrorBoundary
 										label={ __(
 											'Knowledge manager',
-											'ai-agent'
+											'gratis-ai-agent'
 										) }
 									>
 										<KnowledgeManager />

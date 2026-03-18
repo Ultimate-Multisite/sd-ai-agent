@@ -45,7 +45,7 @@ export default function UsageDashboard() {
 		setLoading( true );
 		try {
 			const result = await apiFetch( {
-				path: `/ai-agent/v1/usage?period=${ period }`,
+				path: `/gratis-ai-agent/v1/usage?period=${ period }`,
 			} );
 			setData( result );
 		} catch {
@@ -67,7 +67,7 @@ export default function UsageDashboard() {
 	}
 
 	if ( ! data ) {
-		return <p>{ __( 'Failed to load usage data.', 'ai-agent' ) }</p>;
+		return <p>{ __( 'Failed to load usage data.', 'gratis-ai-agent' ) }</p>;
 	}
 
 	const totals = data.totals || {};
@@ -81,24 +81,24 @@ export default function UsageDashboard() {
 	return (
 		<div className="ai-agent-usage-dashboard">
 			<div className="ai-agent-usage-header">
-				<h3>{ __( 'Usage Summary', 'ai-agent' ) }</h3>
+				<h3>{ __( 'Usage Summary', 'gratis-ai-agent' ) }</h3>
 				<SelectControl
 					value={ period }
 					options={ [
 						{
-							label: __( 'Last 7 days', 'ai-agent' ),
+							label: __( 'Last 7 days', 'gratis-ai-agent' ),
 							value: '7d',
 						},
 						{
-							label: __( 'Last 30 days', 'ai-agent' ),
+							label: __( 'Last 30 days', 'gratis-ai-agent' ),
 							value: '30d',
 						},
 						{
-							label: __( 'Last 90 days', 'ai-agent' ),
+							label: __( 'Last 90 days', 'gratis-ai-agent' ),
 							value: '90d',
 						},
 						{
-							label: __( 'All time', 'ai-agent' ),
+							label: __( 'All time', 'gratis-ai-agent' ),
 							value: 'all',
 						},
 					] }
@@ -110,7 +110,7 @@ export default function UsageDashboard() {
 			<div className="ai-agent-usage-cards">
 				<div className="ai-agent-usage-card">
 					<div className="ai-agent-usage-card-label">
-						{ __( 'Total Cost', 'ai-agent' ) }
+						{ __( 'Total Cost', 'gratis-ai-agent' ) }
 					</div>
 					<div className="ai-agent-usage-card-value">
 						{ formatCost( totals.cost_usd ) }
@@ -118,7 +118,7 @@ export default function UsageDashboard() {
 				</div>
 				<div className="ai-agent-usage-card">
 					<div className="ai-agent-usage-card-label">
-						{ __( 'Requests', 'ai-agent' ) }
+						{ __( 'Requests', 'gratis-ai-agent' ) }
 					</div>
 					<div className="ai-agent-usage-card-value">
 						{ totals.request_count || 0 }
@@ -126,7 +126,7 @@ export default function UsageDashboard() {
 				</div>
 				<div className="ai-agent-usage-card">
 					<div className="ai-agent-usage-card-label">
-						{ __( 'Input Tokens', 'ai-agent' ) }
+						{ __( 'Input Tokens', 'gratis-ai-agent' ) }
 					</div>
 					<div className="ai-agent-usage-card-value">
 						{ formatTokens( totals.prompt_tokens ) }
@@ -134,7 +134,7 @@ export default function UsageDashboard() {
 				</div>
 				<div className="ai-agent-usage-card">
 					<div className="ai-agent-usage-card-label">
-						{ __( 'Output Tokens', 'ai-agent' ) }
+						{ __( 'Output Tokens', 'gratis-ai-agent' ) }
 					</div>
 					<div className="ai-agent-usage-card-value">
 						{ formatTokens( totals.completion_tokens ) }
@@ -144,15 +144,19 @@ export default function UsageDashboard() {
 
 			{ byModel.length > 0 && (
 				<div className="ai-agent-usage-breakdown">
-					<h4>{ __( 'By Model', 'ai-agent' ) }</h4>
+					<h4>{ __( 'By Model', 'gratis-ai-agent' ) }</h4>
 					<table className="ai-agent-usage-table">
 						<thead>
 							<tr>
-								<th>{ __( 'Model', 'ai-agent' ) }</th>
-								<th>{ __( 'Requests', 'ai-agent' ) }</th>
-								<th>{ __( 'Input Tokens', 'ai-agent' ) }</th>
-								<th>{ __( 'Output Tokens', 'ai-agent' ) }</th>
-								<th>{ __( 'Cost', 'ai-agent' ) }</th>
+								<th>{ __( 'Model', 'gratis-ai-agent' ) }</th>
+								<th>{ __( 'Requests', 'gratis-ai-agent' ) }</th>
+								<th>
+									{ __( 'Input Tokens', 'gratis-ai-agent' ) }
+								</th>
+								<th>
+									{ __( 'Output Tokens', 'gratis-ai-agent' ) }
+								</th>
+								<th>{ __( 'Cost', 'gratis-ai-agent' ) }</th>
 								<th></th>
 							</tr>
 						</thead>

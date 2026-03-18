@@ -77,14 +77,14 @@ export default function ActionCard( { card, onConfirm, onCancel } ) {
 		<div
 			className="ai-agent-action-card"
 			role="region"
-			aria-label={ __( 'Action confirmation', 'ai-agent' ) }
+			aria-label={ __( 'Action confirmation', 'gratis-ai-agent' ) }
 		>
 			<div className="ai-agent-action-card-header">
 				<span className="ai-agent-action-card-icon" aria-hidden="true">
 					&#9888;
 				</span>
 				<span className="ai-agent-action-card-heading">
-					{ __( 'Confirm Action', 'ai-agent' ) }
+					{ __( 'Confirm Action', 'gratis-ai-agent' ) }
 				</span>
 			</div>
 
@@ -110,7 +110,10 @@ export default function ActionCard( { card, onConfirm, onCancel } ) {
 							{ tool.args && (
 								<details className="ai-agent-action-card-tool-args-details">
 									<summary>
-										{ __( 'View details', 'ai-agent' ) }
+										{ __(
+											'View details',
+											'gratis-ai-agent'
+										) }
 									</summary>
 									<pre className="ai-agent-action-card-tool-args">
 										{ JSON.stringify( tool.args, null, 2 ) }
@@ -128,7 +131,7 @@ export default function ActionCard( { card, onConfirm, onCancel } ) {
 					className="button ai-agent-action-card-btn-cancel"
 					onClick={ onCancel }
 				>
-					{ __( 'Cancel', 'ai-agent' ) }
+					{ __( 'Cancel', 'gratis-ai-agent' ) }
 				</button>
 				<button
 					type="button"
@@ -136,7 +139,7 @@ export default function ActionCard( { card, onConfirm, onCancel } ) {
 					className="button button-primary ai-agent-action-card-btn-confirm"
 					onClick={ () => onConfirm( false ) }
 				>
-					{ __( 'Confirm', 'ai-agent' ) }
+					{ __( 'Confirm', 'gratis-ai-agent' ) }
 				</button>
 			</div>
 		</div>
