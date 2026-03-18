@@ -63,6 +63,10 @@ class BlockAbilities {
 				'permission_callback' => function () {
 					return current_user_can( 'edit_posts' );
 				},
+				'meta'                => [
+					'show_in_rest' => false,
+					'ai_hidden'    => true,
+				],
 			]
 		);
 
@@ -249,6 +253,10 @@ class BlockAbilities {
 				'permission_callback' => function () {
 					return current_user_can( 'edit_posts' );
 				},
+				'meta'                => [
+					'show_in_rest' => false,
+					'ai_hidden'    => true,
+				],
 			]
 		);
 

@@ -197,6 +197,7 @@ class StockImageAbilities {
 			'url'           => $attachment_url,
 			'alt'           => $title,
 			'title'         => $title,
+			'tip'           => 'Use this attachment_id as featured_image_id when calling create-post or update-post.',
 		];
 	}
 }

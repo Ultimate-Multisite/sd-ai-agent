@@ -8,6 +8,77 @@
 
 - [x] t091 Shared conversations: multiple admins can view/continue same session @superdav42 #feature ~6h logged:2026-03-16 ref=GH#387 pr:#474 completed:2026-03-16
 
+### Browser Review Findings (2026-03-18)
+
+#### Critical Bugs (P0)
+
+- [ ] t092 Fix incomplete plugin rename: 34 JS API paths still use old `/ai-agent/v1/` namespace instead of `/gratis-ai-agent/v1/` @superdav42 #bug ~2h
+  - Affected files: usage-dashboard.js, knowledge-manager.js, automations-manager.js, events-manager.js, custom-tools-manager.js, tool-profiles-manager.js, message-input.js (memory slash commands)
+  - Also 384 instances of old text domain `'ai-agent'` instead of `'gratis-ai-agent'` across 20+ JS files
+  - Root cause: t090 rename was incomplete — store/index.js and some settings files were updated but others were missed
+  - Impact: Usage tab, Knowledge tab, Automations, Events, Custom Tools, Tool Profiles, and /remember /forget slash commands are ALL broken
+
+- [ ] t093 Fix SSE stream endpoint fatal error: non-static method called statically @superdav42 #bug ~1h
+  - `RestController.php` line 99: `'permission_callback' => [ __CLASS__, 'check_chat_permission' ]`
+  - `check_chat_permission()` is a non-static instance method but registered with `__CLASS__` (static context)
+  - The `$instance = new self()` is created on line 151, AFTER the `/stream` route registration on line 93
+  - Fix: move `$instance` creation before the `/stream` route, use `[ $instance, 'check_chat_permission' ]`
+  - Impact: 100% of chat messages fail with fatal PHP error — no AI responses work at all
+
+- [ ] t094 Fix Abilities Explorer crash: Badge component not exported from @wordpress/components @superdav42 #bug ~1h
+  - `abilities-explorer-app.js` imports `Badge` from `@wordpress/components` but Badge is not in the package's public exports (it exists in src/badge/ but is not re-exported from index.ts)
+  - Badge is `undefined` at runtime, causing 2,185+ React errors and the error boundary to trigger
+  - Fix: replace Badge with a simple styled span/div, or use a custom Badge component
+  - Impact: Abilities Explorer page is completely non-functional
+
+#### High Priority Bugs (P1)
+
+- [ ] t095 Fix "Build Your Site" overlay blocking other admin pages on fresh install @superdav42 #bug ~2h
+  - The site builder overlay renders on ALL admin pages when `isFreshInstall` is true, not just the AI Agent page
+  - On Changes and Abilities pages, the overlay covers the actual page content
+  - Fix: only render the site builder overlay on the main AI Agent page, or check the current admin page before rendering
+
+- [ ] t096 Add proper error handling for chat stream failures @superdav42 #bug ~2h
+  - When the stream endpoint returns a fatal PHP error (or any non-200 response), the frontend shows "Thinking..." indefinitely
+  - No timeout mechanism exists — users wait forever with no feedback
+  - Fix: add a configurable timeout (e.g., 120s), detect non-SSE responses, show error messages to the user
+  - Also handle EventSource errors and display meaningful error messages
+
+- [ ] t097 Fix Knowledge tab "Failed to load collections" error @superdav42 #bug ~1h
+  - The Knowledge manager uses old API path `/ai-agent/v1/knowledge` (part of t092 namespace issue)
+  - Red error banner appears even though the feature is enabled
+  - Will be fixed as part of t092 namespace fix
+
+#### UX Improvements (P2)
+
+- [ ] t098 Abilities settings tab: add categories/search/collapsible sections for 40+ tools @superdav42 #ui ~3h
+  - The Settings > Abilities tab shows a flat list of 40+ tools with dropdowns (Auto/Confirm/Disabled)
+  - Very long page, hard to find specific tools
+  - Add: grouping by category, search/filter input, collapsible category sections
+
+- [ ] t099 Auto-title sessions from first message content @superdav42 #ui ~2h
+  - All sessions show as "Untitled" — no auto-naming from conversation content
+  - After the first AI response, generate a short title from the conversation topic
+  - Could use the AI to generate a 3-5 word title, or extract keywords from the first user message
+
+- [ ] t100 Consolidate duplicate save buttons on Permissions and Integrations tabs @superdav42 #ui ~1h
+  - Permissions tab has both "Save Permissions" and "Save Settings" buttons
+  - Integrations tab has both "Save GA Credentials" and "Save Settings" buttons
+  - Confusing for users — consolidate into a single save action or clarify the difference
+
+- [ ] t101 Fix Integrations tab "Save GA Credentials" button red text styling @superdav42 #ui ~0.5h
+  - The button has red text which looks like a destructive/danger action
+  - Should use standard primary/secondary button styling
+
+- [ ] t102 Settings tab bar overflow handling for narrow viewports @superdav42 #ui ~1h
+  - 18 tabs in the settings page — rightmost tabs (Integrations, Advanced) may be cut off at narrower viewports
+  - Add horizontal scroll indicators or a responsive tab layout (dropdown on mobile)
+
+- [ ] t103 Frontend floating widget not rendering for logged-in admins @superdav42 #bug ~2h
+  - Settings > General has "Show Widget on Frontend" toggle (currently off)
+  - Even when the setting exists, the widget was not found in the DOM on the frontend
+  - Verify the frontend enqueue hook fires correctly and the widget renders when enabled
+
 ## Backlog
 
 ### Onboarding & First-Run Experience (P0)

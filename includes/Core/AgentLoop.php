@@ -192,7 +192,9 @@ class AgentLoop {
 			} finally {
 				ChangeLogger::end();
 			}
-			$this->history[] = $response_message;
+			// Truncate large tool results before adding to history.
+			$truncated_message = self::truncate_tool_results( $response_message );
+			$this->history[]   = $truncated_message;
 			$this->log_tool_responses( $response_message );
 		} else {
 			// Remove the model's tool call message and tell the model the call was rejected.
@@ -295,7 +297,9 @@ class AgentLoop {
 			} finally {
 				ChangeLogger::end();
 			}
-			$this->history[] = $response_message;
+			// Truncate large tool results before adding to history.
+			$truncated_message = self::truncate_tool_results( $response_message );
+			$this->history[]   = $truncated_message;
 			$this->log_tool_responses( $response_message );
 
 			// Emit tool_result events via SSE if streaming.
@@ -1368,6 +1372,15 @@ class AgentLoop {
 
 		$all = wp_get_abilities();
 
+		// Hide abilities marked as ai_hidden from the model's tool list.
+		$all = array_filter(
+			$all,
+			function ( $ability ) {
+				$meta = $ability->get_meta();
+				return empty( $meta['ai_hidden'] );
+			}
+		);
+
 		// Use tool_permissions if set, otherwise fall back to disabled_abilities.
 		if ( ! empty( $this->tool_permissions ) ) {
 			$perms = $this->tool_permissions;
@@ -1714,21 +1727,23 @@ class AgentLoop {
 		return "You are a WordPress assistant that ACTS — you execute tasks immediately using your tools.\n\n"
 			. "## WordPress Environment\n"
 			. "- WordPress path: {$wp_path}\n"
-			. "- Site URL: {$site_url}\n"
-			. "- WP-CLI is available at: wp\n\n"
+			. "- Site URL: {$site_url}\n\n"
 			. "## Core Principles\n"
 			. "1. **Act, don't ask.** Execute the task right away. Don't ask \"shall I proceed?\" or request confirmation unless the task is destructive (deleting data, dropping tables).\n"
 			. "2. **Generate real content.** When creating pages or posts, write substantial, realistic content (3+ paragraphs). Never use placeholder text like \"Lorem ipsum\" or \"Content goes here\".\n"
-			. "3. **Use tools directly.** Your loaded tools cover site management, content, media, and more. Call them immediately — don't describe what you would do.\n\n"
-			. "## Common Workflows\n"
-			. "- **Create a subsite:** Use `site/create` (or `wpcli/site/create`), then target it with `--url=<subsite_url>` in subsequent WP-CLI commands.\n"
-			. "- **Target a subsite:** Pass `url` (the site URL) on any WP-CLI command to target a specific subsite. The URL carries over — once you pass `url` on any command, subsequent commands will automatically target the same site without needing to pass it again.\n"
-			. "- **Create pages with content:** Use `post/create` with `--post_type=page --post_status=publish --post_content='<html content>'`.\n"
-			. "- **Import images:** Use `gratis-ai-agent/import-stock-image` with a keyword and optional site_url. Returns attachment_id and url.\n"
-			. "- **Set a homepage:** Use `option/update` to set `show_on_front=page` and `page_on_front=<page_id>` with `--url=<site>`.\n"
-			. "- **Get IDs from create commands:** Add `--porcelain` (as boolean true, not a string) to WP-CLI commands to return just the ID.\n\n"
+			. "3. **Use tools directly.** Call tools immediately — don't describe what you would do.\n"
+			. "4. **Call all needed tools in one response.** When a task requires multiple tools (e.g. create a post AND find an image), call them all at once.\n\n"
+			. "## Content Creation (IMPORTANT)\n"
+			. "To create any page or blog post, use `ai-agent/create-post`. This is the ONLY tool you need.\n"
+			. "- For pages: set `post_type` to `page`.\n"
+			. "- For blog posts: set `post_type` to `post`.\n"
+			. "- Write content directly in the `content` field using markdown (## headings, **bold**, - lists) or HTML. Markdown is automatically converted to Gutenberg blocks.\n"
+			. "- Set `status` to `publish` to make it live, or `draft` to save without publishing.\n"
+			. "- Include `categories` and `tags` arrays for blog posts.\n"
+			. "- Include `excerpt` for SEO meta descriptions.\n"
+			. "- To create a post WITH a stock image in one step, use `ai-agent/create-post-with-image` instead.\n"
+			. "- For WooCommerce products, use `gratis-ai-agent/woo-create-product` instead.\n\n"
 			. "## Tips\n"
-			. "- Target a subsite: pass `url` to any WP-CLI tool. It persists for subsequent calls.\n"
 			. "- Chain operations: create content first, then configure settings.\n"
 			. "- After completing all steps, summarize what was done with links to the created resources.\n\n"
 			. "## Error Handling\n"
@@ -1758,5 +1773,52 @@ class AgentLoop {
 		} catch ( \Throwable $e ) {
 			// Token tracking is best-effort.
 		}
+	}
+
+	/**
+	 * Truncate large tool results in a response message.
+	 *
+	 * @param Message $message The tool response message.
+	 * @return Message A new message with truncated results.
+	 */
+	private static function truncate_tool_results( Message $message ): Message {
+		$new_parts = [];
+		$modified  = false;
+
+		foreach ( $message->getParts() as $part ) {
+			$fr = method_exists( $part, 'getFunctionResponse' ) ? $part->getFunctionResponse() : null;
+			if ( ! $fr ) {
+				$new_parts[] = $part;
+				continue;
+			}
+
+			$original_result = $fr->getResponse();
+			$tool_name       = $fr->getName();
+			$ability_name    = $tool_name;
+			if ( str_starts_with( $tool_name, 'wpab__' ) && class_exists( 'WP_AI_Client_Ability_Function_Resolver' ) ) {
+				$ability_name = \WP_AI_Client_Ability_Function_Resolver::function_name_to_ability_name( $tool_name );
+			}
+
+			$truncated = ToolResultTruncator::truncate( $original_result, $ability_name );
+
+			if ( $truncated !== $original_result ) {
+				$modified    = true;
+				$new_parts[] = new MessagePart(
+					new \WordPress\AiClient\Tools\DTO\FunctionResponse(
+						$fr->getId(),
+						$fr->getName(),
+						$truncated
+					)
+				);
+			} else {
+				$new_parts[] = $part;
+			}
+		}
+
+		if ( ! $modified ) {
+			return $message;
+		}
+
+		return new UserMessage( $new_parts );
 	}
 }
