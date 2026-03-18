@@ -18,29 +18,36 @@ if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 }
 
 /**
- * Stub for wp_ai_client_prompt() — available in WordPress 6.9+ core.
+ * Late-loaded stub for wp_ai_client_prompt().
  *
- * Provides a no-op implementation so the floating widget and other plugin
- * features that guard on function_exists( 'wp_ai_client_prompt' ) load
- * correctly in wp-env E2E test environments where the function may not
- * yet be present.
+ * The plugin's compat layer (compat/load.php) provides the real
+ * wp_ai_client_prompt() and its supporting classes on WP < 7.0.
+ * On WP 7.0+ core provides them natively.
  *
- * The real function signature is wp_ai_client_prompt( $prompt = null )
- * and returns a WP_AI_Client_Prompt_Builder. This stub matches that
- * signature so it does not cause fatal errors if called (e.g. from
- * AgentLoop which calls wp_ai_client_prompt() with no arguments).
+ * This stub is a last-resort fallback that only activates AFTER
+ * plugins_loaded — if neither core nor the compat layer defined
+ * the function, it provides a no-op so E2E tests don't fatal.
  *
- * @param mixed $prompt Optional prompt content (string, array, or null).
- * @return object Minimal stub object — no AI call is made.
+ * Runs at plugins_loaded priority 999 (well after the plugin's
+ * compat layer at default priority) to avoid shadowing the real
+ * implementation.
  */
-if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
-	function wp_ai_client_prompt( $prompt = null ) { // phpcs:ignore
-		// Return a minimal stub object so callers that chain methods
-		// (e.g. ->withModel()->run()) do not throw fatal errors.
-		return new class() {
-			public function __call( string $name, array $args ): static {
-				return $this;
-			}
-		};
-	}
-}
+add_action(
+	'plugins_loaded',
+	static function (): void {
+		if ( function_exists( 'wp_ai_client_prompt' ) ) {
+			return; // Real function available — nothing to do.
+		}
+		// Neither core nor compat provided it — define a no-op stub.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		function wp_ai_client_prompt( $prompt = null ) {
+			return new class() {
+				/** @return static */
+				public function __call( string $name, array $args ): static {
+					return $this;
+				}
+			};
+		}
+	},
+	999
+);
