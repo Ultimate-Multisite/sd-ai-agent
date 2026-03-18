@@ -9,8 +9,17 @@ on:
 
 jobs:
   phpunit:
-    name: PHPUnit
+    name: PHPUnit (WP ${{ matrix.wp }})
     runs-on: ubuntu-latest
+    # WP trunk may fail due to PSR namespace conflicts between our compat
+    # layer and core's native AI Client SDK. This is expected until WP 7.0
+    # stabilizes its API and we can align our Composer dependencies.
+    continue-on-error: ${{ matrix.wp == 'trunk' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        wp: ['6.9', 'trunk']
 
     services:
       mariadb:
@@ -56,7 +65,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y subversion
 
       - name: Install WordPress test suite
-        run: bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 latest true
+        run: bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 ${{ matrix.wp }} true
 
       - name: Run PHPUnit
         run: vendor/bin/phpunit

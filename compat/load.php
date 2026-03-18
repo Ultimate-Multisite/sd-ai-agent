@@ -58,8 +58,8 @@ function gratis_ai_agent_load_compat_abilities_api(): void {
  */
 function gratis_ai_agent_load_compat_ai_client(): void {
 
-	if ( function_exists( 'wp_ai_client_prompt' ) ) {
-		return; // Core already provides it.
+	if ( class_exists( 'WP_AI_Client_Prompt_Builder' ) ) {
+		return; // Core already provides the full AI Client SDK.
 	}
 
 	// The adapter classes require PSR HTTP interfaces.
@@ -80,8 +80,11 @@ function gratis_ai_agent_load_compat_ai_client(): void {
 	require_once GRATIS_AI_AGENT_COMPAT_DIR . '/ai-client/class-wp-ai-client-ability-function-resolver.php';
 	require_once GRATIS_AI_AGENT_COMPAT_DIR . '/ai-client/class-wp-ai-client-prompt-builder.php';
 
-	// The wp_ai_client_prompt() entry point.
-	require_once GRATIS_AI_AGENT_COMPAT_DIR . '/ai-client.php';
+	// The wp_ai_client_prompt() entry point — only load if not already defined
+	// (e.g. by a test mu-plugin stub or a future core version).
+	if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
+		require_once GRATIS_AI_AGENT_COMPAT_DIR . '/ai-client.php';
+	}
 }
 
 // Load both layers. Order matters: abilities first, then AI client.

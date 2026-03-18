@@ -9,9 +9,23 @@ on:
 
 jobs:
   e2e:
-    name: Playwright E2E
+    name: Playwright E2E (WP ${{ matrix.wp }})
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    # WP trunk may fail due to PSR namespace conflicts between our compat
+    # layer and core's native AI Client SDK (see tests.yml for details).
+    continue-on-error: ${{ matrix.wp == 'trunk' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - wp: '6.9'
+            wp_env_port: '8888'
+            wp_env_override: ''
+          - wp: 'trunk'
+            wp_env_port: '8888'
+            wp_env_override: '{"core":"WordPress/WordPress#master"}'
 
     steps:
       - name: Checkout code
@@ -53,6 +67,17 @@ jobs:
 
       - name: Build plugin assets
         run: npm run build
+
+      - name: Override wp-env core version
+        if: matrix.wp_env_override != ''
+        run: |
+          node -e "
+            const fs = require('fs');
+            const base = JSON.parse(fs.readFileSync('.wp-env.json', 'utf8'));
+            const override = JSON.parse('${{ matrix.wp_env_override }}');
+            Object.assign(base, override);
+            fs.writeFileSync('.wp-env.override.json', JSON.stringify(base, null, 2));
+          "
 
       - name: Start wp-env
         run: npm run wp-env:start
