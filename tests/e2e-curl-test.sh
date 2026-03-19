@@ -59,7 +59,7 @@ if echo "$PLUGINS_PAGE" | grep -q "ai-agent"; then
 		ACTIVATE_URL=$(echo "$PLUGINS_PAGE" | grep -oP 'href="[^"]*action=activate[^"]*ai-agent[^"]*"' | head -1 | sed 's/href="//' | sed 's/"$//')
 		if [ -n "$ACTIVATE_URL" ]; then
 			echo "  Activating AI Agent..."
-			ACTIVATE_URL=$(echo "$ACTIVATE_URL" | sed 's/&amp;/\&/g')
+			ACTIVATE_URL="${ACTIVATE_URL//\&amp;/\&}"
 			curl -s -c "$COOKIE_JAR" -b "$COOKIE_JAR" -L "$BASE_URL/wp-admin/network/$ACTIVATE_URL" >/dev/null 2>&1
 			echo "  ✅ Activation attempted"
 		fi
