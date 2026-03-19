@@ -2737,6 +2737,7 @@ class RestController {
 		}
 
 		// Persist to session.
+		$generated_title = null;
 		if ( $session_id && ! empty( $result ) ) {
 			$session        = Database::get_session( $session_id );
 			$existing_count = 0;
@@ -5800,7 +5801,7 @@ Assistant: %s',
 		// Determine which provider to use.
 		$effective_provider = $provider_id;
 		if ( empty( $effective_provider ) ) {
-			$settings           = Settings::get_settings();
+			$settings           = Settings::get();
 			$effective_provider = $settings['default_provider'] ?? '';
 		}
 
