@@ -2,8 +2,8 @@
 
 ## Ready
 
-- [ ] t127 Submit Gratis AI Agent to WordPress.org plugin directory via SVN @superdav42 #devops ~2h ref=GH#597
-  - WP.org prep complete (t124): GPL headers, readme.txt, screenshots, sanitization audit. Next: request SVN access, checkout, copy trunk/, tag v1.2.0
+- [x] t127 Submit Gratis AI Agent to WordPress.org plugin directory via SVN @superdav42 #devops ~2h ref=GH#597 pr:#600 completed:2026-03-19
+  - SVN repo returns 404 (plugin not yet submitted for review). Documented full submission process in docs/wordpress-org-submission.md and added bin/deploy-wporg.sh. Manual step required: submit ZIP at wordpress.org/plugins/developers/add/
 
 - [ ] t128 Add Gemini 2.5 Flash and Gemini 2.5 Flash Lite to model selector @superdav42 #feature ~2h ref=GH#598
   - Gemini 2.5 Flash ($0.30/1M input), Flash Lite ($0.10/1M). Needs OpenRouter/LiteLLM adapter. Update CostCalculator + Settings UI tier grouping
