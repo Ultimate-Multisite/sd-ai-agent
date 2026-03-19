@@ -2,7 +2,7 @@
 
 ## Ready
 
-- [ ] t136 Add JS bundle size budget and performance benchmarks @superdav42 #ci ~2h ref=GH#611
+- [x] t136 Add JS bundle size budget and performance benchmarks @superdav42 #ci ~2h ref=GH#611 pr:#616 completed:2026-03-19
   - Plugin has grown with Chart.js, CodeMirror 6, highlight.js — no size budget means silent bloat
   - Add size-limit to package.json; budget: main bundle < 400KB gzipped; add CI step to code-quality.yml
 
