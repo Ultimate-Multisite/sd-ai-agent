@@ -5,7 +5,7 @@
 - [ ] t124 Prepare plugin for WordPress.org submission (review checklist) @superdav42 #devops ~4h ref=GH#591
   - Run wp plugin check, audit sanitization/nonces/capabilities, add GPL headers, create screenshots, submit via SVN
 
-- [ ] t125 Raise PHPStan level from 7 to 8 and fix new errors @superdav42 #quality ~3h ref=GH#592
+- [x] t125 Raise PHPStan level from 7 to 8 and fix new errors @superdav42 #quality ~3h ref=GH#592 pr:#595 completed:2026-03-19
   - Continue quality ladder: t010 (5→6), t110 (6→7), now 7→8. Level 8 adds stricter generics/template type checks.
 
 - [x] t126 Add Claude 3.5 Haiku and Gemini 2.0 Flash to model selector @superdav42 #feature ~2h ref=GH#593 pr:#594 completed:2026-03-19
