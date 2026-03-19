@@ -38,12 +38,14 @@ require_once $plugin_dir . '/vendor/autoload.php';
  *    WP trunk's WP_AI_Client_Cache implements the scoped version
  *    (WordPress\AiClientDependencies\Psr\SimpleCache\CacheInterface) but
  *    Composer's AiClient::setCache() expects the global Psr\SimpleCache\CacheInterface.
- *    The shim defines the global interface as extending the scoped one so that
- *    WP_AI_Client_Cache satisfies both type hints.
+ *    Fix: use class_alias() to make the global name an alias for the scoped interface.
+ *    This makes WP_AI_Client_Cache satisfy the global type hint because PHP's type
+ *    system treats the two names as the same interface. Extending the global interface
+ *    from the scoped one does NOT work — PHP instanceof requires explicit implementation.
  *
- * Fix: register a prepended autoloader that intercepts both classes and loads
- * shims that use the scoped WordPress\AiClientDependencies\ namespace. Shims
- * are only loaded when WP trunk's scoped PSR namespace is detectable
+ * Fix: register a prepended autoloader that intercepts the affected classes and either
+ * loads interface redefinition shims (strategy A) or registers a class_alias (strategy B).
+ * Shims are only loaded when WP trunk's scoped PSR namespace is detectable
  * (interface_exists check), so WP 6.9 tests are unaffected.
  *
  * The prepend=true flag ensures this autoloader runs before Composer's,
@@ -51,40 +53,59 @@ require_once $plugin_dir . '/vendor/autoload.php';
  */
 spl_autoload_register(
 	static function ( string $class_name ) use ( $plugin_dir ): void {
-		$shim_map = array(
-			'WordPress\\AiClient\\Providers\\Http\\Contracts\\ClientWithOptionsInterface'      => 'wp-trunk-client-with-options-interface.php',
-			'WordPress\\AiClient\\Providers\\Http\\Abstracts\\AbstractClientDiscoveryStrategy' => 'wp-trunk-abstract-client-discovery-strategy.php',
-			'Psr\\SimpleCache\\CacheInterface'                                                 => 'wp-trunk-psr-simple-cache-interface.php',
-		);
-
-		if ( ! isset( $shim_map[ $class_name ] ) ) {
-			return;
-		}
-
 		// Only activate shims when WP trunk's scoped PSR autoloader is present.
 		// WP trunk registers its autoloader (which handles WordPress\AiClientDependencies\*)
 		// in wp-includes/php-ai-client/autoload.php before adapter class files are loaded.
 		// On WP 6.9 (no WP trunk), the scoped namespace does not exist and
 		// interface_exists() returns false — fall through to Composer's autoloader.
 		//
-		// Detection is per-shim: each shim checks for the scoped counterpart of the
-		// interface/class it is replacing. This avoids a race condition where the
-		// generic RequestInterface guard returns false for the CacheInterface shim
-		// because WP trunk's scoped RequestInterface hasn't been loaded yet at the
-		// point AiClient::setCache() triggers autoloading of Psr\SimpleCache\CacheInterface.
-		// The second argument (false) prevents recursive autoloading during the check.
-		$scoped_guard_map = array(
-			'WordPress\\AiClient\\Providers\\Http\\Contracts\\ClientWithOptionsInterface'      => 'WordPress\\AiClientDependencies\\Psr\\Http\\Message\\RequestInterface',
-			'WordPress\\AiClient\\Providers\\Http\\Abstracts\\AbstractClientDiscoveryStrategy' => 'WordPress\\AiClientDependencies\\Psr\\Http\\Message\\RequestInterface',
-			'Psr\\SimpleCache\\CacheInterface'                                                 => 'WordPress\\AiClientDependencies\\Psr\\SimpleCache\\CacheInterface',
+		// Shim strategy depends on the direction of the type mismatch:
+		//
+		// A. Interface redefinition (ClientWithOptionsInterface, AbstractClientDiscoveryStrategy):
+		//    WP trunk's adapter class implements/extends the Composer-defined interface but
+		//    uses scoped PSR type hints in its method signatures. Fix: redefine the interface
+		//    using scoped type hints so WP trunk's class can implement it without a signature
+		//    mismatch. Guard: check for the scoped RequestInterface (loaded by WP trunk's
+		//    autoloader when the HTTP client classes are first used).
+		//
+		// B. Class alias (Psr\SimpleCache\CacheInterface):
+		//    WP trunk's WP_AI_Client_Cache implements the scoped CacheInterface. Composer's
+		//    AiClient::setCache() expects the global Psr\SimpleCache\CacheInterface. Extending
+		//    the scoped interface from the global one does NOT help — PHP's instanceof check
+		//    requires the class to explicitly implement the global interface. Fix: alias the
+		//    global name to the scoped interface so they are the same type in PHP's type
+		//    system. Guard: check for the scoped CacheInterface (already loaded by WP trunk's
+		//    autoloader when WP_AI_Client_Cache is instantiated before setCache() is called).
+
+		// Strategy A: interface redefinition shims.
+		$shim_map = array(
+			'WordPress\\AiClient\\Providers\\Http\\Contracts\\ClientWithOptionsInterface'      => 'wp-trunk-client-with-options-interface.php',
+			'WordPress\\AiClient\\Providers\\Http\\Abstracts\\AbstractClientDiscoveryStrategy' => 'wp-trunk-abstract-client-discovery-strategy.php',
 		);
 
-		$guard_interface = $scoped_guard_map[ $class_name ];
-		if ( ! interface_exists( $guard_interface ) ) {
+		if ( isset( $shim_map[ $class_name ] ) ) {
+			if ( ! interface_exists( 'WordPress\\AiClientDependencies\\Psr\\Http\\Message\\RequestInterface' ) ) {
+				return;
+			}
+			require_once $plugin_dir . '/tests/stubs/' . $shim_map[ $class_name ];
 			return;
 		}
 
-		require_once $plugin_dir . '/tests/stubs/' . $shim_map[ $class_name ];
+		// Strategy B: class_alias shim for Psr\SimpleCache\CacheInterface.
+		// WP trunk's WP_AI_Client_Cache implements the scoped CacheInterface. By the time
+		// AiClient::setCache() is called, WP trunk's autoloader has already loaded
+		// WordPress\AiClientDependencies\Psr\SimpleCache\CacheInterface (it is a dependency
+		// of WP_AI_Client_Cache). We alias the global name to the scoped interface so that
+		// WP_AI_Client_Cache satisfies the global type hint without any class modification.
+		if ( 'Psr\\SimpleCache\\CacheInterface' === $class_name ) {
+			if ( ! interface_exists( 'WordPress\\AiClientDependencies\\Psr\\SimpleCache\\CacheInterface' ) ) {
+				return;
+			}
+			class_alias(
+				'WordPress\\AiClientDependencies\\Psr\\SimpleCache\\CacheInterface',
+				'Psr\\SimpleCache\\CacheInterface'
+			);
+		}
 	},
 	true,  // throw on error
 	true   // prepend — run before Composer's autoloader
