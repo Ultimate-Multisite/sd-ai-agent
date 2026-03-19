@@ -7,7 +7,7 @@
   - t109 was incorrectly linked to PR #560 (image upload) — the actual fix was never applied
   - Fix: update readme.txt "Requires PHP: 7.4" → "Requires PHP: 8.2"
 
-- [ ] t121 Bump version to 1.2.0 and update CHANGELOG.md @superdav42 #chore ~2h ref=GH#583
+- [x] t121 Bump version to 1.2.0 and update CHANGELOG.md @superdav42 #chore ~2h ref=GH#583 pr:#586 completed:2026-03-19
   - Plugin at v1.1.0 but 100+ PRs merged since — streaming, image upload, spending limits, mobile UX, a11y, etc.
   - Update CHANGELOG.md [Unreleased] → [1.2.0], bump Version in gratis-ai-agent.php, update readme.txt Stable tag
 
