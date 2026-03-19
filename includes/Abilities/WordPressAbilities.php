@@ -6,10 +6,10 @@ declare(strict_types=1);
  *
  * Provides plugin/theme listing, plugin installation, and PHP execution.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Abilities;
+namespace GratisAiAgent\Abilities;
 
 use WP_Error;
 
@@ -18,6 +18,76 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class WordPressAbilities {
+
+	// ─── Static proxy methods (for backwards-compatible test access) ─────────
+
+	/**
+	 * List all installed plugins.
+	 *
+	 * @param array<string,mixed> $input Input args.
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	public static function handle_get_plugins( array $input = [] ) {
+		$ability = new GetPluginsAbility(
+			'gratis-ai-agent/get-plugins',
+			[
+				'label'       => __( 'List Plugins', 'gratis-ai-agent' ),
+				'description' => __( 'List all installed WordPress plugins with their status (active/inactive).', 'gratis-ai-agent' ),
+			]
+		);
+		return $ability->run( $input );
+	}
+
+	/**
+	 * List all installed themes.
+	 *
+	 * @param array<string,mixed> $input Input args.
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	public static function handle_get_themes( array $input = [] ) {
+		$ability = new GetThemesAbility(
+			'gratis-ai-agent/get-themes',
+			[
+				'label'       => __( 'List Themes', 'gratis-ai-agent' ),
+				'description' => __( 'List all installed WordPress themes with their status.', 'gratis-ai-agent' ),
+			]
+		);
+		return $ability->run( $input );
+	}
+
+	/**
+	 * Install a plugin from WordPress.org.
+	 *
+	 * @param array<string,mixed> $input Input args.
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	public static function handle_install_plugin( array $input = [] ) {
+		$ability = new InstallPluginAbility(
+			'gratis-ai-agent/install-plugin',
+			[
+				'label'       => __( 'Install Plugin', 'gratis-ai-agent' ),
+				'description' => __( 'Install a plugin from the WordPress.org plugin directory by slug. Optionally activate after installation.', 'gratis-ai-agent' ),
+			]
+		);
+		return $ability->run( $input );
+	}
+
+	/**
+	 * Execute PHP code in the WordPress environment.
+	 *
+	 * @param array<string,mixed> $input Input args.
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	public static function handle_run_php( array $input = [] ) {
+		$ability = new RunPhpAbility(
+			'gratis-ai-agent/run-php',
+			[
+				'label'       => __( 'Run PHP', 'gratis-ai-agent' ),
+				'description' => __( 'Execute PHP code in the WordPress environment. Use this to call WordPress functions like wp_insert_post(), get_option(), WP_Query, etc. The code runs with full WordPress context.', 'gratis-ai-agent' ),
+			]
+		);
+		return $ability->run( $input );
+	}
 
 	/**
 	 * Register WordPress abilities on init.
@@ -35,154 +105,74 @@ class WordPressAbilities {
 		}
 
 		wp_register_ability(
-			'ai-agent/get-plugins',
+			'gratis-ai-agent/get-plugins',
 			[
-				'label'               => __( 'List Plugins', 'ai-agent' ),
-				'description'         => __( 'List all installed WordPress plugins with their status (active/inactive).', 'ai-agent' ),
-				'category'            => 'ai-agent',
-				'input_schema'        => [
-					'type'       => 'object',
-					'properties' => new \stdClass(),
-				],
-				'output_schema'       => [
-					'type'       => 'object',
-					'properties' => [
-						'plugins'      => [ 'type' => 'array' ],
-						'total'        => [ 'type' => 'integer' ],
-						'active_count' => [ 'type' => 'integer' ],
-					],
-				],
-				'meta'                => [
-					'annotations'  => [
-						'readonly'   => true,
-						'idempotent' => true,
-					],
-					'show_in_rest' => true,
-				],
-				'execute_callback'    => [ __CLASS__, 'handle_get_plugins' ],
-				'permission_callback' => function () {
-					return current_user_can( 'activate_plugins' );
-				},
+				'label'         => __( 'List Plugins', 'gratis-ai-agent' ),
+				'description'   => __( 'List all installed WordPress plugins with their status (active/inactive).', 'gratis-ai-agent' ),
+				'ability_class' => GetPluginsAbility::class,
 			]
 		);
 
 		wp_register_ability(
-			'ai-agent/get-themes',
+			'gratis-ai-agent/get-themes',
 			[
-				'label'               => __( 'List Themes', 'ai-agent' ),
-				'description'         => __( 'List all installed WordPress themes with their status.', 'ai-agent' ),
-				'category'            => 'ai-agent',
-				'input_schema'        => [
-					'type'       => 'object',
-					'properties' => new \stdClass(),
-				],
-				'output_schema'       => [
-					'type'       => 'object',
-					'properties' => [
-						'themes' => [ 'type' => 'array' ],
-						'total'  => [ 'type' => 'integer' ],
-						'active' => [ 'type' => 'string' ],
-					],
-				],
-				'meta'                => [
-					'annotations'  => [
-						'readonly'   => true,
-						'idempotent' => true,
-					],
-					'show_in_rest' => true,
-				],
-				'execute_callback'    => [ __CLASS__, 'handle_get_themes' ],
-				'permission_callback' => function () {
-					return current_user_can( 'switch_themes' );
-				},
+				'label'         => __( 'List Themes', 'gratis-ai-agent' ),
+				'description'   => __( 'List all installed WordPress themes with their status.', 'gratis-ai-agent' ),
+				'ability_class' => GetThemesAbility::class,
 			]
 		);
 
 		wp_register_ability(
-			'ai-agent/install-plugin',
+			'gratis-ai-agent/install-plugin',
 			[
-				'label'               => __( 'Install Plugin', 'ai-agent' ),
-				'description'         => __( 'Install a plugin from the WordPress.org plugin directory by slug. Optionally activate after installation.', 'ai-agent' ),
-				'category'            => 'ai-agent',
-				'input_schema'        => [
-					'type'       => 'object',
-					'properties' => [
-						'slug'     => [
-							'type'        => 'string',
-							'description' => 'The plugin slug from wordpress.org (e.g., "akismet", "contact-form-7")',
-						],
-						'activate' => [
-							'type'        => 'boolean',
-							'description' => 'Whether to activate the plugin after installation (default: false)',
-						],
-					],
-					'required'   => [ 'slug' ],
-				],
-				'output_schema'       => [
-					'type'       => 'object',
-					'properties' => [
-						'status'      => [ 'type' => 'string' ],
-						'message'     => [ 'type' => 'string' ],
-						'plugin_file' => [ 'type' => 'string' ],
-						'active'      => [ 'type' => 'boolean' ],
-					],
-				],
-				'meta'                => [
-					'annotations'  => [
-						'destructive' => false,
-					],
-					'show_in_rest' => true,
-				],
-				'execute_callback'    => [ __CLASS__, 'handle_install_plugin' ],
-				'permission_callback' => function () {
-					return current_user_can( 'install_plugins' );
-				},
+				'label'         => __( 'Install Plugin', 'gratis-ai-agent' ),
+				'description'   => __( 'Install a plugin from the WordPress.org plugin directory by slug. Optionally activate after installation.', 'gratis-ai-agent' ),
+				'ability_class' => InstallPluginAbility::class,
 			]
 		);
 
 		wp_register_ability(
-			'ai-agent/run-php',
+			'gratis-ai-agent/run-php',
 			[
-				'label'               => __( 'Run PHP', 'ai-agent' ),
-				'description'         => __( 'Execute PHP code in the WordPress environment. Use this to call WordPress functions like wp_insert_post(), get_option(), WP_Query, etc. The code runs with full WordPress context.', 'ai-agent' ),
-				'category'            => 'ai-agent',
-				'input_schema'        => [
-					'type'       => 'object',
-					'properties' => [
-						'code' => [
-							'type'        => 'string',
-							'description' => 'PHP code to execute. Do not include <?php tags. The code should return a value.',
-						],
-					],
-					'required'   => [ 'code' ],
-				],
-				'output_schema'       => [
-					'type'       => 'object',
-					'properties' => [
-						'result' => [],
-						'output' => [ 'type' => 'string' ],
-					],
-				],
-				'meta'                => [
-					'annotations'  => [
-						'destructive' => true,
-					],
-					'show_in_rest' => true,
-				],
-				'execute_callback'    => [ __CLASS__, 'handle_run_php' ],
-				'permission_callback' => function () {
-					return current_user_can( 'manage_options' );
-				},
+				'label'         => __( 'Run PHP', 'gratis-ai-agent' ),
+				'description'   => __( 'Execute PHP code in the WordPress environment. Use this to call WordPress functions like wp_insert_post(), get_option(), WP_Query, etc. The code runs with full WordPress context.', 'gratis-ai-agent' ),
+				'ability_class' => RunPhpAbility::class,
 			]
 		);
 	}
+}
 
-	/**
-	 * Handle the get-plugins ability.
-	 *
-	 * @return array
-	 */
-	public static function handle_get_plugins(): array {
+/**
+ * Get Plugins ability.
+ *
+ * @since 1.0.0
+ */
+class GetPluginsAbility extends AbstractAbility {
+
+	protected function label(): string {
+		return __( 'List Plugins', 'gratis-ai-agent' );
+	}
+
+	protected function description(): string {
+		return __( 'List all installed WordPress plugins with their status (active/inactive).', 'gratis-ai-agent' );
+	}
+
+	protected function input_schema(): array {
+		return [];
+	}
+
+	protected function output_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'plugins'      => [ 'type' => 'array' ],
+				'total'        => [ 'type' => 'integer' ],
+				'active_count' => [ 'type' => 'integer' ],
+			],
+		];
+	}
+
+	protected function execute_callback( $input = null ) {
 		if ( ! function_exists( 'get_plugins' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
@@ -209,12 +199,53 @@ class WordPressAbilities {
 		];
 	}
 
-	/**
-	 * Handle the get-themes ability.
-	 *
-	 * @return array
-	 */
-	public static function handle_get_themes(): array {
+	protected function permission_callback( $input = null ): bool {
+		return ToolCapabilities::current_user_can( $this->name );
+	}
+
+	protected function meta(): array {
+		return [
+			'annotations'  => [
+				'readonly'    => true,
+				'destructive' => false,
+				'idempotent'  => true,
+			],
+			'show_in_rest' => true,
+		];
+	}
+}
+
+/**
+ * Get Themes ability.
+ *
+ * @since 1.0.0
+ */
+class GetThemesAbility extends AbstractAbility {
+
+	protected function label(): string {
+		return __( 'List Themes', 'gratis-ai-agent' );
+	}
+
+	protected function description(): string {
+		return __( 'List all installed WordPress themes with their status.', 'gratis-ai-agent' );
+	}
+
+	protected function input_schema(): array {
+		return [];
+	}
+
+	protected function output_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'themes' => [ 'type' => 'array' ],
+				'total'  => [ 'type' => 'integer' ],
+				'active' => [ 'type' => 'string' ],
+			],
+		];
+	}
+
+	protected function execute_callback( $input = null ) {
 		$all_themes   = wp_get_themes();
 		$active_theme = get_stylesheet();
 
@@ -237,18 +268,72 @@ class WordPressAbilities {
 		];
 	}
 
-	/**
-	 * Handle the install-plugin ability.
-	 *
-	 * @param array $input Input with slug and optional activate.
-	 * @return array|WP_Error
-	 */
-	public static function handle_install_plugin( array $input ) {
+	protected function permission_callback( $input = null ): bool {
+		return ToolCapabilities::current_user_can( $this->name );
+	}
+
+	protected function meta(): array {
+		return [
+			'annotations'  => [
+				'readonly'    => true,
+				'destructive' => false,
+				'idempotent'  => true,
+			],
+			'show_in_rest' => true,
+		];
+	}
+}
+
+/**
+ * Install Plugin ability.
+ *
+ * @since 1.0.0
+ */
+class InstallPluginAbility extends AbstractAbility {
+
+	protected function label(): string {
+		return __( 'Install Plugin', 'gratis-ai-agent' );
+	}
+
+	protected function description(): string {
+		return __( 'Install a plugin from the WordPress.org plugin directory by slug. Optionally activate after installation.', 'gratis-ai-agent' );
+	}
+
+	protected function input_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'slug'     => [
+					'type'        => 'string',
+					'description' => 'The plugin slug from wordpress.org (e.g., "akismet", "contact-form-7")',
+				],
+				'activate' => [
+					'type'        => 'boolean',
+					'description' => 'Whether to activate the plugin after installation (default: false)',
+				],
+			],
+			'required'   => [ 'slug' ],
+		];
+	}
+
+	protected function output_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'status'      => [ 'type' => 'string' ],
+				'message'     => [ 'type' => 'string' ],
+				'plugin_file' => [ 'type' => 'string' ],
+				'active'      => [ 'type' => 'boolean' ],
+			],
+		];
+	}
+
+	protected function execute_callback( $input ) {
 		$slug     = $input['slug'] ?? '';
 		$activate = (bool) ( $input['activate'] ?? false );
 
 		if ( empty( $slug ) ) {
-			return new WP_Error( 'ai_agent_empty_slug', __( 'Plugin slug is required.', 'ai-agent' ) );
+			return new WP_Error( 'gratis_ai_agent_empty_slug', __( 'Plugin slug is required.', 'gratis-ai-agent' ) );
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -315,7 +400,7 @@ class WordPressAbilities {
 			if ( is_wp_error( $errors ) && $errors->has_errors() ) {
 				return $errors;
 			}
-			return new WP_Error( 'ai_agent_install_failed', __( 'Installation failed for unknown reason.', 'ai-agent' ) );
+			return new WP_Error( 'gratis_ai_agent_install_failed', __( 'Installation failed for unknown reason.', 'gratis-ai-agent' ) );
 		}
 
 		$plugin_file = $upgrader->plugin_info();
@@ -346,17 +431,65 @@ class WordPressAbilities {
 		];
 	}
 
-	/**
-	 * Handle the run-php ability.
-	 *
-	 * @param array $input Input with code.
-	 * @return array|WP_Error
-	 */
-	public static function handle_run_php( array $input ) {
+	protected function permission_callback( $input ): bool {
+		return ToolCapabilities::current_user_can( $this->name );
+	}
+
+	protected function meta(): array {
+		return [
+			'annotations'  => [
+				'readonly'    => false,
+				'destructive' => false,
+				'idempotent'  => false,
+			],
+			'show_in_rest' => true,
+		];
+	}
+}
+
+/**
+ * Run PHP ability.
+ *
+ * @since 1.0.0
+ */
+class RunPhpAbility extends AbstractAbility {
+
+	protected function label(): string {
+		return __( 'Run PHP', 'gratis-ai-agent' );
+	}
+
+	protected function description(): string {
+		return __( 'Execute PHP code in the WordPress environment. Use this to call WordPress functions like wp_insert_post(), get_option(), WP_Query, etc. The code runs with full WordPress context.', 'gratis-ai-agent' );
+	}
+
+	protected function input_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'code' => [
+					'type'        => 'string',
+					'description' => 'PHP code to execute. Do not include <?php tags. The code should return a value.',
+				],
+			],
+			'required'   => [ 'code' ],
+		];
+	}
+
+	protected function output_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'result' => [],
+				'output' => [ 'type' => 'string' ],
+			],
+		];
+	}
+
+	protected function execute_callback( $input ) {
 		$code = $input['code'] ?? '';
 
 		if ( empty( $code ) ) {
-			return new WP_Error( 'ai_agent_empty_code', __( 'PHP code is required.', 'ai-agent' ) );
+			return new WP_Error( 'gratis_ai_agent_empty_code', __( 'PHP code is required.', 'gratis-ai-agent' ) );
 		}
 
 		ob_start();
@@ -373,12 +506,27 @@ class WordPressAbilities {
 		$output = ob_get_clean();
 
 		if ( null !== $error ) {
-			return new WP_Error( 'ai_agent_php_error', sprintf( 'PHP error: %s', $error ) );
+			return new WP_Error( 'gratis_ai_agent_php_error', sprintf( 'PHP error: %s', $error ) );
 		}
 
 		return [
 			'result' => $result,
 			'output' => $output,
+		];
+	}
+
+	protected function permission_callback( $input ): bool {
+		return ToolCapabilities::current_user_can( $this->name );
+	}
+
+	protected function meta(): array {
+		return [
+			'annotations'  => [
+				'readonly'    => false,
+				'destructive' => true,
+				'idempotent'  => false,
+			],
+			'show_in_rest' => true,
 		];
 	}
 }

@@ -4,10 +4,10 @@ declare(strict_types=1);
 /**
  * Marketing and competitive analysis abilities for the AI agent.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Abilities;
+namespace GratisAiAgent\Abilities;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -33,9 +33,9 @@ class MarketingAbilities {
 		wp_register_ability(
 			'ai-agent/fetch-url',
 			[
-				'label'               => __( 'Fetch URL', 'ai-agent' ),
-				'description'         => __( 'Fetch a URL and return HTTP status, headers, page title, meta description, and head content. Useful for competitive analysis and tech stack discovery.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Fetch URL', 'gratis-ai-agent' ),
+				'description'         => __( 'Fetch a URL and return HTTP status, headers, page title, meta description, and head content. Useful for competitive analysis and tech stack discovery.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -45,6 +45,19 @@ class MarketingAbilities {
 						],
 					],
 					'required'   => [ 'url' ],
+				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'url'              => [ 'type' => 'string' ],
+						'status_code'      => [ 'type' => 'integer' ],
+						'headers'          => [ 'type' => 'object' ],
+						'title'            => [ 'type' => 'string' ],
+						'meta_description' => [ 'type' => 'string' ],
+						'generator'        => [ 'type' => 'string' ],
+						'head_content'     => [ 'type' => 'string' ],
+						'error'            => [ 'type' => 'string' ],
+					],
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_fetch_url' ],
 				'permission_callback' => function () {
@@ -56,9 +69,9 @@ class MarketingAbilities {
 		wp_register_ability(
 			'ai-agent/analyze-headers',
 			[
-				'label'               => __( 'Analyze HTTP Headers', 'ai-agent' ),
-				'description'         => __( 'Analyze a URL\'s HTTP security and performance headers: HSTS, CSP, X-Frame-Options, caching, CDN indicators.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Analyze HTTP Headers', 'gratis-ai-agent' ),
+				'description'         => __( 'Analyze a URL\'s HTTP security and performance headers: HSTS, CSP, X-Frame-Options, caching, CDN indicators.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -68,6 +81,17 @@ class MarketingAbilities {
 						],
 					],
 					'required'   => [ 'url' ],
+				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'url'         => [ 'type' => 'string' ],
+						'status_code' => [ 'type' => 'integer' ],
+						'security'    => [ 'type' => 'array' ],
+						'performance' => [ 'type' => 'array' ],
+						'cdn'         => [ 'type' => 'array' ],
+						'error'       => [ 'type' => 'string' ],
+					],
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_analyze_headers' ],
 				'permission_callback' => function () {
@@ -80,14 +104,14 @@ class MarketingAbilities {
 	/**
 	 * Handle the fetch-url ability call.
 	 *
-	 * @param array $input Input with url.
-	 * @return array Fetch results.
+	 * @param array<string,mixed> $input Input with url.
+	 * @return array<string,mixed>|\WP_Error Fetch results.
 	 */
-	public static function handle_fetch_url( array $input ): array {
+	public static function handle_fetch_url( array $input ) {
 		$url = esc_url_raw( $input['url'] ?? '' );
 
 		if ( empty( $url ) ) {
-			return [ 'error' => 'url is required.' ];
+			return new \WP_Error( 'missing_url', 'url is required.' );
 		}
 
 		$response = wp_remote_get(
@@ -158,14 +182,14 @@ class MarketingAbilities {
 	/**
 	 * Handle the analyze-headers ability call.
 	 *
-	 * @param array $input Input with url.
-	 * @return array Header analysis results.
+	 * @param array<string,mixed> $input Input with url.
+	 * @return array<string,mixed>|\WP_Error Header analysis results.
 	 */
-	public static function handle_analyze_headers( array $input ): array {
+	public static function handle_analyze_headers( array $input ) {
 		$url = esc_url_raw( $input['url'] ?? '' );
 
 		if ( empty( $url ) ) {
-			return [ 'error' => 'url is required.' ];
+			return new \WP_Error( 'missing_url', 'url is required.' );
 		}
 
 		$response = wp_remote_head(
@@ -205,8 +229,8 @@ class MarketingAbilities {
 	/**
 	 * Check security-related headers.
 	 *
-	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array $headers Response headers.
-	 * @return array Security header analysis.
+	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array<string,mixed> $headers Response headers.
+	 * @return array<int,mixed> Security header analysis.
 	 */
 	private static function check_security_headers( $headers ): array {
 		$checks = [
@@ -253,8 +277,8 @@ class MarketingAbilities {
 	/**
 	 * Check performance-related headers.
 	 *
-	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array $headers Response headers.
-	 * @return array Performance header analysis.
+	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array<string,mixed> $headers Response headers.
+	 * @return array<int,mixed> Performance header analysis.
 	 */
 	private static function check_performance_headers( $headers ): array {
 		$results = [];
@@ -286,8 +310,8 @@ class MarketingAbilities {
 	/**
 	 * Detect CDN indicators from headers.
 	 *
-	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array $headers Response headers.
-	 * @return array CDN detection results.
+	 * @param \WpOrg\Requests\Utility\CaseInsensitiveDictionary|array<string,mixed> $headers Response headers.
+	 * @return array<int,mixed> CDN detection results.
 	 */
 	private static function detect_cdn( $headers ): array {
 		$indicators = [

@@ -4,12 +4,12 @@ declare(strict_types=1);
 /**
  * Register knowledge-related WordPress abilities (tools) for the AI agent.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Abilities;
+namespace GratisAiAgent\Abilities;
 
-use AiAgent\Knowledge\Knowledge;
+use GratisAiAgent\Knowledge\Knowledge;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -35,9 +35,9 @@ class KnowledgeAbilities {
 		wp_register_ability(
 			'ai-agent/knowledge-search',
 			[
-				'label'               => __( 'Search Knowledge Base', 'ai-agent' ),
-				'description'         => __( 'Search the knowledge base for relevant information. Use this to find indexed documents, posts, and uploaded files.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Search Knowledge Base', 'gratis-ai-agent' ),
+				'description'         => __( 'Search the knowledge base for relevant information. Use this to find indexed documents, posts, and uploaded files.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -52,6 +52,15 @@ class KnowledgeAbilities {
 					],
 					'required'   => [ 'query' ],
 				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'results' => [ 'type' => 'array' ],
+						'count'   => [ 'type' => 'integer' ],
+						'message' => [ 'type' => 'string' ],
+						'error'   => [ 'type' => 'string' ],
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_knowledge_search' ],
 				'permission_callback' => function () {
 					return current_user_can( 'manage_options' ); },
@@ -62,14 +71,14 @@ class KnowledgeAbilities {
 	/**
 	 * Handle the knowledge-search ability call.
 	 *
-	 * @param array $input Input with query and optional collection.
-	 * @return array Result.
+	 * @param array<string,mixed> $input Input with query and optional collection.
+	 * @return array<string,mixed>|\WP_Error Result.
 	 */
-	public static function handle_knowledge_search( array $input ): array {
+	public static function handle_knowledge_search( array $input ) {
 		$query = $input['query'] ?? '';
 
 		if ( empty( $query ) ) {
-			return [ 'error' => 'Search query is required.' ];
+			return new \WP_Error( 'missing_query', 'Search query is required.' );
 		}
 
 		$options = [ 'limit' => 8 ];

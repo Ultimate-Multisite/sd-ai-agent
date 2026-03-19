@@ -10,18 +10,34 @@ import {
 	ToggleControl,
 	Notice,
 	Spinner,
+	BaseControl,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { trash, pencil, plus } from '@wordpress/icons';
 import apiFetch from '@wordpress/api-fetch';
 
-const SCHEDULE_OPTIONS = [
-	{ label: __( 'Hourly', 'ai-agent' ), value: 'hourly' },
-	{ label: __( 'Twice Daily', 'ai-agent' ), value: 'twicedaily' },
-	{ label: __( 'Daily', 'ai-agent' ), value: 'daily' },
-	{ label: __( 'Weekly', 'ai-agent' ), value: 'weekly' },
+const CHANNEL_TYPE_OPTIONS = [
+	{ label: __( 'Slack', 'gratis-ai-agent' ), value: 'slack' },
+	{ label: __( 'Discord', 'gratis-ai-agent' ), value: 'discord' },
 ];
 
+/**
+ *
+ */
+function emptyChannel() {
+	return { type: 'slack', webhook_url: '', enabled: true };
+}
+
+const SCHEDULE_OPTIONS = [
+	{ label: __( 'Hourly', 'gratis-ai-agent' ), value: 'hourly' },
+	{ label: __( 'Twice Daily', 'gratis-ai-agent' ), value: 'twicedaily' },
+	{ label: __( 'Daily', 'gratis-ai-agent' ), value: 'daily' },
+	{ label: __( 'Weekly', 'gratis-ai-agent' ), value: 'weekly' },
+];
+
+/**
+ *
+ */
 function emptyForm() {
 	return {
 		name: '',
@@ -31,9 +47,13 @@ function emptyForm() {
 		tool_profile: '',
 		max_iterations: 10,
 		enabled: true,
+		notification_channels: [],
 	};
 }
 
+/**
+ *
+ */
 export default function AutomationsManager() {
 	const [ automations, setAutomations ] = useState( [] );
 	const [ loaded, setLoaded ] = useState( false );
@@ -46,13 +66,16 @@ export default function AutomationsManager() {
 	const [ viewLogsId, setViewLogsId ] = useState( null );
 	const [ running, setRunning ] = useState( null );
 	const [ notice, setNotice ] = useState( null );
+	const [ testingChannel, setTestingChannel ] = useState( null );
 
 	const fetchAll = useCallback( async () => {
 		try {
 			const [ result, tpl, prof ] = await Promise.all( [
-				apiFetch( { path: '/ai-agent/v1/automations' } ),
-				apiFetch( { path: '/ai-agent/v1/automation-templates' } ),
-				apiFetch( { path: '/ai-agent/v1/tool-profiles' } ).catch(
+				apiFetch( { path: '/gratis-ai-agent/v1/automations' } ),
+				apiFetch( {
+					path: '/gratis-ai-agent/v1/automation-templates',
+				} ),
+				apiFetch( { path: '/gratis-ai-agent/v1/tool-profiles' } ).catch(
 					() => []
 				),
 			] );
@@ -87,13 +110,13 @@ export default function AutomationsManager() {
 		try {
 			if ( editId ) {
 				await apiFetch( {
-					path: `/ai-agent/v1/automations/${ editId }`,
+					path: `/gratis-ai-agent/v1/automations/${ editId }`,
 					method: 'PATCH',
 					data: form,
 				} );
 			} else {
 				await apiFetch( {
-					path: '/ai-agent/v1/automations',
+					path: '/gratis-ai-agent/v1/automations',
 					method: 'POST',
 					data: form,
 				} );
@@ -102,12 +125,13 @@ export default function AutomationsManager() {
 			fetchAll();
 			setNotice( {
 				status: 'success',
-				message: __( 'Automation saved.', 'ai-agent' ),
+				message: __( 'Automation saved.', 'gratis-ai-agent' ),
 			} );
 		} catch ( err ) {
 			setNotice( {
 				status: 'error',
-				message: err.message || __( 'Failed to save.', 'ai-agent' ),
+				message:
+					err.message || __( 'Failed to save.', 'gratis-ai-agent' ),
 			} );
 		}
 	}, [ form, editId, resetForm, fetchAll ] );
@@ -122,19 +146,79 @@ export default function AutomationsManager() {
 			tool_profile: auto.tool_profile || '',
 			max_iterations: auto.max_iterations || 10,
 			enabled: auto.enabled,
+			notification_channels: auto.notification_channels || [],
 		} );
 		setShowForm( true );
 	}, [] );
 
+	const addChannel = useCallback( () => {
+		setForm( ( prev ) => ( {
+			...prev,
+			notification_channels: [
+				...( prev.notification_channels || [] ),
+				emptyChannel(),
+			],
+		} ) );
+	}, [] );
+
+	const removeChannel = useCallback( ( idx ) => {
+		setForm( ( prev ) => {
+			const channels = [ ...( prev.notification_channels || [] ) ];
+			channels.splice( idx, 1 );
+			return { ...prev, notification_channels: channels };
+		} );
+	}, [] );
+
+	const updateChannel = useCallback( ( idx, key, value ) => {
+		setForm( ( prev ) => {
+			const channels = [ ...( prev.notification_channels || [] ) ];
+			channels[ idx ] = { ...channels[ idx ], [ key ]: value };
+			return { ...prev, notification_channels: channels };
+		} );
+	}, [] );
+
+	const handleTestChannel = useCallback(
+		async ( idx ) => {
+			const channel = form.notification_channels[ idx ];
+			if ( ! channel?.webhook_url ) {
+				return;
+			}
+			setTestingChannel( idx );
+			try {
+				const result = await apiFetch( {
+					path: '/gratis-ai-agent/v1/automations/test-notification',
+					method: 'POST',
+					data: {
+						type: channel.type,
+						webhook_url: channel.webhook_url,
+					},
+				} );
+				setNotice( {
+					status: result.success ? 'success' : 'error',
+					message: result.message,
+				} );
+			} catch ( err ) {
+				setNotice( {
+					status: 'error',
+					message:
+						err.message || __( 'Test failed.', 'gratis-ai-agent' ),
+				} );
+			}
+			setTestingChannel( null );
+		},
+		[ form.notification_channels ]
+	);
+
 	const handleDelete = useCallback(
 		async ( id ) => {
-			// eslint-disable-next-line no-alert
-			const confirmed = window.confirm(
-				__( 'Delete this automation?', 'ai-agent' )
-			);
-			if ( confirmed ) {
+			if (
+				// eslint-disable-next-line no-alert
+				window.confirm(
+					__( 'Delete this automation?', 'gratis-ai-agent' )
+				)
+			) {
 				await apiFetch( {
-					path: `/ai-agent/v1/automations/${ id }`,
+					path: `/gratis-ai-agent/v1/automations/${ id }`,
 					method: 'DELETE',
 				} );
 				fetchAll();
@@ -146,7 +230,7 @@ export default function AutomationsManager() {
 	const handleToggle = useCallback(
 		async ( auto ) => {
 			await apiFetch( {
-				path: `/ai-agent/v1/automations/${ auto.id }`,
+				path: `/gratis-ai-agent/v1/automations/${ auto.id }`,
 				method: 'PATCH',
 				data: { enabled: ! auto.enabled },
 			} );
@@ -161,15 +245,21 @@ export default function AutomationsManager() {
 			setNotice( null );
 			try {
 				const result = await apiFetch( {
-					path: `/ai-agent/v1/automations/${ id }/run`,
+					path: `/gratis-ai-agent/v1/automations/${ id }/run`,
 					method: 'POST',
 				} );
 				setNotice( {
 					status: result.success ? 'success' : 'warning',
 					message: result.success
-						? __( 'Automation ran successfully.', 'ai-agent' )
+						? __(
+								'Automation ran successfully.',
+								'gratis-ai-agent'
+						  )
 						: result.error ||
-						  __( 'Automation completed with errors.', 'ai-agent' ),
+						  __(
+								'Automation completed with errors.',
+								'gratis-ai-agent'
+						  ),
 				} );
 				fetchAll();
 			} catch ( err ) {
@@ -189,7 +279,7 @@ export default function AutomationsManager() {
 			}
 			try {
 				const result = await apiFetch( {
-					path: `/ai-agent/v1/automations/${ id }/logs`,
+					path: `/gratis-ai-agent/v1/automations/${ id }/logs`,
 				} );
 				setLogs( result );
 				setViewLogsId( id );
@@ -204,16 +294,17 @@ export default function AutomationsManager() {
 		setForm( {
 			...emptyForm(),
 			name: tpl.name,
-			description: tpl.description,
+			description: tpl.description || '',
 			prompt: tpl.prompt,
 			schedule: tpl.schedule,
+			notification_channels: [],
 		} );
 		setShowForm( true );
 		setEditId( null );
 	}, [] );
 
 	const profileOptions = [
-		{ label: __( 'None (all tools)', 'ai-agent' ), value: '' },
+		{ label: __( 'None (all tools)', 'gratis-ai-agent' ), value: '' },
 		...profiles.map( ( p ) => ( { label: p.name, value: p.slug } ) ),
 	];
 
@@ -221,11 +312,13 @@ export default function AutomationsManager() {
 		<div className="ai-agent-automations-manager">
 			<div className="ai-agent-skill-header">
 				<div>
-					<h3>{ __( 'Scheduled Automations', 'ai-agent' ) }</h3>
+					<h3>
+						{ __( 'Scheduled Automations', 'gratis-ai-agent' ) }
+					</h3>
 					<p className="description">
 						{ __(
 							'Cron-based AI tasks that run on a schedule.',
-							'ai-agent'
+							'gratis-ai-agent'
 						) }
 					</p>
 				</div>
@@ -239,7 +332,7 @@ export default function AutomationsManager() {
 						} }
 						size="compact"
 					>
-						{ __( 'Add Automation', 'ai-agent' ) }
+						{ __( 'Add Automation', 'gratis-ai-agent' ) }
 					</Button>
 				) }
 			</div>
@@ -258,7 +351,9 @@ export default function AutomationsManager() {
 				templates.length > 0 &&
 				automations.length === 0 && (
 					<div style={ { marginBottom: '16px' } }>
-						<h4>{ __( 'Quick Start Templates', 'ai-agent' ) }</h4>
+						<h4>
+							{ __( 'Quick Start Templates', 'gratis-ai-agent' ) }
+						</h4>
 						<div className="ai-agent-skill-cards">
 							{ templates.map( ( tpl, idx ) => (
 								<div
@@ -284,7 +379,10 @@ export default function AutomationsManager() {
 												handleUseTemplate( tpl )
 											}
 										>
-											{ __( 'Use Template', 'ai-agent' ) }
+											{ __(
+												'Use Template',
+												'gratis-ai-agent'
+											) }
 										</Button>
 									</div>
 								</div>
@@ -296,47 +394,47 @@ export default function AutomationsManager() {
 			{ showForm && (
 				<div className="ai-agent-skill-form">
 					<TextControl
-						label={ __( 'Name', 'ai-agent' ) }
+						label={ __( 'Name', 'gratis-ai-agent' ) }
 						value={ form.name }
 						onChange={ ( v ) => updateForm( 'name', v ) }
 						__nextHasNoMarginBottom
 					/>
 					<TextControl
-						label={ __( 'Description', 'ai-agent' ) }
+						label={ __( 'Description', 'gratis-ai-agent' ) }
 						value={ form.description }
 						onChange={ ( v ) => updateForm( 'description', v ) }
 						__nextHasNoMarginBottom
 					/>
 					<TextareaControl
-						label={ __( 'Prompt', 'ai-agent' ) }
+						label={ __( 'Prompt', 'gratis-ai-agent' ) }
 						value={ form.prompt }
 						onChange={ ( v ) => updateForm( 'prompt', v ) }
 						rows={ 6 }
 						help={ __(
 							'The instruction sent to the AI when this automation runs.',
-							'ai-agent'
+							'gratis-ai-agent'
 						) }
 					/>
 					<SelectControl
-						label={ __( 'Schedule', 'ai-agent' ) }
+						label={ __( 'Schedule', 'gratis-ai-agent' ) }
 						value={ form.schedule }
 						options={ SCHEDULE_OPTIONS }
 						onChange={ ( v ) => updateForm( 'schedule', v ) }
 						__nextHasNoMarginBottom
 					/>
 					<SelectControl
-						label={ __( 'Tool Profile', 'ai-agent' ) }
+						label={ __( 'Tool Profile', 'gratis-ai-agent' ) }
 						value={ form.tool_profile }
 						options={ profileOptions }
 						onChange={ ( v ) => updateForm( 'tool_profile', v ) }
 						help={ __(
 							'Restrict which tools this automation can use.',
-							'ai-agent'
+							'gratis-ai-agent'
 						) }
 						__nextHasNoMarginBottom
 					/>
 					<TextControl
-						label={ __( 'Max Iterations', 'ai-agent' ) }
+						label={ __( 'Max Iterations', 'gratis-ai-agent' ) }
 						type="number"
 						min={ 1 }
 						max={ 50 }
@@ -349,6 +447,122 @@ export default function AutomationsManager() {
 						}
 						__nextHasNoMarginBottom
 					/>
+
+					<BaseControl
+						id="ai-agent-notification-channels"
+						label={ __(
+							'Notification Channels',
+							'gratis-ai-agent'
+						) }
+						help={ __(
+							'Send Slack or Discord messages after each run.',
+							'gratis-ai-agent'
+						) }
+						__nextHasNoMarginBottom
+					>
+						{ ( form.notification_channels || [] ).map(
+							( channel, idx ) => (
+								<div
+									key={ idx }
+									className="ai-agent-notification-channel"
+									style={ {
+										display: 'flex',
+										gap: '8px',
+										alignItems: 'flex-end',
+										marginBottom: '8px',
+										flexWrap: 'wrap',
+									} }
+								>
+									<SelectControl
+										label={
+											idx === 0
+												? __(
+														'Type',
+														'gratis-ai-agent'
+												  )
+												: undefined
+										}
+										value={ channel.type }
+										options={ CHANNEL_TYPE_OPTIONS }
+										onChange={ ( v ) =>
+											updateChannel( idx, 'type', v )
+										}
+										style={ { minWidth: '100px' } }
+										__nextHasNoMarginBottom
+									/>
+									<TextControl
+										label={
+											idx === 0
+												? __(
+														'Webhook URL',
+														'gratis-ai-agent'
+												  )
+												: undefined
+										}
+										value={ channel.webhook_url }
+										onChange={ ( v ) =>
+											updateChannel(
+												idx,
+												'webhook_url',
+												v
+											)
+										}
+										placeholder={
+											'slack' === channel.type
+												? 'https://hooks.slack.com/…'
+												: 'https://discord.com/api/webhooks/…'
+										}
+										style={ { flex: 1, minWidth: '220px' } }
+										__nextHasNoMarginBottom
+									/>
+									<ToggleControl
+										label={ __( 'On', 'gratis-ai-agent' ) }
+										checked={ channel.enabled }
+										onChange={ ( v ) =>
+											updateChannel( idx, 'enabled', v )
+										}
+										__nextHasNoMarginBottom
+									/>
+									<Button
+										variant="secondary"
+										size="compact"
+										onClick={ () =>
+											handleTestChannel( idx )
+										}
+										disabled={
+											! channel.webhook_url ||
+											testingChannel === idx
+										}
+									>
+										{ testingChannel === idx ? (
+											<Spinner />
+										) : (
+											__( 'Test', 'gratis-ai-agent' )
+										) }
+									</Button>
+									<Button
+										icon={ trash }
+										size="compact"
+										isDestructive
+										label={ __(
+											'Remove channel',
+											'gratis-ai-agent'
+										) }
+										onClick={ () => removeChannel( idx ) }
+									/>
+								</div>
+							)
+						) }
+						<Button
+							variant="tertiary"
+							icon={ plus }
+							size="compact"
+							onClick={ addChannel }
+						>
+							{ __( 'Add Channel', 'gratis-ai-agent' ) }
+						</Button>
+					</BaseControl>
+
 					<div className="ai-agent-skill-form-actions">
 						<Button
 							variant="primary"
@@ -359,22 +573,24 @@ export default function AutomationsManager() {
 							size="compact"
 						>
 							{ editId
-								? __( 'Update', 'ai-agent' )
-								: __( 'Create', 'ai-agent' ) }
+								? __( 'Update', 'gratis-ai-agent' )
+								: __( 'Create', 'gratis-ai-agent' ) }
 						</Button>
 						<Button
 							variant="tertiary"
 							onClick={ resetForm }
 							size="compact"
 						>
-							{ __( 'Cancel', 'ai-agent' ) }
+							{ __( 'Cancel', 'gratis-ai-agent' ) }
 						</Button>
 					</div>
 				</div>
 			) }
 
 			{ ! loaded && (
-				<p className="description">{ __( 'Loading…', 'ai-agent' ) }</p>
+				<p className="description">
+					{ __( 'Loading…', 'gratis-ai-agent' ) }
+				</p>
 			) }
 
 			{ loaded && automations.length > 0 && (
@@ -402,6 +618,32 @@ export default function AutomationsManager() {
 									<span className="ai-agent-skill-badge">
 										{ auto.schedule }
 									</span>
+									{ auto.notification_channels?.filter(
+										( c ) => c.enabled
+									).length > 0 && (
+										<span
+											className="ai-agent-skill-badge"
+											title={ __(
+												'Notifications configured',
+												'gratis-ai-agent'
+											) }
+										>
+											{
+												auto.notification_channels.filter(
+													( c ) => c.enabled
+												).length
+											}{ ' ' }
+											{ __(
+												'notification',
+												'gratis-ai-agent'
+											) }
+											{ auto.notification_channels.filter(
+												( c ) => c.enabled
+											).length > 1
+												? 's'
+												: '' }
+										</span>
+									) }
 								</div>
 							</div>
 							<p className="ai-agent-skill-card-description">
@@ -411,12 +653,15 @@ export default function AutomationsManager() {
 							<div className="ai-agent-skill-card-footer">
 								<span className="ai-agent-skill-word-count">
 									{ auto.run_count }{ ' ' }
-									{ __( 'runs', 'ai-agent' ) }
+									{ __( 'runs', 'gratis-ai-agent' ) }
 									{ auto.last_run_at && (
 										<>
 											{ ' ' }
 											&middot;{ ' ' }
-											{ __( 'Last:', 'ai-agent' ) }{ ' ' }
+											{ __(
+												'Last:',
+												'gratis-ai-agent'
+											) }{ ' ' }
 											{ auto.last_run_at }
 										</>
 									) }
@@ -431,7 +676,7 @@ export default function AutomationsManager() {
 										{ running === auto.id ? (
 											<Spinner />
 										) : (
-											__( 'Run Now', 'ai-agent' )
+											__( 'Run Now', 'gratis-ai-agent' )
 										) }
 									</Button>
 									<Button
@@ -442,19 +687,28 @@ export default function AutomationsManager() {
 										}
 									>
 										{ viewLogsId === auto.id
-											? __( 'Hide Logs', 'ai-agent' )
-											: __( 'Logs', 'ai-agent' ) }
+											? __(
+													'Hide Logs',
+													'gratis-ai-agent'
+											  )
+											: __( 'Logs', 'gratis-ai-agent' ) }
 									</Button>
 									<Button
 										icon={ pencil }
 										size="small"
-										label={ __( 'Edit', 'ai-agent' ) }
+										label={ __(
+											'Edit',
+											'gratis-ai-agent'
+										) }
 										onClick={ () => handleEdit( auto ) }
 									/>
 									<Button
 										icon={ trash }
 										size="small"
-										label={ __( 'Delete', 'ai-agent' ) }
+										label={ __(
+											'Delete',
+											'gratis-ai-agent'
+										) }
 										isDestructive
 										onClick={ () =>
 											handleDelete( auto.id )
@@ -467,7 +721,10 @@ export default function AutomationsManager() {
 								<div className="ai-agent-automation-logs">
 									{ logs.length === 0 && (
 										<p className="description">
-											{ __( 'No logs yet.', 'ai-agent' ) }
+											{ __(
+												'No logs yet.',
+												'gratis-ai-agent'
+											) }
 										</p>
 									) }
 									{ logs.map( ( log ) => (
@@ -503,7 +760,7 @@ export default function AutomationsManager() {
 													<summary>
 														{ __(
 															'Response',
-															'ai-agent'
+															'gratis-ai-agent'
 														) }
 													</summary>
 													<pre className="ai-agent-log-reply">

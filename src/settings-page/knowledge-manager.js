@@ -14,13 +14,15 @@ import {
 	Notice,
 	Modal,
 	FormFileUpload,
-	__experimentalText as Text,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 
-const API_BASE = '/ai-agent/v1/knowledge';
+const API_BASE = '/gratis-ai-agent/v1/knowledge';
 
+/**
+ *
+ */
 export default function KnowledgeManager() {
 	const [ collections, setCollections ] = useState( [] );
 	const [ loading, setLoading ] = useState( true );
@@ -53,7 +55,10 @@ export default function KnowledgeManager() {
 			.catch( () =>
 				setNotice( {
 					status: 'error',
-					message: __( 'Failed to load collections.', 'ai-agent' ),
+					message: __(
+						'Failed to load collections.',
+						'gratis-ai-agent'
+					),
 				} )
 			)
 			.finally( () => setLoading( false ) );
@@ -86,7 +91,7 @@ export default function KnowledgeManager() {
 				} );
 				setNotice( {
 					status: 'success',
-					message: __( 'Collection updated.', 'ai-agent' ),
+					message: __( 'Collection updated.', 'gratis-ai-agent' ),
 				} );
 			} else {
 				await apiFetch( {
@@ -96,7 +101,7 @@ export default function KnowledgeManager() {
 				} );
 				setNotice( {
 					status: 'success',
-					message: __( 'Collection created.', 'ai-agent' ),
+					message: __( 'Collection created.', 'gratis-ai-agent' ),
 				} );
 			}
 			setShowCreate( false );
@@ -112,21 +117,23 @@ export default function KnowledgeManager() {
 		} catch ( err ) {
 			setNotice( {
 				status: 'error',
-				message: err.message || __( 'Operation failed.', 'ai-agent' ),
+				message:
+					err.message || __( 'Operation failed.', 'gratis-ai-agent' ),
 			} );
 		}
 	}, [ form, editingId, fetchCollections ] );
 
 	const handleDelete = useCallback(
 		async ( id ) => {
-			// eslint-disable-next-line no-alert
-			const confirmed = window.confirm(
-				__(
-					'Delete this collection and all its indexed data?',
-					'ai-agent'
+			if (
+				// eslint-disable-next-line no-alert
+				! window.confirm(
+					__(
+						'Delete this collection and all its indexed data?',
+						'gratis-ai-agent'
+					)
 				)
-			);
-			if ( ! confirmed ) {
+			) {
 				return;
 			}
 			try {
@@ -136,13 +143,16 @@ export default function KnowledgeManager() {
 				} );
 				setNotice( {
 					status: 'success',
-					message: __( 'Collection deleted.', 'ai-agent' ),
+					message: __( 'Collection deleted.', 'gratis-ai-agent' ),
 				} );
 				fetchCollections();
 			} catch {
 				setNotice( {
 					status: 'error',
-					message: __( 'Failed to delete collection.', 'ai-agent' ),
+					message: __(
+						'Failed to delete collection.',
+						'gratis-ai-agent'
+					),
 				} );
 			}
 		},
@@ -159,11 +169,13 @@ export default function KnowledgeManager() {
 				} );
 				setNotice( {
 					status: 'success',
-					message: `${ __( 'Indexed:', 'ai-agent' ) } ${
+					message: `${ __( 'Indexed:', 'gratis-ai-agent' ) } ${
 						result.indexed
-					} | ${ __( 'Skipped:', 'ai-agent' ) } ${
+					} | ${ __( 'Skipped:', 'gratis-ai-agent' ) } ${
 						result.skipped
-					} | ${ __( 'Errors:', 'ai-agent' ) } ${ result.errors }`,
+					} | ${ __( 'Errors:', 'gratis-ai-agent' ) } ${
+						result.errors
+					}`,
 				} );
 				fetchCollections();
 				if ( expandedId === id ) {
@@ -172,7 +184,7 @@ export default function KnowledgeManager() {
 			} catch {
 				setNotice( {
 					status: 'error',
-					message: __( 'Indexing failed.', 'ai-agent' ),
+					message: __( 'Indexing failed.', 'gratis-ai-agent' ),
 				} );
 			}
 			setIndexing( ( prev ) => ( { ...prev, [ id ]: false } ) );
@@ -203,7 +215,10 @@ export default function KnowledgeManager() {
 				} );
 				setNotice( {
 					status: 'success',
-					message: __( 'Document uploaded and indexed.', 'ai-agent' ),
+					message: __(
+						'Document uploaded and indexed.',
+						'gratis-ai-agent'
+					),
 				} );
 				fetchCollections();
 				if ( expandedId === id ) {
@@ -212,7 +227,7 @@ export default function KnowledgeManager() {
 			} catch {
 				setNotice( {
 					status: 'error',
-					message: __( 'Upload failed.', 'ai-agent' ),
+					message: __( 'Upload failed.', 'gratis-ai-agent' ),
 				} );
 			}
 			setUploading( ( prev ) => ( { ...prev, [ id ]: false } ) );
@@ -232,7 +247,10 @@ export default function KnowledgeManager() {
 			} catch {
 				setNotice( {
 					status: 'error',
-					message: __( 'Failed to delete source.', 'ai-agent' ),
+					message: __(
+						'Failed to delete source.',
+						'gratis-ai-agent'
+					),
 				} );
 			}
 		},
@@ -310,7 +328,7 @@ export default function KnowledgeManager() {
 				} }
 			>
 				<h3 style={ { margin: 0 } }>
-					{ __( 'Collections', 'ai-agent' ) }
+					{ __( 'Collections', 'gratis-ai-agent' ) }
 				</h3>
 				<Button
 					variant="primary"
@@ -326,7 +344,7 @@ export default function KnowledgeManager() {
 						setShowCreate( true );
 					} }
 				>
-					{ __( 'Create Collection', 'ai-agent' ) }
+					{ __( 'Create Collection', 'gratis-ai-agent' ) }
 				</Button>
 			</div>
 
@@ -334,7 +352,7 @@ export default function KnowledgeManager() {
 				<p className="description">
 					{ __(
 						'No collections yet. Create one to start indexing content.',
-						'ai-agent'
+						'gratis-ai-agent'
 					) }
 				</p>
 			) }
@@ -352,12 +370,12 @@ export default function KnowledgeManager() {
 						>
 							<div>
 								<strong>{ col.name }</strong>
-								<Text
-									variant="muted"
+								<span
+									className="ai-agent-text-muted"
 									style={ { marginLeft: '8px' } }
 								>
 									{ col.slug }
-								</Text>
+								</span>
 							</div>
 							<div
 								style={ {
@@ -366,13 +384,13 @@ export default function KnowledgeManager() {
 									alignItems: 'center',
 								} }
 							>
-								<Text variant="muted">
+								<span className="ai-agent-text-muted">
 									{ col.chunk_count }{ ' ' }
-									{ __( 'chunks', 'ai-agent' ) }
-								</Text>
+									{ __( 'chunks', 'gratis-ai-agent' ) }
+								</span>
 								{ col.auto_index && (
 									<span className="ai-agent-badge">
-										{ __( 'Auto', 'ai-agent' ) }
+										{ __( 'Auto', 'gratis-ai-agent' ) }
 									</span>
 								) }
 							</div>
@@ -384,7 +402,7 @@ export default function KnowledgeManager() {
 						) }
 						{ col.last_indexed_at && (
 							<p className="description">
-								{ __( 'Last indexed:', 'ai-agent' ) }{ ' ' }
+								{ __( 'Last indexed:', 'gratis-ai-agent' ) }{ ' ' }
 								{ col.last_indexed_at }
 							</p>
 						) }
@@ -403,8 +421,8 @@ export default function KnowledgeManager() {
 								disabled={ indexing[ col.id ] }
 							>
 								{ indexing[ col.id ]
-									? __( 'Indexing…', 'ai-agent' )
-									: __( 'Index Now', 'ai-agent' ) }
+									? __( 'Indexing…', 'gratis-ai-agent' )
+									: __( 'Index Now', 'gratis-ai-agent' ) }
 							</Button>
 							<FormFileUpload
 								accept=".pdf,.docx,.txt,.md,.html"
@@ -416,7 +434,10 @@ export default function KnowledgeManager() {
 										isBusy={ uploading[ col.id ] }
 										disabled={ uploading[ col.id ] }
 									>
-										{ __( 'Upload Document', 'ai-agent' ) }
+										{ __(
+											'Upload Document',
+											'gratis-ai-agent'
+										) }
 									</Button>
 								) }
 							/>
@@ -425,21 +446,21 @@ export default function KnowledgeManager() {
 								onClick={ () => toggleExpanded( col.id ) }
 							>
 								{ expandedId === col.id
-									? __( 'Hide Sources', 'ai-agent' )
-									: __( 'Show Sources', 'ai-agent' ) }
+									? __( 'Hide Sources', 'gratis-ai-agent' )
+									: __( 'Show Sources', 'gratis-ai-agent' ) }
 							</Button>
 							<Button
 								variant="tertiary"
 								onClick={ () => openEdit( col ) }
 							>
-								{ __( 'Edit', 'ai-agent' ) }
+								{ __( 'Edit', 'gratis-ai-agent' ) }
 							</Button>
 							<Button
 								variant="tertiary"
 								isDestructive
 								onClick={ () => handleDelete( col.id ) }
 							>
-								{ __( 'Delete', 'ai-agent' ) }
+								{ __( 'Delete', 'gratis-ai-agent' ) }
 							</Button>
 						</div>
 
@@ -452,23 +473,20 @@ export default function KnowledgeManager() {
 								} }
 							>
 								<h4 style={ { margin: '0 0 8px 0' } }>
-									{ __( 'Sources', 'ai-agent' ) }
+									{ __( 'Sources', 'gratis-ai-agent' ) }
 								</h4>
-								{ ( () => {
-									if ( ! sources[ col.id ] ) {
-										return <Spinner />;
-									}
-									if ( sources[ col.id ].length === 0 ) {
-										return (
-											<p className="description">
-												{ __(
-													'No sources indexed yet.',
-													'ai-agent'
-												) }
-											</p>
-										);
-									}
-									return (
+								{
+									/* eslint-disable-next-line no-nested-ternary */
+									! sources[ col.id ] ? (
+										<Spinner />
+									) : sources[ col.id ].length === 0 ? (
+										<p className="description">
+											{ __(
+												'No sources indexed yet.',
+												'gratis-ai-agent'
+											) }
+										</p>
+									) : (
 										<table
 											className="widefat striped"
 											style={ { marginTop: '4px' } }
@@ -478,25 +496,25 @@ export default function KnowledgeManager() {
 													<th>
 														{ __(
 															'Title',
-															'ai-agent'
+															'gratis-ai-agent'
 														) }
 													</th>
 													<th>
 														{ __(
 															'Type',
-															'ai-agent'
+															'gratis-ai-agent'
 														) }
 													</th>
 													<th>
 														{ __(
 															'Status',
-															'ai-agent'
+															'gratis-ai-agent'
 														) }
 													</th>
 													<th>
 														{ __(
 															'Chunks',
-															'ai-agent'
+															'gratis-ai-agent'
 														) }
 													</th>
 													<th></th>
@@ -510,7 +528,7 @@ export default function KnowledgeManager() {
 																{ src.title ||
 																	__(
 																		'(untitled)',
-																		'ai-agent'
+																		'gratis-ai-agent'
 																	) }
 															</td>
 															<td>
@@ -560,7 +578,7 @@ export default function KnowledgeManager() {
 																>
 																	{ __(
 																		'Remove',
-																		'ai-agent'
+																		'gratis-ai-agent'
 																	) }
 																</Button>
 															</td>
@@ -569,8 +587,8 @@ export default function KnowledgeManager() {
 												) }
 											</tbody>
 										</table>
-									);
-								} )() }
+									)
+								}
 							</div>
 						) }
 					</CardBody>
@@ -579,7 +597,7 @@ export default function KnowledgeManager() {
 
 			{ /* Search Preview */ }
 			<div style={ { marginTop: '24px' } }>
-				<h3>{ __( 'Search Preview', 'ai-agent' ) }</h3>
+				<h3>{ __( 'Search Preview', 'gratis-ai-agent' ) }</h3>
 				<div
 					style={ {
 						display: 'flex',
@@ -592,7 +610,7 @@ export default function KnowledgeManager() {
 						onChange={ setSearchQuery }
 						placeholder={ __(
 							'Search the knowledge base…',
-							'ai-agent'
+							'gratis-ai-agent'
 						) }
 						style={ { flex: 1 } }
 						onKeyDown={ ( e ) => {
@@ -608,7 +626,7 @@ export default function KnowledgeManager() {
 						isBusy={ searching }
 						disabled={ searching || ! searchQuery.trim() }
 					>
-						{ __( 'Search', 'ai-agent' ) }
+						{ __( 'Search', 'gratis-ai-agent' ) }
 					</Button>
 				</div>
 				{ searchResults.length > 0 && (
@@ -623,18 +641,21 @@ export default function KnowledgeManager() {
 											marginBottom: '4px',
 										} }
 									>
-										<Text variant="muted">
+										<span className="ai-agent-text-muted">
 											<strong>
 												{ result.source_title }
 											</strong>
 											{ result.collection_name &&
 												` — ${ result.collection_name }` }
-										</Text>
+										</span>
 										{ result.score && (
-											<Text variant="muted">
-												{ __( 'Score:', 'ai-agent' ) }{ ' ' }
+											<span className="ai-agent-text-muted">
+												{ __(
+													'Score:',
+													'gratis-ai-agent'
+												) }{ ' ' }
 												{ result.score.toFixed( 2 ) }
-											</Text>
+											</span>
 										) }
 									</div>
 									<p
@@ -663,8 +684,8 @@ export default function KnowledgeManager() {
 				<Modal
 					title={
 						editingId
-							? __( 'Edit Collection', 'ai-agent' )
-							: __( 'Create Collection', 'ai-agent' )
+							? __( 'Edit Collection', 'gratis-ai-agent' )
+							: __( 'Create Collection', 'gratis-ai-agent' )
 					}
 					onRequestClose={ () => {
 						setShowCreate( false );
@@ -672,7 +693,7 @@ export default function KnowledgeManager() {
 					} }
 				>
 					<TextControl
-						label={ __( 'Name', 'ai-agent' ) }
+						label={ __( 'Name', 'gratis-ai-agent' ) }
 						value={ form.name }
 						onChange={ ( v ) => {
 							setForm( ( prev ) => ( {
@@ -692,20 +713,20 @@ export default function KnowledgeManager() {
 						__nextHasNoMarginBottom
 					/>
 					<TextControl
-						label={ __( 'Slug', 'ai-agent' ) }
+						label={ __( 'Slug', 'gratis-ai-agent' ) }
 						value={ form.slug }
 						onChange={ ( v ) =>
 							setForm( ( prev ) => ( { ...prev, slug: v } ) )
 						}
 						help={ __(
 							'Unique identifier for this collection.',
-							'ai-agent'
+							'gratis-ai-agent'
 						) }
 						disabled={ !! editingId }
 						__nextHasNoMarginBottom
 					/>
 					<TextareaControl
-						label={ __( 'Description', 'ai-agent' ) }
+						label={ __( 'Description', 'gratis-ai-agent' ) }
 						value={ form.description }
 						onChange={ ( v ) =>
 							setForm( ( prev ) => ( {
@@ -718,7 +739,7 @@ export default function KnowledgeManager() {
 					<TextControl
 						label={ __(
 							'Post Types (comma-separated)',
-							'ai-agent'
+							'gratis-ai-agent'
 						) }
 						value={ ( form.source_config?.post_types || [] ).join(
 							', '
@@ -737,12 +758,12 @@ export default function KnowledgeManager() {
 						}
 						help={ __(
 							'Post types to include when indexing (e.g., post, page, product).',
-							'ai-agent'
+							'gratis-ai-agent'
 						) }
 						__nextHasNoMarginBottom
 					/>
 					<ToggleControl
-						label={ __( 'Auto-index', 'ai-agent' ) }
+						label={ __( 'Auto-index', 'gratis-ai-agent' ) }
 						checked={ form.auto_index }
 						onChange={ ( v ) =>
 							setForm( ( prev ) => ( {
@@ -752,7 +773,7 @@ export default function KnowledgeManager() {
 						}
 						help={ __(
 							'Automatically index new and updated posts matching this collection.',
-							'ai-agent'
+							'gratis-ai-agent'
 						) }
 						__nextHasNoMarginBottom
 					/>
@@ -771,7 +792,7 @@ export default function KnowledgeManager() {
 								setEditingId( null );
 							} }
 						>
-							{ __( 'Cancel', 'ai-agent' ) }
+							{ __( 'Cancel', 'gratis-ai-agent' ) }
 						</Button>
 						<Button
 							variant="primary"
@@ -779,8 +800,8 @@ export default function KnowledgeManager() {
 							disabled={ ! form.name || ! form.slug }
 						>
 							{ editingId
-								? __( 'Save', 'ai-agent' )
-								: __( 'Create', 'ai-agent' ) }
+								? __( 'Save', 'gratis-ai-agent' )
+								: __( 'Create', 'gratis-ai-agent' ) }
 						</Button>
 					</div>
 				</Modal>

@@ -4,10 +4,10 @@ declare(strict_types=1);
 /**
  * Scheduled Automations model — CRUD for cron-based AI tasks.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Automations;
+namespace GratisAiAgent\Automations;
 
 class Automations {
 
@@ -18,14 +18,14 @@ class Automations {
 	 */
 	public static function table_name(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_agent_automations';
+		return $wpdb->prefix . 'gratis_ai_agent_automations';
 	}
 
 	/**
 	 * List all automations.
 	 *
 	 * @param bool $enabled_only Only return enabled automations.
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public static function list( bool $enabled_only = false ): array {
 		global $wpdb;
@@ -43,7 +43,7 @@ class Automations {
 	 * Get a single automation by ID.
 	 *
 	 * @param int $id Automation ID.
-	 * @return array|null
+	 * @return array<string, mixed>|null
 	 */
 	public static function get( int $id ): ?array {
 		global $wpdb;
@@ -57,9 +57,47 @@ class Automations {
 	}
 
 	/**
+	 * Sanitise and JSON-encode a notification_channels value.
+	 *
+	 * Accepts either a JSON string or a PHP array. Returns a JSON string
+	 * (empty array JSON on invalid input).
+	 *
+	 * @param mixed $value Raw value from request or DB.
+	 * @return string JSON-encoded array.
+	 */
+	private static function sanitize_notification_channels( $value ): string {
+		if ( is_string( $value ) ) {
+			$decoded = json_decode( $value, true );
+			$value   = is_array( $decoded ) ? $decoded : [];
+		}
+
+		if ( ! is_array( $value ) ) {
+			return '[]';
+		}
+
+		$clean = [];
+		foreach ( $value as $channel ) {
+			if ( ! is_array( $channel ) ) {
+				continue;
+			}
+			$type = sanitize_text_field( $channel['type'] ?? '' );
+			if ( ! in_array( $type, [ 'slack', 'discord' ], true ) ) {
+				continue;
+			}
+			$clean[] = [
+				'type'        => $type,
+				'webhook_url' => esc_url_raw( $channel['webhook_url'] ?? '' ),
+				'enabled'     => ! empty( $channel['enabled'] ),
+			];
+		}
+
+		return wp_json_encode( $clean ) ?: '[]';
+	}
+
+	/**
 	 * Create a new automation.
 	 *
-	 * @param array $data Automation data.
+	 * @param array<string, mixed> $data Automation data.
 	 * @return int|false Inserted ID or false.
 	 */
 	public static function create( array $data ) {
@@ -71,21 +109,22 @@ class Automations {
 		$result = $wpdb->insert(
 			self::table_name(),
 			[
-				'name'            => sanitize_text_field( $data['name'] ?? '' ),
-				'description'     => sanitize_textarea_field( $data['description'] ?? '' ),
-				'prompt'          => wp_kses_post( $data['prompt'] ?? '' ),
-				'schedule'        => sanitize_text_field( $data['schedule'] ?? 'daily' ),
-				'cron_expression' => sanitize_text_field( $data['cron_expression'] ?? '' ),
-				'tool_profile'    => sanitize_text_field( $data['tool_profile'] ?? '' ),
-				'max_iterations'  => absint( $data['max_iterations'] ?? 10 ),
-				'enabled'         => isset( $data['enabled'] ) ? (int) $data['enabled'] : 0,
-				'last_run_at'     => null,
-				'next_run_at'     => null,
-				'run_count'       => 0,
-				'created_at'      => $now,
-				'updated_at'      => $now,
+				'name'                  => sanitize_text_field( $data['name'] ?? '' ),
+				'description'           => sanitize_textarea_field( $data['description'] ?? '' ),
+				'prompt'                => wp_kses_post( $data['prompt'] ?? '' ),
+				'schedule'              => sanitize_text_field( $data['schedule'] ?? 'daily' ),
+				'cron_expression'       => sanitize_text_field( $data['cron_expression'] ?? '' ),
+				'tool_profile'          => sanitize_text_field( $data['tool_profile'] ?? '' ),
+				'max_iterations'        => absint( $data['max_iterations'] ?? 10 ),
+				'enabled'               => isset( $data['enabled'] ) ? (int) $data['enabled'] : 0,
+				'notification_channels' => self::sanitize_notification_channels( $data['notification_channels'] ?? [] ),
+				'last_run_at'           => null,
+				'next_run_at'           => null,
+				'run_count'             => 0,
+				'created_at'            => $now,
+				'updated_at'            => $now,
 			],
-			[ '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%s', '%d', '%s', '%s' ]
+			[ '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%d', '%s', '%s' ]
 		);
 
 		if ( ! $result ) {
@@ -105,8 +144,8 @@ class Automations {
 	/**
 	 * Update an existing automation.
 	 *
-	 * @param int   $id   Automation ID.
-	 * @param array $data Fields to update.
+	 * @param int                  $id   Automation ID.
+	 * @param array<string, mixed> $data Fields to update.
 	 * @return bool
 	 */
 	public static function update( int $id, array $data ): bool {
@@ -140,6 +179,11 @@ class Automations {
 		if ( isset( $data['enabled'] ) ) {
 			$update['enabled'] = (int) $data['enabled'];
 			$formats[]         = '%d';
+		}
+
+		if ( isset( $data['notification_channels'] ) ) {
+			$update['notification_channels'] = self::sanitize_notification_channels( $data['notification_channels'] );
+			$formats[]                       = '%s';
 		}
 
 		if ( empty( $update ) ) {
@@ -191,7 +235,7 @@ class Automations {
 			[ '%d' ]
 		);
 
-		return $result !== false;
+		return (int) $result > 0;
 	}
 
 	/**
@@ -218,49 +262,50 @@ class Automations {
 	/**
 	 * Get pre-built automation templates.
 	 *
-	 * @return array
+	 * @return list<array<string, mixed>>
 	 */
 	public static function get_templates(): array {
 		return [
 			[
-				'name'        => __( 'Daily Site Health Report', 'ai-agent' ),
-				'description' => __( 'Run a comprehensive site health check and report findings.', 'ai-agent' ),
-				'prompt'      => "Run a site health check. Check for:\n1. WordPress and plugin updates available\n2. PHP errors in the log\n3. Disk space usage\n4. Database optimization status\n5. Security concerns\n\nProvide a brief summary of the site's health status.",
-				'schedule'    => 'daily',
+				'name'         => __( 'Daily Site Health Report', 'gratis-ai-agent' ),
+				'description'  => __( 'Run a comprehensive automated site health check covering plugins, errors, disk space, security, and performance.', 'gratis-ai-agent' ),
+				'prompt'       => "Run a full site health check using the site-health-summary tool. It will check:\n1. Plugin updates available\n2. PHP error log (last 24 hours)\n3. Disk space usage\n4. Security issues (debug mode, file editor, WP version, admin username, SSL)\n5. Performance indicators (autoloaded options, transients, object cache)\n\nAfter getting the summary, provide a concise report with:\n- Overall status (healthy / needs_attention / critical)\n- Any critical issues that need immediate action\n- Warnings to address soon\n- A brief summary of what is working well\n\nKeep the report clear and actionable.",
+				'schedule'     => 'daily',
+				'tool_profile' => 'site-health',
 			],
 			[
-				'name'        => __( 'Weekly Plugin Update Check', 'ai-agent' ),
-				'description' => __( 'Check for plugin updates and report what needs updating.', 'ai-agent' ),
+				'name'        => __( 'Weekly Plugin Update Check', 'gratis-ai-agent' ),
+				'description' => __( 'Check for plugin updates and report what needs updating.', 'gratis-ai-agent' ),
 				'prompt'      => "List all plugins that have updates available. For each:\n- Plugin name and current version\n- Available version\n- Whether it's a major, minor, or patch update\n\nDo NOT update any plugins — just report.",
 				'schedule'    => 'weekly',
 			],
 			[
-				'name'        => __( 'Content Moderation', 'ai-agent' ),
-				'description' => __( 'Review recent comments for spam or inappropriate content.', 'ai-agent' ),
+				'name'        => __( 'Content Moderation', 'gratis-ai-agent' ),
+				'description' => __( 'Review recent comments for spam or inappropriate content.', 'gratis-ai-agent' ),
 				'prompt'      => 'Review pending comments from the last 24 hours. Flag any that appear to be spam, contain inappropriate language, or are off-topic. Provide a summary of reviewed vs flagged comments.',
 				'schedule'    => 'daily',
 			],
 			[
-				'name'        => __( 'Broken Link Check', 'ai-agent' ),
-				'description' => __( 'Scan recent posts for broken links.', 'ai-agent' ),
+				'name'        => __( 'Broken Link Check', 'gratis-ai-agent' ),
+				'description' => __( 'Scan recent posts for broken links.', 'gratis-ai-agent' ),
 				'prompt'      => 'Check the 10 most recent published posts for any broken external links. For each broken link found, report the post title, the broken URL, and the HTTP status code.',
 				'schedule'    => 'weekly',
 			],
 			[
-				'name'        => __( 'Database Optimization', 'ai-agent' ),
-				'description' => __( 'Clean up transients, revisions, and optimize tables.', 'ai-agent' ),
+				'name'        => __( 'Database Optimization', 'gratis-ai-agent' ),
+				'description' => __( 'Clean up transients, revisions, and optimize tables.', 'gratis-ai-agent' ),
 				'prompt'      => "Perform database maintenance:\n1. Delete expired transients\n2. Report how many post revisions exist\n3. Report autoloaded option size\n4. List any database tables that could benefit from optimization\n\nDo NOT delete revisions — just report.",
 				'schedule'    => 'weekly',
 			],
 			[
-				'name'        => __( 'Weekly SEO Health Report', 'ai-agent' ),
-				'description' => __( 'Audit your homepage and top pages for SEO issues.', 'ai-agent' ),
+				'name'        => __( 'Weekly SEO Health Report', 'gratis-ai-agent' ),
+				'description' => __( 'Audit your homepage and top pages for SEO issues.', 'gratis-ai-agent' ),
 				'prompt'      => "Run an SEO audit on the site's homepage using the seo-audit-url tool. Then check the 5 most recent published posts with seo-analyze-content. Report:\n1. Homepage SEO score and issues\n2. Posts missing meta descriptions\n3. Posts with titles that are too long or too short\n4. Images missing alt text\n5. Any technical SEO concerns\n\nProvide a prioritized action list.",
 				'schedule'    => 'weekly',
 			],
 			[
-				'name'        => __( 'Monthly Content Performance Report', 'ai-agent' ),
-				'description' => __( 'Summarize content publishing activity and performance.', 'ai-agent' ),
+				'name'        => __( 'Monthly Content Performance Report', 'gratis-ai-agent' ),
+				'description' => __( 'Summarize content publishing activity and performance.', 'gratis-ai-agent' ),
 				'prompt'      => "Generate a content performance report for the last 30 days using the content-performance-report tool. Also run content-analyze to check content health. Report:\n1. Posts published this month vs last month\n2. Content by category breakdown\n3. Average word count\n4. Posts missing featured images\n5. Draft posts pending review\n6. Content recommendations for next month",
 				'schedule'    => 'weekly',
 			],
@@ -271,24 +316,32 @@ class Automations {
 	 * Decode a database row into an array with parsed JSON.
 	 *
 	 * @param object $row Database row.
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	private static function decode_row( object $row ): array {
+		$channels_raw = $row->notification_channels ?? '';
+		$channels     = [];
+		if ( ! empty( $channels_raw ) ) {
+			$decoded  = json_decode( $channels_raw, true );
+			$channels = is_array( $decoded ) ? $decoded : [];
+		}
+
 		return [
-			'id'              => (int) $row->id,
-			'name'            => $row->name,
-			'description'     => $row->description,
-			'prompt'          => $row->prompt,
-			'schedule'        => $row->schedule,
-			'cron_expression' => $row->cron_expression,
-			'tool_profile'    => $row->tool_profile,
-			'max_iterations'  => (int) $row->max_iterations,
-			'enabled'         => (bool) $row->enabled,
-			'last_run_at'     => $row->last_run_at,
-			'next_run_at'     => $row->next_run_at,
-			'run_count'       => (int) $row->run_count,
-			'created_at'      => $row->created_at,
-			'updated_at'      => $row->updated_at,
+			'id'                    => (int) $row->id,
+			'name'                  => $row->name,
+			'description'           => $row->description,
+			'prompt'                => $row->prompt,
+			'schedule'              => $row->schedule,
+			'cron_expression'       => $row->cron_expression,
+			'tool_profile'          => $row->tool_profile,
+			'max_iterations'        => (int) $row->max_iterations,
+			'enabled'               => (bool) $row->enabled,
+			'notification_channels' => $channels,
+			'last_run_at'           => $row->last_run_at,
+			'next_run_at'           => $row->next_run_at,
+			'run_count'             => (int) $row->run_count,
+			'created_at'            => $row->created_at,
+			'updated_at'            => $row->updated_at,
 		];
 	}
 }

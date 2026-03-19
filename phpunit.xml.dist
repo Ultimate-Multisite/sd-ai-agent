@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <phpunit bootstrap="tests/bootstrap.php" backupGlobals="false" colors="true">
 	<testsuites>
-		<testsuite name="ai-agent">
+		<testsuite name="gratis-ai-agent">
 			<directory suffix="Test.php">./tests/</directory>
 		</testsuite>
 	</testsuites>
@@ -14,6 +14,7 @@
 			<directory>./build</directory>
 			<directory>./node_modules</directory>
 			<directory>./src</directory>
+			<directory>./includes/CLI</directory>
 		</exclude>
 		<report>
 			<html outputDirectory="coverage-html"/>

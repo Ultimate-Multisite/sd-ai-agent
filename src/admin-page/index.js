@@ -9,6 +9,8 @@ import {
 	useMemo,
 } from '@wordpress/element';
 import { useDispatch, useSelect } from '@wordpress/data';
+import { __ } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -17,10 +19,20 @@ import STORE_NAME from '../store';
 import SessionSidebar from '../components/session-sidebar';
 import ChatPanel from '../components/chat-panel';
 import OnboardingWizard from '../components/onboarding-wizard';
+import OnboardingInterview from '../components/onboarding-interview';
 import ShortcutsHelp from '../components/shortcuts-help';
 import { useKeyboardShortcuts } from '../utils/keyboard-shortcuts';
 import './style.css';
 
+/**
+ * Root admin page application component. Renders the session sidebar and chat panel,
+ * handles onboarding wizard display, keyboard shortcuts, and slash command routing.
+ *
+ * After the wizard completes, the interview is shown if the site scan has
+ * finished and the interview has not yet been done (t064).
+ *
+ * @return {JSX.Element|null} Admin page app element, or null while settings are loading.
+ */
 function AdminPageApp() {
 	const {
 		fetchProviders,
@@ -37,7 +49,9 @@ function AdminPageApp() {
 	);
 
 	const [ showOnboarding, setShowOnboarding ] = useState( false );
+	const [ showInterview, setShowInterview ] = useState( false );
 	const [ showShortcuts, setShowShortcuts ] = useState( false );
+	const [ sidebarOpen, setSidebarOpen ] = useState( false );
 
 	useEffect( () => {
 		fetchProviders();
@@ -51,6 +65,47 @@ function AdminPageApp() {
 		}
 	}, [ settingsLoaded, settings ] );
 
+	/**
+	 * Poll the interview endpoint until the scan is done, then show the interview.
+	 * Gives up after 2 minutes (40 × 3 s) to avoid blocking the user indefinitely.
+	 */
+	const checkInterviewReady = useCallback( () => {
+		let attempts = 0;
+		const maxAttempts = 40;
+
+		const poll = () => {
+			apiFetch( { path: '/gratis-ai-agent/v1/onboarding/interview' } )
+				.then( ( data ) => {
+					if ( data.done ) {
+						// Already completed — go straight to chat.
+						return;
+					}
+					if ( data.ready ) {
+						setShowInterview( true );
+						return;
+					}
+					// Scan still running — keep polling.
+					attempts++;
+					if ( attempts < maxAttempts ) {
+						setTimeout( poll, 3000 );
+					}
+				} )
+				.catch( () => {
+					// Non-fatal — skip the interview on error.
+				} );
+		};
+
+		poll();
+	}, [] );
+
+	/**
+	 * Called when the wizard finishes. Check whether the interview should be shown.
+	 */
+	const handleWizardComplete = useCallback( () => {
+		setShowOnboarding( false );
+		checkInterviewReady();
+	}, [ checkInterviewReady ] );
+
 	const handleSlashCommand = useCallback( ( command ) => {
 		if ( command === 'help' ) {
 			setShowShortcuts( true );
@@ -63,7 +118,7 @@ function AdminPageApp() {
 			'mod+n': () => clearCurrentSession(),
 			'mod+k': () => {
 				const searchInput = document.querySelector(
-					'.ai-agent-sidebar-search'
+					'.gratis-ai-agent-sidebar-search'
 				);
 				if ( searchInput ) {
 					searchInput.focus();
@@ -81,16 +136,44 @@ function AdminPageApp() {
 	}
 
 	if ( showOnboarding ) {
+		return <OnboardingWizard onComplete={ handleWizardComplete } />;
+	}
+
+	if ( showInterview ) {
 		return (
-			<OnboardingWizard onComplete={ () => setShowOnboarding( false ) } />
+			<OnboardingInterview
+				onComplete={ () => setShowInterview( false ) }
+			/>
 		);
 	}
 
 	return (
 		<>
-			<div className="ai-agent-layout">
-				<SessionSidebar />
-				<div className="ai-agent-main">
+			<div
+				className={ `gratis-ai-agent-layout${
+					sidebarOpen ? ' sidebar-is-open' : ''
+				}` }
+			>
+				{ /* Backdrop — tapping closes the drawer on mobile */ }
+				{ sidebarOpen && (
+					<div
+						className="gratis-ai-agent-sidebar-backdrop"
+						onClick={ () => setSidebarOpen( false ) }
+						aria-hidden="true"
+					/>
+				) }
+				<SessionSidebar onClose={ () => setSidebarOpen( false ) } />
+				<div className="gratis-ai-agent-main">
+					{ /* Hamburger button — visible only on mobile */ }
+					<button
+						type="button"
+						className="gratis-ai-agent-sidebar-toggle"
+						onClick={ () => setSidebarOpen( ( prev ) => ! prev ) }
+						aria-label={ __( 'Toggle sidebar', 'gratis-ai-agent' ) }
+						aria-expanded={ sidebarOpen }
+					>
+						<span aria-hidden="true">&#9776;</span>
+					</button>
 					<ChatPanel onSlashCommand={ handleSlashCommand } />
 				</div>
 			</div>
@@ -101,7 +184,7 @@ function AdminPageApp() {
 	);
 }
 
-const container = document.getElementById( 'ai-agent-root' );
+const container = document.getElementById( 'gratis-ai-agent-root' );
 if ( container ) {
 	const root = createRoot( container );
 	root.render( <AdminPageApp /> );

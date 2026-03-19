@@ -5,3 +5,11 @@ vendor/
 screenshots/
 .aidevops.json
 .beads
+coverage.xml
+coverage-html/
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+# Benchmark results (contain API-specific data, regenerated on demand)
+tests/benchmark/results/

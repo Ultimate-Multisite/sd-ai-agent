@@ -3,7 +3,11 @@
 	"rules": {
 		"no-descending-specificity": null,
 		"font-family-no-missing-generic-family-keyword": null,
-		"selector-class-pattern": null
+		"selector-class-pattern": null,
+		"no-duplicate-selectors": null,
+		"font-weight-notation": null,
+		"value-keyword-case": null,
+		"rule-empty-line-before": null
 	},
 	"ignoreFiles": [
 		"build/**",

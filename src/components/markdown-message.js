@@ -13,6 +13,11 @@ import remarkGfm from 'remark-gfm';
  * Internal dependencies
  */
 import CodeBlock from './code-block';
+import ChartBlock from './chart-block';
+import DataTable from './data-table';
+
+/** Languages that should render as interactive Chart.js charts. */
+const CHART_LANGUAGES = new Set( [ 'chart', 'chartjs', 'chart.js' ] );
 
 /**
  * Custom renderers for ReactMarkdown.
@@ -21,6 +26,9 @@ const components = {
 	code( { inline, className, children, ...props } ) {
 		const match = /language-(\w+)/.exec( className || '' );
 		if ( ! inline && match ) {
+			if ( CHART_LANGUAGES.has( match[ 1 ].toLowerCase() ) ) {
+				return <ChartBlock>{ children }</ChartBlock>;
+			}
 			return <CodeBlock language={ match[ 1 ] }>{ children }</CodeBlock>;
 		}
 		if ( ! inline && String( children ).includes( '\n' ) ) {
@@ -44,12 +52,16 @@ const components = {
 			</a>
 		);
 	},
-	table( { children, ...props } ) {
-		return (
-			<div className="ai-agent-table-wrap">
-				<table { ...props }>{ children }</table>
-			</div>
-		);
+	/**
+	 * Replace plain <table> with the interactive DataTable component.
+	 * DataTable handles its own scroll wrapper, so no extra div needed.
+	 *
+	 * @param {Object} props          - Renderer props from ReactMarkdown.
+	 * @param {*}      props.children - Table children (thead + tbody).
+	 * @return {JSX.Element} Interactive DataTable.
+	 */
+	table( { children } ) {
+		return <DataTable>{ children }</DataTable>;
 	},
 	// Prevent wrapping image in paragraph.
 	img( { src, alt, ...props } ) {
@@ -61,6 +73,19 @@ const components = {
 
 const remarkPlugins = [ remarkGfm ];
 
+/**
+ * Renders markdown content using ReactMarkdown with GFM support.
+ *
+ * Custom renderers:
+ * - `code`: delegates to CodeBlock for fenced code blocks.
+ * - `a`: opens links in a new tab with rel="noopener noreferrer".
+ * - `table`: wraps in a scrollable div.
+ * - `img`: adds lazy loading.
+ *
+ * @param {Object} props         - Component props.
+ * @param {string} props.content - Markdown string to render.
+ * @return {JSX.Element} The rendered markdown element.
+ */
 export default function MarkdownMessage( { content } ) {
 	const memoizedContent = useMemo( () => content, [ content ] );
 

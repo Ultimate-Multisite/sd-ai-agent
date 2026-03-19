@@ -6,15 +6,16 @@ declare(strict_types=1);
  *
  * Handles execution of HTTP, ACTION, and CLI tool types.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Tools;
+namespace GratisAiAgent\Tools;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use GratisAiAgent\Abilities\ToolCapabilities;
 use WP_Error;
 
 class CustomToolExecutor {
@@ -37,7 +38,7 @@ class CustomToolExecutor {
 		$tools = CustomTools::list( true );
 
 		foreach ( $tools as $tool ) {
-			$ability_name = 'ai-agent-custom/' . $tool['slug'];
+			$ability_name = 'gratis-ai-agent-custom/' . $tool['slug'];
 
 			wp_register_ability(
 				$ability_name,
@@ -45,19 +46,22 @@ class CustomToolExecutor {
 					'label'               => $tool['name'],
 					'description'         => $tool['description'] ?: sprintf(
 						/* translators: %s: tool type */
-						__( 'Custom %s tool', 'ai-agent' ),
+						__( 'Custom %s tool', 'gratis-ai-agent' ),
 						strtoupper( $tool['type'] )
 					),
-					'category'            => 'ai-agent',
+					'category'            => 'gratis-ai-agent',
 					'input_schema'        => ! empty( $tool['input_schema'] ) ? $tool['input_schema'] : [
 						'type'       => 'object',
 						'properties' => new \stdClass(),
 					],
+					'meta'                => [
+						'show_in_rest' => true,
+					],
 					'execute_callback'    => function ( array $input ) use ( $tool ) {
 						return self::execute( $tool, $input );
 					},
-					'permission_callback' => function () {
-						return current_user_can( 'manage_options' );
+					'permission_callback' => function () use ( $ability_name ) {
+						return ToolCapabilities::current_user_can( $ability_name );
 					},
 				]
 			);
@@ -67,11 +71,11 @@ class CustomToolExecutor {
 	/**
 	 * Execute a custom tool.
 	 *
-	 * @param array $tool  The tool definition.
-	 * @param array $input Input parameters from the AI.
-	 * @return array Result array.
+	 * @param array<string, mixed> $tool  The tool definition.
+	 * @param array<string, mixed> $input Input parameters from the AI.
+	 * @return array<string, mixed>|\WP_Error Result array or WP_Error on failure.
 	 */
-	public static function execute( array $tool, array $input ): array {
+	public static function execute( array $tool, array $input ): array|\WP_Error {
 		switch ( $tool['type'] ) {
 			case CustomTools::TYPE_HTTP:
 				return self::execute_http( $tool, $input );
@@ -83,18 +87,25 @@ class CustomToolExecutor {
 				return self::execute_cli( $tool, $input );
 
 			default:
-				return [ 'error' => sprintf( 'Unknown tool type: %s', $tool['type'] ) ];
+				return new WP_Error(
+					'unknown_tool_type',
+					sprintf(
+						/* translators: %s: tool type */
+						__( 'Unknown tool type: %s', 'gratis-ai-agent' ),
+						$tool['type']
+					)
+				);
 		}
 	}
 
 	/**
 	 * Execute an HTTP tool.
 	 *
-	 * @param array $tool  Tool definition.
-	 * @param array $input Input parameters.
-	 * @return array
+	 * @param array<string, mixed> $tool  Tool definition.
+	 * @param array<string, mixed> $input Input parameters.
+	 * @return array<string, mixed>|\WP_Error
 	 */
-	private static function execute_http( array $tool, array $input ): array {
+	private static function execute_http( array $tool, array $input ): array|\WP_Error {
 		$config = $tool['config'];
 		$url    = $config['url'] ?? '';
 		$method = strtoupper( $config['method'] ?? 'GET' );
@@ -135,16 +146,13 @@ class CustomToolExecutor {
 		];
 
 		if ( null !== $body ) {
-			$args['body'] = $body;
+			$args['body'] = (string) $body;
 		}
 
 		$response = wp_remote_request( $url, $args );
 
 		if ( is_wp_error( $response ) ) {
-			return [
-				'success' => false,
-				'error'   => $response->get_error_message(),
-			];
+			return new WP_Error( 'http_request_failed', $response->get_error_message() );
 		}
 
 		$code          = wp_remote_retrieve_response_code( $response );
@@ -163,21 +171,21 @@ class CustomToolExecutor {
 	/**
 	 * Execute an ACTION tool (do_action).
 	 *
-	 * @param array $tool  Tool definition.
-	 * @param array $input Input parameters.
-	 * @return array
+	 * @param array<string, mixed> $tool  Tool definition.
+	 * @param array<string, mixed> $input Input parameters.
+	 * @return array<string, mixed>|\WP_Error
 	 */
-	private static function execute_action( array $tool, array $input ): array {
+	private static function execute_action( array $tool, array $input ): array|\WP_Error {
 		$config    = $tool['config'];
 		$hook_name = $config['hook_name'] ?? '';
 
 		if ( empty( $hook_name ) ) {
-			return [ 'error' => 'No hook_name configured.' ];
+			return new WP_Error( 'missing_config', __( 'No hook_name configured.', 'gratis-ai-agent' ) );
 		}
 
 		// Sanitize hook name — only allow valid hook characters.
 		if ( ! preg_match( '/^[a-zA-Z0-9_]+$/', $hook_name ) ) {
-			return [ 'error' => 'Invalid hook name.' ];
+			return new WP_Error( 'invalid_hook_name', __( 'Invalid hook name.', 'gratis-ai-agent' ) );
 		}
 
 		// Build arguments from config defaults + input.
@@ -211,26 +219,23 @@ class CustomToolExecutor {
 		} catch ( \Throwable $e ) {
 			ob_end_clean();
 
-			return [
-				'success' => false,
-				'error'   => $e->getMessage(),
-			];
+			return new WP_Error( 'action_exception', $e->getMessage() );
 		}
 	}
 
 	/**
 	 * Execute a CLI tool (WP-CLI command).
 	 *
-	 * @param array $tool  Tool definition.
-	 * @param array $input Input parameters.
-	 * @return array
+	 * @param array<string, mixed> $tool  Tool definition.
+	 * @param array<string, mixed> $input Input parameters.
+	 * @return array<string, mixed>|\WP_Error
 	 */
-	private static function execute_cli( array $tool, array $input ): array {
+	private static function execute_cli( array $tool, array $input ): array|\WP_Error {
 		$config  = $tool['config'];
 		$command = $config['command'] ?? '';
 
 		if ( empty( $command ) ) {
-			return [ 'error' => 'No command configured.' ];
+			return new WP_Error( 'missing_config', __( 'No command configured.', 'gratis-ai-agent' ) );
 		}
 
 		// Replace {{placeholders}} in the command.
@@ -272,19 +277,20 @@ class CustomToolExecutor {
 	 * Supports nested dot-notation: {{order.id}} will look for $input['order']['id']
 	 * then fall back to $input['order.id'].
 	 *
-	 * @param string $template Template string with placeholders.
-	 * @param array  $input    Input values.
+	 * @param string               $template Template string with placeholders.
+	 * @param array<string, mixed> $input    Input values.
 	 * @return string
 	 */
 	public static function replace_placeholders( string $template, array $input ): string {
 		return preg_replace_callback(
 			'/\{\{(\w[\w.]*)\}\}/',
+			/** @phpstan-ignore-next-line */
 			function ( $matches ) use ( $input ) {
 				$key = $matches[1];
 
 				// Direct key lookup.
 				if ( isset( $input[ $key ] ) ) {
-					return is_scalar( $input[ $key ] ) ? (string) $input[ $key ] : wp_json_encode( $input[ $key ] );
+					return is_scalar( $input[ $key ] ) ? (string) $input[ $key ] : (string) wp_json_encode( $input[ $key ] );
 				}
 
 				// Dot-notation traversal.

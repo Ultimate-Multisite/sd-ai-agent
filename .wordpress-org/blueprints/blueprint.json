@@ -1,0 +1,49 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "meta": {
+    "title": "AI Agent",
+    "description": "Agentic AI assistant for WordPress — chat, call tools, run automations, and manage your site with any AI provider.",
+    "author": "Ultimate-Multisite",
+    "categories": ["AI", "Automation", "Chat"]
+  },
+  "landingPage": "/wp-admin/admin.php?page=ai-agent",
+  "login": {
+    "username": "admin",
+    "password": "password"
+  },
+  "preferredVersions": {
+    "php": "8.2",
+    "wp": "latest"
+  },
+  "features": {
+    "networking": true
+  },
+  "steps": [
+    {
+      "step": "installPlugin",
+      "pluginData": {
+        "resource": "url",
+        "url": "https://github.com/Ultimate-Multisite/ai-agent/releases/latest/download/ai-agent.zip",
+        "caption": "Downloading AI Agent..."
+      },
+      "options": {
+        "activate": true
+      }
+    },
+    {
+      "step": "setSiteOptions",
+      "options": {
+        "blogname": "AI Agent Demo",
+        "blogdescription": "WordPress AI Agent — instant demo"
+      }
+    },
+    {
+      "step": "wp-cli",
+      "command": "user update admin --display_name='Demo Admin' --user_email=demo@example.com"
+    },
+    {
+      "step": "runPHP",
+      "code": "<?php require '/wordpress/wp-load.php'; update_option('ai_agent_settings', array_merge((array) get_option('ai_agent_settings', []), ['_demo_note' => 'Add your API key under Tools > AI Agent Settings > General to start chatting.'])); echo 'Demo settings applied.'; ?>"
+    }
+  ]
+}

@@ -4,10 +4,10 @@ declare(strict_types=1);
 /**
  * Export/Import functionality for AI Agent sessions.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Core;
+namespace GratisAiAgent\Core;
 
 use WP_Error;
 
@@ -18,7 +18,7 @@ class Export {
 	 *
 	 * @param object $session Database session row.
 	 * @param string $format  'json' or 'markdown'.
-	 * @return array Export data with 'content' and 'filename' keys.
+	 * @return array<string, mixed> Export data with 'content' and 'filename' keys.
 	 */
 	public static function export( object $session, string $format = 'json' ): array {
 		if ( 'markdown' === $format ) {
@@ -32,14 +32,14 @@ class Export {
 	 * Export a session as JSON.
 	 *
 	 * @param object $session Database session row.
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public static function export_json( object $session ): array {
 		$messages   = json_decode( $session->messages, true ) ?: [];
 		$tool_calls = json_decode( $session->tool_calls, true ) ?: [];
 
 		$data = [
-			'format'      => 'ai-agent-v1',
+			'format'      => 'gratis-ai-agent-v1',
 			'title'       => $session->title,
 			'provider_id' => $session->provider_id,
 			'model_id'    => $session->model_id,
@@ -65,7 +65,7 @@ class Export {
 	 * Export a session as Markdown.
 	 *
 	 * @param object $session Database session row.
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public static function export_markdown( object $session ): array {
 		$messages = json_decode( $session->messages, true ) ?: [];
@@ -127,23 +127,24 @@ class Export {
 	/**
 	 * Import a session from JSON data.
 	 *
-	 * @param array $data    Import data (ai-agent-v1 format).
-	 * @param int   $user_id WordPress user ID.
+	 * @param array<string, mixed> $data    Import data (gratis-ai-agent-v1 format).
+	 * @param int                  $user_id WordPress user ID.
 	 * @return int|WP_Error Session ID on success, WP_Error on failure.
 	 */
 	public static function import_json( array $data, int $user_id ) {
-		if ( empty( $data['format'] ) || 'ai-agent-v1' !== $data['format'] ) {
+		$valid_formats = [ 'gratis-ai-agent-v1', 'ai-agent-v1' ];
+		if ( empty( $data['format'] ) || ! in_array( $data['format'], $valid_formats, true ) ) {
 			return new WP_Error(
-				'ai_agent_import_invalid',
-				__( 'Invalid import format. Expected ai-agent-v1.', 'ai-agent' ),
+				'gratis_ai_agent_import_invalid',
+				__( 'Invalid import format. Expected gratis-ai-agent-v1.', 'gratis-ai-agent' ),
 				[ 'status' => 400 ]
 			);
 		}
 
 		if ( empty( $data['messages'] ) || ! is_array( $data['messages'] ) ) {
 			return new WP_Error(
-				'ai_agent_import_no_messages',
-				__( 'Import data contains no messages.', 'ai-agent' ),
+				'gratis_ai_agent_import_no_messages',
+				__( 'Import data contains no messages.', 'gratis-ai-agent' ),
 				[ 'status' => 400 ]
 			);
 		}
@@ -161,8 +162,8 @@ class Export {
 
 		if ( ! $session_id ) {
 			return new WP_Error(
-				'ai_agent_import_failed',
-				__( 'Failed to create session for import.', 'ai-agent' ),
+				'gratis_ai_agent_import_failed',
+				__( 'Failed to create session for import.', 'gratis-ai-agent' ),
 				[ 'status' => 500 ]
 			);
 		}

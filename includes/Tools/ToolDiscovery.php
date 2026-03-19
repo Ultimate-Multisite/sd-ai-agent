@@ -8,12 +8,13 @@ declare(strict_types=1);
  * discover and run any registered ability on demand, reducing the number
  * of tools loaded per request from ~64 to ~11 priority tools.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Tools;
+namespace GratisAiAgent\Tools;
 
-use AiAgent\Core\Settings;
+use GratisAiAgent\Core\Settings;
+use WP_Error;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -26,7 +27,7 @@ class ToolDiscovery {
 	 *
 	 * @var string[]
 	 */
-	private const DEFAULT_PRIORITY_CATEGORIES = [ 'ai-agent', 'site', 'user' ];
+	private const DEFAULT_PRIORITY_CATEGORIES = [ 'gratis-ai-agent', 'site', 'user' ];
 
 	/**
 	 * Default priority tool names — loaded directly even if their category
@@ -59,18 +60,28 @@ class ToolDiscovery {
 
 	/**
 	 * Register the list-tools and execute-tool abilities.
+	 *
+	 * Skips registration entirely when there are no discoverable tools
+	 * (i.e. all registered abilities fall within priority categories/tools),
+	 * so the AI is never offered meta-tools that would return empty results.
 	 */
 	public static function register_abilities(): void {
 		if ( ! function_exists( 'wp_register_ability' ) ) {
 			return;
 		}
 
+		// Count how many tools would be discoverable (not in priority categories).
+		$discoverable_count = array_sum( self::get_discoverable_category_counts() );
+		if ( 0 === $discoverable_count ) {
+			return;
+		}
+
 		wp_register_ability(
-			'ai-agent/list-tools',
+			'gratis-ai-agent/list-tools',
 			[
-				'label'               => __( 'List Tools', 'ai-agent' ),
-				'description'         => __( 'Search and browse all available tools by name, description, or category. Call with no arguments to get a category overview with counts. Use query for fuzzy search, category to filter.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'List Tools', 'gratis-ai-agent' ),
+				'description'         => __( 'Search and browse all available tools by name, description, or category. Call with no arguments to get a category overview with counts. Use query for fuzzy search, category to filter.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -94,6 +105,9 @@ class ToolDiscovery {
 						],
 					],
 				],
+				'meta'                => [
+					'show_in_rest' => true,
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_list_tools' ],
 				'permission_callback' => function () {
 					return current_user_can( 'manage_options' );
@@ -102,11 +116,11 @@ class ToolDiscovery {
 		);
 
 		wp_register_ability(
-			'ai-agent/execute-tool',
+			'gratis-ai-agent/execute-tool',
 			[
-				'label'               => __( 'Execute Tool', 'ai-agent' ),
-				'description'         => __( 'Execute any registered tool by name. Pass the tool_name and its parameters. For tools requiring confirmation, set confirmed: true after user approval.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Execute Tool', 'gratis-ai-agent' ),
+				'description'         => __( 'Execute any registered tool by name. Pass the tool_name and its parameters. For tools requiring confirmation, set confirmed: true after user approval.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -126,6 +140,9 @@ class ToolDiscovery {
 					],
 					'required'   => [ 'tool_name' ],
 				],
+				'meta'                => [
+					'show_in_rest' => true,
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_execute_tool' ],
 				'permission_callback' => function () {
 					return current_user_can( 'manage_options' );
@@ -137,12 +154,22 @@ class ToolDiscovery {
 	/**
 	 * Handle the list-tools ability call.
 	 *
-	 * @param array $input The input parameters.
-	 * @return array The result.
+	 * @param array<string, mixed> $input The input parameters.
+	 * @return array<string, mixed>|\WP_Error The result or WP_Error on failure.
 	 */
-	public static function handle_list_tools( array $input ): array {
+	public static function handle_list_tools( array $input ): array|\WP_Error {
 		if ( ! function_exists( 'wp_get_abilities' ) ) {
-			return [ 'error' => 'Abilities API not available.' ];
+			return new WP_Error( 'api_unavailable', __( 'Abilities API not available.', 'gratis-ai-agent' ) );
+		}
+
+		// An empty JSON array ([]) is semantically equivalent to an empty object ({})
+		// here — both mean "no filters applied". When the AI sends [] instead of {},
+		// treat it as having no filter parameters (query='', category='', defaults apply).
+		// array_values() check: if $input is a non-empty sequential (list) array,
+		// it was likely passed incorrectly; ignore it and use defaults.
+		if ( ! empty( $input ) && array_values( $input ) === $input ) {
+			// Sequential array passed where associative object expected — treat as empty.
+			$input = [];
 		}
 
 		$query    = $input['query'] ?? '';
@@ -230,7 +257,7 @@ class ToolDiscovery {
 
 				// Word-level matching for multi-word queries.
 				$words = preg_split( '/[\s\-_\/]+/', $query_lower );
-				if ( count( $words ) > 1 ) {
+				if ( is_array( $words ) && count( $words ) > 1 ) {
 					$haystack = $name_lower . ' ' . $label_lower . ' ' . $desc_lower;
 					foreach ( $words as $word ) {
 						if ( '' !== $word && str_contains( $haystack, $word ) ) {
@@ -286,26 +313,41 @@ class ToolDiscovery {
 	/**
 	 * Handle the execute-tool ability call.
 	 *
-	 * @param array $input The input parameters.
-	 * @return array The result.
+	 * @param array<string, mixed> $input The input parameters.
+	 * @return array<string, mixed>|\WP_Error The result or WP_Error on failure.
 	 */
-	public static function handle_execute_tool( array $input ): array {
+	public static function handle_execute_tool( array $input ): array|\WP_Error {
 		$tool_name  = $input['tool_name'] ?? '';
 		$parameters = $input['parameters'] ?? null;
 		$confirmed  = $input['confirmed'] ?? false;
 
 		if ( '' === $tool_name ) {
-			return [ 'error' => 'tool_name is required.' ];
+			return new WP_Error( 'missing_param', __( 'tool_name is required.', 'gratis-ai-agent' ) );
+		}
+
+		// Normalize tool names that arrive in the Abilities API wire format
+		// (e.g. "wpab__gratis-ai-agent__check-security" → "gratis-ai-agent/check-security").
+		// The Abilities API encodes "/" as "__" and prefixes with "wpab__".
+		if ( str_starts_with( $tool_name, 'wpab__' ) ) {
+			$tool_name = substr( $tool_name, strlen( 'wpab__' ) );
+			$tool_name = str_replace( '__', '/', $tool_name );
 		}
 
 		if ( ! function_exists( 'wp_get_ability' ) ) {
-			return [ 'error' => 'Abilities API not available.' ];
+			return new WP_Error( 'api_unavailable', __( 'Abilities API not available.', 'gratis-ai-agent' ) );
 		}
 
 		$ability = wp_get_ability( $tool_name );
 
 		if ( ! $ability instanceof \WP_Ability ) {
-			return [ 'error' => sprintf( 'Tool "%s" not found.', $tool_name ) ];
+			return new WP_Error(
+				'not_found',
+				sprintf(
+					/* translators: %s: tool name */
+					__( 'Tool "%s" not found.', 'gratis-ai-agent' ),
+					$tool_name
+				)
+			);
 		}
 
 		// Check tool permissions.
@@ -313,7 +355,14 @@ class ToolDiscovery {
 		$permission = $perms[ $tool_name ] ?? 'auto';
 
 		if ( 'disabled' === $permission ) {
-			return [ 'error' => sprintf( 'Tool "%s" is disabled.', $tool_name ) ];
+			return new WP_Error(
+				'tool_disabled',
+				sprintf(
+					/* translators: %s: tool name */
+					__( 'Tool "%s" is disabled.', 'gratis-ai-agent' ),
+					$tool_name
+				)
+			);
 		}
 
 		if ( 'confirm' === $permission && ! $confirmed ) {
@@ -382,7 +431,7 @@ class ToolDiscovery {
 		 *
 		 * @param string[] $categories Default priority category slugs.
 		 */
-		return apply_filters( 'ai_agent_priority_categories', self::DEFAULT_PRIORITY_CATEGORIES );
+		return apply_filters( 'gratis_ai_agent_priority_categories', self::DEFAULT_PRIORITY_CATEGORIES );
 	}
 
 	/**
@@ -396,7 +445,7 @@ class ToolDiscovery {
 		 *
 		 * @param string[] $tools Default priority tool names.
 		 */
-		return apply_filters( 'ai_agent_priority_tools', self::DEFAULT_PRIORITY_TOOLS );
+		return apply_filters( 'gratis_ai_agent_priority_tools', self::DEFAULT_PRIORITY_TOOLS );
 	}
 
 	/**
@@ -446,7 +495,7 @@ class ToolDiscovery {
 		$lines   = [];
 		$lines[] = '## Tool Discovery';
 		$lines[] = 'Your most-used tools (site management, content creation, media) are loaded directly — use them without discovery.';
-		$lines[] = sprintf( '%d additional tools are available via `ai-agent/list-tools` (search by name or category) and `ai-agent/execute-tool`.', $total );
+		$lines[] = sprintf( '%d additional tools are available via `gratis-ai-agent/list-tools` (search by name or category) and `gratis-ai-agent/execute-tool`.', $total );
 		$lines[] = 'Only use discovery if you need a tool not already in your loaded set.';
 
 		return implode( "\n", $lines );
@@ -494,7 +543,7 @@ class ToolDiscovery {
 	 * Format a single ability as a compact summary for the list-tools response.
 	 *
 	 * @param \WP_Ability $ability The ability to format.
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	private static function format_tool_summary( \WP_Ability $ability ): array {
 		$schema = $ability->get_input_schema();
@@ -517,7 +566,7 @@ class ToolDiscovery {
 	/**
 	 * Build a compact parameters hint from an input schema.
 	 *
-	 * @param array $schema The input schema.
+	 * @param array<string, mixed> $schema The input schema.
 	 * @return string A compact string like "command(string, required), working_dir(string)".
 	 */
 	private static function build_parameters_hint( array $schema ): string {

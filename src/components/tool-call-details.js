@@ -3,30 +3,44 @@
  */
 import { __ } from '@wordpress/i18n';
 
+/**
+ * @typedef {import('../types').ToolCall} ToolCall
+ */
+
+/**
+ * Collapsible details panel showing tool calls and their results.
+ *
+ * Renders a `<details>` element with a summary of how many tools were called,
+ * and individual entries for each call and result.
+ *
+ * @param {Object}     props           - Component props.
+ * @param {ToolCall[]} props.toolCalls - Tool call/result entries to display.
+ * @return {JSX.Element|null} The tool call details element, or null when empty.
+ */
 export default function ToolCallDetails( { toolCalls } ) {
 	if ( ! toolCalls?.length ) {
 		return null;
 	}
 
 	return (
-		<div className="ai-agent-tool-calls">
+		<div className="gratis-ai-agent-tool-calls">
 			<details>
 				<summary>
 					{ toolCalls.length }{ ' ' }
 					{ toolCalls.length === 1
-						? __( 'tool call executed', 'ai-agent' )
-						: __( 'tool calls executed', 'ai-agent' ) }
+						? __( 'tool call executed', 'gratis-ai-agent' )
+						: __( 'tool calls executed', 'gratis-ai-agent' ) }
 				</summary>
-				<div className="ai-agent-tool-list">
+				<div className="gratis-ai-agent-tool-list">
 					{ toolCalls.map( ( entry, i ) => (
 						<div
 							key={ i }
-							className={ `ai-agent-tool-entry ai-agent-tool-${ entry.type }` }
+							className={ `gratis-ai-agent-tool-entry gratis-ai-agent-tool-${ entry.type }` }
 						>
 							{ entry.type === 'call' ? (
 								<>
-									<span className="ai-agent-tool-label">
-										{ __( 'Call:', 'ai-agent' ) }
+									<span className="gratis-ai-agent-tool-label">
+										{ __( 'Call:', 'gratis-ai-agent' ) }
 									</span>{ ' ' }
 									<code>{ entry.name }</code>
 									<pre>
@@ -39,8 +53,8 @@ export default function ToolCallDetails( { toolCalls } ) {
 								</>
 							) : (
 								<>
-									<span className="ai-agent-tool-label">
-										{ __( 'Result:', 'ai-agent' ) }
+									<span className="gratis-ai-agent-tool-label">
+										{ __( 'Result:', 'gratis-ai-agent' ) }
 									</span>{ ' ' }
 									<code>{ entry.name }</code>
 									<pre>
@@ -65,6 +79,13 @@ export default function ToolCallDetails( { toolCalls } ) {
 	);
 }
 
+/**
+ * Truncate a string to a maximum length, appending '...' when truncated.
+ *
+ * @param {string} str - Input string.
+ * @param {number} max - Maximum character length.
+ * @return {string} Truncated string.
+ */
 function truncate( str, max ) {
 	if ( ! str ) {
 		return '';

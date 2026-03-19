@@ -4,14 +4,14 @@ declare(strict_types=1);
 /**
  * Event Trigger Handler — hooks into WordPress, resolves placeholders, fires Agent_Loop.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Automations;
+namespace GratisAiAgent\Automations;
 
-use AiAgent\Core\AgentLoop;
-use AiAgent\Core\PlaceholderResolver;
-use AiAgent\Core\Settings;
+use GratisAiAgent\Core\AgentLoop;
+use GratisAiAgent\Core\PlaceholderResolver;
+use GratisAiAgent\Core\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -22,7 +22,7 @@ class EventTriggerHandler {
 	/**
 	 * Track which hooks we've registered to avoid duplicates.
 	 *
-	 * @var array
+	 * @var array<string, bool>
 	 */
 	private static $registered_hooks = [];
 
@@ -83,6 +83,7 @@ class EventTriggerHandler {
 	 *
 	 * @param string $hook_name The WordPress hook that fired.
 	 * @param array  $hook_args The arguments passed to the hook.
+	 * @phpstan-param list<mixed> $hook_args
 	 */
 	private static function dispatch( string $hook_name, array $hook_args ): void {
 		// Prevent re-entrant execution (avoid infinite loops).
@@ -118,9 +119,9 @@ class EventTriggerHandler {
 			];
 
 			// Use a transient to pass data to the cron callback.
-			$run_key = 'ai_agent_event_run_' . wp_generate_uuid4();
+			$run_key = 'gratis_ai_agent_event_run_' . wp_generate_uuid4();
 			set_transient( $run_key, $run_data, HOUR_IN_SECONDS );
-			wp_schedule_single_event( time(), 'ai_agent_run_event_automation', [ $run_key ] );
+			wp_schedule_single_event( time(), 'gratis_ai_agent_run_event_automation', [ $run_key ] );
 
 			// Spawn the cron immediately.
 			spawn_cron();
@@ -194,7 +195,7 @@ class EventTriggerHandler {
 		 * @param string $hook_name The hook that triggered it.
 		 * @param bool   $is_error  Whether the run failed.
 		 */
-		do_action( 'ai_agent_event_automation_complete', $event_id, $hook_name, $is_error );
+		do_action( 'gratis_ai_agent_event_automation_complete', $event_id, $hook_name, $is_error );
 
 		self::$executing = false;
 	}
@@ -202,9 +203,10 @@ class EventTriggerHandler {
 	/**
 	 * Check if event conditions are met.
 	 *
-	 * @param array  $event     The event automation definition.
-	 * @param string $hook_name The hook that fired.
-	 * @param array  $hook_args The hook arguments.
+	 * @param array<string, mixed> $event     The event automation definition.
+	 * @param string               $hook_name The hook that fired.
+	 * @param array                $hook_args The hook arguments.
+	 * @phpstan-param list<mixed> $hook_args
 	 * @return bool
 	 */
 	private static function check_conditions( array $event, string $hook_name, array $hook_args ): bool {
@@ -257,9 +259,9 @@ class EventTriggerHandler {
 		if ( ! empty( $conditions['role'] ) ) {
 			$user = null;
 			if ( isset( $context['user_id'] ) ) {
-				$user = get_userdata( $context['user_id'] );
+				$user = get_userdata( (int) $context['user_id'] );
 			} elseif ( isset( $hook_args[0] ) && is_numeric( $hook_args[0] ) ) {
-				$user = get_userdata( $hook_args[0] );
+				$user = get_userdata( (int) $hook_args[0] );
 			}
 
 			if ( $user && ! in_array( $conditions['role'], $user->roles, true ) ) {

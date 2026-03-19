@@ -7,17 +7,17 @@ declare(strict_types=1);
  * Gathers structured context from various WordPress sources for
  * injection into the agent's system prompt.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Core;
+namespace GratisAiAgent\Core;
 
 class ContextProviders {
 
 	/**
 	 * Registered providers: name => ['callback' => callable, 'priority' => int].
 	 *
-	 * @var array
+	 * @var array<string, array{callback: callable, priority: int}>
 	 */
 	private static array $providers = [];
 
@@ -45,8 +45,8 @@ class ContextProviders {
 	/**
 	 * Gather context from all registered providers.
 	 *
-	 * @param array $page_context Page context from the widget JS (URL, admin page, post ID, etc.).
-	 * @return array Keyed array of context sections.
+	 * @param array<string, mixed> $page_context Page context from the widget JS (URL, admin page, post ID, etc.).
+	 * @return array<string, mixed> Keyed array of context sections.
 	 */
 	public static function gather( array $page_context = [] ): array {
 		self::ensure_initialized();
@@ -79,7 +79,7 @@ class ContextProviders {
 	/**
 	 * Format gathered context for inclusion in a system prompt.
 	 *
-	 * @param array $context The gathered context data.
+	 * @param array<string, mixed> $context The gathered context data.
 	 * @return string Markdown-formatted context string.
 	 */
 	public static function format_for_prompt( array $context ): string {
@@ -150,16 +150,26 @@ class ContextProviders {
 
 		// Block editor context.
 		self::register( 'block_editor_context', [ __CLASS__, 'provide_block_editor_context' ], 35 );
+
+		// WooCommerce store context — only when WooCommerce is active.
+		if ( class_exists( 'WooCommerce' ) ) {
+			self::register( 'woocommerce_context', [ __CLASS__, 'provide_woocommerce_context' ], 40 );
+		}
 	}
 
 	/**
 	 * Provide page context from the widget.
 	 *
-	 * @param array $page_context Raw page context from JS.
-	 * @return array
+	 * @param array<string, mixed> $page_context Raw page context from JS.
+	 * @return array<string, mixed>
 	 */
 	public static function provide_page_context( array $page_context ): array {
 		$data = [];
+
+		// String context from screen-meta (wrapped in { summary: "..." } by the JS store).
+		if ( ! empty( $page_context['summary'] ) ) {
+			$data['Page Context'] = $page_context['summary'];
+		}
 
 		if ( ! empty( $page_context['url'] ) ) {
 			$data['Current URL'] = $page_context['url'];
@@ -179,8 +189,8 @@ class ContextProviders {
 	/**
 	 * Provide current user context.
 	 *
-	 * @param array $page_context Unused.
-	 * @return array
+	 * @param array<string, mixed> $page_context Unused.
+	 * @return array<string, mixed>
 	 */
 	public static function provide_user_context( array $page_context ): array {
 		$user = wp_get_current_user();
@@ -200,8 +210,8 @@ class ContextProviders {
 	/**
 	 * Provide site context.
 	 *
-	 * @param array $page_context Unused.
-	 * @return array
+	 * @param array<string, mixed> $page_context Unused.
+	 * @return array<string, mixed>
 	 */
 	public static function provide_site_context( array $page_context ): array {
 		global $wp_version;
@@ -227,8 +237,8 @@ class ContextProviders {
 	/**
 	 * Provide post context if on a post edit screen.
 	 *
-	 * @param array $page_context Page context from widget.
-	 * @return array
+	 * @param array<string, mixed> $page_context Page context from widget.
+	 * @return array<string, mixed>
 	 */
 	public static function provide_post_context( array $page_context ): array {
 		$post_id = $page_context['post_id'] ?? 0;
@@ -267,8 +277,8 @@ class ContextProviders {
 	/**
 	 * Provide SEO context — active SEO plugin, sitemap URL, permalink structure.
 	 *
-	 * @param array $page_context Page context from widget.
-	 * @return array
+	 * @param array<string, mixed> $page_context Page context from widget.
+	 * @return array<string, mixed>
 	 */
 	public static function provide_seo_context( array $page_context ): array {
 		$data = [];
@@ -333,8 +343,8 @@ class ContextProviders {
 	/**
 	 * Provide block editor context — theme type, registered blocks, patterns.
 	 *
-	 * @param array $page_context Unused.
-	 * @return array
+	 * @param array<string, mixed> $page_context Unused.
+	 * @return array<string, mixed>
 	 */
 	public static function provide_block_editor_context( array $page_context ): array {
 		$data = [];
@@ -363,8 +373,8 @@ class ContextProviders {
 	/**
 	 * Provide system context.
 	 *
-	 * @param array $page_context Unused.
-	 * @return array
+	 * @param array<string, mixed> $page_context Unused.
+	 * @return array<string, mixed>
 	 */
 	public static function provide_system_context( array $page_context ): array {
 		global $wpdb;
@@ -374,14 +384,72 @@ class ContextProviders {
 			'Memory Limit' => ini_get( 'memory_limit' ),
 		];
 
-		if ( ! empty( $wpdb->db_server_info ) ) {
+		if ( method_exists( $wpdb, 'db_server_info' ) ) {
+			/** @phpstan-ignore-next-line */
 			$data['MySQL Version'] = $wpdb->db_server_info();
 		} elseif ( method_exists( $wpdb, 'db_version' ) ) {
+			/** @phpstan-ignore-next-line */
 			$data['MySQL Version'] = $wpdb->db_version();
 		}
 
 		if ( ! empty( $_SERVER['SERVER_SOFTWARE'] ) ) {
 			$data['Server'] = sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) );
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Provide WooCommerce store context when WooCommerce is active.
+	 *
+	 * Surfaces store type, product count, order counts, and currency so the
+	 * agent is aware it is operating in an e-commerce context and can offer
+	 * relevant assistance (product creation, order management, etc.).
+	 *
+	 * @param array<string, mixed> $page_context Unused.
+	 * @return array<string, mixed>
+	 */
+	public static function provide_woocommerce_context( array $page_context ): array {
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			return [];
+		}
+
+		$data = [
+			'WooCommerce Active'  => 'Yes',
+			'WooCommerce Version' => defined( 'WC_VERSION' ) ? WC_VERSION : 'unknown',
+		];
+
+		// Currency.
+		if ( function_exists( 'get_woocommerce_currency' ) ) {
+			$data['Store Currency'] = get_woocommerce_currency();
+		}
+
+		// Product counts.
+		$product_counts = wp_count_posts( 'product' );
+		if ( $product_counts ) {
+			$data['Published Products'] = (string) ( $product_counts->publish ?? 0 );
+			$draft_count                = (int) ( $product_counts->draft ?? 0 );
+			if ( $draft_count > 0 ) {
+				$data['Draft Products'] = (string) $draft_count;
+			}
+		}
+
+		// Order counts.
+		if ( function_exists( 'wc_orders_count' ) ) {
+			$processing = (int) wc_orders_count( 'processing' );
+			$pending    = (int) wc_orders_count( 'pending' );
+			if ( $processing > 0 ) {
+				$data['Processing Orders'] = (string) $processing;
+			}
+			if ( $pending > 0 ) {
+				$data['Pending Orders'] = (string) $pending;
+			}
+		}
+
+		// Shop page URL.
+		$shop_page_id = function_exists( 'wc_get_page_id' ) ? wc_get_page_id( 'shop' ) : 0;
+		if ( $shop_page_id > 0 ) {
+			$data['Shop URL'] = get_permalink( $shop_page_id ) ?: '';
 		}
 
 		return $data;

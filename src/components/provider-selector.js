@@ -10,6 +10,17 @@ import { __ } from '@wordpress/i18n';
  */
 import STORE_NAME from '../store';
 
+/**
+ * Provider and model selector dropdowns.
+ *
+ * Changing the provider auto-selects the first available model for that
+ * provider. Both selections are persisted to localStorage via the store.
+ *
+ * @param {Object}  props                 - Component props.
+ * @param {boolean} [props.compact=false] - When true, hides labels and uses
+ *                                        compact control sizing.
+ * @return {JSX.Element} The provider/model selector element.
+ */
 export default function ProviderSelector( { compact = false } ) {
 	const { providers, selectedProviderId, selectedModelId, models } =
 		useSelect( ( select ) => {
@@ -31,7 +42,7 @@ export default function ProviderSelector( { compact = false } ) {
 
 	if ( ! providerOptions.length ) {
 		providerOptions.push( {
-			label: __( '(no providers)', 'ai-agent' ),
+			label: __( '(no providers)', 'gratis-ai-agent' ),
 			value: '',
 		} );
 	}
@@ -41,7 +52,7 @@ export default function ProviderSelector( { compact = false } ) {
 				label: m.name || m.id,
 				value: m.id,
 		  } ) )
-		: [ { label: __( '(default)', 'ai-agent' ), value: '' } ];
+		: [ { label: __( '(default)', 'gratis-ai-agent' ), value: '' } ];
 
 	const onProviderChange = ( value ) => {
 		setSelectedProvider( value );
@@ -60,7 +71,7 @@ export default function ProviderSelector( { compact = false } ) {
 			}` }
 		>
 			<SelectControl
-				label={ compact ? null : __( 'Provider', 'ai-agent' ) }
+				label={ compact ? null : __( 'Provider', 'gratis-ai-agent' ) }
 				value={ selectedProviderId }
 				options={ providerOptions }
 				onChange={ onProviderChange }
@@ -68,7 +79,7 @@ export default function ProviderSelector( { compact = false } ) {
 				size={ compact ? 'compact' : 'default' }
 			/>
 			<SelectControl
-				label={ compact ? null : __( 'Model', 'ai-agent' ) }
+				label={ compact ? null : __( 'Model', 'gratis-ai-agent' ) }
 				value={ selectedModelId }
 				options={ modelOptions }
 				onChange={ setSelectedModel }

@@ -4,21 +4,22 @@ declare(strict_types=1);
 /**
  * Placeholder Resolver — resolves {{post.title}}, {{user.email}}, etc. from hook arguments.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Core;
+namespace GratisAiAgent\Core;
 
-use AiAgent\Automations\EventTriggerRegistry;
+use GratisAiAgent\Automations\EventTriggerRegistry;
 
 class PlaceholderResolver {
 
 	/**
 	 * Resolve all {{placeholders}} in a prompt template given hook arguments.
 	 *
-	 * @param string $template The prompt template with placeholders.
+	 * @param string $template  The prompt template with placeholders.
 	 * @param string $hook_name The WordPress hook that fired.
 	 * @param array  $hook_args The arguments passed to the hook.
+	 * @phpstan-param list<mixed> $hook_args
 	 * @return string Resolved prompt.
 	 */
 	public static function resolve( string $template, string $hook_name, array $hook_args ): string {
@@ -34,7 +35,7 @@ class PlaceholderResolver {
 				// Direct lookup.
 				if ( isset( $context[ $key ] ) ) {
 					$val = $context[ $key ];
-					return is_scalar( $val ) ? (string) $val : wp_json_encode( $val );
+					return is_scalar( $val ) ? (string) $val : (string) wp_json_encode( $val );
 				}
 
 				// Dot-notation traversal.
@@ -50,7 +51,7 @@ class PlaceholderResolver {
 							return $matches[0]; // Leave as-is.
 						}
 					}
-					return is_scalar( $value ) ? (string) $value : wp_json_encode( $value );
+					return is_scalar( $value ) ? (string) $value : (string) wp_json_encode( $value );
 				}
 
 				return $matches[0];
@@ -66,7 +67,8 @@ class PlaceholderResolver {
 	 *
 	 * @param string $hook_name The hook name.
 	 * @param array  $hook_args Raw hook arguments.
-	 * @return array Context map.
+	 * @phpstan-param list<mixed> $hook_args
+	 * @return array<string, mixed> Context map.
 	 */
 	private static function build_context( string $hook_name, array $hook_args ): array {
 		$context = [];
@@ -94,10 +96,11 @@ class PlaceholderResolver {
 	/**
 	 * Enrich context with post data.
 	 *
-	 * @param array  $context   Current context map.
-	 * @param string $hook_name The WordPress hook that fired.
-	 * @param array  $hook_args Raw hook arguments.
-	 * @return array Enriched context map.
+	 * @param array<string, mixed> $context   Current context.
+	 * @param string               $hook_name WordPress hook name.
+	 * @param array                $hook_args Hook arguments.
+	 * @phpstan-param list<mixed> $hook_args
+	 * @return array<string, mixed> Enriched context.
 	 */
 	private static function enrich_post_context( array $context, string $hook_name, array $hook_args ): array {
 		$post = null;
@@ -131,10 +134,11 @@ class PlaceholderResolver {
 	/**
 	 * Enrich context with user data.
 	 *
-	 * @param array  $context   Current context map.
-	 * @param string $hook_name The WordPress hook that fired.
-	 * @param array  $hook_args Raw hook arguments.
-	 * @return array Enriched context map.
+	 * @param array<string, mixed> $context   Current context.
+	 * @param string               $hook_name WordPress hook name.
+	 * @param array                $hook_args Hook arguments.
+	 * @phpstan-param list<mixed> $hook_args
+	 * @return array<string, mixed> Enriched context.
 	 */
 	private static function enrich_user_context( array $context, string $hook_name, array $hook_args ): array {
 		$user = null;
@@ -172,10 +176,11 @@ class PlaceholderResolver {
 	/**
 	 * Enrich context with comment data.
 	 *
-	 * @param array  $context   Current context map.
-	 * @param string $hook_name The WordPress hook that fired.
-	 * @param array  $hook_args Raw hook arguments.
-	 * @return array Enriched context map.
+	 * @param array<string, mixed> $context   Current context.
+	 * @param string               $hook_name WordPress hook name.
+	 * @param array                $hook_args Hook arguments.
+	 * @phpstan-param list<mixed> $hook_args
+	 * @return array<string, mixed> Enriched context.
 	 */
 	private static function enrich_comment_context( array $context, string $hook_name, array $hook_args ): array {
 		if ( 'comment_post' !== $hook_name || empty( $hook_args[0] ) ) {
@@ -200,10 +205,11 @@ class PlaceholderResolver {
 	/**
 	 * Enrich context with WooCommerce order data.
 	 *
-	 * @param array  $context   Current context map.
-	 * @param string $hook_name The WordPress hook that fired.
-	 * @param array  $hook_args Raw hook arguments.
-	 * @return array Enriched context map.
+	 * @param array<string, mixed> $context   Current context.
+	 * @param string               $hook_name WordPress hook name.
+	 * @param array                $hook_args Hook arguments.
+	 * @phpstan-param list<mixed> $hook_args
+	 * @return array<string, mixed> Enriched context.
 	 */
 	private static function enrich_order_context( array $context, string $hook_name, array $hook_args ): array {
 		$order_hooks = [
@@ -221,7 +227,7 @@ class PlaceholderResolver {
 		}
 
 		$order = wc_get_order( $hook_args[0] );
-		if ( $order ) {
+		if ( $order instanceof \WC_Order ) {
 			$context['order'] = [
 				'id'     => $order->get_id(),
 				'total'  => $order->get_total(),
@@ -237,10 +243,11 @@ class PlaceholderResolver {
 	/**
 	 * Enrich context with WooCommerce product data.
 	 *
-	 * @param array  $context   Current context map.
-	 * @param string $hook_name The WordPress hook that fired.
-	 * @param array  $hook_args Raw hook arguments.
-	 * @return array Enriched context map.
+	 * @param array<string, mixed> $context   Current context.
+	 * @param string               $hook_name WordPress hook name.
+	 * @param array                $hook_args Hook arguments.
+	 * @phpstan-param list<mixed> $hook_args
+	 * @return array<string, mixed> Enriched context.
 	 */
 	private static function enrich_product_context( array $context, string $hook_name, array $hook_args ): array {
 		if ( 'woocommerce_low_stock' !== $hook_name || empty( $hook_args[0] ) ) {
@@ -248,7 +255,7 @@ class PlaceholderResolver {
 		}
 
 		$product = $hook_args[0];
-		if ( is_object( $product ) && method_exists( $product, 'get_name' ) ) {
+		if ( $product instanceof \WC_Product ) {
 			$context['product'] = [
 				'id'    => $product->get_id(),
 				'name'  => $product->get_name(),

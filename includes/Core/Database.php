@@ -4,26 +4,29 @@ declare(strict_types=1);
 /**
  * Database table management for AI Agent sessions.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Core;
+namespace GratisAiAgent\Core;
 
-use AiAgent\Knowledge\KnowledgeDatabase;
-use AiAgent\Models\Skill;
-use AiAgent\Tools\CustomTools;
+use GratisAiAgent\Knowledge\KnowledgeDatabase;
+use GratisAiAgent\Models\ConversationTemplate;
+use GratisAiAgent\Models\Skill;
+use GratisAiAgent\REST\ResaleApiDatabase;
+use GratisAiAgent\REST\WebhookDatabase;
+use GratisAiAgent\Tools\CustomTools;
 
 class Database {
 
-	const DB_VERSION_OPTION = 'ai_agent_db_version';
-	const DB_VERSION        = '8.0.0';
+	const DB_VERSION_OPTION = 'gratis_ai_agent_db_version';
+	const DB_VERSION        = '11.0.0';
 
 	/**
 	 * Get the sessions table name.
 	 */
 	public static function table_name(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_agent_sessions';
+		return $wpdb->prefix . 'gratis_ai_agent_sessions';
 	}
 
 	/**
@@ -31,7 +34,7 @@ class Database {
 	 */
 	public static function usage_table_name(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_agent_usage';
+		return $wpdb->prefix . 'gratis_ai_agent_usage';
 	}
 
 	/**
@@ -39,7 +42,7 @@ class Database {
 	 */
 	public static function memories_table_name(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_agent_memories';
+		return $wpdb->prefix . 'gratis_ai_agent_memories';
 	}
 
 	/**
@@ -47,7 +50,7 @@ class Database {
 	 */
 	public static function skills_table_name(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_agent_skills';
+		return $wpdb->prefix . 'gratis_ai_agent_skills';
 	}
 
 	/**
@@ -58,7 +61,7 @@ class Database {
 	 */
 	public static function custom_tools_table_name(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_agent_custom_tools';
+		return $wpdb->prefix . 'gratis_ai_agent_custom_tools';
 	}
 
 	/**
@@ -66,7 +69,7 @@ class Database {
 	 */
 	public static function automations_table_name(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_agent_automations';
+		return $wpdb->prefix . 'gratis_ai_agent_automations';
 	}
 
 	/**
@@ -74,7 +77,7 @@ class Database {
 	 */
 	public static function automation_logs_table_name(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_agent_automation_logs';
+		return $wpdb->prefix . 'gratis_ai_agent_automation_logs';
 	}
 
 	/**
@@ -82,7 +85,58 @@ class Database {
 	 */
 	public static function event_automations_table_name(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_agent_event_automations';
+		return $wpdb->prefix . 'gratis_ai_agent_event_automations';
+	}
+
+	/**
+	 * Get the conversation templates table name.
+	 */
+	public static function conversation_templates_table_name(): string {
+		global $wpdb;
+		return $wpdb->prefix . 'gratis_ai_agent_conversation_templates';
+	}
+
+	/**
+	 * Get the git tracked files table name.
+	 */
+	public static function git_tracked_files_table_name(): string {
+		global $wpdb;
+		return $wpdb->prefix . 'gratis_ai_agent_git_tracked_files';
+	}
+
+	/**
+	 * Get the changes log table name.
+	 */
+	public static function changes_log_table_name(): string {
+		global $wpdb;
+		return $wpdb->prefix . 'gratis_ai_agent_changes_log';
+	}
+
+	/**
+	 * Get the modified files table name.
+	 *
+	 * Tracks files written or edited by the AI agent so modified plugins
+	 * can be identified and offered as downloads.
+	 */
+	public static function modified_files_table_name(): string {
+		global $wpdb;
+		return $wpdb->prefix . 'gratis_ai_agent_modified_files';
+	}
+
+	/**
+	 * Get the agents table name.
+	 */
+	public static function agents_table_name(): string {
+		global $wpdb;
+		return $wpdb->prefix . 'gratis_ai_agent_agents';
+	}
+
+	/**
+	 * Get the shared sessions table name.
+	 */
+	public static function shared_sessions_table_name(): string {
+		global $wpdb;
+		return $wpdb->prefix . 'gratis_ai_agent_shared_sessions';
 	}
 
 	/**
@@ -91,24 +145,39 @@ class Database {
 	public static function install(): void {
 		global $wpdb;
 
+		// Migrate from old "ai_agent" naming if upgrading from pre-rename version.
+		self::maybe_migrate_from_old_names();
+
 		$installed_version = get_option( self::DB_VERSION_OPTION );
 
 		if ( $installed_version === self::DB_VERSION ) {
 			return;
 		}
 
-		$table                   = self::table_name();
-		$usage_table             = self::usage_table_name();
-		$memories_table          = self::memories_table_name();
-		$skills_table            = self::skills_table_name();
-		$custom_tools_table      = self::custom_tools_table_name();
-		$automations_table       = self::automations_table_name();
-		$automation_logs_table   = self::automation_logs_table_name();
-		$event_automations_table = self::event_automations_table_name();
-		$charset                 = $wpdb->get_charset_collate();
+		$table                        = self::table_name();
+		$usage_table                  = self::usage_table_name();
+		$memories_table               = self::memories_table_name();
+		$skills_table                 = self::skills_table_name();
+		$custom_tools_table           = self::custom_tools_table_name();
+		$automations_table            = self::automations_table_name();
+		$automation_logs_table        = self::automation_logs_table_name();
+		$event_automations_table      = self::event_automations_table_name();
+		$conversation_templates_table = self::conversation_templates_table_name();
+		$git_tracked_files_table      = self::git_tracked_files_table_name();
+		$changes_log_table            = self::changes_log_table_name();
+		$modified_files_table         = self::modified_files_table_name();
+		$agents_table                 = self::agents_table_name();
+		$shared_sessions_table        = self::shared_sessions_table_name();
+		$charset                      = $wpdb->get_charset_collate();
 
 		// Knowledge tables.
 		$sql = KnowledgeDatabase::get_schema( $charset );
+
+		// Webhook tables.
+		$sql .= WebhookDatabase::get_schema( $charset );
+
+		// Resale API tables.
+		$sql .= ResaleApiDatabase::get_schema( $charset );
 
 		$sql .= "\n\nCREATE TABLE {$table} (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -199,6 +268,7 @@ class Database {
 			tool_profile varchar(100) NOT NULL DEFAULT '',
 			max_iterations int(11) NOT NULL DEFAULT 10,
 			enabled tinyint(1) NOT NULL DEFAULT 0,
+			notification_channels longtext NOT NULL DEFAULT '',
 			last_run_at datetime DEFAULT NULL,
 			next_run_at datetime DEFAULT NULL,
 			run_count int(11) NOT NULL DEFAULT 0,
@@ -245,6 +315,109 @@ class Database {
 			PRIMARY KEY  (id),
 			KEY hook_name (hook_name),
 			KEY enabled (enabled)
+		) {$charset};
+
+		CREATE TABLE {$conversation_templates_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			slug varchar(100) NOT NULL,
+			name varchar(255) NOT NULL,
+			description text NOT NULL DEFAULT '',
+			prompt longtext NOT NULL,
+			category varchar(50) NOT NULL DEFAULT 'general',
+			icon varchar(100) NOT NULL DEFAULT 'admin-comments',
+			is_builtin tinyint(1) NOT NULL DEFAULT 0,
+			sort_order int(11) NOT NULL DEFAULT 0,
+			created_at datetime NOT NULL,
+			updated_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY slug (slug),
+			KEY category (category),
+			KEY is_builtin (is_builtin)
+		) {$charset};
+
+		CREATE TABLE {$git_tracked_files_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			file_path varchar(500) NOT NULL,
+			file_type varchar(20) NOT NULL DEFAULT 'plugin',
+			package_slug varchar(255) NOT NULL DEFAULT '',
+			original_hash varchar(64) NOT NULL DEFAULT '',
+			original_content longblob NOT NULL,
+			current_hash varchar(64) NOT NULL DEFAULT '',
+			status varchar(20) NOT NULL DEFAULT 'unchanged',
+			tracked_at datetime NOT NULL,
+			modified_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY file_path (file_path(255)),
+			KEY package_slug (package_slug),
+			KEY file_type (file_type),
+			KEY status (status)
+		) {$charset};
+
+		CREATE TABLE {$changes_log_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			session_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			object_type varchar(50) NOT NULL DEFAULT '',
+			object_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			object_title varchar(255) NOT NULL DEFAULT '',
+			ability_name varchar(100) NOT NULL DEFAULT '',
+			field_name varchar(100) NOT NULL DEFAULT '',
+			before_value longtext NOT NULL,
+			after_value longtext NOT NULL,
+			reverted tinyint(1) NOT NULL DEFAULT 0,
+			reverted_at datetime DEFAULT NULL,
+			created_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			KEY session_id (session_id),
+			KEY user_id (user_id),
+			KEY object_type_id (object_type, object_id),
+			KEY reverted (reverted),
+			KEY created_at (created_at)
+		) {$charset};
+
+		CREATE TABLE {$modified_files_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			plugin_slug varchar(255) NOT NULL DEFAULT '',
+			file_path varchar(1000) NOT NULL DEFAULT '',
+			action varchar(20) NOT NULL DEFAULT 'write',
+			session_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			modified_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			KEY plugin_slug (plugin_slug),
+			KEY session_id (session_id),
+			KEY modified_at (modified_at)
+		) {$charset};
+
+		CREATE TABLE {$agents_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			slug varchar(100) NOT NULL,
+			name varchar(255) NOT NULL,
+			description text NOT NULL DEFAULT '',
+			system_prompt longtext NOT NULL DEFAULT '',
+			provider_id varchar(100) NOT NULL DEFAULT '',
+			model_id varchar(100) NOT NULL DEFAULT '',
+			tool_profile varchar(100) NOT NULL DEFAULT '',
+			temperature decimal(3,2) DEFAULT NULL,
+			max_iterations int(11) DEFAULT NULL,
+			greeting text NOT NULL DEFAULT '',
+			avatar_icon varchar(100) NOT NULL DEFAULT '',
+			enabled tinyint(1) NOT NULL DEFAULT 1,
+			created_at datetime NOT NULL,
+			updated_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY slug (slug),
+			KEY enabled (enabled)
+		) {$charset};
+
+		CREATE TABLE {$shared_sessions_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			session_id bigint(20) unsigned NOT NULL,
+			shared_by bigint(20) unsigned NOT NULL,
+			shared_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY session_id (session_id),
+			KEY shared_by (shared_by)
 		) {$charset};";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -261,6 +434,9 @@ class Database {
 		// Seed built-in skills.
 		Skill::seed_builtins();
 
+		// Seed built-in conversation templates.
+		ConversationTemplate::seed_builtins();
+
 		// Seed example custom tools.
 		CustomTools::seed_examples();
 
@@ -270,7 +446,7 @@ class Database {
 	/**
 	 * Create a new session.
 	 *
-	 * @param array $data Session data: user_id, title, provider_id, model_id.
+	 * @param array<string, mixed> $data Session data: user_id, title, provider_id, model_id.
 	 * @return int|false Inserted row ID or false on failure.
 	 */
 	public static function create_session( array $data ) {
@@ -318,9 +494,9 @@ class Database {
 	/**
 	 * List sessions for a user (lightweight — no messages/tool_calls).
 	 *
-	 * @param int   $user_id WordPress user ID.
-	 * @param array $filters Optional filters: status, folder, search, pinned.
-	 * @return array Array of session summary objects.
+	 * @param int                  $user_id WordPress user ID.
+	 * @param array<string, mixed> $filters Optional filters: status, folder, search, pinned.
+	 * @return array<string, mixed> Array of session summary objects.
 	 */
 	public static function list_sessions( int $user_id, array $filters = [] ): array {
 		global $wpdb;
@@ -362,7 +538,7 @@ class Database {
 	 * List distinct folders for a user.
 	 *
 	 * @param int $user_id WordPress user ID.
-	 * @return array Array of folder name strings.
+	 * @return array<string, mixed> Array of folder name strings.
 	 */
 	public static function list_folders( int $user_id ): array {
 		global $wpdb;
@@ -384,9 +560,9 @@ class Database {
 	/**
 	 * Bulk update sessions.
 	 *
-	 * @param array $session_ids Array of session IDs.
-	 * @param int   $user_id     User ID for ownership check.
-	 * @param array $data        Fields to update (status, pinned, folder).
+	 * @param array<string, mixed> $session_ids Array of session IDs.
+	 * @param int                  $user_id     User ID for ownership check.
+	 * @param array<string, mixed> $data        Fields to update (status, pinned, folder).
 	 * @return int Number of rows affected.
 	 */
 	public static function bulk_update_sessions( array $session_ids, int $user_id, array $data ): int {
@@ -448,7 +624,7 @@ class Database {
 	/**
 	 * Log a usage record.
 	 *
-	 * @param array $data Usage data: user_id, session_id, provider_id, model_id, prompt_tokens, completion_tokens, cost_usd.
+	 * @param array<string, mixed> $data Usage data: user_id, session_id, provider_id, model_id, prompt_tokens, completion_tokens, cost_usd.
 	 * @return int|false Inserted row ID or false.
 	 */
 	public static function log_usage( array $data ) {
@@ -476,8 +652,8 @@ class Database {
 	/**
 	 * Get usage summary with optional filters.
 	 *
-	 * @param array $filters Optional: user_id, period (7d, 30d, all), start_date, end_date.
-	 * @return array Summary with totals and per-model breakdown.
+	 * @param array<string, mixed> $filters Optional: user_id, period (7d, 30d, all), start_date, end_date.
+	 * @return array<string, mixed> Summary with totals and per-model breakdown.
 	 */
 	public static function get_usage_summary( array $filters = [] ): array {
 		global $wpdb;
@@ -550,8 +726,8 @@ class Database {
 	/**
 	 * Update session fields.
 	 *
-	 * @param int   $session_id Session ID.
-	 * @param array $data       Fields to update.
+	 * @param int                  $session_id Session ID.
+	 * @param array<string, mixed> $data       Fields to update.
 	 * @return bool Whether the update succeeded.
 	 */
 	public static function update_session( int $session_id, array $data ): bool {
@@ -636,6 +812,9 @@ class Database {
 	 * @param array $messages   New message arrays to append.
 	 * @param array $tool_calls New tool call log entries to append.
 	 * @return bool Whether the update succeeded.
+	 *
+	 * @phpstan-param list<mixed>                $messages
+	 * @phpstan-param list<array<string, mixed>> $tool_calls
 	 */
 	public static function append_to_session( int $session_id, array $messages, array $tool_calls = [] ): bool {
 		$session = self::get_session( $session_id );
@@ -657,5 +836,293 @@ class Database {
 				'tool_calls' => wp_json_encode( $merged_tool_calls ),
 			]
 		);
+	}
+
+	/**
+	 * Migrate database tables, options, and cron hooks from the old "ai_agent" naming.
+	 *
+	 * This runs once on upgrade from the pre-rename plugin version. It detects old
+	 * table names and options, renames/migrates them, then sets a flag so it won't
+	 * run again.
+	 */
+	private static function maybe_migrate_from_old_names(): void {
+		// Skip if migration already completed.
+		if ( get_option( 'gratis_ai_agent_migrated_from_ai_agent' ) ) {
+			return;
+		}
+
+		// Skip if there's no old DB version option (fresh install, never had old plugin).
+		$old_db_version = get_option( 'ai_agent_db_version' );
+		if ( false === $old_db_version ) {
+			return;
+		}
+
+		global $wpdb;
+
+		// 1. Rename database tables.
+		$old_tables = [
+			'ai_agent_sessions',
+			'ai_agent_usage',
+			'ai_agent_memories',
+			'ai_agent_skills',
+			'ai_agent_custom_tools',
+			'ai_agent_automations',
+			'ai_agent_automation_logs',
+			'ai_agent_event_automations',
+			'ai_agent_knowledge_collections',
+			'ai_agent_knowledge_sources',
+			'ai_agent_knowledge_chunks',
+		];
+
+		foreach ( $old_tables as $old_suffix ) {
+			$old_name = $wpdb->prefix . $old_suffix;
+			$new_name = $wpdb->prefix . 'gratis_' . $old_suffix;
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- One-time migration rename.
+			$table_exists = $wpdb->get_var(
+				$wpdb->prepare( 'SHOW TABLES LIKE %s', $old_name )
+			);
+
+			if ( $table_exists ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- One-time migration; table names from internal constants.
+				$wpdb->query( "RENAME TABLE `{$old_name}` TO `{$new_name}`" );
+			}
+		}
+
+		// 2. Migrate options.
+		$option_map = [
+			'ai_agent_db_version'          => self::DB_VERSION_OPTION,
+			'ai_agent_settings'            => 'gratis_ai_agent_settings',
+			'ai_agent_claude_max_token'    => 'gratis_ai_agent_claude_max_token',
+			'ai_agent_tool_profiles'       => 'gratis_ai_agent_tool_profiles',
+			'ai_agent_custom_tools_seeded' => 'gratis_ai_agent_custom_tools_seeded',
+		];
+
+		foreach ( $option_map as $old_key => $new_key ) {
+			$old_value = get_option( $old_key );
+			if ( false !== $old_value ) {
+				update_option( $new_key, $old_value );
+				delete_option( $old_key );
+			}
+		}
+
+		// 3. Migrate cron hooks.
+		$old_cron_hook = 'wp_ai_agent_reindex';
+		$new_cron_hook = 'wp_gratis_ai_agent_reindex';
+		$timestamp     = wp_next_scheduled( $old_cron_hook );
+		if ( $timestamp ) {
+			wp_unschedule_event( $timestamp, $old_cron_hook );
+			if ( ! wp_next_scheduled( $new_cron_hook ) ) {
+				wp_schedule_event( time(), 'hourly', $new_cron_hook );
+			}
+		}
+
+		// Mark migration as complete.
+		update_option( 'gratis_ai_agent_migrated_from_ai_agent', '1' );
+	}
+
+	/**
+	 * Record a file modification by the AI agent.
+	 *
+	 * @param string $file_path  Relative path from wp-content (e.g. "plugins/my-plugin/file.php").
+	 * @param string $action     The action performed: 'write' or 'edit'.
+	 * @param int    $session_id Session ID (0 if not in a session).
+	 * @param int    $user_id    User ID performing the action.
+	 * @return int|false Inserted row ID or false on failure.
+	 */
+	public static function record_modified_file( string $file_path, string $action = 'write', int $session_id = 0, int $user_id = 0 ) {
+		global $wpdb;
+
+		// Extract plugin slug from path like "plugins/my-plugin/..." → "my-plugin".
+		$plugin_slug = self::extract_plugin_slug( $file_path );
+
+		// Only track files inside a plugin directory.
+		if ( '' === $plugin_slug ) {
+			return false;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom table insert; caching not applicable.
+		$result = $wpdb->insert(
+			self::modified_files_table_name(),
+			[
+				'plugin_slug' => $plugin_slug,
+				'file_path'   => $file_path,
+				'action'      => $action,
+				'session_id'  => $session_id,
+				'user_id'     => $user_id,
+				'modified_at' => current_time( 'mysql', true ),
+			],
+			[ '%s', '%s', '%s', '%d', '%d', '%s' ]
+		);
+
+		return $result ? (int) $wpdb->insert_id : false;
+	}
+
+	/**
+	 * Get a list of plugins that have been modified by the AI agent.
+	 *
+	 * Returns one row per plugin slug with the modification count and
+	 * the timestamp of the most recent modification.
+	 *
+	 * @return list<object{plugin_slug: string, modification_count: int, last_modified: string}>
+	 */
+	public static function get_modified_plugins(): array {
+		global $wpdb;
+
+		$table = self::modified_files_table_name();
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table query; table name from internal method.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT plugin_slug,
+				        COUNT(*) AS modification_count,
+				        MAX(modified_at) AS last_modified
+				 FROM %i
+				 GROUP BY plugin_slug
+				 ORDER BY last_modified DESC',
+				$table
+			)
+		);
+
+		return $rows ?? [];
+	}
+
+	/**
+	 * Get all modified file records for a specific plugin slug.
+	 *
+	 * @param string $plugin_slug Plugin directory slug.
+	 * @return list<object>
+	 */
+	public static function get_modified_files_for_plugin( string $plugin_slug ): array {
+		global $wpdb;
+
+		$table = self::modified_files_table_name();
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table query; table name from internal method.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT * FROM %i WHERE plugin_slug = %s ORDER BY modified_at DESC',
+				$table,
+				$plugin_slug
+			)
+		);
+
+		return $rows ?? [];
+	}
+
+	/**
+	 * Extract the plugin slug (directory name) from a wp-content-relative path.
+	 *
+	 * E.g. "plugins/my-plugin/includes/file.php" → "my-plugin"
+	 *      "themes/my-theme/style.css"            → "" (not a plugin)
+	 *
+	 * @param string $file_path Path relative to wp-content.
+	 * @return string Plugin slug, or empty string if not inside a plugin directory.
+	 */
+	public static function extract_plugin_slug( string $file_path ): string {
+		$file_path = ltrim( $file_path, '/\\' );
+
+		// Must start with "plugins/".
+		if ( strpos( $file_path, 'plugins/' ) !== 0 ) {
+			return '';
+		}
+
+		// Strip the "plugins/" prefix and get the first path segment.
+		$remainder = substr( $file_path, strlen( 'plugins/' ) );
+		$parts     = explode( '/', $remainder, 2 );
+
+		return $parts[0] ?? '';
+	}
+
+	// ─── Shared Sessions ─────────────────────────────────────────────────────
+
+	/**
+	 * Share a session (make it visible to all admins).
+	 *
+	 * @param int $session_id Session ID to share.
+	 * @param int $shared_by  User ID of the admin sharing the session.
+	 * @return bool Whether the insert succeeded.
+	 */
+	public static function share_session( int $session_id, int $shared_by ): bool {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom table query; caching not applicable.
+		$result = $wpdb->replace(
+			self::shared_sessions_table_name(),
+			[
+				'session_id' => $session_id,
+				'shared_by'  => $shared_by,
+				'shared_at'  => current_time( 'mysql', true ),
+			],
+			[ '%d', '%d', '%s' ]
+		);
+
+		return $result !== false;
+	}
+
+	/**
+	 * Unshare a session (remove from shared sessions).
+	 *
+	 * @param int $session_id Session ID to unshare.
+	 * @return bool Whether the delete succeeded.
+	 */
+	public static function unshare_session( int $session_id ): bool {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table query; caching not applicable.
+		$result = $wpdb->delete(
+			self::shared_sessions_table_name(),
+			[ 'session_id' => $session_id ],
+			[ '%d' ]
+		);
+
+		return $result !== false;
+	}
+
+	/**
+	 * Check whether a session is shared.
+	 *
+	 * @param int $session_id Session ID.
+	 * @return object|null Shared session row (with shared_by, shared_at) or null.
+	 */
+	public static function get_shared_session( int $session_id ) {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table query; caching not applicable.
+		return $wpdb->get_row(
+			$wpdb->prepare(
+				'SELECT * FROM %i WHERE session_id = %d',
+				self::shared_sessions_table_name(),
+				$session_id
+			)
+		);
+	}
+
+	/**
+	 * List all shared sessions (full session rows + sharing metadata).
+	 *
+	 * Returns sessions that have been shared by any admin, ordered by most recently updated.
+	 *
+	 * @return array<string, mixed> Array of session rows with is_shared=1 and shared_by fields.
+	 */
+	public static function list_shared_sessions(): array {
+		global $wpdb;
+
+		$sessions_table = self::table_name();
+		$shared_table   = self::shared_sessions_table_name();
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table query; table names from internal methods.
+		return $wpdb->get_results(
+			"SELECT s.id, s.user_id, s.title, s.provider_id, s.model_id, s.status,
+				s.pinned, s.folder, s.created_at, s.updated_at,
+				JSON_LENGTH(s.messages) AS message_count,
+				1 AS is_shared,
+				ss.shared_by, ss.shared_at
+			FROM {$sessions_table} s
+			INNER JOIN {$shared_table} ss ON ss.session_id = s.id
+			WHERE s.status = 'active'
+			ORDER BY s.updated_at DESC"
+		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 	}
 }

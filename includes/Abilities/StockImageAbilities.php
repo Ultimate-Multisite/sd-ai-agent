@@ -7,10 +7,10 @@ declare(strict_types=1);
  * Provides a simple keyword-based image import tool that avoids the complexity
  * of the WP-CLI media/import schema (porcelain typing, redirect URLs, etc.).
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Abilities;
+namespace GratisAiAgent\Abilities;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -36,9 +36,9 @@ class StockImageAbilities {
 		wp_register_ability(
 			'ai-agent/import-stock-image',
 			[
-				'label'               => __( 'Import Stock Image', 'ai-agent' ),
-				'description'         => __( 'Import a stock image into the media library by keyword. Returns attachment ID and URL. Use site_url to target a subsite.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Import Stock Image', 'gratis-ai-agent' ),
+				'description'         => __( 'Import a stock image into the media library by keyword. Returns attachment ID and URL. Use site_url to target a subsite.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -61,28 +61,72 @@ class StockImageAbilities {
 					],
 					'required'   => [ 'keyword' ],
 				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'attachment_id' => [ 'type' => 'integer' ],
+						'url'           => [ 'type' => 'string' ],
+						'alt'           => [ 'type' => 'string' ],
+						'title'         => [ 'type' => 'string' ],
+						'error'         => [ 'type' => 'string' ],
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_import' ],
-				'permission_callback' => function () {
-					return current_user_can( 'upload_files' );
-				},
+				'permission_callback' => [ __CLASS__, 'check_permission' ],
 			]
 		);
 	}
 
 	/**
+	 * Permission callback: check upload_files on the target blog, not just the current one.
+	 *
+	 * On multisite, a user who can upload on site A but not site B must not be
+	 * allowed to import media into site B by passing its URL.
+	 *
+	 * @param array<string,mixed> $input Input with optional site_url.
+	 * @return bool Whether the current user can upload files on the target blog.
+	 */
+	public static function check_permission( array $input ): bool {
+		$site_url = (string) ( $input['site_url'] ?? '' );
+
+		if ( '' === $site_url || ! is_multisite() ) {
+			return current_user_can( 'upload_files' );
+		}
+
+		$blog_id = get_blog_id_from_url(
+			(string) ( wp_parse_url( $site_url, PHP_URL_HOST ) ?? '' ),
+			(string) ( wp_parse_url( $site_url, PHP_URL_PATH ) ?: '/' )
+		);
+
+		if ( ! $blog_id ) {
+			return false;
+		}
+
+		if ( (int) $blog_id === get_current_blog_id() ) {
+			return current_user_can( 'upload_files' );
+		}
+
+		switch_to_blog( $blog_id );
+		$allowed = current_user_can( 'upload_files' );
+		restore_current_blog();
+
+		return $allowed;
+	}
+
+	/**
 	 * Handle the import-stock-image ability call.
 	 *
-	 * @param array $input Input with keyword, optional site_url, width, height.
-	 * @return array Result with attachment_id, url, alt, title or error.
+	 * @param array<string,mixed> $input Input with keyword, optional site_url, width, height.
+	 * @return array<string,mixed>|\WP_Error Result with attachment_id, url, alt, title or error.
 	 */
-	public static function handle_import( array $input ): array {
+	public static function handle_import( array $input ) {
 		$keyword  = sanitize_text_field( $input['keyword'] ?? '' );
 		$site_url = $input['site_url'] ?? '';
 		$width    = (int) ( $input['width'] ?? 1200 );
 		$height   = (int) ( $input['height'] ?? 800 );
 
 		if ( empty( $keyword ) ) {
-			return [ 'error' => 'keyword is required.' ];
+			return new \WP_Error( 'missing_keyword', 'keyword is required.' );
 		}
 
 		// Clamp dimensions to reasonable range.
@@ -94,8 +138,8 @@ class StockImageAbilities {
 
 		if ( ! empty( $site_url ) && is_multisite() ) {
 			$blog_id = get_blog_id_from_url(
-				wp_parse_url( $site_url, PHP_URL_HOST ),
-				wp_parse_url( $site_url, PHP_URL_PATH ) ?: '/'
+				(string) ( wp_parse_url( $site_url, PHP_URL_HOST ) ?? '' ),
+				(string) ( wp_parse_url( $site_url, PHP_URL_PATH ) ?: '/' )
 			);
 
 			if ( $blog_id && $blog_id !== get_current_blog_id() ) {
@@ -121,7 +165,7 @@ class StockImageAbilities {
 	 * @param string $keyword Search keyword.
 	 * @param int    $width   Image width.
 	 * @param int    $height  Image height.
-	 * @return array Result array.
+	 * @return array<string,mixed> Result array.
 	 */
 	private static function download_and_import( string $keyword, int $width, int $height ): array {
 		// Build a deterministic-ish lock so the same keyword doesn't always
@@ -187,6 +231,7 @@ class StockImageAbilities {
 			'url'           => $attachment_url,
 			'alt'           => $title,
 			'title'         => $title,
+			'tip'           => 'Use this attachment_id as featured_image_id when calling create-post or update-post.',
 		];
 	}
 }

@@ -7,10 +7,10 @@ declare(strict_types=1);
  * Manages three tables: collections, sources, chunks.
  * Provides static CRUD methods and FULLTEXT search.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Knowledge;
+namespace GratisAiAgent\Knowledge;
 
 class KnowledgeDatabase {
 
@@ -19,7 +19,7 @@ class KnowledgeDatabase {
 	 */
 	public static function collections_table(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_agent_knowledge_collections';
+		return $wpdb->prefix . 'gratis_ai_agent_knowledge_collections';
 	}
 
 	/**
@@ -27,7 +27,7 @@ class KnowledgeDatabase {
 	 */
 	public static function sources_table(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_agent_knowledge_sources';
+		return $wpdb->prefix . 'gratis_ai_agent_knowledge_sources';
 	}
 
 	/**
@@ -35,7 +35,7 @@ class KnowledgeDatabase {
 	 */
 	public static function chunks_table(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_agent_knowledge_chunks';
+		return $wpdb->prefix . 'gratis_ai_agent_knowledge_chunks';
 	}
 
 	/**
@@ -106,7 +106,7 @@ class KnowledgeDatabase {
 	/**
 	 * Create a knowledge collection.
 	 *
-	 * @param array $data Collection data: name, slug, description, auto_index, source_config.
+	 * @param array<string, mixed> $data Collection data: name, slug, description, auto_index, source_config.
 	 * @return int|false Inserted row ID or false on failure.
 	 */
 	public static function create_collection( array $data ) {
@@ -185,8 +185,8 @@ class KnowledgeDatabase {
 	/**
 	 * Update a collection.
 	 *
-	 * @param int   $id   Collection ID.
-	 * @param array $data Fields to update.
+	 * @param int                  $id   Collection ID.
+	 * @param array<string, mixed> $data Fields to update.
 	 * @return bool
 	 */
 	public static function update_collection( int $id, array $data ): bool {
@@ -256,7 +256,7 @@ class KnowledgeDatabase {
 	 * List all collections.
 	 *
 	 * @param string|null $status Optional status filter.
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public static function list_collections( ?string $status = null ): array {
 		global $wpdb;
@@ -296,7 +296,7 @@ class KnowledgeDatabase {
 	/**
 	 * Create a source record.
 	 *
-	 * @param array $data Source data.
+	 * @param array<string, mixed> $data Source data.
 	 * @return int|false Inserted row ID or false.
 	 */
 	public static function create_source( array $data ) {
@@ -368,8 +368,8 @@ class KnowledgeDatabase {
 	/**
 	 * Update a source record.
 	 *
-	 * @param int   $id   Source ID.
-	 * @param array $data Fields to update.
+	 * @param int                  $id   Source ID.
+	 * @param array<string, mixed> $data Fields to update.
 	 * @return bool
 	 */
 	public static function update_source( int $id, array $data ): bool {
@@ -410,7 +410,7 @@ class KnowledgeDatabase {
 	 * Get all sources for a collection.
 	 *
 	 * @param int $collection_id Collection ID.
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public static function get_sources_for_collection( int $collection_id ): array {
 		global $wpdb;
@@ -457,9 +457,9 @@ class KnowledgeDatabase {
 	/**
 	 * Bulk insert chunks for a source.
 	 *
-	 * @param int   $collection_id Collection ID.
-	 * @param int   $source_id     Source ID.
-	 * @param array $chunks        Array of chunk arrays with 'text', 'index', and optional 'metadata'.
+	 * @param int                        $collection_id Collection ID.
+	 * @param int                        $source_id     Source ID.
+	 * @param list<array<string, mixed>> $chunks        Array of chunk arrays with 'text', 'index', and optional 'metadata'.
 	 * @return int Number of chunks inserted.
 	 */
 	public static function insert_chunks( int $collection_id, int $source_id, array $chunks ): int {
@@ -520,7 +520,7 @@ class KnowledgeDatabase {
 	 * @param string   $query         Search query.
 	 * @param int|null $collection_id Optional collection filter.
 	 * @param int      $limit         Max results.
-	 * @return array Array of chunk objects with relevance score.
+	 * @return array<string, mixed> Array of chunk objects with relevance score.
 	 */
 	public static function search_chunks( string $query, ?int $collection_id = null, int $limit = 10 ): array {
 		global $wpdb;
@@ -532,7 +532,7 @@ class KnowledgeDatabase {
 		// Build boolean mode search terms: prefix each word with +.
 		$words         = preg_split( '/\s+/', trim( $query ) );
 		$boolean_terms = [];
-		foreach ( $words as $word ) {
+		foreach ( $words ?: [] as $word ) {
 			$word = preg_replace( '/[^\w]/', '', $word );
 			if ( strlen( $word ) > 1 ) {
 				$boolean_terms[] = '+' . $word . '*';

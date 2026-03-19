@@ -4,10 +4,10 @@ declare(strict_types=1);
 /**
  * Memory system — persistent storage for agent knowledge.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Models;
+namespace GratisAiAgent\Models;
 
 class Memory {
 
@@ -21,14 +21,14 @@ class Memory {
 	 */
 	public static function table_name(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_agent_memories';
+		return $wpdb->prefix . 'gratis_ai_agent_memories';
 	}
 
 	/**
 	 * Get all memories, optionally filtered by category.
 	 *
 	 * @param string|null $category Optional category filter.
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public static function get_all( ?string $category = null ): array {
 		global $wpdb;
@@ -59,7 +59,7 @@ class Memory {
 	 * Get memories by category.
 	 *
 	 * @param string $category Category name.
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public static function get_by_category( string $category ): array {
 		return self::get_all( $category );
@@ -98,8 +98,8 @@ class Memory {
 	/**
 	 * Update an existing memory.
 	 *
-	 * @param int   $id   Memory ID.
-	 * @param array $data Fields to update (category, content).
+	 * @param int                  $id   Memory ID.
+	 * @param array<string, mixed> $data Fields to update (category, content).
 	 * @return bool
 	 */
 	public static function update( int $id, array $data ): bool {
@@ -150,7 +150,7 @@ class Memory {
 	 *
 	 * @param string $query Search query.
 	 * @param int    $limit Max results.
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public static function search( string $query, int $limit = 20 ): array {
 		global $wpdb;
@@ -160,7 +160,7 @@ class Memory {
 		// Build boolean mode search terms.
 		$words         = preg_split( '/\s+/', trim( $query ) );
 		$boolean_terms = [];
-		foreach ( $words as $word ) {
+		foreach ( $words ?: [] as $word ) {
 			$word = preg_replace( '/[^\w]/', '', $word );
 			if ( strlen( $word ) > 1 ) {
 				$boolean_terms[] = '+' . $word . '*';

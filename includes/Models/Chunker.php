@@ -7,10 +7,10 @@ declare(strict_types=1);
  * Recursively splits text into overlapping chunks suitable for
  * FULLTEXT search and future embedding generation.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Models;
+namespace GratisAiAgent\Models;
 
 class Chunker {
 
@@ -23,7 +23,7 @@ class Chunker {
 	 * @param string $text       The text to chunk.
 	 * @param int    $max_tokens Maximum tokens per chunk (estimated).
 	 * @param int    $overlap    Overlap tokens between adjacent chunks.
-	 * @return array Array of chunk arrays: {text, index, char_start, char_end}.
+	 * @return list<array<string, mixed>> Array of chunk arrays: {text, index, char_start, char_end}.
 	 */
 	public static function chunk( string $text, int $max_tokens = 500, int $overlap = 50 ): array {
 		$text = trim( $text );
@@ -51,7 +51,7 @@ class Chunker {
 		$paragraphs = preg_split( '/\n\s*\n/', $text );
 		$segments   = [];
 
-		foreach ( $paragraphs as $para ) {
+		foreach ( $paragraphs ?: [] as $para ) {
 			$para = trim( $para );
 			if ( empty( $para ) ) {
 				continue;
@@ -132,7 +132,7 @@ class Chunker {
 	 * Split text into sentences.
 	 *
 	 * @param string $text Input text.
-	 * @return array Array of sentence strings.
+	 * @return list<string> Array of sentence strings.
 	 */
 	private static function split_sentences( string $text ): array {
 		// Split on sentence-ending punctuation followed by whitespace.

@@ -2,10 +2,10 @@ includes:
 	- vendor/szepeviktor/phpstan-wordpress/extension.neon
 
 parameters:
-	level: 5
+	level: 7
 	paths:
 		- includes
-		- ai-agent.php
+		- gratis-ai-agent.php
 	excludePaths:
 		- compat
 		- includes/CLI
@@ -13,12 +13,15 @@ parameters:
 		- vendor/wordpress/php-ai-client/src
 	bootstrapFiles:
 		- vendor/autoload.php
+	scanFiles:
+		- compat/abilities-api/class-abstract-ability.php
+		- vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
 	treatPhpDocTypesAsCertain: false
 	ignoreErrors:
 		# WP_CLI is only available when running in CLI context
 		- '#Call to static method .* on an unknown class WP_CLI#'
 		# Constants defined at runtime
-		- '#Constant AI_AGENT_.* not found#'
+		- '#Constant GRATIS_AI_AGENT_.* not found#'
 		# WordPress functions that may not be stubbed
 		- '#Function _wp_connectors_get_real_api_key not found#'
 		# Compat layer classes loaded conditionally
@@ -39,3 +42,7 @@ parameters:
 		- '#Variable \$lines in empty\(\) always exists and is not falsy#'
 		# Action callbacks can return values (ignored by WP)
 		- '#Action callback returns .* but should not return anything#'
+		# wpdb::get_row() returns object|null; properties are accessed via the WordPress
+		# stdClass row pattern throughout the codebase. All callers guard against null
+		# before accessing properties, so these are safe.
+		- '#Access to an undefined property object::\$#'

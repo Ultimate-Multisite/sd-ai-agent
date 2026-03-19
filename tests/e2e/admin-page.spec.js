@@ -1,0 +1,605 @@
+/**
+ * E2E tests for the Gratis AI Agent full admin page.
+ *
+ * Tests the two-column layout with session sidebar and chat panel
+ * at /wp-admin/tools.php?page=gratis-ai-agent.
+ *
+ * Run: npm run test:e2e:playwright
+ */
+
+const { test, expect } = require( '@playwright/test' );
+const {
+	loginToWordPress,
+	goToAgentPage,
+	goToSettingsPage,
+	getMessageInput,
+	getSendButton,
+	getStopButton,
+	getChatPanel,
+	getMessageList,
+	waitForMessageSubmitted,
+} = require( './utils/wp-admin' );
+
+test.describe( 'Admin Page - Chat UI', () => {
+	test.beforeEach( async ( { page } ) => {
+		await loginToWordPress( page );
+		await goToAgentPage( page );
+	} );
+
+	test( 'admin page loads with correct layout', async ( { page } ) => {
+		// Two-column layout.
+		await expect( page.locator( '.gratis-ai-agent-layout' ) ).toBeVisible();
+		await expect( page.locator( '.ai-agent-sidebar' ) ).toBeVisible();
+		await expect( page.locator( '.gratis-ai-agent-main' ) ).toBeVisible();
+	} );
+
+	test( 'chat panel is visible on admin page', async ( { page } ) => {
+		const chatPanel = getChatPanel( page );
+		await expect( chatPanel ).toBeVisible();
+	} );
+
+	test( 'message input is present and focusable', async ( { page } ) => {
+		const input = getMessageInput( page );
+		await expect( input ).toBeVisible();
+		await input.focus();
+		await expect( input ).toBeFocused();
+	} );
+
+	test( 'message list container is present', async ( { page } ) => {
+		const messageList = getMessageList( page );
+		await expect( messageList ).toBeVisible();
+	} );
+
+	test( 'empty state is shown when no messages', async ( { page } ) => {
+		const emptyState = page.locator( '.ai-agent-empty-state' );
+		await expect( emptyState ).toBeVisible();
+	} );
+
+	test( 'send button is disabled when input is empty', async ( { page } ) => {
+		const sendButton = getSendButton( page );
+		await expect( sendButton ).toBeDisabled();
+	} );
+
+	test( 'send button enables when input has text', async ( { page } ) => {
+		const input = getMessageInput( page );
+		const sendButton = getSendButton( page );
+
+		await input.fill( 'Hello' );
+		await expect( sendButton ).toBeEnabled();
+	} );
+
+	test( 'clearing input disables send button', async ( { page } ) => {
+		const input = getMessageInput( page );
+		const sendButton = getSendButton( page );
+
+		await input.fill( 'Hello' );
+		await expect( sendButton ).toBeEnabled();
+
+		await input.fill( '' );
+		await expect( sendButton ).toBeDisabled();
+	} );
+
+	test( 'message input placeholder text is correct', async ( { page } ) => {
+		const input = getMessageInput( page );
+		await expect( input ).toHaveAttribute(
+			'placeholder',
+			'Type a message or / for commands…'
+		);
+	} );
+
+	test( 'sidebar has new chat button', async ( { page } ) => {
+		const newChatButton = page.locator( '.ai-agent-new-chat-btn' );
+		await expect( newChatButton ).toBeVisible();
+	} );
+
+	test( 'sidebar has session search input', async ( { page } ) => {
+		const searchInput = page.locator( '.gratis-ai-agent-sidebar-search' );
+		await expect( searchInput ).toBeVisible();
+	} );
+} );
+
+test.describe( 'Admin Page - Session Management', () => {
+	test.beforeEach( async ( { page } ) => {
+		await loginToWordPress( page );
+		await goToAgentPage( page );
+	} );
+
+	test( 'new chat button clears the current session', async ( { page } ) => {
+		// Type a message to create a session context.
+		const input = getMessageInput( page );
+		await input.fill( 'Test message' );
+		await input.press( 'Enter' );
+
+		// Wait for the user message row to appear — this confirms the message
+		// was submitted and appended to the chat. The message row is added
+		// synchronously before any async REST calls, so it is a stable signal
+		// on all WP versions (including trunk where the stop button may
+		// disappear quickly if the backend returns an error fast).
+		await waitForMessageSubmitted( page );
+
+		// Click new chat.
+		const newChatButton = page.locator( '.ai-agent-new-chat-btn' );
+		await newChatButton.click();
+
+		// Empty state should reappear.
+		const emptyState = page.locator( '.ai-agent-empty-state' );
+		await expect( emptyState ).toBeVisible( { timeout: 5_000 } );
+	} );
+
+	test( 'session list shows sessions after a message is sent', async ( {
+		page,
+	} ) => {
+		const input = getMessageInput( page );
+		await input.fill( 'Create a session' );
+		await input.press( 'Enter' );
+
+		// Wait for the user message row to appear — this confirms the message
+		// was submitted. The session is created via POST /sessions before the
+		// background job is spawned, and the session list is refreshed after
+		// session creation. Using the message row (appended synchronously) is
+		// more reliable than the stop button, which may disappear quickly on
+		// WP trunk if the backend returns an error response fast.
+		await waitForMessageSubmitted( page );
+
+		// At least one session item should appear in the sidebar.
+		// Use toBeVisible() on the first item rather than toHaveCount(1) because
+		// prior tests in the same run may have created sessions that persist in
+		// the wp-env database across tests.
+		const sessionItems = page.locator( '.ai-agent-session-item' );
+		await expect( sessionItems.first() ).toBeVisible( { timeout: 10_000 } );
+	} );
+} );
+
+test.describe( 'Admin Page - Keyboard Shortcuts', () => {
+	test.beforeEach( async ( { page } ) => {
+		await loginToWordPress( page );
+		await goToAgentPage( page );
+	} );
+
+	test( 'Ctrl+N / Cmd+N starts a new chat', async ( { page } ) => {
+		const input = getMessageInput( page );
+		await input.fill( 'Some text' );
+		await input.press( 'Enter' );
+
+		// Wait for the user message row to appear — this confirms the message
+		// was submitted. The message row is appended synchronously before any
+		// async REST calls, making it a stable signal on all WP versions. The
+		// stop button is transient and may disappear quickly on WP trunk if the
+		// backend returns an error response fast (no AI provider in CI).
+		await waitForMessageSubmitted( page );
+
+		// Trigger new chat shortcut.
+		await page.keyboard.press( 'ControlOrMeta+n' );
+
+		const emptyState = page.locator( '.ai-agent-empty-state' );
+		await expect( emptyState ).toBeVisible( { timeout: 5_000 } );
+	} );
+
+	test( 'Ctrl+K / Cmd+K focuses the sidebar search', async ( { page } ) => {
+		await page.keyboard.press( 'ControlOrMeta+k' );
+
+		const searchInput = page.locator( '.gratis-ai-agent-sidebar-search' );
+		await expect( searchInput ).toBeFocused();
+	} );
+} );
+
+/**
+ * Abilities search and filter (t098)
+ *
+ * The Settings > Abilities tab renders AbilitiesManager which provides:
+ *   - A SearchControl that filters abilities by name/description.
+ *   - A SelectControl that filters by category.
+ *   - Collapsible category sections with Expand all / Collapse all buttons.
+ *   - A result count paragraph that updates as filters change.
+ *
+ * These tests navigate to the settings page, activate the Abilities tab, and
+ * verify each UI feature. Assertions are environment-agnostic: the total
+ * ability count is read dynamically from the DOM, and filter assertions verify
+ * relative changes (filtered < total) rather than hardcoded counts.
+ */
+test.describe( 'Settings - Abilities Search and Filter (t098)', () => {
+	test.beforeEach( async ( { page } ) => {
+		await loginToWordPress( page );
+		await goToSettingsPage( page, 'abilities' );
+	} );
+
+	/**
+	 * Parse the integer total from the count element text.
+	 * Handles both "N abilities" (unfiltered) and "Showing X of N abilities"
+	 * (filtered) formats.
+	 *
+	 * @param {import('@playwright/test').Page} page
+	 * @return {Promise<number>} The total ability count shown in the UI.
+	 */
+	async function getTotalAbilityCount( page ) {
+		const countEl = page.locator( '.ai-agent-abilities-count' );
+		await expect( countEl ).toBeVisible();
+		const text = await countEl.textContent();
+		// "Showing X of N abilities" → capture N
+		const ofMatch = text.match( /of\s+(\d+)/ );
+		if ( ofMatch ) {
+			return parseInt( ofMatch[ 1 ], 10 );
+		}
+		// "N abilities" → capture N
+		const simpleMatch = text.match( /(\d+)/ );
+		if ( simpleMatch ) {
+			return parseInt( simpleMatch[ 1 ], 10 );
+		}
+		throw new Error( `Unexpected count text: "${ text }"` );
+	}
+
+	/**
+	 * Parse the filtered count from "Showing X of N abilities" text.
+	 *
+	 * @param {import('@playwright/test').Page} page
+	 * @return {Promise<number>} The filtered (shown) ability count.
+	 */
+	async function getFilteredAbilityCount( page ) {
+		const countEl = page.locator( '.ai-agent-abilities-count' );
+		const text = await countEl.textContent();
+		const match = text.match( /Showing\s+(\d+)\s+of/ );
+		if ( match ) {
+			return parseInt( match[ 1 ], 10 );
+		}
+		throw new Error( `Expected "Showing X of N" format, got: "${ text }"` );
+	}
+
+	/**
+	 * Get the value of the first non-empty option in the category select.
+	 * Returns null if no non-empty options exist.
+	 *
+	 * @param {import('@playwright/test').Page} page
+	 * @return {Promise<string|null>} The first non-empty option value, or null.
+	 */
+	async function getFirstCategoryOption( page ) {
+		const categorySelect = page
+			.locator( '.ai-agent-abilities-filters' )
+			.locator( 'select' );
+		const options = await categorySelect.locator( 'option' ).all();
+		for ( const option of options ) {
+			const value = await option.getAttribute( 'value' );
+			if ( value && value.trim() !== '' ) {
+				return value;
+			}
+		}
+		return null;
+	}
+
+	test( 'abilities manager renders with search and category controls', async ( {
+		page,
+	} ) => {
+		// The AbilitiesManager toolbar contains a SearchControl and a
+		// SelectControl for category filtering.
+		const manager = page.locator( '.ai-agent-abilities-manager' );
+		await expect( manager ).toBeVisible();
+
+		// SearchControl renders an <input> inside .ai-agent-abilities-search.
+		const searchInput = page
+			.locator( '.ai-agent-abilities-search' )
+			.locator( 'input' );
+		await expect( searchInput ).toBeVisible();
+
+		// Category SelectControl renders a <select> inside .ai-agent-abilities-filters.
+		const categorySelect = page
+			.locator( '.ai-agent-abilities-filters' )
+			.locator( 'select' );
+		await expect( categorySelect ).toBeVisible();
+	} );
+
+	test( 'abilities count shows total when no filter is active', async ( {
+		page,
+	} ) => {
+		// The count paragraph shows "N abilities" when all are visible.
+		// Assert the count is a positive number without hardcoding the value.
+		const countEl = page.locator( '.ai-agent-abilities-count' );
+		await expect( countEl ).toBeVisible();
+		const total = await getTotalAbilityCount( page );
+		expect( total ).toBeGreaterThan( 0 );
+	} );
+
+	test( 'search input filters abilities by name', async ( { page } ) => {
+		const searchInput = page
+			.locator( '.ai-agent-abilities-search' )
+			.locator( 'input' );
+
+		// Read the total before filtering.
+		const total = await getTotalAbilityCount( page );
+
+		// Type "post" — matches abilities whose name or label contains "post".
+		await searchInput.fill( 'post' );
+
+		// Count paragraph should update to "Showing X of N abilities" where X < N.
+		const countEl = page.locator( '.ai-agent-abilities-count' );
+		await expect( countEl ).toContainText( 'Showing' );
+		const filtered = await getFilteredAbilityCount( page );
+		expect( filtered ).toBeGreaterThan( 0 );
+		expect( filtered ).toBeLessThan( total );
+
+		// At least one category section should be visible (has matching abilities).
+		const visibleSections = page.locator( '.ai-agent-abilities-category' );
+		await expect( visibleSections.first() ).toBeVisible();
+	} );
+
+	test( 'search input filters abilities by description', async ( {
+		page,
+	} ) => {
+		const searchInput = page
+			.locator( '.ai-agent-abilities-search' )
+			.locator( 'input' );
+
+		// Read the total before filtering.
+		const total = await getTotalAbilityCount( page );
+
+		// "post" matches abilities whose description mentions posts.
+		await searchInput.fill( 'post' );
+
+		// Count paragraph should update to "Showing X of N abilities" where X < N.
+		const countEl = page.locator( '.ai-agent-abilities-count' );
+		await expect( countEl ).toContainText( 'Showing' );
+		const filtered = await getFilteredAbilityCount( page );
+		expect( filtered ).toBeGreaterThan( 0 );
+		expect( filtered ).toBeLessThan( total );
+
+		// At least one category section should be visible.
+		const visibleSections = page.locator( '.ai-agent-abilities-category' );
+		await expect( visibleSections.first() ).toBeVisible();
+	} );
+
+	test( 'clearing search restores full list', async ( { page } ) => {
+		const searchInput = page
+			.locator( '.ai-agent-abilities-search' )
+			.locator( 'input' );
+
+		// Read the total before filtering.
+		const total = await getTotalAbilityCount( page );
+
+		await searchInput.fill( 'post' );
+		const countEl = page.locator( '.ai-agent-abilities-count' );
+		await expect( countEl ).toContainText( 'Showing' );
+
+		// Clear the search — count should return to the original total.
+		await searchInput.fill( '' );
+		const restored = await getTotalAbilityCount( page );
+		expect( restored ).toBe( total );
+	} );
+
+	test( 'no-results message appears when search matches nothing', async ( {
+		page,
+	} ) => {
+		const searchInput = page
+			.locator( '.ai-agent-abilities-search' )
+			.locator( 'input' );
+
+		await searchInput.fill( 'xyzzy_nonexistent_ability' );
+
+		// AbilitiesManager renders a "No abilities match your search." paragraph.
+		const noResults = page.locator(
+			'text=No abilities match your search.'
+		);
+		await expect( noResults ).toBeVisible();
+	} );
+
+	test( 'category dropdown filters to a single category', async ( {
+		page,
+	} ) => {
+		const categorySelect = page
+			.locator( '.ai-agent-abilities-filters' )
+			.locator( 'select' );
+
+		// Read the total before filtering.
+		const total = await getTotalAbilityCount( page );
+
+		// Discover the first real category option from the dropdown.
+		const firstCategory = await getFirstCategoryOption( page );
+		expect( firstCategory ).not.toBeNull();
+
+		// Select the first available category.
+		await categorySelect.selectOption( firstCategory );
+
+		// Count should show "Showing X of N" where X < N.
+		const countEl = page.locator( '.ai-agent-abilities-count' );
+		await expect( countEl ).toContainText( 'Showing' );
+		const filtered = await getFilteredAbilityCount( page );
+		expect( filtered ).toBeGreaterThan( 0 );
+		expect( filtered ).toBeLessThan( total );
+
+		// The selected category section should be visible.
+		const selectedSection = page
+			.locator( '.ai-agent-abilities-category' )
+			.filter( { hasText: firstCategory } );
+		await expect( selectedSection ).toBeVisible();
+	} );
+
+	test( 'selecting All Categories restores full list', async ( { page } ) => {
+		const categorySelect = page
+			.locator( '.ai-agent-abilities-filters' )
+			.locator( 'select' );
+
+		// Read the total before filtering.
+		const total = await getTotalAbilityCount( page );
+
+		// Discover and select the first real category.
+		const firstCategory = await getFirstCategoryOption( page );
+		expect( firstCategory ).not.toBeNull();
+		await categorySelect.selectOption( firstCategory );
+
+		const countEl = page.locator( '.ai-agent-abilities-count' );
+		await expect( countEl ).toContainText( 'Showing' );
+
+		// Reset to "All Categories" (value is empty string).
+		await categorySelect.selectOption( '' );
+		const restored = await getTotalAbilityCount( page );
+		expect( restored ).toBe( total );
+	} );
+
+	test( 'search and category filter combine correctly', async ( {
+		page,
+	} ) => {
+		const searchInput = page
+			.locator( '.ai-agent-abilities-search' )
+			.locator( 'input' );
+		const categorySelect = page
+			.locator( '.ai-agent-abilities-filters' )
+			.locator( 'select' );
+
+		// Read the total before filtering.
+		const total = await getTotalAbilityCount( page );
+
+		// Discover the first real category.
+		const firstCategory = await getFirstCategoryOption( page );
+		expect( firstCategory ).not.toBeNull();
+
+		// Filter to the first category, then search for "post".
+		// The combined result should be fewer than the total.
+		await categorySelect.selectOption( firstCategory );
+		await searchInput.fill( 'post' );
+
+		const countEl = page.locator( '.ai-agent-abilities-count' );
+		// Either "Showing X of N" (some match) or the no-results message.
+		// In both cases the filtered count must be less than the total.
+		const text = await countEl.textContent();
+		if ( text.includes( 'Showing' ) ) {
+			const filtered = await getFilteredAbilityCount( page );
+			expect( filtered ).toBeLessThan( total );
+		} else {
+			// No results — count shows 0, which is less than total.
+			const noResults = page.locator(
+				'text=No abilities match your search.'
+			);
+			await expect( noResults ).toBeVisible();
+		}
+	} );
+
+	test( 'category sections are collapsible', async ( { page } ) => {
+		// Use the first visible category header (environment-agnostic).
+		const firstHeader = page
+			.locator( '.ai-agent-abilities-category-header' )
+			.first();
+		await expect( firstHeader ).toBeVisible();
+
+		// Initially expanded (defaultOpen=true when allOpen=true).
+		// The category body contains the ability rows.
+		const firstCategory = page
+			.locator( '.ai-agent-abilities-category' )
+			.first();
+		const firstBody = firstCategory.locator(
+			'.ai-agent-abilities-category-body'
+		);
+		await expect( firstBody ).toBeVisible();
+
+		// Click the header to collapse.
+		await firstHeader.click();
+		await expect( firstBody ).not.toBeVisible();
+
+		// Click again to expand.
+		await firstHeader.click();
+		await expect( firstBody ).toBeVisible();
+	} );
+
+	test( 'Collapse all button hides all category bodies', async ( {
+		page,
+	} ) => {
+		const collapseBtn = page.getByRole( 'button', {
+			name: /collapse all/i,
+		} );
+		await expect( collapseBtn ).toBeVisible();
+
+		// Wait for at least one category body to be present before collapsing.
+		// Without this, the abilities may not have loaded yet and count() returns 0.
+		const categoryBodies = page.locator(
+			'.ai-agent-abilities-category-body'
+		);
+		await expect( categoryBodies.first() ).toBeVisible( {
+			timeout: 10_000,
+		} );
+
+		await collapseBtn.click();
+
+		// All category bodies should be hidden.
+		const count = await categoryBodies.count();
+		for ( let i = 0; i < count; i++ ) {
+			await expect( categoryBodies.nth( i ) ).not.toBeVisible();
+		}
+	} );
+
+	test( 'Expand all button shows all category bodies', async ( { page } ) => {
+		// Wait for at least one category body to be present before collapsing.
+		// Without this, the abilities may not have loaded yet and count() returns 0.
+		const categoryBodies = page.locator(
+			'.ai-agent-abilities-category-body'
+		);
+		await expect( categoryBodies.first() ).toBeVisible( {
+			timeout: 10_000,
+		} );
+
+		// Collapse first, then expand.
+		const collapseBtn = page.getByRole( 'button', {
+			name: /collapse all/i,
+		} );
+		await collapseBtn.click();
+
+		const expandBtn = page.getByRole( 'button', { name: /expand all/i } );
+		await expandBtn.click();
+
+		// All category bodies should be visible.
+		const count = await categoryBodies.count();
+		expect( count ).toBeGreaterThan( 0 );
+		for ( let i = 0; i < count; i++ ) {
+			await expect( categoryBodies.nth( i ) ).toBeVisible();
+		}
+	} );
+
+	test( 'category sections auto-expand when search filter is active', async ( {
+		page,
+	} ) => {
+		// Wait for abilities to load before collapsing.
+		const categoryBodies = page.locator(
+			'.ai-agent-abilities-category-body'
+		);
+		await expect( categoryBodies.first() ).toBeVisible( {
+			timeout: 10_000,
+		} );
+
+		// Collapse all first.
+		const collapseBtn = page.getByRole( 'button', {
+			name: /collapse all/i,
+		} );
+		await collapseBtn.click();
+
+		// Verify collapsed.
+		const count = await categoryBodies.count();
+		for ( let i = 0; i < count; i++ ) {
+			await expect( categoryBodies.nth( i ) ).not.toBeVisible();
+		}
+
+		// Activate search — AbilitiesManager passes defaultOpen=true when
+		// isFiltering is truthy, which forces sections open.
+		const searchInput = page
+			.locator( '.ai-agent-abilities-search' )
+			.locator( 'input' );
+		await searchInput.fill( 'post' );
+
+		// At least one category body should now be visible (auto-expanded by filter).
+		await expect( categoryBodies.first() ).toBeVisible();
+	} );
+
+	test( 'category count badge shows number of abilities per category', async ( {
+		page,
+	} ) => {
+		// Use the first visible category header (environment-agnostic).
+		const firstHeader = page
+			.locator( '.ai-agent-abilities-category-header' )
+			.first();
+		await expect( firstHeader ).toBeVisible();
+
+		// Each category header shows a count badge — assert it exists and is
+		// a positive number without hardcoding the value.
+		const countBadge = firstHeader.locator(
+			'.ai-agent-abilities-category-count'
+		);
+		await expect( countBadge ).toBeVisible();
+		const badgeText = await countBadge.textContent();
+		const badgeCount = parseInt( badgeText, 10 );
+		expect( badgeCount ).toBeGreaterThan( 0 );
+	} );
+} );

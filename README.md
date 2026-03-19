@@ -5,8 +5,9 @@
 [![PHP 8.2+](https://img.shields.io/badge/php-%3E%3D%208.2-blue.svg)](https://www.php.net/)
 [![WordPress 6.9+](https://img.shields.io/badge/WordPress-%3E%3D%206.9-blue.svg)](https://wordpress.org/)
 [![License: GPL v2+](https://img.shields.io/badge/License-GPL%20v2%2B-blue.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
+[![Try in Playground](https://img.shields.io/badge/Try%20in-WordPress%20Playground-3858e9?logo=wordpress&logoColor=white)](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Ultimate-Multisite/ai-agent/main/.wordpress-org/blueprints/blueprint.json)
 
-[Try in WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Ultimate-Multisite/ai-agent/main/playground/blueprint.json) | [Documentation](https://github.com/Ultimate-Multisite/ai-agent/wiki)
+[Documentation](https://github.com/Ultimate-Multisite/ai-agent/wiki)
 
 An agentic AI assistant that lives inside your WordPress dashboard. It can chat, remember context across sessions, call WordPress tools autonomously, run scheduled tasks, react to WordPress events, and manage your site — all powered by the AI provider of your choice.
 
@@ -284,8 +285,10 @@ The plugin builds three entry points: `admin-page`, `floating-widget`, and `sett
 
 Test the plugin instantly in your browser without any local setup:
 
-- **Latest release**: [Open in WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Ultimate-Multisite/ai-agent/main/playground/blueprint.json)
+- **Latest release**: [Open in WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Ultimate-Multisite/ai-agent/main/.wordpress-org/blueprints/blueprint.json) (login: `admin` / `password`)
 - **Development branch**: [Open dev version](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Ultimate-Multisite/ai-agent/main/playground/blueprint-dev.json)
+
+The canonical blueprint lives at `.wordpress-org/blueprints/blueprint.json` — this is the path WordPress.org uses when displaying the plugin in the plugin directory. The `playground/` directory contains additional variants (debug mode, dev builds).
 
 ## License
 

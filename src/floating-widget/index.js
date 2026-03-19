@@ -1,29 +1,76 @@
 /**
  * WordPress dependencies
  */
-import { createRoot, useEffect } from '@wordpress/element';
+import { createRoot, useEffect, useCallback } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import STORE_NAME from '../store';
+import ErrorBoundary from '../components/error-boundary';
 import FloatingButton from './floating-button';
 import FloatingPanel from './floating-panel';
+import SiteBuilderOverlay from './site-builder-overlay';
+import useKeyboardShortcut from './use-keyboard-shortcut';
 import './style.css';
 
+/**
+ * Root floating widget component.
+ *
+ * Fetches providers and sessions on mount, gathers page context, and
+ * renders one of three states:
+ * - SiteBuilderOverlay: full-screen overlay for fresh installs (t062)
+ * - FloatingButton: FAB when the panel is closed
+ * - FloatingPanel: draggable chat panel when open
+ * Registers a configurable keyboard shortcut (default: Alt+A) to toggle the panel.
+ *
+ * @return {JSX.Element} The floating widget element.
+ */
 function FloatingWidget() {
-	const { fetchProviders, fetchSessions, setPageContext } =
-		useDispatch( STORE_NAME );
-	const isOpen = useSelect(
-		( select ) => select( STORE_NAME ).isFloatingOpen(),
+	const {
+		fetchProviders,
+		fetchSessions,
+		fetchAlerts,
+		setPageContext,
+		setSiteBuilderMode,
+		setFloatingOpen,
+	} = useDispatch( STORE_NAME );
+
+	const { isOpen, isSiteBuilderMode, settings } = useSelect(
+		( select ) => ( {
+			isOpen: select( STORE_NAME ).isFloatingOpen(),
+			isSiteBuilderMode: select( STORE_NAME ).isSiteBuilderMode(),
+			settings: select( STORE_NAME ).getSettings(),
+		} ),
 		[]
 	);
+
+	// Keyboard shortcut — default "alt+a", configurable via settings.
+	const shortcut = settings?.keyboard_shortcut ?? 'alt+a';
+	const togglePanel = useCallback( () => {
+		setFloatingOpen( ! isOpen );
+	}, [ setFloatingOpen, isOpen ] );
+	useKeyboardShortcut( shortcut, togglePanel );
 
 	useEffect( () => {
 		fetchProviders();
 		fetchSessions();
 	}, [ fetchProviders, fetchSessions ] );
+
+	// Fetch settings on mount so the keyboard shortcut is available.
+	const { fetchSettings } = useDispatch( STORE_NAME );
+	useEffect( () => {
+		fetchSettings();
+	}, [ fetchSettings ] );
+
+	// Fetch alerts on mount and refresh every 5 minutes.
+	useEffect( () => {
+		fetchAlerts();
+		const interval = setInterval( fetchAlerts, 5 * 60 * 1000 );
+		return () => clearInterval( interval );
+	}, [ fetchAlerts ] );
 
 	// Gather page context on mount.
 	useEffect( () => {
@@ -32,6 +79,24 @@ function FloatingWidget() {
 			setPageContext( context );
 		}
 	}, [ setPageContext ] );
+
+	// Activate site builder mode when the PHP layer signals it (t060/t062).
+	// Only activate on the main AI Agent page — not on Changes, Abilities, or
+	// other admin pages where the overlay would block unrelated content (#511).
+	useEffect( () => {
+		if (
+			window.gratisAiAgentSiteBuilder?.siteBuilderMode &&
+			isMainAgentPage()
+		) {
+			setSiteBuilderMode( true );
+		}
+	}, [ setSiteBuilderMode ] );
+
+	// Site builder full-screen overlay takes priority over normal FAB/panel.
+	// Guard: only render on the main AI Agent page.
+	if ( isSiteBuilderMode && isMainAgentPage() ) {
+		return <SiteBuilderOverlay />;
+	}
 
 	return (
 		<>
@@ -42,9 +107,40 @@ function FloatingWidget() {
 }
 
 /**
- * Gather structured context about the current admin page.
+ * Determine whether the current admin page is the main AI Agent page.
  *
- * Returns an object with url, admin_page, screen_id, post_id.
+ * The site builder overlay must only render on the main AI Agent page
+ * (slug: `gratis-ai-agent`). On other admin pages — Changes, Abilities,
+ * Settings, or any unrelated WordPress page — the overlay must not appear
+ * even when `siteBuilderMode` is true in the store (#511).
+ *
+ * WordPress sets `window.pagenow` to the page slug for top-level menu pages
+ * (e.g. `toplevel_page_gratis-ai-agent`) and `window.adminpage` to the
+ * hook suffix. We also check the URL `page` query param as a fallback.
+ *
+ * @return {boolean} True only when on the main AI Agent admin page.
+ */
+function isMainAgentPage() {
+	const MAIN_PAGE_SLUG = 'gratis-ai-agent';
+
+	// WordPress sets pagenow to `toplevel_page_{slug}` for top-level menu pages.
+	if ( window.pagenow ) {
+		return window.pagenow === 'toplevel_page_' + MAIN_PAGE_SLUG;
+	}
+
+	// Fallback: check the URL `page` query parameter.
+	const urlParams = new URLSearchParams( window.location.search );
+	return urlParams.get( 'page' ) === MAIN_PAGE_SLUG;
+}
+
+/**
+ * Gather structured context about the current WordPress admin page.
+ *
+ * Reads from body classes, `window.pagenow`, `window.adminpage`, URL params,
+ * and the page heading to build a context object for the AI.
+ *
+ * @return {{url: string, admin_page?: string, screen_id?: string, post_id?: number, page_title?: string}}
+ *   Context object with available page metadata.
  */
 function gatherPageContext() {
 	const context = {
@@ -90,8 +186,12 @@ function gatherPageContext() {
 
 // Mount the floating widget.
 const wrapper = document.createElement( 'div' );
-wrapper.id = 'ai-agent-floating-root';
+wrapper.id = 'gratis-ai-agent-floating-root';
 document.body.appendChild( wrapper );
 
 const root = createRoot( wrapper );
-root.render( <FloatingWidget /> );
+root.render(
+	<ErrorBoundary label={ __( 'AI Agent widget', 'gratis-ai-agent' ) }>
+		<FloatingWidget />
+	</ErrorBoundary>
+);

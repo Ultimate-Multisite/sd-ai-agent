@@ -4,11 +4,20 @@
 import { useEffect, useCallback } from '@wordpress/element';
 
 /**
- * Hook to register keyboard shortcuts.
+ * @typedef {import('../types').KeyboardShortcut} KeyboardShortcut
+ */
+
+/**
+ * React hook to register document-level keyboard shortcuts.
  *
- * @param {Object} shortcuts Map of shortcut key combos to handlers.
- *                           Keys use format: "mod+k", "mod+n", "escape", "mod+/"
- *                           "mod" maps to Cmd on Mac, Ctrl on others.
+ * Attaches a single keydown listener that checks each registered combo.
+ * The listener is re-registered whenever the shortcuts map or platform
+ * detection changes.
+ *
+ * @param {Object.<string, Function>} shortcuts - Map of combo strings to handler
+ *                                              functions. Keys use the format "mod+k", "mod+n", "escape", "mod+/".
+ *                                              "mod" maps to Cmd (⌘) on macOS and Ctrl on all other platforms.
+ * @return {void}
  */
 export function useKeyboardShortcuts( shortcuts ) {
 	const isMac =
@@ -34,6 +43,14 @@ export function useKeyboardShortcuts( shortcuts ) {
 	}, [ handler ] );
 }
 
+/**
+ * Test whether a KeyboardEvent matches a combo string.
+ *
+ * @param {KeyboardEvent} e     - The keyboard event to test.
+ * @param {string}        combo - Combo string (e.g. 'mod+k', 'escape').
+ * @param {boolean}       isMac - Whether the platform is macOS.
+ * @return {boolean} True when the event matches the combo.
+ */
 function matchesCombo( e, combo, isMac ) {
 	const parts = combo.toLowerCase().split( '+' );
 	let needMod = false;
@@ -74,7 +91,9 @@ function matchesCombo( e, combo, isMac ) {
 }
 
 /**
- * All available keyboard shortcuts for the help dialog.
+ * All available keyboard shortcuts displayed in the help dialog.
+ *
+ * @type {KeyboardShortcut[]}
  */
 export const SHORTCUTS = [
 	{ combo: 'mod+n', label: 'New chat' },

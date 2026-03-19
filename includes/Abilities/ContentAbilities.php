@@ -4,10 +4,10 @@ declare(strict_types=1);
 /**
  * Content analysis abilities for the AI agent.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Abilities;
+namespace GratisAiAgent\Abilities;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -33,9 +33,9 @@ class ContentAbilities {
 		wp_register_ability(
 			'ai-agent/content-analyze',
 			[
-				'label'               => __( 'Analyze Content Strategy', 'ai-agent' ),
-				'description'         => __( 'Analyze content strategy: publishing frequency, word counts, category distribution, missing featured images, and content gaps.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Analyze Content Strategy', 'gratis-ai-agent' ),
+				'description'         => __( 'Analyze content strategy: publishing frequency, word counts, category distribution, missing featured images, and content gaps.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -54,6 +54,22 @@ class ContentAbilities {
 					],
 					'required'   => [],
 				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'post_type'                      => [ 'type' => 'string' ],
+						'total_analyzed'                 => [ 'type' => 'integer' ],
+						'publishing_frequency'           => [ 'type' => 'object' ],
+						'avg_word_count'                 => [ 'type' => 'integer' ],
+						'min_word_count'                 => [ 'type' => 'integer' ],
+						'max_word_count'                 => [ 'type' => 'integer' ],
+						'category_distribution'          => [ 'type' => 'object' ],
+						'posts_without_featured_image'   => [ 'type' => 'array' ],
+						'posts_without_meta_description' => [ 'type' => 'array' ],
+						'content_gap_categories'         => [ 'type' => 'array' ],
+						'thin_content_count'             => [ 'type' => 'integer' ],
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_content_analyze' ],
 				'permission_callback' => function () {
 					return current_user_can( 'edit_posts' );
@@ -64,9 +80,9 @@ class ContentAbilities {
 		wp_register_ability(
 			'ai-agent/content-performance-report',
 			[
-				'label'               => __( 'Content Performance Report', 'ai-agent' ),
-				'description'         => __( 'Generate a content performance summary for a given time period: posts published, category breakdown, word counts, drafts pending.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Content Performance Report', 'gratis-ai-agent' ),
+				'description'         => __( 'Generate a content performance summary for a given time period: posts published, category breakdown, word counts, drafts pending.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -81,6 +97,20 @@ class ContentAbilities {
 					],
 					'required'   => [],
 				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'period_days'               => [ 'type' => 'integer' ],
+						'posts_published'           => [ 'type' => 'integer' ],
+						'previous_period_published' => [ 'type' => 'integer' ],
+						'avg_word_count'            => [ 'type' => 'integer' ],
+						'posts_by_category'         => [ 'type' => 'object' ],
+						'posts_by_author'           => [ 'type' => 'object' ],
+						'all_posts_by_status'       => [ 'type' => 'object' ],
+						'drafts_pending_review'     => [ 'type' => 'array' ],
+						'drafts_pending_count'      => [ 'type' => 'integer' ],
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_performance_report' ],
 				'permission_callback' => function () {
 					return current_user_can( 'edit_posts' );
@@ -92,8 +122,8 @@ class ContentAbilities {
 	/**
 	 * Handle the content-analyze ability call.
 	 *
-	 * @param array $input Input with optional post_type, limit, site_url.
-	 * @return array Content analysis results.
+	 * @param array<string,mixed> $input Input with optional post_type, limit, site_url.
+	 * @return array<string,mixed> Content analysis results.
 	 */
 	public static function handle_content_analyze( array $input ): array {
 		$post_type = sanitize_text_field( $input['post_type'] ?? 'post' );
@@ -104,8 +134,8 @@ class ContentAbilities {
 
 		if ( ! empty( $site_url ) && is_multisite() ) {
 			$blog_id = get_blog_id_from_url(
-				wp_parse_url( $site_url, PHP_URL_HOST ),
-				wp_parse_url( $site_url, PHP_URL_PATH ) ?: '/'
+				(string) ( wp_parse_url( $site_url, PHP_URL_HOST ) ?? '' ),
+				(string) ( wp_parse_url( $site_url, PHP_URL_PATH ) ?: '/' )
 			);
 
 			if ( $blog_id && $blog_id !== get_current_blog_id() ) {
@@ -138,7 +168,7 @@ class ContentAbilities {
 	 *
 	 * @param \WP_Post[] $posts     Array of posts.
 	 * @param string     $post_type Post type being analyzed.
-	 * @return array Analysis data.
+	 * @return array<string,mixed> Analysis data.
 	 */
 	private static function analyze_content_strategy( array $posts, string $post_type ): array {
 		$total = count( $posts );
@@ -236,8 +266,8 @@ class ContentAbilities {
 	/**
 	 * Handle the content-performance-report ability call.
 	 *
-	 * @param array $input Input with optional days, site_url.
-	 * @return array Performance report.
+	 * @param array<string,mixed> $input Input with optional days, site_url.
+	 * @return array<string,mixed> Performance report.
 	 */
 	public static function handle_performance_report( array $input ): array {
 		$days     = max( 1, min( 365, (int) ( $input['days'] ?? 30 ) ) );
@@ -247,8 +277,8 @@ class ContentAbilities {
 
 		if ( ! empty( $site_url ) && is_multisite() ) {
 			$blog_id = get_blog_id_from_url(
-				wp_parse_url( $site_url, PHP_URL_HOST ),
-				wp_parse_url( $site_url, PHP_URL_PATH ) ?: '/'
+				(string) ( wp_parse_url( $site_url, PHP_URL_HOST ) ?? '' ),
+				(string) ( wp_parse_url( $site_url, PHP_URL_PATH ) ?: '/' )
 			);
 
 			if ( $blog_id && $blog_id !== get_current_blog_id() ) {
@@ -270,10 +300,10 @@ class ContentAbilities {
 	 * Generate a content performance report.
 	 *
 	 * @param int $days Number of days to look back.
-	 * @return array Report data.
+	 * @return array<string,mixed> Report data.
 	 */
 	private static function generate_performance_report( int $days ): array {
-		$after_date = gmdate( 'Y-m-d H:i:s', strtotime( "-{$days} days" ) );
+		$after_date = gmdate( 'Y-m-d H:i:s', (int) strtotime( "-{$days} days" ) );
 
 		// Published posts in period.
 		$published = get_posts(
@@ -351,7 +381,7 @@ class ContentAbilities {
 		}
 
 		// Previous period for comparison.
-		$prev_after     = gmdate( 'Y-m-d H:i:s', strtotime( '-' . ( $days * 2 ) . ' days' ) );
+		$prev_after     = gmdate( 'Y-m-d H:i:s', (int) strtotime( '-' . ( $days * 2 ) . ' days' ) );
 		$prev_before    = $after_date;
 		$prev_published = get_posts(
 			[

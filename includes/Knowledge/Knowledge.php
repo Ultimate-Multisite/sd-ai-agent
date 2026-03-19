@@ -6,13 +6,13 @@ declare(strict_types=1);
  *
  * Orchestrates indexing, search, and context retrieval.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Knowledge;
+namespace GratisAiAgent\Knowledge;
 
-use AiAgent\Models\Chunker;
-use AiAgent\Models\DocumentParser;
+use GratisAiAgent\Models\Chunker;
+use GratisAiAgent\Models\DocumentParser;
 use WP_Error;
 
 class Knowledge {
@@ -28,7 +28,7 @@ class Knowledge {
 		$post = get_post( $post_id );
 
 		if ( ! $post || 'publish' !== $post->post_status ) {
-			return new WP_Error( 'invalid_post', __( 'Post not found or not published.', 'ai-agent' ) );
+			return new WP_Error( 'invalid_post', __( 'Post not found or not published.', 'gratis-ai-agent' ) );
 		}
 
 		// Build text content: title + plain-text body.
@@ -36,7 +36,7 @@ class Knowledge {
 		$content = trim( $content );
 
 		if ( empty( $content ) ) {
-			return new WP_Error( 'empty_content', __( 'Post has no text content to index.', 'ai-agent' ) );
+			return new WP_Error( 'empty_content', __( 'Post has no text content to index.', 'gratis-ai-agent' ) );
 		}
 
 		// Compute hash for change detection.
@@ -74,7 +74,7 @@ class Knowledge {
 			);
 
 			if ( ! $source_id ) {
-				return new WP_Error( 'db_error', __( 'Failed to create source record.', 'ai-agent' ) );
+				return new WP_Error( 'db_error', __( 'Failed to create source record.', 'gratis-ai-agent' ) );
 			}
 		}
 
@@ -152,7 +152,7 @@ class Knowledge {
 		}
 
 		$hash  = md5( $content );
-		$title = get_the_title( $attachment_id ) ?: basename( get_attached_file( $attachment_id ) );
+		$title = get_the_title( $attachment_id ) ?: basename( (string) get_attached_file( $attachment_id ) );
 
 		// Check for existing source.
 		$existing = KnowledgeDatabase::find_source( $collection_id, 'attachment', $attachment_id );
@@ -184,7 +184,7 @@ class Knowledge {
 			);
 
 			if ( ! $source_id ) {
-				return new WP_Error( 'db_error', __( 'Failed to create source record.', 'ai-agent' ) );
+				return new WP_Error( 'db_error', __( 'Failed to create source record.', 'gratis-ai-agent' ) );
 			}
 		}
 
@@ -220,7 +220,7 @@ class Knowledge {
 		$collection = KnowledgeDatabase::get_collection( $collection_id );
 
 		if ( ! $collection ) {
-			return new WP_Error( 'not_found', __( 'Collection not found.', 'ai-agent' ) );
+			return new WP_Error( 'not_found', __( 'Collection not found.', 'gratis-ai-agent' ) );
 		}
 
 		$config     = $collection->source_config;
@@ -266,9 +266,9 @@ class Knowledge {
 	/**
 	 * Search the knowledge base.
 	 *
-	 * @param string $query   Search query.
-	 * @param array  $options Optional: collection_id, collection (slug), limit.
-	 * @return array Search results.
+	 * @param string               $query   Search query.
+	 * @param array<string, mixed> $options Optional: collection_id, collection (slug), limit.
+	 * @return list<array<string, mixed>> Search results.
 	 */
 	public static function search( string $query, array $options = [] ): array {
 		$collection_id = $options['collection_id'] ?? null;

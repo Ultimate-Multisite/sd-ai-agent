@@ -9,10 +9,10 @@ declare(strict_types=1);
  *  - ACTION: Calls do_action() with arguments (integrates with any WP plugin).
  *  - CLI:    Runs WP-CLI commands with argument schema.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Tools;
+namespace GratisAiAgent\Tools;
 
 class CustomTools {
 
@@ -29,14 +29,14 @@ class CustomTools {
 	 */
 	public static function table_name(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_agent_custom_tools';
+		return $wpdb->prefix . 'gratis_ai_agent_custom_tools';
 	}
 
 	/**
 	 * List all custom tools.
 	 *
 	 * @param bool $enabled_only Only return enabled tools.
-	 * @return array
+	 * @return array<int, array<string, mixed>>
 	 */
 	public static function list( bool $enabled_only = false ): array {
 		global $wpdb;
@@ -47,14 +47,14 @@ class CustomTools {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table query; table/column names from internal methods, not user input.
 		$rows = $wpdb->get_results( "SELECT * FROM {$table} {$where} ORDER BY name ASC" );
 
-		return array_map( [ __CLASS__, 'decode_row' ], $rows ?: [] );
+		return array_values( array_map( [ __CLASS__, 'decode_row' ], $rows ?: [] ) );
 	}
 
 	/**
 	 * Get a single tool by ID.
 	 *
 	 * @param int $id Tool ID.
-	 * @return array|null
+	 * @return array<string, mixed>|null
 	 */
 	public static function get( int $id ): ?array {
 		global $wpdb;
@@ -71,7 +71,7 @@ class CustomTools {
 	 * Get a tool by slug.
 	 *
 	 * @param string $slug Tool slug.
-	 * @return array|null
+	 * @return array<string, mixed>|null
 	 */
 	public static function get_by_slug( string $slug ): ?array {
 		global $wpdb;
@@ -87,7 +87,7 @@ class CustomTools {
 	/**
 	 * Create a new custom tool.
 	 *
-	 * @param array $data Tool data.
+	 * @param array<string, mixed> $data Tool data.
 	 * @return int|false Inserted ID or false.
 	 */
 	public static function create( array $data ) {
@@ -123,8 +123,8 @@ class CustomTools {
 	/**
 	 * Update an existing tool.
 	 *
-	 * @param int   $id   Tool ID.
-	 * @param array $data Fields to update.
+	 * @param int                  $id   Tool ID.
+	 * @param array<string, mixed> $data Fields to update.
 	 * @return bool
 	 */
 	public static function update( int $id, array $data ): bool {
@@ -214,16 +214,16 @@ class CustomTools {
 	/**
 	 * Validate tool data for creation.
 	 *
-	 * @param array $data Tool data.
-	 * @return array|\WP_Error Validated data or error.
+	 * @param array<string, mixed> $data Tool data.
+	 * @return array<string, mixed>|\WP_Error Validated data or error.
 	 */
 	public static function validate( array $data ) {
 		if ( empty( $data['name'] ) ) {
-			return new \WP_Error( 'missing_name', __( 'Tool name is required.', 'ai-agent' ) );
+			return new \WP_Error( 'missing_name', __( 'Tool name is required.', 'gratis-ai-agent' ) );
 		}
 
 		if ( empty( $data['type'] ) || ! in_array( $data['type'], self::VALID_TYPES, true ) ) {
-			return new \WP_Error( 'invalid_type', __( 'Tool type must be http, action, or cli.', 'ai-agent' ) );
+			return new \WP_Error( 'invalid_type', __( 'Tool type must be http, action, or cli.', 'gratis-ai-agent' ) );
 		}
 
 		// Auto-generate slug from name if not provided.
@@ -241,23 +241,23 @@ class CustomTools {
 		switch ( $data['type'] ) {
 			case self::TYPE_HTTP:
 				if ( empty( $config['url'] ) ) {
-					return new \WP_Error( 'missing_url', __( 'HTTP tools require a URL.', 'ai-agent' ) );
+					return new \WP_Error( 'missing_url', __( 'HTTP tools require a URL.', 'gratis-ai-agent' ) );
 				}
 				if ( ! empty( $config['method'] ) && ! in_array( strtoupper( $config['method'] ), self::VALID_HTTP_METHODS, true ) ) {
-					return new \WP_Error( 'invalid_method', __( 'Invalid HTTP method.', 'ai-agent' ) );
+					return new \WP_Error( 'invalid_method', __( 'Invalid HTTP method.', 'gratis-ai-agent' ) );
 				}
 				$config['method'] = strtoupper( $config['method'] ?? 'GET' );
 				break;
 
 			case self::TYPE_ACTION:
 				if ( empty( $config['hook_name'] ) ) {
-					return new \WP_Error( 'missing_hook', __( 'Action tools require a hook_name.', 'ai-agent' ) );
+					return new \WP_Error( 'missing_hook', __( 'Action tools require a hook_name.', 'gratis-ai-agent' ) );
 				}
 				break;
 
 			case self::TYPE_CLI:
 				if ( empty( $config['command'] ) ) {
-					return new \WP_Error( 'missing_command', __( 'CLI tools require a command template.', 'ai-agent' ) );
+					return new \WP_Error( 'missing_command', __( 'CLI tools require a command template.', 'gratis-ai-agent' ) );
 				}
 				break;
 		}
@@ -271,7 +271,7 @@ class CustomTools {
 	 * Seed example tools on first install.
 	 */
 	public static function seed_examples(): void {
-		if ( get_option( 'ai_agent_custom_tools_seeded' ) ) {
+		if ( get_option( 'gratis_ai_agent_custom_tools_seeded' ) ) {
 			return;
 		}
 
@@ -376,14 +376,14 @@ class CustomTools {
 			self::create( $example );
 		}
 
-		update_option( 'ai_agent_custom_tools_seeded', true );
+		update_option( 'gratis_ai_agent_custom_tools_seeded', true );
 	}
 
 	/**
 	 * Decode a database row into an array with parsed JSON.
 	 *
 	 * @param object $row Database row.
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	private static function decode_row( object $row ): array {
 		return [

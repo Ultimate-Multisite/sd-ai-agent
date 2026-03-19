@@ -4,12 +4,12 @@ declare(strict_types=1);
 /**
  * Register skill-related WordPress abilities (tools) for the AI agent.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Abilities;
+namespace GratisAiAgent\Abilities;
 
-use AiAgent\Models\Skill;
+use GratisAiAgent\Models\Skill;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -35,9 +35,9 @@ class SkillAbilities {
 		wp_register_ability(
 			'ai-agent/skill-load',
 			[
-				'label'               => __( 'Load Skill', 'ai-agent' ),
-				'description'         => __( 'Load the full instructions for a specific skill guide by its slug.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Load Skill', 'gratis-ai-agent' ),
+				'description'         => __( 'Load the full instructions for a specific skill guide by its slug.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -48,6 +48,15 @@ class SkillAbilities {
 					],
 					'required'   => [ 'slug' ],
 				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'name'    => [ 'type' => 'string' ],
+						'slug'    => [ 'type' => 'string' ],
+						'content' => [ 'type' => 'string' ],
+						'error'   => [ 'type' => 'string' ],
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_skill_load' ],
 				'permission_callback' => function () {
 					return current_user_can( 'manage_options' ); },
@@ -57,12 +66,19 @@ class SkillAbilities {
 		wp_register_ability(
 			'ai-agent/skill-list',
 			[
-				'label'               => __( 'List Skills', 'ai-agent' ),
-				'description'         => __( 'List all available skill guides with their slugs, names, and descriptions.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'List Skills', 'gratis-ai-agent' ),
+				'description'         => __( 'List all available skill guides with their slugs, names, and descriptions.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => new \stdClass(),
+				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'skills'  => [ 'type' => 'array' ],
+						'message' => [ 'type' => 'string' ],
+					],
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_skill_list' ],
 				'permission_callback' => function () {
@@ -74,24 +90,24 @@ class SkillAbilities {
 	/**
 	 * Handle the skill-load ability call.
 	 *
-	 * @param array $input Input with slug.
-	 * @return array Result with skill content.
+	 * @param array<string,mixed> $input Input with slug.
+	 * @return array<string,mixed>|\WP_Error Result with skill content.
 	 */
-	public static function handle_skill_load( array $input ): array {
+	public static function handle_skill_load( array $input ) {
 		$slug = $input['slug'] ?? '';
 
 		if ( empty( $slug ) ) {
-			return [ 'error' => 'Skill slug is required.' ];
+			return new \WP_Error( 'missing_slug', 'Skill slug is required.' );
 		}
 
 		$skill = Skill::get_by_slug( $slug );
 
 		if ( ! $skill ) {
-			return [ 'error' => "Skill '$slug' not found." ];
+			return new \WP_Error( 'skill_not_found', "Skill '$slug' not found." );
 		}
 
 		if ( ! (int) $skill->enabled ) {
-			return [ 'error' => "Skill '$slug' is disabled." ];
+			return new \WP_Error( 'skill_disabled', "Skill '$slug' is disabled." );
 		}
 
 		return [
@@ -104,7 +120,7 @@ class SkillAbilities {
 	/**
 	 * Handle the skill-list ability call.
 	 *
-	 * @return array Result with skills index.
+	 * @return array<string,mixed> Result with skills index.
 	 */
 	public static function handle_skill_list(): array {
 		$skills = Skill::get_all( true );

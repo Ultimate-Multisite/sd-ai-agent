@@ -1,0 +1,28 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        target: auto
+        threshold: 5%
+
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: false
+
+flags:
+  phpunit:
+    paths:
+      - includes/
+    carryforward: true
+
+ignore:
+  - "vendor/"
+  - "node_modules/"
+  - "build/"
+  - "src/"
+  - "tests/"

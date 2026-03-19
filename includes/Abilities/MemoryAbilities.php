@@ -4,12 +4,12 @@ declare(strict_types=1);
 /**
  * Register memory-related WordPress abilities (tools) for the AI agent.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Abilities;
+namespace GratisAiAgent\Abilities;
 
-use AiAgent\Models\Memory;
+use GratisAiAgent\Models\Memory;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -35,9 +35,9 @@ class MemoryAbilities {
 		wp_register_ability(
 			'ai-agent/memory-save',
 			[
-				'label'               => __( 'Save Memory', 'ai-agent' ),
-				'description'         => __( 'Save a piece of information to persistent memory. Use this to remember facts, preferences, or context for future conversations.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Save Memory', 'gratis-ai-agent' ),
+				'description'         => __( 'Save a piece of information to persistent memory. Use this to remember facts, preferences, or context for future conversations.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -53,6 +53,15 @@ class MemoryAbilities {
 					],
 					'required'   => [ 'category', 'content' ],
 				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'success' => [ 'type' => 'boolean' ],
+						'id'      => [ 'type' => 'integer' ],
+						'message' => [ 'type' => 'string' ],
+						'error'   => [ 'type' => 'string' ],
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_memory_save' ],
 				'permission_callback' => function () {
 					return current_user_can( 'manage_options' ); },
@@ -62,12 +71,19 @@ class MemoryAbilities {
 		wp_register_ability(
 			'ai-agent/memory-list',
 			[
-				'label'               => __( 'List Memories', 'ai-agent' ),
-				'description'         => __( 'List all stored memories, grouped by category.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'List Memories', 'gratis-ai-agent' ),
+				'description'         => __( 'List all stored memories, grouped by category.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => new \stdClass(),
+				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'memories' => [ 'type' => 'array' ],
+						'message'  => [ 'type' => 'string' ],
+					],
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_memory_list' ],
 				'permission_callback' => function () {
@@ -78,9 +94,9 @@ class MemoryAbilities {
 		wp_register_ability(
 			'ai-agent/memory-delete',
 			[
-				'label'               => __( 'Delete Memory', 'ai-agent' ),
-				'description'         => __( 'Delete a specific memory by its ID.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'Delete Memory', 'gratis-ai-agent' ),
+				'description'         => __( 'Delete a specific memory by its ID.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -90,6 +106,14 @@ class MemoryAbilities {
 						],
 					],
 					'required'   => [ 'id' ],
+				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'success' => [ 'type' => 'boolean' ],
+						'message' => [ 'type' => 'string' ],
+						'error'   => [ 'type' => 'string' ],
+					],
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_memory_delete' ],
 				'permission_callback' => function () {
@@ -101,15 +125,15 @@ class MemoryAbilities {
 	/**
 	 * Handle the memory-save ability call.
 	 *
-	 * @param array $input Input with category and content.
-	 * @return array Result.
+	 * @param array<string,mixed> $input Input with category and content.
+	 * @return array<string,mixed>|\WP_Error Result.
 	 */
-	public static function handle_memory_save( array $input ): array {
+	public static function handle_memory_save( array $input ) {
 		$category = $input['category'] ?? 'general';
 		$content  = $input['content'] ?? '';
 
 		if ( empty( $content ) ) {
-			return [ 'error' => 'Content is required.' ];
+			return new \WP_Error( 'missing_content', 'Content is required.' );
 		}
 
 		$id = Memory::create( $category, $content );
@@ -128,7 +152,7 @@ class MemoryAbilities {
 	/**
 	 * Handle the memory-list ability call.
 	 *
-	 * @return array Result.
+	 * @return array<string,mixed> Result.
 	 */
 	public static function handle_memory_list(): array {
 		$memories = Memory::get_all();
@@ -152,14 +176,14 @@ class MemoryAbilities {
 	/**
 	 * Handle the memory-delete ability call.
 	 *
-	 * @param array $input Input with id.
-	 * @return array Result.
+	 * @param array<string,mixed> $input Input with id.
+	 * @return array<string,mixed>|\WP_Error Result.
 	 */
-	public static function handle_memory_delete( array $input ): array {
+	public static function handle_memory_delete( array $input ) {
 		$id = $input['id'] ?? 0;
 
 		if ( empty( $id ) ) {
-			return [ 'error' => 'Memory ID is required.' ];
+			return new \WP_Error( 'missing_id', 'Memory ID is required.' );
 		}
 
 		$deleted = Memory::delete( (int) $id );

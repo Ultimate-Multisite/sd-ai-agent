@@ -1,7 +1,16 @@
 {
   "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "meta": {
+    "title": "AI Agent",
+    "description": "Agentic AI assistant for WordPress — chat, call tools, run automations, and manage your site with any AI provider.",
+    "author": "Ultimate-Multisite",
+    "categories": ["AI", "Automation", "Chat"]
+  },
   "landingPage": "/wp-admin/admin.php?page=ai-agent",
-  "login": true,
+  "login": {
+    "username": "admin",
+    "password": "password"
+  },
   "preferredVersions": {
     "php": "8.2",
     "wp": "latest"
@@ -23,12 +32,19 @@
       "step": "installPlugin",
       "pluginData": {
         "resource": "url",
-        "url": "https://github.com/Ultimate-Multisite/ai-agent/releases/latest/download/ai-agent.zip"
+        "url": "https://github.com/Ultimate-Multisite/ai-agent/releases/latest/download/ai-agent.zip",
+        "caption": "Downloading AI Agent..."
+      },
+      "options": {
+        "activate": true
       }
     },
     {
-      "step": "activatePlugin",
-      "pluginPath": "ai-agent/gratis-ai-agent.php"
+      "step": "setSiteOptions",
+      "options": {
+        "blogname": "AI Agent Demo",
+        "blogdescription": "WordPress AI Agent — instant demo"
+      }
     }
   ]
 }

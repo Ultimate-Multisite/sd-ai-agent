@@ -4,13 +4,14 @@ declare(strict_types=1);
 /**
  * Automation Runner — cron handler that fires Agent_Loop for scheduled automations.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Automations;
+namespace GratisAiAgent\Automations;
 
-use AiAgent\Core\AgentLoop;
-use AiAgent\Core\Settings;
+use GratisAiAgent\Core\AgentLoop;
+use GratisAiAgent\Core\BudgetManager;
+use GratisAiAgent\Core\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -18,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class AutomationRunner {
 
-	const CRON_HOOK = 'ai_agent_run_automation';
+	const CRON_HOOK = 'gratis_ai_agent_run_automation';
 
 	/**
 	 * Register hooks.
@@ -33,14 +34,14 @@ class AutomationRunner {
 	/**
 	 * Add custom cron schedules.
 	 *
-	 * @param array $schedules Existing schedules.
-	 * @return array
+	 * @param array<string, mixed> $schedules Existing schedules.
+	 * @return array<string, mixed>
 	 */
 	public static function add_cron_schedules( array $schedules ): array {
 		if ( ! isset( $schedules['weekly'] ) ) {
 			$schedules['weekly'] = [
 				'interval' => WEEK_IN_SECONDS,
-				'display'  => __( 'Once Weekly', 'ai-agent' ),
+				'display'  => __( 'Once Weekly', 'gratis-ai-agent' ),
 			];
 		}
 		return $schedules;
@@ -76,11 +77,16 @@ class AutomationRunner {
 	 * Run an automation (fired by WP Cron or manually).
 	 *
 	 * @param int $automation_id Automation ID.
-	 * @return array|null Run result or null if automation not found/disabled.
+	 * @return array<string, mixed>|null Run result or null if automation not found/disabled.
 	 */
 	public static function run( int $automation_id ): ?array {
 		$automation = Automations::get( $automation_id );
 		if ( ! $automation ) {
+			return null;
+		}
+
+		// Skip automation execution when the budget is exceeded.
+		if ( BudgetManager::is_exceeded() ) {
 			return null;
 		}
 
@@ -129,6 +135,9 @@ class AutomationRunner {
 		// Update automation metadata.
 		Automations::record_run( $automation_id, $now );
 
+		// Dispatch Slack/Discord notifications (non-blocking; failures are logged, not thrown).
+		NotificationDispatcher::dispatch( $automation, $log_data );
+
 		/**
 		 * Fires after a scheduled automation completes.
 		 *
@@ -136,7 +145,7 @@ class AutomationRunner {
 		 * @param array $log_data      The log data for this run.
 		 * @param array $automation    The automation definition.
 		 */
-		do_action( 'ai_agent_automation_complete', $automation_id, $log_data, $automation );
+		do_action( 'gratis_ai_agent_automation_complete', $automation_id, $log_data, $automation );
 
 		return $log_data;
 	}

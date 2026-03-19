@@ -10,6 +10,17 @@ import { __ } from '@wordpress/i18n';
  */
 import STORE_NAME from '../store';
 
+/**
+ * Session import dialog with drag-and-drop and click-to-browse support.
+ *
+ * Validates that the uploaded file is a gratis-ai-agent-v1 or ai-agent-v1
+ * export before enabling the Import button. Shows an error message for
+ * invalid files.
+ *
+ * @param {Object}   props         - Component props.
+ * @param {Function} props.onClose - Called when the dialog should close.
+ * @return {JSX.Element} The import dialog element.
+ */
 export default function ImportDialog( { onClose } ) {
 	const [ fileData, setFileData ] = useState( null );
 	const [ fileName, setFileName ] = useState( '' );
@@ -40,14 +51,14 @@ export default function ImportDialog( { onClose } ) {
 					setError(
 						__(
 							'Invalid format. Expected ai-agent-v1.',
-							'ai-agent'
+							'gratis-ai-agent'
 						)
 					);
 					return;
 				}
 				setFileData( data );
 			} catch {
-				setError( __( 'Invalid JSON file.', 'ai-agent' ) );
+				setError( __( 'Invalid JSON file.', 'gratis-ai-agent' ) );
 			}
 		};
 		reader.readAsText( file );
@@ -75,16 +86,17 @@ export default function ImportDialog( { onClose } ) {
 		<div className="ai-agent-shortcuts-overlay">
 			<div className="ai-agent-export-dialog" ref={ dialogRef }>
 				<div className="ai-agent-export-header">
-					<h3>{ __( 'Import Conversation', 'ai-agent' ) }</h3>
+					<h3>{ __( 'Import Conversation', 'gratis-ai-agent' ) }</h3>
 					<button type="button" onClick={ onClose }>
 						&times;
 					</button>
 				</div>
 				<div className="ai-agent-export-body">
-					{ /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */ }
 					<div
 						ref={ dropRef }
 						className="ai-agent-import-dropzone"
+						role="button"
+						tabIndex={ 0 }
 						onDragOver={ ( e ) => e.preventDefault() }
 						onDrop={ handleDrop }
 						onClick={ () => {
@@ -99,6 +111,21 @@ export default function ImportDialog( { onClose } ) {
 							};
 							input.click();
 						} }
+						onKeyDown={ ( e ) => {
+							if ( e.key === 'Enter' || e.key === ' ' ) {
+								e.preventDefault();
+								const input = document.createElement( 'input' );
+								input.type = 'file';
+								input.accept = '.json';
+								input.onchange = ( ev ) => {
+									const file = ev.target.files?.[ 0 ];
+									if ( file ) {
+										handleFile( file );
+									}
+								};
+								input.click();
+							}
+						} }
 					>
 						{ fileName ? (
 							<div className="ai-agent-import-file">
@@ -108,10 +135,10 @@ export default function ImportDialog( { onClose } ) {
 										{ fileData.title ||
 											__(
 												'Untitled',
-												'ai-agent'
+												'gratis-ai-agent'
 											) }{ ' ' }
 										({ fileData.messages?.length || 0 }{ ' ' }
-										{ __( 'messages', 'ai-agent' ) })
+										{ __( 'messages', 'gratis-ai-agent' ) })
 									</p>
 								) }
 							</div>
@@ -119,7 +146,7 @@ export default function ImportDialog( { onClose } ) {
 							<p>
 								{ __(
 									'Drop a .json file here or click to browse',
-									'ai-agent'
+									'gratis-ai-agent'
 								) }
 							</p>
 						) }
@@ -134,7 +161,7 @@ export default function ImportDialog( { onClose } ) {
 						className="button"
 						onClick={ onClose }
 					>
-						{ __( 'Cancel', 'ai-agent' ) }
+						{ __( 'Cancel', 'gratis-ai-agent' ) }
 					</button>
 					<button
 						type="button"
@@ -142,7 +169,7 @@ export default function ImportDialog( { onClose } ) {
 						onClick={ handleImport }
 						disabled={ ! fileData }
 					>
-						{ __( 'Import', 'ai-agent' ) }
+						{ __( 'Import', 'gratis-ai-agent' ) }
 					</button>
 				</div>
 			</div>

@@ -1,5 +1,5 @@
 {
-	"name": "ultimate-multisite/ai-agent",
+	"name": "ultimate-multisite/gratis-ai-agent",
 	"description": "Agentic AI loop for WordPress — chat with an AI that can call WordPress abilities (tools) autonomously.",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
@@ -17,6 +17,7 @@
 	},
 	"require-dev": {
 		"dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+		"php-stubs/woocommerce-stubs": "^3.0",
 		"phpcompatibility/phpcompatibility-wp": "^2.1",
 		"phpstan/phpstan": "^2.0",
 		"phpunit/phpunit": "^9.6 || ^10.0",
@@ -27,12 +28,12 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"AiAgent\\": "includes/"
+			"GratisAiAgent\\": "includes/"
 		}
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"AiAgent\\Tests\\": "tests/AiAgent/"
+			"GratisAiAgent\\Tests\\": "tests/GratisAiAgent/"
 		}
 	},
 	"config": {
@@ -53,9 +54,9 @@
 		"test": "vendor/bin/phpunit",
 		"lint": ["@phpcs", "@phpstan"]
 	},
-	"homepage": "https://github.com/Ultimate-Multisite/ai-agent",
+	"homepage": "https://github.com/Ultimate-Multisite/gratis-ai-agent",
 	"support": {
-		"issues": "https://github.com/Ultimate-Multisite/ai-agent/issues",
-		"source": "https://github.com/Ultimate-Multisite/ai-agent"
+		"issues": "https://github.com/Ultimate-Multisite/gratis-ai-agent/issues",
+		"source": "https://github.com/Ultimate-Multisite/gratis-ai-agent"
 	}
 }

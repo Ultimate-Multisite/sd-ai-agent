@@ -4,10 +4,10 @@ declare(strict_types=1);
 /**
  * Event-Driven Automations model — CRUD for hook-based AI triggers.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Automations;
+namespace GratisAiAgent\Automations;
 
 class EventAutomations {
 
@@ -16,14 +16,14 @@ class EventAutomations {
 	 */
 	public static function table_name(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_agent_event_automations';
+		return $wpdb->prefix . 'gratis_ai_agent_event_automations';
 	}
 
 	/**
 	 * List all event automations.
 	 *
 	 * @param bool $enabled_only Only return enabled events.
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public static function list( bool $enabled_only = false ): array {
 		global $wpdb;
@@ -41,7 +41,7 @@ class EventAutomations {
 	 * Get a single event automation.
 	 *
 	 * @param int $id Event automation ID.
-	 * @return array|null
+	 * @return array<string, mixed>|null
 	 */
 	public static function get( int $id ): ?array {
 		global $wpdb;
@@ -57,7 +57,7 @@ class EventAutomations {
 	/**
 	 * Create a new event automation.
 	 *
-	 * @param array $data Event automation data.
+	 * @param array<string, mixed> $data Event automation data.
 	 * @return int|false Inserted ID or false.
 	 */
 	public static function create( array $data ) {
@@ -91,8 +91,8 @@ class EventAutomations {
 	/**
 	 * Update an event automation.
 	 *
-	 * @param int   $id   Event automation ID.
-	 * @param array $data Fields to update.
+	 * @param int                  $id   Event automation ID.
+	 * @param array<string, mixed> $data Fields to update.
 	 * @return bool
 	 */
 	public static function update( int $id, array $data ): bool {
@@ -174,7 +174,7 @@ class EventAutomations {
 			[ '%d' ]
 		);
 
-		return $result !== false;
+		return (int) $result > 0;
 	}
 
 	/**
@@ -203,7 +203,7 @@ class EventAutomations {
 	 * Decode a database row.
 	 *
 	 * @param object $row Database row.
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	private static function decode_row( object $row ): array {
 		return [

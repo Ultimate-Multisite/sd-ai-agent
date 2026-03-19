@@ -10,6 +10,12 @@ import { __ } from '@wordpress/i18n';
  */
 import STORE_NAME from '../store';
 
+/**
+ * Format a token count as a human-readable string (e.g. '12.3K', '1.5M').
+ *
+ * @param {number} n - Token count.
+ * @return {string} Formatted string.
+ */
 function formatTokens( n ) {
 	if ( n >= 1_000_000 ) {
 		return ( n / 1_000_000 ).toFixed( 1 ) + 'M';
@@ -20,6 +26,15 @@ function formatTokens( n ) {
 	return n.toString();
 }
 
+/**
+ * Context window usage indicator bar.
+ *
+ * Shows total token count, a colour-coded progress bar (green → yellow → red),
+ * and a warning with Compact/New Chat actions when usage exceeds 80%.
+ * Hidden when no tokens have been tracked yet.
+ *
+ * @return {JSX.Element|null} The context indicator, or null when hidden.
+ */
 export default function ContextIndicator() {
 	const { percentage, isWarning, tokenUsage } = useSelect(
 		( select ) => ( {
@@ -52,12 +67,12 @@ export default function ContextIndicator() {
 			<div className="ai-agent-context-stats">
 				<span className="ai-agent-context-tokens">
 					{ formatTokens( totalTokens ) }{ ' ' }
-					{ __( 'tokens', 'ai-agent' ) }
+					{ __( 'tokens', 'gratis-ai-agent' ) }
 					<span className="ai-agent-context-detail">
 						({ formatTokens( tokenUsage.prompt ) }{ ' ' }
-						{ __( 'in', 'ai-agent' ) } /{ ' ' }
+						{ __( 'in', 'gratis-ai-agent' ) } /{ ' ' }
 						{ formatTokens( tokenUsage.completion ) }{ ' ' }
-						{ __( 'out', 'ai-agent' ) })
+						{ __( 'out', 'gratis-ai-agent' ) })
 					</span>
 				</span>
 				<span className="ai-agent-context-pct">
@@ -76,7 +91,10 @@ export default function ContextIndicator() {
 			{ isWarning && (
 				<div className="ai-agent-context-warning">
 					<span>
-						{ __( 'Context window is getting full.', 'ai-agent' ) }
+						{ __(
+							'Context window is getting full.',
+							'gratis-ai-agent'
+						) }
 					</span>
 					<div className="ai-agent-context-warning-actions">
 						<Button
@@ -84,14 +102,14 @@ export default function ContextIndicator() {
 							size="small"
 							onClick={ compactConversation }
 						>
-							{ __( 'Compact', 'ai-agent' ) }
+							{ __( 'Compact', 'gratis-ai-agent' ) }
 						</Button>
 						<Button
 							variant="secondary"
 							size="small"
 							onClick={ clearCurrentSession }
 						>
-							{ __( 'New Chat', 'ai-agent' ) }
+							{ __( 'New Chat', 'gratis-ai-agent' ) }
 						</Button>
 					</div>
 				</div>

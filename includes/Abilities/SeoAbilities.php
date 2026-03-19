@@ -4,10 +4,10 @@ declare(strict_types=1);
 /**
  * SEO analysis abilities for the AI agent.
  *
- * @package AiAgent
+ * @package GratisAiAgent
  */
 
-namespace AiAgent\Abilities;
+namespace GratisAiAgent\Abilities;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -33,9 +33,9 @@ class SeoAbilities {
 		wp_register_ability(
 			'ai-agent/seo-audit-url',
 			[
-				'label'               => __( 'SEO Audit URL', 'ai-agent' ),
-				'description'         => __( 'Fetch a URL and analyze its SEO elements: title, meta description, headings, images, Open Graph, structured data, and common issues.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'SEO Audit URL', 'gratis-ai-agent' ),
+				'description'         => __( 'Fetch a URL and analyze its SEO elements: title, meta description, headings, images, Open Graph, structured data, and common issues.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -50,6 +50,29 @@ class SeoAbilities {
 					],
 					'required'   => [ 'url' ],
 				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'url'                     => [ 'type' => 'string' ],
+						'status_code'             => [ 'type' => 'integer' ],
+						'title'                   => [ 'type' => 'string' ],
+						'title_length'            => [ 'type' => 'integer' ],
+						'meta_description'        => [ 'type' => 'string' ],
+						'meta_description_length' => [ 'type' => 'integer' ],
+						'meta_robots'             => [ 'type' => 'string' ],
+						'canonical'               => [ 'type' => 'string' ],
+						'h1_count'                => [ 'type' => 'integer' ],
+						'h1_texts'                => [ 'type' => 'array' ],
+						'h2_count'                => [ 'type' => 'integer' ],
+						'total_images'            => [ 'type' => 'integer' ],
+						'images_without_alt'      => [ 'type' => 'integer' ],
+						'open_graph'              => [ 'type' => 'object' ],
+						'structured_data_types'   => [ 'type' => 'array' ],
+						'issues'                  => [ 'type' => 'array' ],
+						'issue_count'             => [ 'type' => 'integer' ],
+						'error'                   => [ 'type' => 'string' ],
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_audit_url' ],
 				'permission_callback' => function () {
 					return current_user_can( 'edit_posts' );
@@ -60,9 +83,9 @@ class SeoAbilities {
 		wp_register_ability(
 			'ai-agent/seo-analyze-content',
 			[
-				'label'               => __( 'SEO Analyze Content', 'ai-agent' ),
-				'description'         => __( 'Analyze a post\'s content for SEO quality: keyword density, title length, heading structure, links, readability, and meta description.', 'ai-agent' ),
-				'category'            => 'ai-agent',
+				'label'               => __( 'SEO Analyze Content', 'gratis-ai-agent' ),
+				'description'         => __( 'Analyze a post\'s content for SEO quality: keyword density, title length, heading structure, links, readability, and meta description.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -81,6 +104,31 @@ class SeoAbilities {
 					],
 					'required'   => [ 'post_id' ],
 				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'post_id'                    => [ 'type' => 'integer' ],
+						'title'                      => [ 'type' => 'string' ],
+						'status'                     => [ 'type' => 'string' ],
+						'word_count'                 => [ 'type' => 'integer' ],
+						'title_length'               => [ 'type' => 'integer' ],
+						'meta_description'           => [ 'type' => 'string' ],
+						'meta_description_length'    => [ 'type' => 'integer' ],
+						'heading_structure'          => [ 'type' => 'object' ],
+						'internal_links'             => [ 'type' => 'integer' ],
+						'external_links'             => [ 'type' => 'integer' ],
+						'avg_sentence_length'        => [ 'type' => 'number' ],
+						'has_featured_image'         => [ 'type' => 'boolean' ],
+						'focus_keyword'              => [ 'type' => 'string' ],
+						'keyword_count'              => [ 'type' => 'integer' ],
+						'keyword_density'            => [ 'type' => 'number' ],
+						'keyword_in_title'           => [ 'type' => 'boolean' ],
+						'keyword_in_first_paragraph' => [ 'type' => 'boolean' ],
+						'recommendations'            => [ 'type' => 'array' ],
+						'recommendation_count'       => [ 'type' => 'integer' ],
+						'error'                      => [ 'type' => 'string' ],
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_analyze_content' ],
 				'permission_callback' => function () {
 					return current_user_can( 'edit_posts' );
@@ -92,17 +140,17 @@ class SeoAbilities {
 	/**
 	 * Handle the seo-audit-url ability call.
 	 *
-	 * @param array $input Input with url and optional site_url.
-	 * @return array Audit results.
+	 * @param array<string,mixed> $input Input with url and optional site_url.
+	 * @return array<string,mixed>|\WP_Error Audit results.
 	 */
-	public static function handle_audit_url( array $input ): array {
-		$url = esc_url_raw( $input['url'] ?? '' );
+	public static function handle_audit_url( array $input ) {
+		$url = esc_url_raw( (string) ( $input['url'] ?? '' ) );
 
-		if ( empty( $url ) ) {
-			return [ 'error' => 'url is required.' ];
+		if ( empty( $url ) || ! wp_http_validate_url( $url ) ) {
+			return new \WP_Error( 'missing_url', 'url is required.' );
 		}
 
-		$response = wp_remote_get(
+		$response = wp_safe_remote_get(
 			$url,
 			[
 				'timeout'    => 15,
@@ -125,7 +173,7 @@ class SeoAbilities {
 			];
 		}
 
-		return self::parse_seo_elements( $url, $status_code, $body );
+		return self::parse_seo_elements( $url, (int) $status_code, $body );
 	}
 
 	/**
@@ -134,7 +182,7 @@ class SeoAbilities {
 	 * @param string $url         The audited URL.
 	 * @param int    $status_code HTTP status code.
 	 * @param string $html        Raw HTML.
-	 * @return array Structured SEO data.
+	 * @return array<string,mixed> Structured SEO data.
 	 */
 	private static function parse_seo_elements( string $url, int $status_code, string $html ): array {
 		$result = [
@@ -144,10 +192,14 @@ class SeoAbilities {
 
 		$issues = [];
 
-		libxml_use_internal_errors( true );
-		$doc = new \DOMDocument();
-		$doc->loadHTML( mb_convert_encoding( $html, 'HTML-ENTITIES', 'UTF-8' ), LIBXML_NOERROR );
-		libxml_clear_errors();
+		$prev = libxml_use_internal_errors( true );
+		$doc  = new \DOMDocument();
+		try {
+			$doc->loadHTML( mb_convert_encoding( $html, 'HTML-ENTITIES', 'UTF-8' ), LIBXML_NOERROR );
+		} finally {
+			libxml_clear_errors();
+			libxml_use_internal_errors( $prev );
+		}
 
 		$xpath = new \DOMXPath( $doc );
 
@@ -187,7 +239,7 @@ class SeoAbilities {
 
 		// Canonical.
 		$canonical_nodes     = $xpath->query( '//link[@rel="canonical"]' );
-		$result['canonical'] = $canonical_nodes->length > 0
+		$result['canonical'] = ( $canonical_nodes && $canonical_nodes->length > 0 )
 			? $canonical_nodes->item( 0 )->getAttribute( 'href' )
 			: null;
 		if ( empty( $result['canonical'] ) ) {
@@ -228,7 +280,7 @@ class SeoAbilities {
 		// Open Graph.
 		$og       = [];
 		$og_nodes = $xpath->query( '//meta[starts-with(@property, "og:")]' );
-		foreach ( $og_nodes as $node ) {
+		foreach ( $og_nodes ?: [] as $node ) {
 			$og[ $node->getAttribute( 'property' ) ] = $node->getAttribute( 'content' );
 		}
 		$result['open_graph'] = $og;
@@ -239,7 +291,8 @@ class SeoAbilities {
 		// Structured data (JSON-LD).
 		$jsonld       = [];
 		$script_nodes = $xpath->query( '//script[@type="application/ld+json"]' );
-		foreach ( $script_nodes as $script ) {
+		foreach ( $script_nodes ?: [] as $script ) {
+			/** @phpstan-ignore-next-line */
 			$decoded = json_decode( $script->textContent, true );
 			if ( $decoded ) {
 				$jsonld[] = $decoded['@type'] ?? 'Unknown';
@@ -262,7 +315,7 @@ class SeoAbilities {
 	 */
 	private static function get_meta_content( \DOMXPath $xpath, string $name ): ?string {
 		$nodes = $xpath->query( '//meta[@name="' . $name . '"]' );
-		if ( $nodes->length > 0 ) {
+		if ( $nodes && $nodes->length > 0 ) {
 			return $nodes->item( 0 )->getAttribute( 'content' );
 		}
 		return null;
@@ -271,24 +324,24 @@ class SeoAbilities {
 	/**
 	 * Handle the seo-analyze-content ability call.
 	 *
-	 * @param array $input Input with post_id, optional focus_keyword, site_url.
-	 * @return array Analysis results.
+	 * @param array<string,mixed> $input Input with post_id, optional focus_keyword, site_url.
+	 * @return array<string,mixed>|\WP_Error Analysis results.
 	 */
-	public static function handle_analyze_content( array $input ): array {
+	public static function handle_analyze_content( array $input ) {
 		$post_id       = (int) ( $input['post_id'] ?? 0 );
 		$focus_keyword = sanitize_text_field( $input['focus_keyword'] ?? '' );
 		$site_url      = $input['site_url'] ?? '';
 
 		if ( ! $post_id ) {
-			return [ 'error' => 'post_id is required.' ];
+			return new \WP_Error( 'missing_post_id', 'post_id is required.' );
 		}
 
 		$switched = false;
 
 		if ( ! empty( $site_url ) && is_multisite() ) {
 			$blog_id = get_blog_id_from_url(
-				wp_parse_url( $site_url, PHP_URL_HOST ),
-				wp_parse_url( $site_url, PHP_URL_PATH ) ?: '/'
+				(string) ( wp_parse_url( $site_url, PHP_URL_HOST ) ?? '' ),
+				(string) ( wp_parse_url( $site_url, PHP_URL_PATH ) ?: '/' )
 			);
 
 			if ( $blog_id && $blog_id !== get_current_blog_id() ) {
@@ -303,7 +356,7 @@ class SeoAbilities {
 			if ( $switched ) {
 				restore_current_blog();
 			}
-			return [ 'error' => "Post {$post_id} not found." ];
+			return new \WP_Error( 'post_not_found', "Post {$post_id} not found." );
 		}
 
 		$result = self::analyze_post_seo( $post, $focus_keyword );
@@ -320,7 +373,7 @@ class SeoAbilities {
 	 *
 	 * @param \WP_Post $post          The post to analyze.
 	 * @param string   $focus_keyword Optional focus keyword.
-	 * @return array Analysis data.
+	 * @return array<string,mixed> Analysis data.
 	 */
 	private static function analyze_post_seo( \WP_Post $post, string $focus_keyword ): array {
 		$content    = $post->post_content;
@@ -402,7 +455,7 @@ class SeoAbilities {
 
 		// Readability (average sentence length).
 		$sentences      = preg_split( '/[.!?]+/', $plain, -1, PREG_SPLIT_NO_EMPTY );
-		$sentence_count = count( $sentences );
+		$sentence_count = is_array( $sentences ) ? count( $sentences ) : 0;
 		if ( $sentence_count > 0 ) {
 			$avg_sentence_len              = $word_count / $sentence_count;
 			$result['avg_sentence_length'] = round( $avg_sentence_len, 1 );

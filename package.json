@@ -1,5 +1,5 @@
 {
-	"name": "ai-agent",
+	"name": "gratis-ai-agent",
 	"private": true,
 	"license": "GPL-2.0-or-later",
 	"scripts": {
@@ -12,11 +12,15 @@
 		"lint:php": "composer phpcs",
 		"lint:php:fix": "composer phpcbf",
 		"lint": "npm run lint:js && npm run lint:css && npm run lint:php",
+		"test:js": "wp-scripts test-unit-js",
 		"test:unit": "wp-scripts test-unit-js",
 		"test:e2e": "wp-scripts test-e2e",
-		"test:php": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/ai-agent && php vendor/bin/phpunit'",
-		"test:php:testdox": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/ai-agent && php vendor/bin/phpunit --testdox'",
-		"test:php:coverage": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/ai-agent && php vendor/bin/phpunit --coverage-text'",
+		"test:e2e:playwright": "playwright test",
+		"test:e2e:playwright:ui": "playwright test --ui",
+		"test:e2e:playwright:debug": "playwright test --debug",
+		"test:php": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/gratis-ai-agent && php vendor/bin/phpunit'",
+		"test:php:testdox": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/gratis-ai-agent && php vendor/bin/phpunit --testdox'",
+		"test:php:coverage": "wp-env run tests-wordpress bash -c 'cd /var/www/html/wp-content/plugins/gratis-ai-agent && php -d pcov.enabled=1 vendor/bin/phpunit --coverage-text'",
 		"wp-env": "wp-env",
 		"wp-env:start": "wp-env start",
 		"wp-env:stop": "wp-env stop",
@@ -24,12 +28,30 @@
 		"prepare": "husky"
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.58.2",
+		"@wordpress/e2e-test-utils-playwright": "^1.41.0",
 		"@wordpress/env": "^10.39.0",
-		"@wordpress/scripts": "^31.2.0",
+		"@wordpress/scripts": "^31.6.0",
 		"husky": "^9.1.7",
-		"lint-staged": "^16.4.0"
+		"lint-staged": "^16.4.0",
+		"react-dom": "^18.3.1"
 	},
 	"dependencies": {
+		"@codemirror/commands": "^6.10.3",
+		"@codemirror/lang-css": "^6.3.1",
+		"@codemirror/lang-html": "^6.4.11",
+		"@codemirror/lang-javascript": "^6.2.5",
+		"@codemirror/lang-json": "^6.0.2",
+		"@codemirror/lang-markdown": "^6.5.0",
+		"@codemirror/lang-php": "^6.0.2",
+		"@codemirror/lang-python": "^6.2.1",
+		"@codemirror/lang-rust": "^6.0.2",
+		"@codemirror/lang-sql": "^6.10.0",
+		"@codemirror/lang-yaml": "^6.1.2",
+		"@codemirror/language": "^6.12.2",
+		"@codemirror/state": "^6.6.0",
+		"@codemirror/theme-one-dark": "^6.1.3",
+		"@codemirror/view": "^6.40.0",
 		"@wordpress/api-fetch": "^7.36.0",
 		"@wordpress/components": "^30.7.0",
 		"@wordpress/compose": "^7.34.0",
@@ -39,14 +61,35 @@
 		"@wordpress/i18n": "^6.7.0",
 		"@wordpress/icons": "^11.1.0",
 		"@wordpress/notices": "^5.35.0",
+		"chart.js": "^4.5.1",
 		"react": "^18.3.1",
 		"react-markdown": "^10.1.0",
-		"react-syntax-highlighter": "^16.1.1",
 		"remark-gfm": "^4.0.1"
 	},
 	"overrides": {
 		"react": "^18.3.1",
-		"react-dom": "^18.3.1"
+		"react-dom": "^18.3.1",
+		"@wp-playground/blueprints": {
+			"ajv": "^8.18.0"
+		},
+		"@wp-playground/cli": {
+			"ajv": "^8.18.0"
+		},
+		"@wp-playground/tools": {
+			"ajv": "^8.18.0"
+		},
+		"@typescript-eslint/typescript-estree": {
+			"minimatch": "^9.0.7"
+		},
+		"markdownlint-cli": {
+			"minimatch": "^3.1.5"
+		},
+		"flatted": "^3.4.0",
+		"immutable": "^5.1.5",
+		"serialize-javascript": "^7.0.4",
+		"svgo": "^3.3.3",
+		"webpack-dev-server": "^5.2.3",
+		"yauzl": "^3.2.1"
 	},
 	"lint-staged": {
 		"src/**/*.{js,jsx}": [
