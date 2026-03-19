@@ -80,7 +80,7 @@ spl_autoload_register(
 		);
 
 		$guard_interface = $scoped_guard_map[ $class_name ];
-		if ( ! interface_exists( $guard_interface, false ) ) {
+		if ( ! interface_exists( $guard_interface ) ) {
 			return;
 		}
 
