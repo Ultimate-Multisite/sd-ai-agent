@@ -81,6 +81,7 @@ function SessionItem( { session, isActive, isOwner = true } ) {
 			} }
 			role="button"
 			tabIndex={ 0 }
+			aria-current={ isActive ? 'true' : undefined }
 		>
 			<div className="ai-agent-session-title">
 				{ isPinned && (
@@ -116,6 +117,9 @@ function SessionItem( { session, isActive, isOwner = true } ) {
 					setShowMenu( ! showMenu );
 				} }
 				title={ __( 'More', 'gratis-ai-agent' ) }
+				aria-label={ __( 'Session options', 'gratis-ai-agent' ) }
+				aria-haspopup="menu"
+				aria-expanded={ showMenu }
 				type="button"
 			>
 				&#8943;
@@ -289,15 +293,25 @@ export default function SessionSidebar() {
 							'Search conversations…',
 							'gratis-ai-agent'
 						) }
+						aria-label={ __(
+							'Search conversations',
+							'gratis-ai-agent'
+						) }
 						onChange={ handleSearchChange }
 					/>
 				) }
 			</div>
-			<div className="ai-agent-sidebar-filters">
+			<div
+				className="ai-agent-sidebar-filters"
+				role="tablist"
+				aria-label={ __( 'Conversation filters', 'gratis-ai-agent' ) }
+			>
 				{ filterTabs.map( ( tab ) => (
 					<button
 						key={ tab.key }
 						type="button"
+						role="tab"
+						aria-selected={ sessionFilter === tab.key }
 						className={ `ai-agent-filter-tab ${
 							sessionFilter === tab.key ? 'is-active' : ''
 						}` }
@@ -314,9 +328,18 @@ export default function SessionSidebar() {
 				) ) }
 			</div>
 			{ folders.length > 0 && sessionFilter === 'active' && (
-				<div className="ai-agent-sidebar-folders">
+				<div
+					className="ai-agent-sidebar-folders"
+					role="tablist"
+					aria-label={ __(
+						'Conversation folders',
+						'gratis-ai-agent'
+					) }
+				>
 					<button
 						type="button"
+						role="tab"
+						aria-selected={ ! sessionFolder }
 						className={ `ai-agent-folder-tab ${
 							! sessionFolder ? 'is-active' : ''
 						}` }
@@ -328,6 +351,8 @@ export default function SessionSidebar() {
 						<button
 							key={ folder }
 							type="button"
+							role="tab"
+							aria-selected={ sessionFolder === folder }
 							className={ `ai-agent-folder-tab ${
 								sessionFolder === folder ? 'is-active' : ''
 							}` }

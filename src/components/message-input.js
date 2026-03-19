@@ -622,6 +622,12 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 								? __( 'Stop recording', 'gratis-ai-agent' )
 								: __( 'Start voice input', 'gratis-ai-agent' )
 						}
+						aria-label={
+							isListening
+								? __( 'Stop recording', 'gratis-ai-agent' )
+								: __( 'Voice input', 'gratis-ai-agent' )
+						}
+						aria-pressed={ isListening }
 						icon={
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -652,7 +658,8 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 						onClick={ handleSend }
 						disabled={ ! canSend }
 						className="ai-agent-send-btn"
-						label={ __( 'Send', 'gratis-ai-agent' ) }
+						label={ __( 'Send message', 'gratis-ai-agent' ) }
+						aria-label={ __( 'Send message', 'gratis-ai-agent' ) }
 						icon={ <Icon icon={ arrowUp } /> }
 					/>
 				) }
