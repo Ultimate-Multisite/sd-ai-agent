@@ -34,6 +34,13 @@ require_once $plugin_dir . '/vendor/autoload.php';
  *    class using WordPress\AiClientDependencies\Nyholm\ and
  *    WordPress\AiClientDependencies\Psr\ type hints.
  *
+ * 3. Psr\SimpleCache\CacheInterface (global)
+ *    WP trunk's WP_AI_Client_Cache implements the scoped version
+ *    (WordPress\AiClientDependencies\Psr\SimpleCache\CacheInterface) but
+ *    Composer's AiClient::setCache() expects the global Psr\SimpleCache\CacheInterface.
+ *    The shim defines the global interface as extending the scoped one so that
+ *    WP_AI_Client_Cache satisfies both type hints.
+ *
  * Fix: register a prepended autoloader that intercepts both classes and loads
  * shims that use the scoped WordPress\AiClientDependencies\ namespace. Shims
  * are only loaded when WP trunk's scoped PSR namespace is detectable
@@ -47,6 +54,7 @@ spl_autoload_register(
 		$shim_map = array(
 			'WordPress\\AiClient\\Providers\\Http\\Contracts\\ClientWithOptionsInterface'      => 'wp-trunk-client-with-options-interface.php',
 			'WordPress\\AiClient\\Providers\\Http\\Abstracts\\AbstractClientDiscoveryStrategy' => 'wp-trunk-abstract-client-discovery-strategy.php',
+			'Psr\\SimpleCache\\CacheInterface'                                                 => 'wp-trunk-psr-simple-cache-interface.php',
 		);
 
 		if ( ! isset( $shim_map[ $class_name ] ) ) {
