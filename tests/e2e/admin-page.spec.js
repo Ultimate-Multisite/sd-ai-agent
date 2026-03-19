@@ -253,7 +253,7 @@ test.describe( 'Settings - Abilities Search and Filter (t098)', () => {
 	 * Returns null if no non-empty options exist.
 	 *
 	 * @param {import('@playwright/test').Page} page
-	 * @return {Promise<string|null>}
+	 * @return {Promise<string|null>} The first non-empty option value, or null.
 	 */
 	async function getFirstCategoryOption( page ) {
 		const categorySelect = page
@@ -377,7 +377,9 @@ test.describe( 'Settings - Abilities Search and Filter (t098)', () => {
 		await searchInput.fill( 'xyzzy_nonexistent_ability' );
 
 		// AbilitiesManager renders a "No abilities match your search." paragraph.
-		const noResults = page.locator( 'text=No abilities match your search.' );
+		const noResults = page.locator(
+			'text=No abilities match your search.'
+		);
 		await expect( noResults ).toBeVisible();
 	} );
 
@@ -434,7 +436,9 @@ test.describe( 'Settings - Abilities Search and Filter (t098)', () => {
 		expect( restored ).toBe( total );
 	} );
 
-	test( 'search and category filter combine correctly', async ( { page } ) => {
+	test( 'search and category filter combine correctly', async ( {
+		page,
+	} ) => {
 		const searchInput = page
 			.locator( '.ai-agent-abilities-search' )
 			.locator( 'input' );
@@ -503,12 +507,19 @@ test.describe( 'Settings - Abilities Search and Filter (t098)', () => {
 			name: /collapse all/i,
 		} );
 		await expect( collapseBtn ).toBeVisible();
-		await collapseBtn.click();
 
-		// All category bodies should be hidden.
+		// Wait for at least one category body to be present before collapsing.
+		// Without this, the abilities may not have loaded yet and count() returns 0.
 		const categoryBodies = page.locator(
 			'.ai-agent-abilities-category-body'
 		);
+		await expect( categoryBodies.first() ).toBeVisible( {
+			timeout: 10_000,
+		} );
+
+		await collapseBtn.click();
+
+		// All category bodies should be hidden.
 		const count = await categoryBodies.count();
 		for ( let i = 0; i < count; i++ ) {
 			await expect( categoryBodies.nth( i ) ).not.toBeVisible();
@@ -516,6 +527,15 @@ test.describe( 'Settings - Abilities Search and Filter (t098)', () => {
 	} );
 
 	test( 'Expand all button shows all category bodies', async ( { page } ) => {
+		// Wait for at least one category body to be present before collapsing.
+		// Without this, the abilities may not have loaded yet and count() returns 0.
+		const categoryBodies = page.locator(
+			'.ai-agent-abilities-category-body'
+		);
+		await expect( categoryBodies.first() ).toBeVisible( {
+			timeout: 10_000,
+		} );
+
 		// Collapse first, then expand.
 		const collapseBtn = page.getByRole( 'button', {
 			name: /collapse all/i,
@@ -526,9 +546,6 @@ test.describe( 'Settings - Abilities Search and Filter (t098)', () => {
 		await expandBtn.click();
 
 		// All category bodies should be visible.
-		const categoryBodies = page.locator(
-			'.ai-agent-abilities-category-body'
-		);
 		const count = await categoryBodies.count();
 		expect( count ).toBeGreaterThan( 0 );
 		for ( let i = 0; i < count; i++ ) {
@@ -539,6 +556,14 @@ test.describe( 'Settings - Abilities Search and Filter (t098)', () => {
 	test( 'category sections auto-expand when search filter is active', async ( {
 		page,
 	} ) => {
+		// Wait for abilities to load before collapsing.
+		const categoryBodies = page.locator(
+			'.ai-agent-abilities-category-body'
+		);
+		await expect( categoryBodies.first() ).toBeVisible( {
+			timeout: 10_000,
+		} );
+
 		// Collapse all first.
 		const collapseBtn = page.getByRole( 'button', {
 			name: /collapse all/i,
@@ -546,9 +571,6 @@ test.describe( 'Settings - Abilities Search and Filter (t098)', () => {
 		await collapseBtn.click();
 
 		// Verify collapsed.
-		const categoryBodies = page.locator(
-			'.ai-agent-abilities-category-body'
-		);
 		const count = await categoryBodies.count();
 		for ( let i = 0; i < count; i++ ) {
 			await expect( categoryBodies.nth( i ) ).not.toBeVisible();
