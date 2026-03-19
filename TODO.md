@@ -2,7 +2,7 @@
 
 ## Ready
 
-- [ ] t131 Raise PHPStan level from 9 to 10 (max) and fix new errors @superdav42 #quality ~3h ref=GH#605
+- [x] t131 Raise PHPStan level from 9 to 10 (max) and fix new errors @superdav42 #quality ~3h ref=GH#605 pr:#606 completed:2026-03-19
   - Continue quality ladder: t010 (5→6), t110 (6→7), t125 (7→8), t130 (8→9), now 9→10
   - Level 10 is maximum: dead code detection, impossible type checks, strictest mixed narrowing
 
