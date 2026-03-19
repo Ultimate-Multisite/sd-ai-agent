@@ -40,15 +40,17 @@ async function interceptWithGeneratedTitle( page, generatedTitle ) {
 				? parseInt( sessionIdMatch[ 1 ], 10 )
 				: 1;
 
-			// Minimal SSE stream: one content chunk + done with generated_title.
+			// Minimal SSE stream: one token chunk + done with generated_title.
+			// The store dispatches on `eventName` parsed from the `event:` line,
+			// not from a `type` field inside the JSON payload.
 			const sseBody = [
+				'event: token',
 				`data: ${ JSON.stringify( {
-					type: 'content',
-					content: 'Hello! How can I help you?',
+					token: 'Hello! How can I help you?',
 				} ) }`,
 				'',
+				'event: done',
 				`data: ${ JSON.stringify( {
-					type: 'done',
 					session_id: sessionId,
 					generated_title: generatedTitle,
 				} ) }`,
