@@ -2,6 +2,14 @@
 
 ## Ready
 
+- [ ] t129 Add o3, o4-mini, and claude-sonnet-4-6 to model selector @superdav42 #enhancement ~1h ref=GH#601
+  - o3 and o4-mini already in CostCalculator but missing from Settings; claude-sonnet-4-6/opus-4-6 missing from both
+  - Update Settings.php model arrays + CostCalculator.php pricing; update Anthropic default_model to claude-sonnet-4-6
+
+- [ ] t130 Raise PHPStan level from 8 to 9 and fix new errors @superdav42 #quality ~3h ref=GH#602
+  - Continue quality ladder: t010 (5→6), t110 (6→7), t125 (7→8), now 8→9
+  - Level 9 adds stricter mixed type narrowing, null handling, array shapes
+
 - [x] t127 Submit Gratis AI Agent to WordPress.org plugin directory via SVN @superdav42 #devops ~2h ref=GH#597 pr:#600 completed:2026-03-19
   - SVN repo returns 404 (plugin not yet submitted for review). Documented full submission process in docs/wordpress-org-submission.md and added bin/deploy-wporg.sh. Manual step required: submit ZIP at wordpress.org/plugins/developers/add/
 
