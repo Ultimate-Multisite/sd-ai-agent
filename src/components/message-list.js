@@ -335,22 +335,22 @@ export default function MessageList() {
 						{ msg.toolCalls?.length > 0 && (
 							<ToolCallDetails toolCalls={ msg.toolCalls } />
 						) }
-					<MessageBubble
-						role={ msg.role }
-						text={ cleanText }
-						attachments={ msg.attachments }
-					/>
-					<MessageActions
-						message={ msg }
-						index={ originalIndex }
-					/>
-					{ isModel && (
-						<MessageTokenAnnotation
-							tokenData={
-								messageTokens[ originalIndex ] || null
-							}
+						<MessageBubble
+							role={ msg.role }
+							text={ cleanText }
+							attachments={ msg.attachments }
 						/>
-					) }
+						<MessageActions
+							message={ msg }
+							index={ originalIndex }
+						/>
+						{ isModel && (
+							<MessageTokenAnnotation
+								tokenData={
+									messageTokens[ originalIndex ] || null
+								}
+							/>
+						) }
 						{ debugMode && isModel && msg.debug && (
 							<DebugPanel debug={ msg.debug } />
 						) }

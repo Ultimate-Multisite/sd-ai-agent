@@ -2571,9 +2571,9 @@ class RestController {
 				$full_history = $result['history'] ?? array();
 				$appended     = array_slice( $full_history, $existing_count );
 
-			$this->database->append_to_session( $session_id, array_values( $appended ), $result['tool_calls'] ?? [] );
+				$this->database->append_to_session( $session_id, array_values( $appended ), $result['tool_calls'] ?? [] );
 
-			// Persist token usage.
+				// Persist token usage.
 				$token_usage = $result['token_usage'] ?? array();
 				if ( ! empty( $token_usage ) ) {
 					$this->database->update_session_tokens(
@@ -2721,8 +2721,8 @@ class RestController {
 				'name'     => $name,
 				'type'     => $type,
 				'tmp_name' => $tmp_file,
-				'error'    => 0,
-				'size'     => strlen( $decoded ),
+				'error'    => '0',
+				'size'     => (string) strlen( $decoded ),
 			);
 
 			$attachment_id = media_handle_sideload( $file_array, 0, null );
@@ -2887,9 +2887,9 @@ class RestController {
 			$full_history = $result['history'] ?? array();
 			$appended     = array_slice( $full_history, $existing_count );
 
-		Database::append_to_session( $session_id, array_values( $appended ), $result['tool_calls'] ?? [] );
+			Database::append_to_session( $session_id, array_values( $appended ), $result['tool_calls'] ?? [] );
 
-		$token_usage = $result['token_usage'] ?? array();
+			$token_usage = $result['token_usage'] ?? array();
 			if ( ! empty( $token_usage ) ) {
 				Database::update_session_tokens(
 					$session_id,
