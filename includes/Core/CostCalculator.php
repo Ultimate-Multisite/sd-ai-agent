@@ -17,6 +17,8 @@ class CostCalculator {
 	 */
 	private const PRICING = [
 		// Claude models.
+		'claude-sonnet-4-6'                    => [ 3.00, 15.00 ],
+		'claude-opus-4-6'                      => [ 15.00, 75.00 ],
 		'claude-sonnet-4-20250514'             => [ 3.00, 15.00 ],
 		'claude-opus-4-20250115'               => [ 15.00, 75.00 ],
 		'claude-haiku-4-20250414'              => [ 0.80, 4.00 ],
