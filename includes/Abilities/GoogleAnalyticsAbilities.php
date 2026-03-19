@@ -248,16 +248,16 @@ trait GaApiClient {
 			return new WP_Error( 'ga_no_private_key', __( 'Service account JSON is missing private_key.', 'gratis-ai-agent' ) );
 		}
 
-// @phpstan-ignore-next-line
+		// @phpstan-ignore-next-line
 
 		// @phpstan-ignore-next-line
 		if ( ! function_exists( 'openssl_sign' ) ) {
 			// @phpstan-ignore-next-line
 			return new WP_Error( 'ga_no_openssl', __( 'OpenSSL extension is required for Google Analytics authentication.', 'gratis-ai-agent' ) );
-		// @phpstan-ignore-next-line
+			// @phpstan-ignore-next-line
 		}
 
-// @phpstan-ignore-next-line
+		// @phpstan-ignore-next-line
 
 		// @phpstan-ignore-next-line
 		$pkey = openssl_pkey_get_private( $private_key );
@@ -285,7 +285,7 @@ trait GaApiClient {
 			]
 		);
 
-// @phpstan-ignore-next-line
+		// @phpstan-ignore-next-line
 
 		if ( is_wp_error( $response ) ) {
 			// @phpstan-ignore-next-line
@@ -293,11 +293,11 @@ trait GaApiClient {
 			return new WP_Error( 'ga_token_request_failed', $response->get_error_message() );
 		}
 
-// @phpstan-ignore-next-line
+		// @phpstan-ignore-next-line
 
-// @phpstan-ignore-next-line
+		// @phpstan-ignore-next-line
 
-// @phpstan-ignore-next-line
+		// @phpstan-ignore-next-line
 
 		// @phpstan-ignore-next-line
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
@@ -309,8 +309,8 @@ trait GaApiClient {
 			// @phpstan-ignore-next-line
 			$err = $body['error_description'] ?? $body['error'] ?? 'Unknown error';
 			// translators: %s: OAuth error message returned by Google.
-			// @phpstan-ignore-next-line
-			return new WP_Error( 'ga_token_error', sprintf( __( 'Google OAuth error: %s', 'gratis-ai-agent' ), $err ) );
+			$error_message = sprintf( __( 'Google OAuth error: %s', 'gratis-ai-agent' ), $err );
+			return new WP_Error( 'ga_token_error', $error_message );
 		}
 
 		// @phpstan-ignore-next-line
@@ -337,18 +337,18 @@ trait GaApiClient {
 					'Content-Type'  => 'application/json',
 				],
 				'body'    => (string) wp_json_encode( $body ),
-			// @phpstan-ignore-next-line
+				// @phpstan-ignore-next-line
 			]
 		);
 
-// @phpstan-ignore-next-line
+		// @phpstan-ignore-next-line
 
 		if ( is_wp_error( $response ) ) {
 			return new WP_Error( 'ga_api_request_failed', $response->get_error_message() );
-		// @phpstan-ignore-next-line
+			// @phpstan-ignore-next-line
 		}
 
-// @phpstan-ignore-next-line
+		// @phpstan-ignore-next-line
 
 		$code = wp_remote_retrieve_response_code( $response );
 		// @phpstan-ignore-next-line
@@ -358,8 +358,8 @@ trait GaApiClient {
 		if ( ! is_array( $data ) ) {
 			// @phpstan-ignore-next-line
 			return new WP_Error( 'ga_api_invalid_response', __( 'Google Analytics API returned an invalid response.', 'gratis-ai-agent' ) );
-		// @phpstan-ignore-next-line
-		// @phpstan-ignore-next-line
+			// @phpstan-ignore-next-line
+			// @phpstan-ignore-next-line
 		}
 
 		// @phpstan-ignore-next-line
@@ -367,10 +367,22 @@ trait GaApiClient {
 		if ( $code >= 400 ) {
 			// @phpstan-ignore-next-line
 			$msg = $data['error']['message'] ?? __( 'Unknown API error.', 'gratis-ai-agent' );
-			// @phpstan-ignore-next-line
 			// translators: %1$d: HTTP status code, %2$s: error message from Google Analytics API.
+			$error_message = sprintf( __( 'Google Analytics API error (%1$d): %2$s', 'gratis-ai-agent' ), $code, $msg );
+			return new WP_Error( 'ga_api_error', $error_message );
+		}
+
+		// @phpstan-ignore-next-line
+		return $data;
+
+		// @phpstan-ignore-next-line
+		if ( $code >= 400 ) {
 			// @phpstan-ignore-next-line
-			return new WP_Error( 'ga_api_error', sprintf( __( 'Google Analytics API error (%1$d): %2$s', 'gratis-ai-agent' ), $code, $msg ) );
+			// @phpstan-ignore-next-line
+			$msg = $data['error']['message'] ?? __( 'Unknown API error.', 'gratis-ai-agent' );
+			// translators: %1$d: HTTP status code, %2$s: error message from Google Analytics API.
+			$error_message = sprintf( __( 'Google Analytics API error (%1$d): %2$s', 'gratis-ai-agent' ), $code, $msg );
+			return new WP_Error( 'ga_api_error', $error_message );
 		}
 
 		// @phpstan-ignore-next-line
@@ -402,7 +414,7 @@ trait GaApiClient {
 		// @phpstan-ignore-next-line
 		if ( is_wp_error( $response ) ) {
 			return new WP_Error( 'ga_api_request_failed', $response->get_error_message() );
-		// @phpstan-ignore-next-line
+			// @phpstan-ignore-next-line
 		}
 
 		// @phpstan-ignore-next-line
@@ -410,15 +422,15 @@ trait GaApiClient {
 		// @phpstan-ignore-next-line
 		$data = json_decode( wp_remote_retrieve_body( $response ), true );
 
-// @phpstan-ignore-next-line
+		// @phpstan-ignore-next-line
 
 		if ( ! is_array( $data ) ) {
 			// @phpstan-ignore-next-line
 			return new WP_Error( 'ga_api_invalid_response', __( 'Google Analytics API returned an invalid response.', 'gratis-ai-agent' ) );
-		// @phpstan-ignore-next-line
+			// @phpstan-ignore-next-line
 		}
 
-// @phpstan-ignore-next-line
+		// @phpstan-ignore-next-line
 
 		// @phpstan-ignore-next-line
 		if ( $code >= 400 ) {
@@ -426,8 +438,8 @@ trait GaApiClient {
 			// @phpstan-ignore-next-line
 			$msg = $data['error']['message'] ?? __( 'Unknown API error.', 'gratis-ai-agent' );
 			// translators: %1$d: HTTP status code, %2$s: error message from Google Analytics API.
-			// @phpstan-ignore-next-line
-			return new WP_Error( 'ga_api_error', sprintf( __( 'Google Analytics API error (%1$d): %2$s', 'gratis-ai-agent' ), $code, $msg ) );
+			$error_message = sprintf( __( 'Google Analytics API error (%1$d): %2$s', 'gratis-ai-agent' ), $code, $msg );
+			return new WP_Error( 'ga_api_error', $error_message );
 		}
 
 		// @phpstan-ignore-next-line
@@ -503,9 +515,9 @@ trait GaApiClient {
 	 *
 	 * @param array<string,mixed> $row            Row from GA API response.
 	 * @param int                 $dimension_index Zero-based index into dimensionValues.
-	 // @phpstan-ignore-next-line
+	// @phpstan-ignore-next-line
 	 * @return string Raw value string.
-	 // @phpstan-ignore-next-line
+	// @phpstan-ignore-next-line
 	 */
 	// @phpstan-ignore-next-line
 	private function extract_dimension( array $row, int $dimension_index ): string {
@@ -580,7 +592,7 @@ class GaTrafficSummaryAbility extends AbstractAbility {
 		// @phpstan-ignore-next-line
 		$start_date = isset( $input['start_date'] ) ? (string) $input['start_date'] : '30daysAgo';
 		// @phpstan-ignore-next-line
-		$end_date   = isset( $input['end_date'] ) ? (string) $input['end_date'] : 'today';
+		$end_date = isset( $input['end_date'] ) ? (string) $input['end_date'] : 'today';
 
 		$creds = $this->load_credentials();
 		if ( is_wp_error( $creds ) ) {
@@ -741,9 +753,9 @@ class GaTopPagesAbility extends AbstractAbility {
 		// @phpstan-ignore-next-line
 		$start_date = isset( $input['start_date'] ) ? (string) $input['start_date'] : '30daysAgo';
 		// @phpstan-ignore-next-line
-		$end_date   = isset( $input['end_date'] ) ? (string) $input['end_date'] : 'today';
+		$end_date = isset( $input['end_date'] ) ? (string) $input['end_date'] : 'today';
 		// @phpstan-ignore-next-line
-		$limit      = isset( $input['limit'] ) ? min( 50, max( 1, (int) $input['limit'] ) ) : 10;
+		$limit = isset( $input['limit'] ) ? min( 50, max( 1, (int) $input['limit'] ) ) : 10;
 
 		$creds = $this->load_credentials();
 		if ( is_wp_error( $creds ) ) {

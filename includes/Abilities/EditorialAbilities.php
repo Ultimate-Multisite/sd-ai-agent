@@ -505,7 +505,7 @@ INSTRUCTION;
 		}
 
 		// @phpstan-ignore-next-line
-		$block_type    = sanitize_text_field( $input['block_type'] ?? '' );
+		$block_type = sanitize_text_field( $input['block_type'] ?? '' );
 		// @phpstan-ignore-next-line
 		$block_content = sanitize_text_field( $input['block_content'] ?? '' );
 
@@ -753,12 +753,9 @@ INSTRUCTION;
 			$post = get_post( (int) $input['post_id'] );
 
 			if ( ! $post ) {
-				return new WP_Error(
-					'post_not_found',
-					/* translators: %d: Post ID. */
-					// @phpstan-ignore-next-line
-					sprintf( __( 'Post with ID %d not found.', 'gratis-ai-agent' ), absint( $input['post_id'] ) )
-				);
+				// translators: %d: Post ID.
+				$error_message = sprintf( __( 'Post with ID %d not found.', 'gratis-ai-agent' ), absint( $input['post_id'] ) );
+				return new WP_Error( 'post_not_found', $error_message );
 			}
 
 			$parts = array_filter(
