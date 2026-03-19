@@ -522,22 +522,9 @@ test.describe( 'Changes Page - Plugin Download Link', () => {
 		page,
 	} ) => {
 		// The /modified-plugins endpoint is the backend for plugin download links.
-		// Verify it returns a valid response with the expected JSON shape.
-		const response = await page.evaluate( async ( restBase ) => {
-			const nonce = window.gratisAiAgentChanges?.nonce || '';
-			const res = await fetch( `${ restBase }/modified-plugins`, {
-				headers: {
-					'X-WP-Nonce': nonce,
-				},
-			} );
-			return {
-				status: res.status,
-				body: await res.json(),
-			};
-		}, page.url().replace( /\/wp-admin.*/, '/wp-json/gratis-ai-agent/v1' ) );
-
-		// Endpoint must respond (200 or 401 if not yet on the changes page).
-		// Navigate to the changes page first to get the nonce.
+		// Navigate to the changes page first so the nonce is available via
+		// window.gratisAiAgentChanges, then verify the endpoint returns the
+		// expected JSON shape.
 		await goToChangesPage( page );
 		await page.waitForLoadState( 'networkidle' );
 
