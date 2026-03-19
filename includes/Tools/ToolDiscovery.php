@@ -237,7 +237,7 @@ class ToolDiscovery {
 
 				// Word-level matching for multi-word queries.
 				$words = preg_split( '/[\s\-_\/]+/', $query_lower );
-				if ( count( $words ) > 1 ) {
+				if ( is_array( $words ) && count( $words ) > 1 ) {
 					$haystack = $name_lower . ' ' . $label_lower . ' ' . $desc_lower;
 					foreach ( $words as $word ) {
 						if ( '' !== $word && str_contains( $haystack, $word ) ) {
