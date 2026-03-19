@@ -252,6 +252,9 @@ class BudgetManager {
 	 * @return string Formatted string, e.g. "$2.34" or "$0.0012".
 	 */
 	public static function format_cost( float $cost ): string {
+		if ( 0.0 === $cost ) {
+			return '$' . number_format( $cost, 2 );
+		}
 		if ( $cost < 0.01 ) {
 			return '$' . number_format( $cost, 4 );
 		}
