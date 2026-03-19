@@ -13,10 +13,57 @@
 	text-align: center;
 }
 
+/* Tab bar scroll wrapper — provides fade-edge overflow indicators */
+.gratis-ai-agent-tabs-scroll-wrapper {
+	position: relative;
+}
+
+/* Left fade indicator — visible when scrolled right */
+.gratis-ai-agent-tabs-scroll-wrapper::before,
+.gratis-ai-agent-tabs-scroll-wrapper::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 1px; /* sit above the border-bottom */
+	width: 32px;
+	pointer-events: none;
+	z-index: 1;
+	transition: opacity 0.15s;
+}
+
+.gratis-ai-agent-tabs-scroll-wrapper::before {
+	left: 0;
+	background: linear-gradient(to right, #fff 40%, transparent);
+	opacity: 0;
+}
+
+.gratis-ai-agent-tabs-scroll-wrapper::after {
+	right: 0;
+	background: linear-gradient(to left, #fff 40%, transparent);
+	opacity: 0;
+}
+
+.gratis-ai-agent-tabs-scroll-wrapper.has-scroll-left::before {
+	opacity: 1;
+}
+
+.gratis-ai-agent-tabs-scroll-wrapper.has-scroll-right::after {
+	opacity: 1;
+}
+
 .ai-agent-settings .components-tab-panel__tabs {
 	border-bottom: 1px solid #c3c4c7;
 	padding: 0 12px;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+
+	/* Hide scrollbar visually while keeping it functional */
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE/Edge */
+}
+
+.ai-agent-settings .components-tab-panel__tabs::-webkit-scrollbar {
+	display: none; /* Chrome/Safari/Opera */
 }
 
 .ai-agent-settings .components-tab-panel__tab-content {
