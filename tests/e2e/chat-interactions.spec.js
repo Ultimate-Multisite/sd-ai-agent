@@ -17,66 +17,119 @@ const {
 } = require( './utils/wp-admin' );
 
 /**
- * Intercept the agent-run SSE endpoint and inject a `generated_title` into
- * the done event so the auto-title optimistic-update path fires without a
- * live AI provider.
+ * Intercept the stream endpoint and the sessions list endpoint to simulate
+ * auto-title behaviour without a live AI provider.
  *
- * The store reads `doneMetadata.generated_title` from the final SSE `done`
- * event and calls `dispatch.updateSessionTitle()` to update the sidebar
- * immediately (see store/index.js lines ~1438-1443 and ~1769-1772).
+ * How the auto-title flow works:
+ *   1. The store POSTs to gratis-ai-agent/v1/stream and reads the SSE response.
+ *   2. On the `done` event it calls updateSessionTitle(sessionId, generatedTitle)
+ *      — an optimistic update that patches the session in state.sessions.
+ *   3. It then calls fetchSessions() which GETs gratis-ai-agent/v1/sessions and
+ *      replaces state.sessions with the server response.
+ *
+ * For a brand-new session the optimistic update in step 2 is a no-op because
+ * the session is not yet in state.sessions (it was only added to the store via
+ * setCurrentSession, not via setSessions). The title therefore comes from step 3.
+ *
+ * We intercept both endpoints:
+ *   - The stream endpoint returns a minimal SSE response with generated_title so
+ *     the store's done-event handler fires correctly.
+ *   - The sessions GET endpoint (called by fetchSessions after the stream) returns
+ *     a single session whose title matches generatedTitle, so the sidebar renders
+ *     the expected title after the round-trip.
  *
  * @param {import('@playwright/test').Page} page
  * @param {string}                          generatedTitle - Title to inject.
  */
 async function interceptWithGeneratedTitle( page, generatedTitle ) {
-	// The store POSTs to {wpApiSettings.root}gratis-ai-agent/v1/stream.
-	// In wp-env this resolves to http://localhost:8888/wp-json/gratis-ai-agent/v1/stream.
-	// The session_id is in the POST body JSON (not the URL), so we parse it from
-	// the request body to inject it into the synthetic done event.
+	// Track the session ID created by POST /sessions so we can echo it back
+	// in both the stream done event and the sessions list response.
+	let capturedSessionId = 1;
+
+	// Intercept POST /sessions to capture the real session ID, and intercept
+	// GET /sessions (fetchSessions) to return the session with the generated title.
+	//
+	// URL matching: the sessions list endpoint is /gratis-ai-agent/v1/sessions
+	// (with optional query params). Individual session endpoints are
+	// /gratis-ai-agent/v1/sessions/123 — we must NOT intercept those.
+	// The regex matches /sessions followed by end-of-path or a query string,
+	// but not /sessions/ followed by more path segments.
 	await page.route(
-		/gratis-ai-agent\/v1\/stream/,
+		/gratis-ai-agent\/v1\/sessions(\?.*)?$/,
 		async ( route ) => {
-			// Extract session_id from the POST body so the store's
-			// updateSessionTitle() call targets the correct session.
-			let sessionId = 1;
-			try {
-				const postBody = route.request().postDataJSON();
-				if ( postBody?.session_id ) {
-					sessionId = postBody.session_id;
+			if ( route.request().method() === 'POST' ) {
+				// Let the real POST /sessions through so the session is created in
+				// the database (needed for the stream request to succeed).
+				const response = await route.fetch();
+				const body = await response.json();
+				if ( body?.id ) {
+					capturedSessionId = body.id;
 				}
-			} catch {
-				// postDataJSON() throws if body is not valid JSON; fall back to 1.
+				await route.fulfill( { response } );
+			} else {
+				// GET /sessions (fetchSessions) — return a single session with the
+				// generated title so the sidebar shows the expected title after the
+				// stream completes.
+				await route.fulfill( {
+					status: 200,
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify( [
+						{
+							id: capturedSessionId,
+							title: generatedTitle,
+							created_at: new Date().toISOString(),
+							updated_at: new Date().toISOString(),
+							message_count: 1,
+						},
+					] ),
+				} );
 			}
-
-			// Minimal SSE stream: one token chunk + done with generated_title.
-			// The store dispatches on `eventName` parsed from the `event:` line,
-			// not from a `type` field inside the JSON payload.
-			// Each SSE message is separated by a blank line (\n\n).
-			const sseBody = [
-				'event: token',
-				`data: ${ JSON.stringify( {
-					token: 'Hello! How can I help you?',
-				} ) }`,
-				'',
-				'event: done',
-				`data: ${ JSON.stringify( {
-					session_id: sessionId,
-					generated_title: generatedTitle,
-				} ) }`,
-				'',
-				'',
-			].join( '\n' );
-
-			await route.fulfill( {
-				status: 200,
-				headers: {
-					'Content-Type': 'text/event-stream',
-					'Cache-Control': 'no-cache',
-				},
-				body: sseBody,
-			} );
 		}
 	);
+
+	// Intercept the stream endpoint and return a minimal SSE response with
+	// generated_title so the store's done-event handler fires correctly.
+	// The store POSTs to {wpApiSettings.root}gratis-ai-agent/v1/stream.
+	await page.route( /gratis-ai-agent\/v1\/stream/, async ( route ) => {
+		// Extract session_id from the POST body so the done event carries the
+		// correct session ID (matches capturedSessionId set above).
+		let sessionId = capturedSessionId;
+		try {
+			const postBody = route.request().postDataJSON();
+			if ( postBody?.session_id ) {
+				sessionId = postBody.session_id;
+			}
+		} catch {
+			// postDataJSON() throws if body is not valid JSON; fall back.
+		}
+
+		// Minimal SSE stream: one token chunk + done with generated_title.
+		// The store dispatches on `eventName` parsed from the `event:` line.
+		// Each SSE message is separated by a blank line (\n\n).
+		const sseBody = [
+			'event: token',
+			`data: ${ JSON.stringify( {
+				token: 'Hello! How can I help you?',
+			} ) }`,
+			'',
+			'event: done',
+			`data: ${ JSON.stringify( {
+				session_id: sessionId,
+				generated_title: generatedTitle,
+			} ) }`,
+			'',
+			'',
+		].join( '\n' );
+
+		await route.fulfill( {
+			status: 200,
+			headers: {
+				'Content-Type': 'text/event-stream',
+				'Cache-Control': 'no-cache',
+			},
+			body: sseBody,
+		} );
+	} );
 }
 
 test.describe( 'Chat Input Interactions', () => {
