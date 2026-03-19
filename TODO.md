@@ -2,6 +2,29 @@
 
 ## Ready
 
+- [ ] t109 Fix readme.txt PHP requirement: update 7.4 to 8.2 to match plugin header and CI @superdav42 #bug ~0.5h ref=GH#550
+  - readme.txt says "Requires PHP: 7.4" but plugin header says PHP 8.2 and CI runs PHP 8.2
+  - Codebase uses PHP 8.1 enums (ToolType, MemoryCategory, Schedule, HttpMethod) — 7.4 is impossible
+  - Fix: update readme.txt "Requires PHP: 7.4" → "Requires PHP: 8.2"
+
+- [ ] t110 Raise PHPStan level from 6 to 7 and fix new errors @superdav42 #quality ~3h ref=GH#6
+  - Current level: 6 (set in t010). Level 7 adds stricter type inference and union type checks.
+  - Run `vendor/bin/phpstan analyse --level=7` to see new errors, then fix them
+  - Update phpstan.neon level from 6 to 7
+
+- [ ] t111 Update GitHub Actions to Node.js 24 compatible versions @superdav42 #ci ~1h ref=GH#24
+  - CI warns: "actions/cache@v4 and actions/checkout@v4 running on Node.js 20 — deprecated"
+  - Node.js 24 becomes default on June 2, 2026 (~2.5 months away)
+  - Update all workflow files to use latest v4 patch versions that support Node.js 24
+  - Affected workflows: tests.yml, e2e.yml, code-quality.yml, release.yml, issue-sync.yml, todo-integrity.yml
+  - Also add FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true env var to opt in early
+
+- [ ] t112 Add E2E tests for auto-title sessions and abilities search/filter @superdav42 #testing ~3h ref=GH#551
+  - t099 (auto-title) and t098 (abilities search) shipped without E2E coverage
+  - Add to chat-interactions.spec.js: verify session gets auto-titled after first AI response
+  - Add to admin-page.spec.js: verify abilities search filters the list, categories collapse/expand
+  - These are user-visible features that should be regression-tested
+
 - [x] t106 Update default model to GPT-4.1-nano and add GPT-4.1 model family to selector @superdav42 #feature ~2h ref=GH#539 pr:#542 completed:2026-03-19
   - Update Settings::DIRECT_PROVIDERS openai default_model from gpt-4o to gpt-4.1-nano
   - Add GPT-4.1-nano, GPT-4.1-mini, GPT-4.1 to OpenAI model list in Settings
