@@ -243,7 +243,7 @@ class WooCommerceAbilities {
 					'name' => $term->name,
 					'slug' => $term->slug,
 				],
-				get_the_terms( $product->get_id(), 'product_cat' ) ?: []
+				self::get_term_array( $product->get_id(), 'product_cat' )
 			),
 			'tags'              => array_map(
 				static fn( $term ) => [
@@ -251,12 +251,28 @@ class WooCommerceAbilities {
 					'name' => $term->name,
 					'slug' => $term->slug,
 				],
-				get_the_terms( $product->get_id(), 'product_tag' ) ?: []
+				self::get_term_array( $product->get_id(), 'product_tag' )
 			),
 			'permalink'         => get_permalink( $product->get_id() ),
 			'date_created'      => $product->get_date_created() ? $product->get_date_created()->date( 'c' ) : null,
 			'date_modified'     => $product->get_date_modified() ? $product->get_date_modified()->date( 'c' ) : null,
 		];
+	}
+
+	/**
+	 * Safely retrieve terms for a post, returning an empty array on failure.
+	 *
+	 * `get_the_terms()` can return false, an array, or a WP_Error. The ?: []
+	 * shorthand only handles falsy values; WP_Error is truthy and would cause
+	 * `array_map()` to receive an object instead of an array.
+	 *
+	 * @param int    $post_id  The post ID.
+	 * @param string $taxonomy The taxonomy name.
+	 * @return \WP_Term[] Array of term objects, or empty array on failure.
+	 */
+	private static function get_term_array( int $post_id, string $taxonomy ): array {
+		$terms = get_the_terms( $post_id, $taxonomy );
+		return ( $terms && ! is_wp_error( $terms ) ) ? $terms : [];
 	}
 
 	/**
