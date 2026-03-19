@@ -2,7 +2,7 @@
 
 ## Ready
 
-- [ ] t129 Add o3, o4-mini, and claude-sonnet-4-6 to model selector @superdav42 #enhancement ~1h ref=GH#601
+- [x] t129 Add o3, o4-mini, and claude-sonnet-4-6 to model selector @superdav42 #enhancement ~1h ref=GH#601 pr:#603 completed:2026-03-19
   - o3 and o4-mini already in CostCalculator but missing from Settings; claude-sonnet-4-6/opus-4-6 missing from both
   - Update Settings.php model arrays + CostCalculator.php pricing; update Anthropic default_model to claude-sonnet-4-6
 
