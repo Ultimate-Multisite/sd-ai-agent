@@ -13,3 +13,7 @@ test-results/
 blob-report/
 # Benchmark results (contain API-specific data, regenerated on demand)
 tests/benchmark/results/
+# Local AI tooling artifacts
+.claude/
+.agents/skills/
+skills-lock.json
