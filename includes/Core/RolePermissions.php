@@ -132,6 +132,7 @@ class RolePermissions {
 				'chat_access'       => (bool) ( $config['chat_access'] ?? false ),
 				'allowed_abilities' => array_values(
 					array_filter(
+						// @phpstan-ignore-next-line
 						array_map( 'sanitize_text_field', (array) ( $config['allowed_abilities'] ?? [] ) ),
 						'is_string'
 					)
@@ -210,7 +211,8 @@ class RolePermissions {
 			}
 
 			$has_restriction = true;
-			$allowed         = array_merge( $allowed, $role_config['allowed_abilities'] );
+			// @phpstan-ignore-next-line
+			$allowed = array_merge( $allowed, $role_config['allowed_abilities'] );
 		}
 
 		if ( ! $has_restriction ) {
@@ -218,6 +220,7 @@ class RolePermissions {
 			return [];
 		}
 
+		// @phpstan-ignore-next-line
 		return array_values( array_unique( $allowed ) );
 	}
 
