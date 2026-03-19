@@ -14,7 +14,6 @@ const {
 	goToSettingsPage,
 	getMessageInput,
 	getSendButton,
-	getStopButton,
 	getChatPanel,
 	getMessageList,
 	waitForMessageSubmitted,
@@ -540,6 +539,12 @@ test.describe( 'Settings - Abilities Search and Filter (t098)', () => {
 
 		const expandBtn = page.getByRole( 'button', { name: /expand all/i } );
 		await expandBtn.click();
+
+		// Wait for the first category body to be visible after expand (React
+		// state update is async — count() before this resolves returns 0).
+		await expect( categoryBodies.first() ).toBeVisible( {
+			timeout: 5_000,
+		} );
 
 		// All category bodies should be visible.
 		const count = await categoryBodies.count();

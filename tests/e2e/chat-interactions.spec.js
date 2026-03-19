@@ -17,53 +17,71 @@ const {
 } = require( './utils/wp-admin' );
 
 /**
- * Set up interception for auto-title tests.
+ * The fake session ID used by interceptAutoTitle() for deterministic tests.
+ * Must be a number to match the store's parseInt(session.id, 10) comparison.
+ */
+const FAKE_SESSION_ID = 9001;
+
+/**
+ * Set up full API interception for auto-title tests.
  *
  * How the auto-title flow works:
- *   1. The store POSTs to gratis-ai-agent/v1/stream and reads the SSE response.
- *   2. On the `done` event it calls updateSessionTitle(sessionId, generatedTitle)
+ *   1. The store POSTs to gratis-ai-agent/v1/sessions to create a session.
+ *   2. It POSTs to gratis-ai-agent/v1/stream and reads the SSE response.
+ *   3. On the `done` event it calls updateSessionTitle(sessionId, generatedTitle)
  *      — an optimistic update that patches the session in state.sessions.
- *   3. It then calls fetchSessions() which GETs gratis-ai-agent/v1/sessions and
+ *   4. It then calls fetchSessions() which GETs gratis-ai-agent/v1/sessions and
  *      replaces state.sessions with the server response.
  *
- * For a brand-new session the optimistic update in step 2 is a no-op because
- * the session is not yet in state.sessions (it was only added to the store via
- * setCurrentSession, not via setSessions). The title therefore comes from step 3.
+ * Strategy: intercept ALL three endpoints so the tests are completely
+ * self-contained and do not depend on the WordPress REST API being available.
+ * This makes the tests reliable across all WP versions and CI environments.
  *
- * Strategy: intercept the stream endpoint to return a minimal SSE response so
- * the stream completes quickly. After the stream completes (stop button gone),
- * use page.evaluate() to directly dispatch updateSessionTitle() to the store
- * with the correct session ID. This bypasses HTTP route matching entirely and
- * is reliable across all Playwright/WordPress configurations.
+ * - POST /sessions → returns a fake session with FAKE_SESSION_ID
+ * - POST /stream   → returns a minimal SSE stream with FAKE_SESSION_ID
+ * - GET  /sessions → returns the fake session list
  *
  * @param {import('@playwright/test').Page} page
  * @return {Promise<void>}
  */
-async function interceptStream( page ) {
-	// Intercept the stream endpoint and return a minimal SSE response.
-	// The store POSTs to {wpApiSettings.root}gratis-ai-agent/v1/stream.
-	// We return a token + done event so the store's reader loop completes
-	// and setSending(false) is called, which hides the stop button.
-	await page.route( /gratis-ai-agent\/v1\/stream/, async ( route ) => {
-		let sessionId = 1;
-		try {
-			const postBody = route.request().postDataJSON();
-			if ( postBody?.session_id ) {
-				sessionId = postBody.session_id;
-			}
-		} catch {
-			// Fall back to 1 if body is not JSON.
-		}
+async function interceptAutoTitle( page ) {
+	const fakeSession = {
+		id: FAKE_SESSION_ID,
+		title: 'Untitled',
+		created_at: new Date().toISOString(),
+		updated_at: new Date().toISOString(),
+		status: 'active',
+		user_id: 1,
+		pinned: 0,
+		is_shared: 0,
+	};
 
-		// Minimal SSE stream: one token chunk + done event.
-		// The store dispatches on `eventName` parsed from the `event:` line.
-		// Each SSE message is separated by a blank line (\n\n).
+	// Intercept POST /sessions — session creation.
+	await page.route( /gratis-ai-agent\/v1\/sessions$/, async ( route ) => {
+		if ( route.request().method() === 'POST' ) {
+			await route.fulfill( {
+				status: 200,
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify( fakeSession ),
+			} );
+		} else {
+			// GET /sessions — return the fake session list.
+			await route.fulfill( {
+				status: 200,
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify( [ fakeSession ] ),
+			} );
+		}
+	} );
+
+	// Intercept POST /stream — return a minimal SSE stream.
+	await page.route( /gratis-ai-agent\/v1\/stream/, async ( route ) => {
 		const sseBody = [
 			'event: token',
 			`data: ${ JSON.stringify( { token: 'Hello!' } ) }`,
 			'',
 			'event: done',
-			`data: ${ JSON.stringify( { session_id: sessionId } ) }`,
+			`data: ${ JSON.stringify( { session_id: FAKE_SESSION_ID } ) }`,
 			'',
 			'',
 		].join( '\n' );
@@ -82,59 +100,25 @@ async function interceptStream( page ) {
 /**
  * Directly inject a generated title into the WordPress data store via
  * page.evaluate(). This simulates what the backend would do after auto-titling
- * without requiring a live AI provider or HTTP route interception.
+ * without requiring a live AI provider.
  *
- * Polls until the current session appears in state.sessions (i.e. fetchSessions
- * has completed and the session is in the list), then dispatches
- * updateSessionTitle(). This avoids a race where the inject fires before
- * fetchSessions() has populated state.sessions with the new session.
+ * Must be called after interceptAutoTitle() has set up the route intercepts
+ * and after the stream has completed (state.sessions contains FAKE_SESSION_ID).
  *
  * @param {import('@playwright/test').Page} page
  * @param {string}                          generatedTitle - Title to inject.
+ * @param {number}                          sessionId      - Session ID to update.
  */
-async function injectGeneratedTitle( page, generatedTitle ) {
-	await page.evaluate( ( title ) => {
-		return new Promise( ( resolve ) => {
-			// The store is registered under 'gratis-ai-agent'.
-			// wp.data is available globally in the WordPress admin.
-			const select = window.wp?.data?.select( 'gratis-ai-agent' );
+async function injectGeneratedTitle( page, generatedTitle, sessionId ) {
+	await page.evaluate(
+		( { title, sid } ) => {
 			const dispatch = window.wp?.data?.dispatch( 'gratis-ai-agent' );
-			if ( ! select || ! dispatch ) {
-				resolve();
-				return;
+			if ( dispatch ) {
+				dispatch.updateSessionTitle( sid, title );
 			}
-
-			const sessionId = select.getCurrentSessionId();
-			if ( ! sessionId ) {
-				resolve();
-				return;
-			}
-
-			// Poll until the session appears in state.sessions (fetchSessions
-			// has completed). Without this, updateSessionTitle is a no-op
-			// because the session is not yet in the sessions list.
-			const maxAttempts = 50; // 50 × 100ms = 5s max
-			let attempts = 0;
-			const poll = () => {
-				attempts++;
-				const sessions = select.getSessions ? select.getSessions() : [];
-				const inList = sessions.some(
-					( s ) => parseInt( s.id, 10 ) === sessionId
-				);
-				if ( inList ) {
-					dispatch.updateSessionTitle( sessionId, title );
-					resolve();
-				} else if ( attempts >= maxAttempts ) {
-					// Session never appeared — dispatch anyway as a best-effort.
-					dispatch.updateSessionTitle( sessionId, title );
-					resolve();
-				} else {
-					setTimeout( poll, 100 );
-				}
-			};
-			poll();
-		} );
-	}, generatedTitle );
+		},
+		{ title: generatedTitle, sid: sessionId }
+	);
 }
 
 test.describe( 'Chat Input Interactions', () => {
@@ -309,14 +293,10 @@ test.describe( 'Provider Selector', () => {
  * After the first AI response the store reads `generated_title` from the SSE
  * done event and calls `updateSessionTitle()` to update the sidebar item.
  *
- * These tests use two mechanisms to simulate auto-titling without a live AI
- * provider:
- *   1. interceptStream() — intercepts the stream endpoint so the stream
- *      completes quickly without a real AI call.
- *   2. injectGeneratedTitle() — after the stream completes and fetchSessions()
- *      has run (session is in state.sessions), directly dispatches
- *      updateSessionTitle() via page.evaluate() to simulate what the backend
- *      would do after generating a title.
+ * These tests use interceptAutoTitle() to intercept all three REST endpoints
+ * (POST /sessions, POST /stream, GET /sessions) so the tests are completely
+ * self-contained and do not depend on the WordPress REST API being available.
+ * A fake session with FAKE_SESSION_ID is used for deterministic assertions.
  */
 test.describe( 'Auto-Title Sessions (t099)', () => {
 	test.beforeEach( async ( { page } ) => {
@@ -329,27 +309,35 @@ test.describe( 'Auto-Title Sessions (t099)', () => {
 	} ) => {
 		const expectedTitle = 'My Auto-Generated Title';
 
-		// Intercept the stream endpoint so it completes quickly.
-		await interceptStream( page );
+		// Intercept all REST endpoints so the test is self-contained.
+		await interceptAutoTitle( page );
+
+		// Set up the response waiter BEFORE sending the message to avoid a
+		// race where fetchSessions() completes before waitForResponse() starts.
+		const sessionsResponsePromise = page.waitForResponse(
+			( resp ) =>
+				resp.url().includes( 'gratis-ai-agent/v1/sessions' ) &&
+				resp.request().method() === 'GET',
+			{ timeout: 15_000 }
+		);
 
 		const input = getMessageInput( page );
 		await input.fill( 'Tell me about WordPress' );
 		await input.press( 'Enter' );
 
-		// Wait for the active session item to appear in the sidebar. The active
-		// item has the is-active class and is the current session. Using
-		// .first() is unreliable when previous tests have left sessions in the
-		// sidebar — the current session may not be the first item.
-		const activeItem = page.locator( '.ai-agent-session-item.is-active' );
-		await expect( activeItem ).toBeVisible( { timeout: 10_000 } );
+		// Wait for the GET /sessions response that fires after the stream
+		// completes (fetchSessions() is called at the end of streamMessage).
+		// This is the most reliable signal that state.sessions has been updated
+		// with the fake session.
+		await sessionsResponsePromise;
 
-		// Inject the generated title directly into the store. injectGeneratedTitle
-		// polls until the current session is in state.sessions (fetchSessions has
-		// completed), then dispatches updateSessionTitle().
-		await injectGeneratedTitle( page, expectedTitle );
+		// Inject the generated title directly into the store using the known
+		// fake session ID. updateSessionTitle() patches state.sessions in-place.
+		await injectGeneratedTitle( page, expectedTitle, FAKE_SESSION_ID );
 
-		// The active sidebar item should now display the generated title.
-		await expect( activeItem ).toContainText( expectedTitle, {
+		// The sidebar item should now display the generated title.
+		const sessionItems = page.locator( '.ai-agent-session-item' );
+		await expect( sessionItems.first() ).toContainText( expectedTitle, {
 			timeout: 5_000,
 		} );
 	} );
@@ -359,21 +347,30 @@ test.describe( 'Auto-Title Sessions (t099)', () => {
 	} ) => {
 		const expectedTitle = 'WordPress Plugin Development';
 
-		await interceptStream( page );
+		await interceptAutoTitle( page );
+
+		const sessionsResponsePromise = page.waitForResponse(
+			( resp ) =>
+				resp.url().includes( 'gratis-ai-agent/v1/sessions' ) &&
+				resp.request().method() === 'GET',
+			{ timeout: 15_000 }
+		);
 
 		const input = getMessageInput( page );
 		await input.fill( 'How do I build a WordPress plugin?' );
 		await input.press( 'Enter' );
 
-		// Wait for the active session item.
-		const activeItem = page.locator( '.ai-agent-session-item.is-active' );
-		await expect( activeItem ).toBeVisible( { timeout: 10_000 } );
+		// Wait for the GET /sessions response after the stream completes.
+		await sessionsResponsePromise;
 
-		// Inject the generated title into the store.
-		await injectGeneratedTitle( page, expectedTitle );
+		// Inject the generated title.
+		await injectGeneratedTitle( page, expectedTitle, FAKE_SESSION_ID );
 
-		// The title element inside the active session item should not say "Untitled".
-		const titleEl = activeItem.locator( '.ai-agent-session-title' );
+		// The title element should not say "Untitled".
+		const sessionItems = page.locator( '.ai-agent-session-item' );
+		const titleEl = sessionItems
+			.first()
+			.locator( '.ai-agent-session-title' );
 		await expect( titleEl ).not.toContainText( 'Untitled', {
 			timeout: 5_000,
 		} );
@@ -385,27 +382,32 @@ test.describe( 'Auto-Title Sessions (t099)', () => {
 	test( 'new session starts as Untitled before any AI response', async ( {
 		page,
 	} ) => {
-		// Intercept the stream so it completes quickly and fetchSessions() runs,
-		// populating state.sessions with the new session. This avoids relying on
-		// the stop button (which is fragile on WP trunk — the stream may fail
-		// before setSending(true) renders the button).
-		await interceptStream( page );
+		// Intercept all REST endpoints so the test is self-contained.
+		await interceptAutoTitle( page );
+
+		const sessionsResponsePromise = page.waitForResponse(
+			( resp ) =>
+				resp.url().includes( 'gratis-ai-agent/v1/sessions' ) &&
+				resp.request().method() === 'GET',
+			{ timeout: 15_000 }
+		);
 
 		const input = getMessageInput( page );
 		await input.fill( 'Hello' );
 		await input.press( 'Enter' );
 
-		// Wait for the active session item to appear in the sidebar. fetchSessions()
-		// runs after the intercepted stream completes, so the session is in
-		// state.sessions at this point.
-		const activeItem = page.locator( '.ai-agent-session-item.is-active' );
-		await expect( activeItem ).toBeVisible( { timeout: 15_000 } );
+		// Wait for the GET /sessions response after the stream completes.
+		// The intercepted GET /sessions returns the fake session with title
+		// "Untitled" — no generated_title was in the done event.
+		await sessionsResponsePromise;
 
-		// The intercepted done event carries no generated_title, so the title
-		// should still be "Untitled" (or empty) at this point.
-		const titleEl = activeItem.locator( '.ai-agent-session-title' );
+		// The fake session has title "Untitled" — no auto-title was injected.
+		const sessionItems = page.locator( '.ai-agent-session-item' );
+		await expect( sessionItems.first() ).toBeVisible( { timeout: 5_000 } );
+		const titleEl = sessionItems
+			.first()
+			.locator( '.ai-agent-session-title' );
 		const titleText = await titleEl.textContent();
-		// Title is either empty or "Untitled" — no auto-title was injected.
 		expect(
 			titleText === '' ||
 				titleText === 'Untitled' ||
