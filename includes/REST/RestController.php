@@ -92,15 +92,15 @@ class RestController {
 	/**
 	 * Get a string parameter from a REST request.
 	 *
-	 * @param WP_REST_Request $request The request object.
-	 * @param string          $key     Parameter name.
-	 * @param string          $default Default value if param is not set.
+	 * @param WP_REST_Request $request       The request object.
+	 * @param string          $key           Parameter name.
+	 * @param string          $default_value Default value if param is not set.
 	 * @return string
 	 */
-	private static function get_string_param( WP_REST_Request $request, string $key, string $default = '' ): string {
+	private static function get_string_param( WP_REST_Request $request, string $key, string $default_value = '' ): string {
 		$value = $request->get_param( $key );
 		if ( ! is_string( $value ) ) {
-			return $default;
+			return $default_value;
 		}
 		return $value;
 	}

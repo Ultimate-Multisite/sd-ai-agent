@@ -377,21 +377,6 @@ trait GaApiClient {
 
 		// @phpstan-ignore-next-line
 		return $data;
-
-		// @phpstan-ignore-next-line
-		if ( $code >= 400 ) {
-			// @phpstan-ignore-next-line
-			// @phpstan-ignore-next-line
-			$msg      = $data['error']['message'] ?? __( 'Unknown API error.', 'gratis-ai-agent' );
-			$code_int = is_numeric( $code ) ? (int) $code : 0;
-			$msg_str  = is_scalar( $msg ) ? (string) $msg : 'Unknown API error.';
-			// translators: %1$d: HTTP status code, %2$s: error message from Google Analytics API.
-			$error_message = sprintf( __( 'Google Analytics API error (%1$d): %2$s', 'gratis-ai-agent' ), $code_int, $msg_str );
-			return new WP_Error( 'ga_api_error', $error_message );
-		}
-
-		// @phpstan-ignore-next-line
-		return $data;
 	}
 
 	/**
