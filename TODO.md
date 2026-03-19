@@ -7,6 +7,16 @@
   - t109 was incorrectly linked to PR #560 (image upload) — the actual fix was never applied
   - Fix: update readme.txt "Requires PHP: 7.4" → "Requires PHP: 8.2"
 
+- [ ] t121 Bump version to 1.2.0 and update CHANGELOG.md @superdav42 #chore ~2h ref=GH#583
+  - Plugin at v1.1.0 but 100+ PRs merged since — streaming, image upload, spending limits, mobile UX, a11y, etc.
+  - Update CHANGELOG.md [Unreleased] → [1.2.0], bump Version in gratis-ai-agent.php, update readme.txt Stable tag
+
+- [ ] t122 Add E2E tests for image/file upload in chat (t109 feature) @superdav42 #testing ~3h ref=GH#584
+  - PR #560 added upload but no E2E tests — paperclip button, drag-drop, thumbnail preview, remove button
+
+- [ ] t123 Fix ShellCheck violations in .agents/scripts/ and bin/ @superdav42 #quality ~1h ref=GH#585
+  - 1 error (SC2148 missing shebang in husky.sh), 6 warnings (SC2015, SC1091, SC2086, SC2046, SC2001)
+
 - [x] t109 Fix readme.txt PHP requirement: update 7.4 to 8.2 to match plugin header and CI @superdav42 #bug ~0.5h ref=GH#550 pr:#560 completed:2026-03-19
   - readme.txt says "Requires PHP: 7.4" but plugin header says PHP 8.2 and CI runs PHP 8.2
   - Codebase uses PHP 8.1 enums (ToolType, MemoryCategory, Schedule, HttpMethod) — 7.4 is impossible
