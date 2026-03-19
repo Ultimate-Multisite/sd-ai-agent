@@ -14,7 +14,7 @@
   - bin/install-wp-tests.sh: SC2086, SC2046 x2
   - .husky/_/husky.sh: SC2148 (add shebang)
 
-- [ ] t108 Add tiered model pricing display to Settings UI @superdav42 #ui ~3h ref=GH#541
+- [x] t108 Add tiered model pricing display to Settings UI @superdav42 #ui ~3h ref=GH#541 pr:#543 completed:2026-03-19
   - Show pricing hints next to each model (e.g. GPT-4.1-nano — $0.10/M input, best value)
   - Group models by provider and tier (Budget / Standard / Premium)
   - Estimated cost per session based on average token usage
