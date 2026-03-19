@@ -81,7 +81,7 @@
 
 ### CI / WP Trunk Compatibility
 
-- [ ] t104 Fix PHPUnit (WP trunk) fatal: WP_AI_Client_HTTP_Client::sendRequestWithOptions() interface incompatibility @superdav42 #bug ~1h ref=GH#535
+- [x] t104 Fix PHPUnit (WP trunk) fatal: WP_AI_Client_HTTP_Client::sendRequestWithOptions() interface incompatibility @superdav42 #bug ~1h ref=GH#535 pr:#538 completed:2026-03-19
   - WP trunk updated ClientWithOptionsInterface to use non-namespaced Psr\Http\Message\RequestInterface
   - Plugin compat layer still uses vendored WordPress\AiClientDependencies\Psr\Http\Message\RequestInterface
   - Fix: align WP_AI_Client_HTTP_Client::sendRequestWithOptions() signature with current WP trunk interface
