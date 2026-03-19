@@ -79,6 +79,35 @@ function getInputArea( page ) {
 }
 
 /**
+ * Dispatch a drag event on a locator using a properly constructed DataTransfer
+ * object created inside the browser context.
+ *
+ * WP 6.9 (and modern browsers) reject DragEventInit with a plain object for
+ * `dataTransfer` — the property must be a real DataTransfer instance.
+ * We work around this by constructing the event entirely inside page.evaluate().
+ *
+ * @param {import('@playwright/test').Page}    page
+ * @param {import('@playwright/test').Locator} locator  Target element locator.
+ * @param {'dragover'|'dragleave'|'drop'}      eventType
+ */
+async function dispatchDragEvent( page, locator, eventType ) {
+	// Resolve the element handle so we can pass it into evaluate.
+	const elementHandle = await locator.elementHandle();
+	await page.evaluate(
+		( { el, type } ) => {
+			const dt = new DataTransfer();
+			const event = new DragEvent( type, {
+				bubbles: true,
+				cancelable: true,
+				dataTransfer: dt,
+			} );
+			el.dispatchEvent( event );
+		},
+		{ el: elementHandle, type: eventType }
+	);
+}
+
+/**
  * Create a minimal 1×1 PNG as a Buffer (valid PNG header + IDAT).
  * Used to simulate a real image file without needing a fixture on disk.
  *
@@ -206,12 +235,9 @@ test.describe( 'Chat Upload - Drag-Drop Zone (t122)', () => {
 	} ) => {
 		const inputArea = getInputArea( page );
 
-		// Dispatch a dragover event with a file in the dataTransfer.
-		await inputArea.dispatchEvent( 'dragover', {
-			bubbles: true,
-			cancelable: true,
-			dataTransfer: { files: [], types: [ 'Files' ] },
-		} );
+		// Dispatch a dragover event with a properly constructed DataTransfer.
+		// Plain objects are rejected by WP 6.9+ — must use a real DataTransfer.
+		await dispatchDragEvent( page, inputArea, 'dragover' );
 
 		await expect( inputArea ).toHaveClass( /is-drag-over/ );
 	} );
@@ -219,18 +245,11 @@ test.describe( 'Chat Upload - Drag-Drop Zone (t122)', () => {
 	test( 'is-drag-over class is removed on dragleave', async ( { page } ) => {
 		const inputArea = getInputArea( page );
 
-		// Simulate dragover then dragleave.
-		await inputArea.dispatchEvent( 'dragover', {
-			bubbles: true,
-			cancelable: true,
-			dataTransfer: { files: [], types: [ 'Files' ] },
-		} );
+		// Simulate dragover then dragleave using real DataTransfer objects.
+		await dispatchDragEvent( page, inputArea, 'dragover' );
 		await expect( inputArea ).toHaveClass( /is-drag-over/ );
 
-		await inputArea.dispatchEvent( 'dragleave', {
-			bubbles: true,
-			cancelable: true,
-		} );
+		await dispatchDragEvent( page, inputArea, 'dragleave' );
 		await expect( inputArea ).not.toHaveClass( /is-drag-over/ );
 	} );
 
@@ -239,11 +258,7 @@ test.describe( 'Chat Upload - Drag-Drop Zone (t122)', () => {
 	} ) => {
 		const inputArea = getInputArea( page );
 
-		await inputArea.dispatchEvent( 'dragover', {
-			bubbles: true,
-			cancelable: true,
-			dataTransfer: { files: [], types: [ 'Files' ] },
-		} );
+		await dispatchDragEvent( page, inputArea, 'dragover' );
 
 		// The drop overlay renders "Drop files here" text.
 		const dropOverlay = page.locator( '.ai-agent-drop-overlay' );
