@@ -90,12 +90,28 @@ class Settings {
 					'id'   => 'o3-mini',
 					'name' => 'o3 Mini',
 				],
+				[
+					'id'   => 'o3',
+					'name' => 'o3',
+				],
+				[
+					'id'   => 'o4-mini',
+					'name' => 'o4 Mini',
+				],
 			],
 		],
 		'anthropic' => [
 			'name'          => 'Anthropic',
-			'default_model' => 'claude-sonnet-4-5',
+			'default_model' => 'claude-sonnet-4-6',
 			'models'        => [
+				[
+					'id'   => 'claude-opus-4-6',
+					'name' => 'Claude Opus 4.6',
+				],
+				[
+					'id'   => 'claude-sonnet-4-6',
+					'name' => 'Claude Sonnet 4.6',
+				],
 				[
 					'id'   => 'claude-opus-4-5',
 					'name' => 'Claude Opus 4.5',
