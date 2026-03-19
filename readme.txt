@@ -3,7 +3,7 @@ Contributors: developer-dave
 Tags: ai, chatbot, assistant, automation, tools
 Requires at least: 6.9
 Tested up to: 6.9
-Requires PHP: 7.4
+Requires PHP: 8.2
 Stable tag: 1.1.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -111,7 +111,7 @@ The Gratis AI Agent discovers abilities at runtime from any plugin that register
 = Requirements =
 
 * WordPress 6.9 or higher
-* PHP 7.4 or higher
+* PHP 8.2 or higher
 * An AI provider connector plugin registered through the WordPress Connectors API
 * An API key from your chosen AI provider (OpenAI, Anthropic, etc.)
 
