@@ -155,7 +155,10 @@ async function mockAutomationRoutes( page, overrides = {} ) {
 		alerts = { count: 0, alerts: [] },
 	} = overrides;
 
-	await page.route( '**/wp-json/gratis-ai-agent/v1/**', async ( route ) => {
+	// Match both pretty-permalink (/wp-json/...) and plain-permalink
+	// (?rest_route=...) REST URL forms so mocks work regardless of how
+	// wp-env configures WordPress permalinks.
+	await page.route( /gratis-ai-agent\/v1\//, async ( route ) => {
 		const url = route.request().url();
 		const method = route.request().method();
 
@@ -478,8 +481,10 @@ test.describe( 'Scheduled Automations (t080)', () => {
 
 		// Track whether the POST was made.
 		let postMade = false;
+		// Match /automations exactly (not /automations/ID or /automation-templates).
+		// Works for both pretty-permalink and plain-permalink REST URL forms.
 		await page.route(
-			'**/wp-json/gratis-ai-agent/v1/automations',
+			/gratis-ai-agent\/v1\/automations(?:$|\?|&)/,
 			async ( route ) => {
 				if ( route.request().method() === 'POST' ) {
 					postMade = true;
@@ -526,7 +531,7 @@ test.describe( 'Scheduled Automations (t080)', () => {
 		let patchBody = null;
 
 		await page.route(
-			'**/wp-json/gratis-ai-agent/v1/automations/1',
+			/gratis-ai-agent\/v1\/automations\/1(?:$|\?|&)/,
 			async ( route ) => {
 				if ( route.request().method() === 'PATCH' ) {
 					patchCalled = true;
@@ -763,7 +768,7 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 
 		let postMade = false;
 		await page.route(
-			'**/wp-json/gratis-ai-agent/v1/event-automations',
+			/gratis-ai-agent\/v1\/event-automations(?:$|\?|&)/,
 			async ( route ) => {
 				if ( route.request().method() === 'POST' ) {
 					postMade = true;
@@ -856,7 +861,7 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 		let patchBody = null;
 
 		await page.route(
-			'**/wp-json/gratis-ai-agent/v1/event-automations/1',
+			/gratis-ai-agent\/v1\/event-automations\/1(?:$|\?|&)/,
 			async ( route ) => {
 				if ( route.request().method() === 'PATCH' ) {
 					patchCalled = true;
