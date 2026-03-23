@@ -15,6 +15,12 @@
  * REST API calls to /gratis-ai-agent/v1/agents are intercepted so tests
  * are deterministic and do not require a live WordPress database.
  *
+ * IMPORTANT: mockAgentsApi() must be called BEFORE loginToWordPress() in
+ * every beforeEach block. The admin dashboard (loaded after login) renders
+ * the floating widget which calls fetchAgents(). If the mock is not yet
+ * registered at that point the request hits the real server, which may
+ * return stale data from a previous test and corrupt subsequent assertions.
+ *
  * Run: npm run test:e2e:playwright
  */
 
@@ -58,6 +64,10 @@ const AGENT_FIXTURE_UPDATED = {
 /**
  * Intercept all /gratis-ai-agent/v1/agents REST calls and return controlled
  * fixture data. This makes tests deterministic without a live WP database.
+ *
+ * MUST be called before any page.goto() / loginToWordPress() call so that
+ * requests made during the admin dashboard load (floating widget fetchAgents)
+ * are also intercepted.
  *
  * Clears any previously registered route handlers before registering new ones
  * so that successive beforeEach calls in the same browser context do not stack
@@ -275,8 +285,10 @@ async function goToAgentsTab( page ) {
 
 test.describe( 'Agent Builder - Create Agent', () => {
 	test.beforeEach( async ( { page } ) => {
-		await loginToWordPress( page );
+		// Register mocks BEFORE login so the floating widget's fetchAgents()
+		// call (made during the admin dashboard load) is also intercepted.
 		await mockAgentsApi( page, { initialAgents: [] } );
+		await loginToWordPress( page );
 		await goToAgentsTab( page );
 	} );
 
@@ -384,8 +396,10 @@ test.describe( 'Agent Builder - Create Agent', () => {
 			toolProfileSelect.locator( 'option', { hasText: 'Read Only' } )
 		).toBeAttached();
 
-		// Select the "Read Only" tool profile from the dropdown.
-		await toolProfileSelect.selectOption( { label: 'Read Only' } );
+		// Select the "Read Only" tool profile by value (more reliable than
+		// label matching which can fail if the option text has extra whitespace
+		// or the SelectControl renders options differently across WP versions).
+		await toolProfileSelect.selectOption( 'read-only' );
 
 		await getCreateAgentButton( page ).click();
 
@@ -410,8 +424,9 @@ test.describe( 'Agent Builder - Create Agent', () => {
 
 test.describe( 'Agent Builder - Agent List', () => {
 	test.beforeEach( async ( { page } ) => {
-		await loginToWordPress( page );
+		// Register mocks BEFORE login so all API calls are intercepted.
 		await mockAgentsApi( page, { initialAgents: [ AGENT_FIXTURE ] } );
+		await loginToWordPress( page );
 		await goToAgentsTab( page );
 	} );
 
@@ -423,6 +438,7 @@ test.describe( 'Agent Builder - Agent List', () => {
 
 	test( 'agent card shows system prompt preview', async ( { page } ) => {
 		const card = getAgentCards( page ).first();
+		await expect( card ).toBeVisible( { timeout: 10000 } );
 		await expect(
 			card.locator( '.gratis-ai-agent-agent-prompt-preview' )
 		).toContainText( AGENT_FIXTURE.system_prompt.slice( 0, 40 ) );
@@ -439,8 +455,9 @@ test.describe( 'Agent Builder - Agent List', () => {
 
 test.describe( 'Agent Builder - Edit Agent', () => {
 	test.beforeEach( async ( { page } ) => {
-		await loginToWordPress( page );
+		// Register mocks BEFORE login so all API calls are intercepted.
 		await mockAgentsApi( page, { initialAgents: [ AGENT_FIXTURE ] } );
+		await loginToWordPress( page );
 		await goToAgentsTab( page );
 	} );
 
@@ -448,6 +465,7 @@ test.describe( 'Agent Builder - Edit Agent', () => {
 		page,
 	} ) => {
 		const card = getAgentCards( page ).first();
+		await expect( card ).toBeVisible( { timeout: 10000 } );
 		await getEditButton( card ).click();
 
 		const form = getAgentForm( page );
@@ -474,6 +492,7 @@ test.describe( 'Agent Builder - Edit Agent', () => {
 
 	test( 'updating an agent shows a success notice', async ( { page } ) => {
 		const card = getAgentCards( page ).first();
+		await expect( card ).toBeVisible( { timeout: 10000 } );
 		await getEditButton( card ).click();
 
 		const form = getAgentForm( page );
@@ -497,6 +516,7 @@ test.describe( 'Agent Builder - Edit Agent', () => {
 		page,
 	} ) => {
 		const card = getAgentCards( page ).first();
+		await expect( card ).toBeVisible( { timeout: 10000 } );
 		await getEditButton( card ).click();
 
 		await page
@@ -515,6 +535,7 @@ test.describe( 'Agent Builder - Edit Agent', () => {
 		page,
 	} ) => {
 		const card = getAgentCards( page ).first();
+		await expect( card ).toBeVisible( { timeout: 10000 } );
 		await getEditButton( card ).click();
 
 		await page.getByLabel( /^Name/i ).fill( 'Should Not Save' );
@@ -530,8 +551,9 @@ test.describe( 'Agent Builder - Edit Agent', () => {
 
 test.describe( 'Agent Builder - Delete Agent', () => {
 	test.beforeEach( async ( { page } ) => {
-		await loginToWordPress( page );
+		// Register mocks BEFORE login so all API calls are intercepted.
 		await mockAgentsApi( page, { initialAgents: [ AGENT_FIXTURE ] } );
+		await loginToWordPress( page );
 		await goToAgentsTab( page );
 	} );
 
@@ -540,6 +562,7 @@ test.describe( 'Agent Builder - Delete Agent', () => {
 		page.on( 'dialog', ( dialog ) => dialog.accept() );
 
 		const card = getAgentCards( page ).first();
+		await expect( card ).toBeVisible( { timeout: 10000 } );
 		await getDeleteButton( card ).click();
 
 		// Card should be removed.
@@ -553,6 +576,7 @@ test.describe( 'Agent Builder - Delete Agent', () => {
 		page.on( 'dialog', ( dialog ) => dialog.dismiss() );
 
 		const card = getAgentCards( page ).first();
+		await expect( card ).toBeVisible( { timeout: 10000 } );
 		await getDeleteButton( card ).click();
 
 		// Card should still be present.
@@ -562,9 +586,11 @@ test.describe( 'Agent Builder - Delete Agent', () => {
 
 test.describe( 'Agent Builder - Agent Selector in Chat', () => {
 	test.beforeEach( async ( { page } ) => {
-		await loginToWordPress( page );
-		// Mock agents API for the chat page as well.
+		// Register mocks BEFORE login so all API calls are intercepted,
+		// including the fetchAgents() call made by the floating widget on
+		// the admin dashboard after login.
 		await mockAgentsApi( page, { initialAgents: [ AGENT_FIXTURE ] } );
+		await loginToWordPress( page );
 		await goToAgentPage( page );
 	} );
 
@@ -645,10 +671,9 @@ test.describe( 'Agent Builder - Full Lifecycle', () => {
 	test( 'create, verify in chat selector, edit, then delete an agent', async ( {
 		page,
 	} ) => {
-		await loginToWordPress( page );
-
-		// Start with no agents.
+		// Register mocks BEFORE login so all API calls are intercepted.
 		await mockAgentsApi( page, { initialAgents: [] } );
+		await loginToWordPress( page );
 
 		// ---- Step 1: Create the agent ----
 		await goToAgentsTab( page );
@@ -667,7 +692,8 @@ test.describe( 'Agent Builder - Full Lifecycle', () => {
 		await expect(
 			toolProfileSelect.locator( 'option', { hasText: 'Read Only' } )
 		).toBeAttached();
-		await toolProfileSelect.selectOption( { label: 'Read Only' } );
+		// Select by value for reliability across WP versions.
+		await toolProfileSelect.selectOption( 'read-only' );
 
 		await getCreateAgentButton( page ).click();
 
@@ -691,6 +717,7 @@ test.describe( 'Agent Builder - Full Lifecycle', () => {
 		await goToAgentsTab( page );
 
 		const card = getAgentCards( page ).first();
+		await expect( card ).toBeVisible( { timeout: 10000 } );
 		await getEditButton( card ).click();
 
 		await page
