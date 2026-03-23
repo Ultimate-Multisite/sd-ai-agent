@@ -376,8 +376,10 @@ async function goToEventsTab( page ) {
 
 test.describe( 'Scheduled Automations (t080)', () => {
 	test.beforeEach( async ( { page } ) => {
-		await loginToWordPress( page );
+		// Install route mocks BEFORE login so the floating widget's fetchAlerts()
+		// and SettingsApp bootstrap requests are intercepted from the first page load.
 		await mockAutomationRoutes( page );
+		await loginToWordPress( page );
 	} );
 
 	test( 'automations tab renders the manager heading', async ( { page } ) => {
@@ -664,8 +666,10 @@ test.describe( 'Scheduled Automations (t080)', () => {
 
 test.describe( 'Event-Driven Automations (t081)', () => {
 	test.beforeEach( async ( { page } ) => {
-		await loginToWordPress( page );
+		// Install route mocks BEFORE login so the floating widget's fetchAlerts()
+		// and SettingsApp bootstrap requests are intercepted from the first page load.
 		await mockAutomationRoutes( page );
+		await loginToWordPress( page );
 	} );
 
 	test( 'events tab renders the manager heading', async ( { page } ) => {
@@ -944,10 +948,16 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 
 test.describe( 'Proactive Alert Badge on FAB', () => {
 	test.beforeEach( async ( { page } ) => {
+		// Install a default mock BEFORE login so the floating widget's initial
+		// fetchAlerts() call (triggered when /wp-admin/ loads after login) is
+		// intercepted rather than hitting the real backend.
+		await mockAutomationRoutes( page );
 		await loginToWordPress( page );
 	} );
 
 	test( 'FAB badge is hidden when alert count is zero', async ( { page } ) => {
+		// Override with test-specific alerts mock (registered after beforeEach mock;
+		// Playwright evaluates route handlers LIFO so this takes precedence).
 		await mockAutomationRoutes( page, {
 			alerts: { count: 0, alerts: [] },
 		} );
