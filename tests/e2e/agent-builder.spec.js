@@ -237,7 +237,20 @@ async function mockAgentsApi( page, opts = {} ) {
 				return;
 			}
 
-			// GET /agents or GET /agents/:id
+			// GET /agents/:id (single agent)
+			const getIdMatch = decodedUrl.match( /\/agents\/(\d+)/ );
+			if ( method === 'GET' && getIdMatch ) {
+				const id = parseInt( getIdMatch[ 1 ], 10 );
+				const agent = agents.find( ( a ) => a.id === id );
+				await route.fulfill( {
+					status: agent ? 200 : 404,
+					contentType: 'application/json',
+					body: JSON.stringify( agent || { message: 'Agent not found' } ),
+				} );
+				return;
+			}
+
+			// GET /agents (list)
 			await route.fulfill( {
 				status: 200,
 				contentType: 'application/json',
@@ -673,9 +686,12 @@ test.describe( 'Agent Builder - Edit Agent', () => {
 
 		await getUpdateAgentButton( page ).click();
 
-		// After update the card should show the new name.
+		// After update the card should show the new name. The component
+		// re-fetches the agent list after saving; allow time for the list
+		// to repopulate before asserting on the card content.
 		await expect( getAgentCards( page ).first() ).toContainText(
-			AGENT_FIXTURE_UPDATED.name
+			AGENT_FIXTURE_UPDATED.name,
+			{ timeout: 10_000 }
 		);
 	} );
 
@@ -715,8 +731,11 @@ test.describe( 'Agent Builder - Delete Agent', () => {
 		await expect( card ).toBeVisible( { timeout: 10000 } );
 		await getDeleteButton( card ).click();
 
-		// Card should be removed.
-		await expect( getAgentCards( page ) ).toHaveCount( 0 );
+		// Card should be removed. The component re-fetches the list after
+		// delete; allow time for the DOM to update.
+		await expect( getAgentCards( page ) ).toHaveCount( 0, {
+			timeout: 10_000,
+		} );
 	} );
 
 	test( 'dismissing the delete confirmation keeps the agent', async ( {
