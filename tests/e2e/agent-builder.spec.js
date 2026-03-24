@@ -32,6 +32,54 @@ const {
 } = require( './utils/wp-admin' );
 
 // ---------------------------------------------------------------------------
+// Global setup — delete any agents left in the database from previous runs.
+// Uses a separate browser page so the cleanup fetch calls bypass page.route
+// mock handlers (which are per-page and not yet registered at this point).
+// ---------------------------------------------------------------------------
+
+test.beforeAll( async ( { browser } ) => {
+	const cleanupPage = await browser.newPage();
+	try {
+		await loginToWordPress( cleanupPage );
+		await cleanupPage.goto( '/wp-admin/index.php' );
+		await cleanupPage.waitForLoadState( 'networkidle' );
+		await cleanupPage.evaluate( async () => {
+			const root =
+				( window.wpApiSettings && window.wpApiSettings.root ) ||
+				'/wp-json/';
+			const nonce =
+				( window.wpApiSettings && window.wpApiSettings.nonce ) || '';
+			try {
+				const resp = await fetch(
+					root + 'gratis-ai-agent/v1/agents',
+					{ headers: { 'X-WP-Nonce': nonce } }
+				);
+				const agents = await resp.json();
+				if ( Array.isArray( agents ) ) {
+					await Promise.all(
+						agents.map( ( a ) =>
+							fetch(
+								root +
+									'gratis-ai-agent/v1/agents/' +
+									a.id,
+								{
+									method: 'DELETE',
+									headers: { 'X-WP-Nonce': nonce },
+								}
+							)
+						)
+					);
+				}
+			} catch ( _e ) {
+				// Ignore — database may already be clean.
+			}
+		} );
+	} finally {
+		await cleanupPage.close();
+	}
+} );
+
+// ---------------------------------------------------------------------------
 // Fixtures — deterministic agent data returned by mocked REST responses.
 // ---------------------------------------------------------------------------
 
@@ -145,13 +193,16 @@ async function mockAgentsApi( page, opts = {} ) {
 	} );
 
 	// Stub tool-profiles endpoint (used by the form dropdown).
+	// Slugs must match the built-in profiles defined in ToolProfiles::get_builtins()
+	// so that selectOption() calls in tests use values that actually exist in the
+	// real implementation (avoids "did not find some options" failures in CI).
 	await page.route( /gratis-ai-agent\/v1\/tool-profiles/, async ( route ) => {
 		await route.fulfill( {
 			status: 200,
 			contentType: 'application/json',
 			body: JSON.stringify( [
-				{ slug: 'default', name: 'Default' },
-				{ slug: 'read-only', name: 'Read Only' },
+				{ slug: 'wp-read-only', name: 'WP Read Only' },
+				{ slug: 'wp-full-management', name: 'WP Full Management' },
 			] ),
 		} );
 	} );
@@ -393,13 +444,12 @@ test.describe( 'Agent Builder - Create Agent', () => {
 		// before attempting to select an option.
 		const toolProfileSelect = form.getByLabel( /Tool Profile/i );
 		await expect(
-			toolProfileSelect.locator( 'option', { hasText: 'Read Only' } )
+			toolProfileSelect.locator( 'option', { hasText: 'WP Read Only' } )
 		).toBeAttached();
 
-		// Select the "Read Only" tool profile by value (more reliable than
-		// label matching which can fail if the option text has extra whitespace
-		// or the SelectControl renders options differently across WP versions).
-		await toolProfileSelect.selectOption( 'read-only' );
+		// Select the "WP Read Only" tool profile by value. The slug 'wp-read-only'
+		// matches the built-in profile defined in ToolProfiles::get_builtins().
+		await toolProfileSelect.selectOption( 'wp-read-only' );
 
 		await getCreateAgentButton( page ).click();
 
@@ -439,9 +489,13 @@ test.describe( 'Agent Builder - Agent List', () => {
 	test( 'agent card shows system prompt preview', async ( { page } ) => {
 		const card = getAgentCards( page ).first();
 		await expect( card ).toBeVisible( { timeout: 10000 } );
+		// Use a generous timeout for the inner element — the card body renders
+		// asynchronously after the card itself becomes visible.
 		await expect(
 			card.locator( '.gratis-ai-agent-agent-prompt-preview' )
-		).toContainText( AGENT_FIXTURE.system_prompt.slice( 0, 40 ) );
+		).toContainText( AGENT_FIXTURE.system_prompt.slice( 0, 40 ), {
+			timeout: 10000,
+		} );
 	} );
 
 	test( 'edit and delete buttons are present on each card', async ( {
@@ -690,10 +744,11 @@ test.describe( 'Agent Builder - Full Lifecycle', () => {
 		// Wait for tool-profile options to load before selecting.
 		const toolProfileSelect = form.getByLabel( /Tool Profile/i );
 		await expect(
-			toolProfileSelect.locator( 'option', { hasText: 'Read Only' } )
+			toolProfileSelect.locator( 'option', { hasText: 'WP Read Only' } )
 		).toBeAttached();
-		// Select by value for reliability across WP versions.
-		await toolProfileSelect.selectOption( 'read-only' );
+		// Select the "WP Read Only" profile by value — matches the built-in
+		// slug in ToolProfiles::get_builtins().
+		await toolProfileSelect.selectOption( 'wp-read-only' );
 
 		await getCreateAgentButton( page ).click();
 
