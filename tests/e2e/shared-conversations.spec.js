@@ -31,9 +31,9 @@
  * non-matching request (CSS, JS, images, HTML), and this high-volume
  * pass-through can cause timing issues that prevent mock responses from
  * reaching the Redux store. Per-endpoint regex handlers only fire for their
- * own endpoint, avoiding this overhead entirely. When a broad regex (e.g.
- * `/sessions/`) also matches a more-specific endpoint (e.g. `/sessions/shared`),
- * the broad handler uses `route.fallback()` to delegate to the specific one.
+ * own endpoint, avoiding this overhead entirely. Negative lookaheads in the
+ * regex patterns (e.g. `/sessions(?!\/)`) prevent overlap between the
+ * sessions list handler and more-specific endpoints like `/sessions/shared`.
  *
  * Run: npm run test:e2e:playwright
  */
@@ -64,27 +64,6 @@ const MOCK_SESSION = {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Decode a URL (string or URL object) to its full decoded string.
- *
- * wp-env uses the index.php?rest_route= format (pretty permalinks disabled),
- * so REST API paths appear URL-encoded in the URL string:
- *   http://localhost:8888/index.php?rest_route=%2Fgratis-ai-agent%2Fv1%2Fsessions&status=active
- *
- * Used for response/request URL matching in waitForResponse/waitForRequest
- * callbacks where the URL is already a string.
- *
- * @param {string|URL} url - URL string or object.
- * @return {string} Fully decoded URL string.
- */
-function decodeUrl( url ) {
-	try {
-		return decodeURIComponent( url.toString() );
-	} catch {
-		return url.toString();
-	}
-}
 
 /**
  * Register per-endpoint route handlers for all plugin REST endpoints.
@@ -178,35 +157,22 @@ async function setupMocks( page, options = {} ) {
 	}
 
 	// --- /sessions list ---
-	// This regex matches any URL containing the sessions endpoint path.
-	// It also matches /sessions/shared and /sessions/{id}/share URLs.
-	// Since this handler is registered AFTER the more-specific handlers,
-	// it runs FIRST in LIFO order. It detects more-specific URLs and
-	// calls route.fallback() to delegate to the appropriate handler.
+	// The negative lookahead (?!\/) ensures this regex ONLY matches the
+	// sessions list endpoint — not /sessions/shared, /sessions/folders,
+	// or /sessions/{id}. Those URLs have a '/' after 'sessions', which
+	// the lookahead rejects. The list URL has '&' or end-of-string after
+	// 'sessions' (e.g. ...sessions&status=active&_locale=user).
 	if ( sessions !== null ) {
-		await page.route( /gratis-ai-agent\/v1\/sessions/, async ( route ) => {
-			const decoded = decodeUrl( route.request().url() );
-
-			// Let more-specific endpoints fall back to their own handlers
-			// (registered later, so they run first in LIFO order — but if
-			// they weren't registered, this handler catches them).
-			// Use route.fallback() so the request reaches the next matching
-			// handler instead of going directly to the network.
-			if (
-				decoded.includes( '/sessions/shared' ) ||
-				decoded.includes( '/sessions/folders' ) ||
-				/\/sessions\/\d+/.test( decoded )
-			) {
-				await route.fallback();
-				return;
+		await page.route(
+			/gratis-ai-agent\/v1\/sessions(?!\/)/,
+			async ( route ) => {
+				await route.fulfill( {
+					status: 200,
+					contentType: 'application/json',
+					body: JSON.stringify( sessions ),
+				} );
 			}
-
-			await route.fulfill( {
-				status: 200,
-				contentType: 'application/json',
-				body: JSON.stringify( sessions ),
-			} );
-		} );
+		);
 	}
 
 	// --- /stream ---
