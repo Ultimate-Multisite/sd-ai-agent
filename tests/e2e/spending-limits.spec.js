@@ -272,8 +272,11 @@ test.describe( 'Spending Limits — Settings UI (GH#651)', () => {
 		).toBeVisible();
 
 		// Warning Threshold range control.
+		// WordPress RangeControl renders two inputs with the same aria-label
+		// (a range slider and a number spinbutton). Use the slider role to
+		// avoid a strict-mode violation from the ambiguous getByLabel match.
 		await expect(
-			page.getByLabel( /warning threshold/i )
+			page.getByRole( 'slider', { name: /warning threshold/i } )
 		).toBeVisible();
 
 		// Action When Budget Exceeded select.
