@@ -649,29 +649,21 @@ test.describe( 'Scheduled Automations (t080)', () => {
 		// Wait for the card to be in the DOM before accessing sub-elements.
 		await expect( card ).toBeVisible( { timeout: 10_000 } );
 
-		// The ToggleControl inside the card header renders as a checkbox.
-		// The underlying <input type="checkbox"> has opacity:0 (visually hidden
-		// behind the styled track/thumb). Playwright's click() and
-		// evaluate(el.click()) may not trigger React's synthetic onChange on
-		// opacity:0 inputs. Dispatching a native 'change' event with the
-		// correct target.checked value is the most reliable way to trigger
-		// React's event delegation and call the onChange handler.
-		const toggle = card.locator( 'input[type="checkbox"]' ).first();
-		await expect( toggle ).toBeChecked(); // enabled by default.
+		// The ToggleControl renders an opacity:0 checkbox inside a
+		// .components-form-toggle wrapper. Clicking the wrapper (the visible
+		// toggle track/thumb) is how a real user interacts with it and
+		// reliably triggers React's onChange → handleToggle → PATCH.
+		const toggleWrapper = card
+			.locator( '.components-form-toggle' )
+			.first();
+		await expect( toggleWrapper ).toBeVisible();
 
-		// Dispatch a native change event — React's event delegation processes
-		// this and calls the ToggleControl's onChange handler which fires PATCH.
-		await toggle.evaluate( ( el ) => {
-			// Use the native setter to bypass React's controlled-input guard,
-			// then dispatch a bubbling change event so React's delegation picks
-			// it up and calls the onChange handler.
-			const nativeSetter = Object.getOwnPropertyDescriptor(
-				window.HTMLInputElement.prototype,
-				'checked'
-			).set;
-			nativeSetter.call( el, false );
-			el.dispatchEvent( new Event( 'change', { bubbles: true } ) );
-		} );
+		// Verify the toggle starts in the checked/enabled state.
+		await expect( toggleWrapper ).toHaveClass( /is-checked/ );
+
+		// Click the visible toggle wrapper — this triggers the checkbox
+		// change via the label association and fires the PATCH.
+		await toggleWrapper.click();
 
 		// PATCH should have been called with enabled: false.
 		await expect
@@ -680,7 +672,9 @@ test.describe( 'Scheduled Automations (t080)', () => {
 		expect( patchBody ).toMatchObject( { enabled: false } );
 
 		// After fetchAll() the toggle should reflect the disabled state.
-		await expect( toggle ).not.toBeChecked( { timeout: 5_000 } );
+		await expect( toggleWrapper ).not.toHaveClass( /is-checked/, {
+			timeout: 5_000,
+		} );
 	} );
 
 	test( 'disabled automation card has disabled CSS class', async ( {
@@ -1048,20 +1042,19 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 		// Wait for the card to be in the DOM before accessing sub-elements.
 		await expect( card ).toBeVisible( { timeout: 10_000 } );
 
-		// The ToggleControl inside the card header renders as a checkbox.
-		// Use the same native-setter + change-event approach as the scheduled
-		// automation toggle test to reliably trigger React's onChange handler.
-		const toggle = card.locator( 'input[type="checkbox"]' ).first();
-		await expect( toggle ).toBeChecked();
+		// The ToggleControl renders an opacity:0 checkbox inside a
+		// .components-form-toggle wrapper. Clicking the wrapper (the visible
+		// toggle track/thumb) reliably triggers React's onChange → PATCH.
+		const toggleWrapper = card
+			.locator( '.components-form-toggle' )
+			.first();
+		await expect( toggleWrapper ).toBeVisible();
 
-		await toggle.evaluate( ( el ) => {
-			const nativeSetter = Object.getOwnPropertyDescriptor(
-				window.HTMLInputElement.prototype,
-				'checked'
-			).set;
-			nativeSetter.call( el, false );
-			el.dispatchEvent( new Event( 'change', { bubbles: true } ) );
-		} );
+		// Verify the toggle starts in the checked/enabled state.
+		await expect( toggleWrapper ).toHaveClass( /is-checked/ );
+
+		// Click the visible toggle wrapper to trigger the PATCH.
+		await toggleWrapper.click();
 
 		// PATCH should have been called with enabled: false.
 		await expect
@@ -1070,7 +1063,9 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 		expect( patchBody ).toMatchObject( { enabled: false } );
 
 		// After fetchAll() the toggle should reflect the disabled state.
-		await expect( toggle ).not.toBeChecked( { timeout: 5_000 } );
+		await expect( toggleWrapper ).not.toHaveClass( /is-checked/, {
+			timeout: 5_000,
+		} );
 	} );
 
 	test( 'disabled event card has disabled CSS class', async ( { page } ) => {
