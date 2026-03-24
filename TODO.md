@@ -2,6 +2,10 @@
 
 ## Ready
 
+- [ ] t137 Bump version to 1.3.0 and update CHANGELOG.md @superdav42 #chore ~1h ref=GH#646 #auto-dispatch
+  - 53 commits merged since v1.2.0: new models (o3, o4-mini, claude-sonnet-4-6, Gemini 2.5 Flash), PHPStan level 10, E2E coverage, bug fixes
+  - Update CHANGELOG.md [Unreleased] → [1.3.0], bump Version in gratis-ai-agent.php, update readme.txt Stable tag
+
 - [x] t136 Add JS bundle size budget and performance benchmarks @superdav42 #ci ~2h ref=GH#611 pr:#616 completed:2026-03-19
   - Plugin has grown with Chart.js, CodeMirror 6, highlight.js — no size budget means silent bloat
   - Add size-limit to package.json; budget: main bundle < 400KB gzipped; add CI step to code-quality.yml
