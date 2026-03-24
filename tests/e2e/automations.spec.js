@@ -183,6 +183,11 @@ async function mockAutomationRoutes( page, overrides = {} ) {
 		const rawUrl = route.request().url();
 		const url = decodeURIComponent( rawUrl );
 		const method = route.request().method();
+		// WordPress's apiFetch httpV1Middleware converts PATCH/PUT/DELETE
+		// to POST with an X-HTTP-Method-Override header. Resolve the
+		// effective method so route handlers match correctly.
+		const override = route.request().headers()[ 'x-http-method-override' ];
+		const effectiveMethod = override || method;
 
 		// Only handle requests for our plugin's REST namespace.
 		if ( ! url.includes( 'gratis-ai-agent/v1' ) ) {
@@ -284,18 +289,21 @@ async function mockAutomationRoutes( page, overrides = {} ) {
 
 		// Event automations CRUD.
 		if ( url.includes( '/event-automations' ) ) {
-			if ( method === 'POST' ) {
-				return route.fulfill( {
-					status: 201,
-					contentType: 'application/json',
-					body: JSON.stringify( createdEvent ),
-				} );
-			}
-			if ( method === 'PATCH' || method === 'DELETE' ) {
+			if (
+				effectiveMethod === 'PATCH' ||
+				effectiveMethod === 'DELETE'
+			) {
 				return route.fulfill( {
 					status: 200,
 					contentType: 'application/json',
 					body: JSON.stringify( { success: true } ),
+				} );
+			}
+			if ( effectiveMethod === 'POST' ) {
+				return route.fulfill( {
+					status: 201,
+					contentType: 'application/json',
+					body: JSON.stringify( createdEvent ),
 				} );
 			}
 			// GET /event-automations or /event-automations/:id
@@ -324,7 +332,17 @@ async function mockAutomationRoutes( page, overrides = {} ) {
 
 		// Scheduled automations CRUD and run.
 		if ( url.includes( '/automations' ) ) {
-			if ( method === 'POST' ) {
+			if (
+				effectiveMethod === 'PATCH' ||
+				effectiveMethod === 'DELETE'
+			) {
+				return route.fulfill( {
+					status: 200,
+					contentType: 'application/json',
+					body: JSON.stringify( { success: true } ),
+				} );
+			}
+			if ( effectiveMethod === 'POST' ) {
 				// /automations/:id/run
 				if ( url.match( /\/automations\/\d+\/run/ ) ) {
 					return route.fulfill( {
@@ -340,13 +358,6 @@ async function mockAutomationRoutes( page, overrides = {} ) {
 					status: 201,
 					contentType: 'application/json',
 					body: JSON.stringify( createdAutomation ),
-				} );
-			}
-			if ( method === 'PATCH' || method === 'DELETE' ) {
-				return route.fulfill( {
-					status: 200,
-					contentType: 'application/json',
-					body: JSON.stringify( { success: true } ),
 				} );
 			}
 			// GET /automations or /automations/:id
@@ -614,12 +625,21 @@ test.describe( 'Scheduled Automations (t080)', () => {
 		// IMPORTANT: use route.fallback() (not route.continue()) for non-matching
 		// requests so they pass to the next handler (the beforeEach mock) rather
 		// than going directly to the network and bypassing the mock entirely.
+		//
+		// NOTE: WordPress's apiFetch httpV1Middleware converts PATCH/PUT/DELETE
+		// to POST with an X-HTTP-Method-Override header. We must check for
+		// both the raw method AND the override header.
 		await page.route( '**', async ( route ) => {
 			const decodedUrl = decodeURIComponent( route.request().url() );
 			if ( ! /gratis-ai-agent\/v1\/automations\/1/.test( decodedUrl ) ) {
 				return route.fallback();
 			}
-			if ( route.request().method() === 'PATCH' ) {
+			const method = route.request().method();
+			const override = route.request().headers()[
+				'x-http-method-override'
+			];
+			const effectiveMethod = override || method;
+			if ( effectiveMethod === 'PATCH' ) {
 				patchCalled = true;
 				patchBody = JSON.parse( route.request().postData() || '{}' );
 				return route.fulfill( {
@@ -651,9 +671,8 @@ test.describe( 'Scheduled Automations (t080)', () => {
 
 		// WordPress ToggleControl renders an opacity:0 <input> that covers
 		// the entire .components-form-toggle area (position:absolute, z-index:1,
-		// width/height 100%). Clicking it with { force: true } bypasses
-		// Playwright's visibility check and fires the native click → React
-		// onChange → handleToggle → PATCH.
+		// width/height 100%). Click with { force: true } to bypass the
+		// opacity:0 visibility check and trigger React's onChange handler.
 		const checkbox = card
 			.locator( 'input.components-form-toggle__input' )
 			.first();
@@ -661,7 +680,7 @@ test.describe( 'Scheduled Automations (t080)', () => {
 		// Verify the toggle starts in the checked/enabled state.
 		await expect( checkbox ).toBeChecked();
 
-		// Click with force to bypass the opacity:0 visibility check.
+		// Click the checkbox to toggle it off.
 		await checkbox.click( { force: true } );
 
 		// PATCH should have been called with enabled: false.
@@ -1002,6 +1021,10 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 		// IMPORTANT: use route.fallback() (not route.continue()) for non-matching
 		// requests so they pass to the next handler (the beforeEach mock) rather
 		// than going directly to the network and bypassing the mock entirely.
+		//
+		// NOTE: WordPress's apiFetch httpV1Middleware converts PATCH/PUT/DELETE
+		// to POST with an X-HTTP-Method-Override header. We must check for
+		// both the raw method AND the override header.
 		await page.route( '**', async ( route ) => {
 			const decodedUrl = decodeURIComponent( route.request().url() );
 			if (
@@ -1009,7 +1032,12 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 			) {
 				return route.fallback();
 			}
-			if ( route.request().method() === 'PATCH' ) {
+			const method = route.request().method();
+			const override = route.request().headers()[
+				'x-http-method-override'
+			];
+			const effectiveMethod = override || method;
+			if ( effectiveMethod === 'PATCH' ) {
 				patchCalled = true;
 				patchBody = JSON.parse( route.request().postData() || '{}' );
 				return route.fulfill( {
@@ -1041,7 +1069,7 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 
 		// WordPress ToggleControl renders an opacity:0 <input> that covers
 		// the entire .components-form-toggle area. Click with { force: true }
-		// to bypass visibility check and fire React onChange → PATCH.
+		// to bypass the opacity:0 visibility check.
 		const checkbox = card
 			.locator( 'input.components-form-toggle__input' )
 			.first();
@@ -1049,7 +1077,7 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 		// Verify the toggle starts in the checked/enabled state.
 		await expect( checkbox ).toBeChecked();
 
-		// Click with force to bypass the opacity:0 visibility check.
+		// Click the checkbox to toggle it off.
 		await checkbox.click( { force: true } );
 
 		// PATCH should have been called with enabled: false.
