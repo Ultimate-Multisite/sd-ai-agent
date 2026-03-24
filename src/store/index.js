@@ -149,6 +149,12 @@ const DEFAULT_STATE = {
 	// Shared sessions — sessions shared with all admins (t077).
 	sharedSessions: [],
 	sharedSessionsLoaded: false,
+
+	// Pending optimistic titles — { [sessionId]: title } set by updateSessionTitle()
+	// and merged into state.sessions by SET_SESSIONS so that a fetchSessions()
+	// round-trip returning "Untitled" from the server does not overwrite a title
+	// that was already delivered via the SSE done event.
+	pendingTitles: {},
 };
 
 const actions = {
@@ -2834,12 +2840,26 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				providers: action.providers,
 				providersLoaded: true,
 			};
-		case 'SET_SESSIONS':
+		case 'SET_SESSIONS': {
+			// Merge any pending optimistic titles into the incoming sessions list.
+			// When updateSessionTitle() fires before fetchSessions() returns, the
+			// server response may still carry "Untitled" (the AI title is generated
+			// client-side from the SSE done event and never written back to the DB
+			// in the same request). Preserving the optimistic title here ensures the
+			// sidebar reflects the generated title even after the fetchSessions()
+			// round-trip completes.
+			const pending = state.pendingTitles || {};
+			const sessions = action.sessions.map( ( s ) => {
+				const optimistic = pending[ s.id ];
+				return optimistic ? { ...s, title: optimistic } : s;
+			} );
 			return {
 				...state,
-				sessions: action.sessions,
+				sessions,
 				sessionsLoaded: true,
+				pendingTitles: {},
 			};
+		}
 		case 'SET_CURRENT_SESSION':
 			return {
 				...state,
@@ -3001,15 +3021,45 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				sharedSessions: action.sessions,
 				sharedSessionsLoaded: true,
 			};
-		case 'UPDATE_SESSION_TITLE':
+		case 'UPDATE_SESSION_TITLE': {
+			const exists = state.sessions.some(
+				( s ) => parseInt( s.id, 10 ) === action.sessionId
+			);
+			// If the session is already in the list, update its title in place.
+			// If it is not yet in the list (e.g. a brand-new session whose
+			// setCurrentSession ran before fetchSessions populated state.sessions),
+			// prepend a minimal stub so the sidebar shows the generated title
+			// immediately without waiting for the fetchSessions round-trip.
+			const updatedSessions = exists
+				? state.sessions.map( ( s ) =>
+						parseInt( s.id, 10 ) === action.sessionId
+							? { ...s, title: action.title }
+							: s
+				  )
+				: [
+						{
+							id: action.sessionId,
+							title: action.title,
+							created_at: new Date().toISOString(),
+							updated_at: new Date().toISOString(),
+							status: 'active',
+							message_count: 0,
+						},
+						...state.sessions,
+				  ];
+			// Record the title in pendingTitles so SET_SESSIONS can preserve it
+			// when the subsequent fetchSessions() round-trip returns "Untitled"
+			// from the server (the server never writes the AI-generated title back
+			// to the DB in the same request cycle).
 			return {
 				...state,
-				sessions: state.sessions.map( ( s ) =>
-					parseInt( s.id, 10 ) === action.sessionId
-						? { ...s, title: action.title }
-						: s
-				),
+				sessions: updatedSessions,
+				pendingTitles: {
+					...( state.pendingTitles || {} ),
+					[ action.sessionId ]: action.title,
+				},
 			};
+		}
 		default:
 			return state;
 	}

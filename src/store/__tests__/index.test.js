@@ -342,6 +342,45 @@ describe( 'reducer', () => {
 		expect( state.sessionsLoaded ).toBe( true );
 	} );
 
+	test( 'SET_SESSIONS merges pendingTitles into incoming sessions', () => {
+		// Simulate the state after updateSessionTitle() fired: pendingTitles has
+		// the generated title, but the server-side session still says "Untitled".
+		const stateWithPending = {
+			...DEFAULT_STATE,
+			pendingTitles: { 5: 'My Generated Title' },
+		};
+		const serverSessions = [ { id: 5, title: 'Untitled' } ];
+		const state = reducer( stateWithPending, {
+			type: 'SET_SESSIONS',
+			sessions: serverSessions,
+		} );
+		// The optimistic title should survive the fetchSessions() round-trip.
+		expect( state.sessions[ 0 ].title ).toBe( 'My Generated Title' );
+		// pendingTitles is cleared after merging.
+		expect( state.pendingTitles ).toEqual( {} );
+	} );
+
+	test( 'SET_SESSIONS clears pendingTitles after merging', () => {
+		const stateWithPending = {
+			...DEFAULT_STATE,
+			pendingTitles: { 3: 'Some Title' },
+		};
+		const state = reducer( stateWithPending, {
+			type: 'SET_SESSIONS',
+			sessions: [],
+		} );
+		expect( state.pendingTitles ).toEqual( {} );
+	} );
+
+	test( 'UPDATE_SESSION_TITLE records title in pendingTitles', () => {
+		const state = reducer( DEFAULT_STATE, {
+			type: 'UPDATE_SESSION_TITLE',
+			sessionId: 7,
+			title: 'Auto Title',
+		} );
+		expect( state.pendingTitles[ 7 ] ).toBe( 'Auto Title' );
+	} );
+
 	test( 'SET_CURRENT_SESSION sets session id, messages, toolCalls', () => {
 		const state = reducer( DEFAULT_STATE, {
 			type: 'SET_CURRENT_SESSION',
