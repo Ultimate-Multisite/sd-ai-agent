@@ -2,15 +2,15 @@
 
 ## Ready
 
-- [ ] t138 Add E2E tests for spending limits and budget caps @superdav42 #testing ~2h ref=GH#651 #auto-dispatch logged:2026-03-24
+- [x] t138 Add E2E tests for spending limits and budget caps @superdav42 #testing ~2h ref=GH#651 #auto-dispatch pr:#655 completed:2026-03-24
   - Spending limits are a financial safety feature — silent regressions could allow unbounded AI spend
   - Create tests/e2e/spending-limits.spec.js with ≥4 test cases covering settings UI, persistence, enforcement warning, reset
 
-- [ ] t139 Add E2E tests for text-to-speech feature @superdav42 #testing ~2h ref=GH#652 #auto-dispatch logged:2026-03-24
+- [x] t139 Add E2E tests for text-to-speech feature @superdav42 #testing ~2h ref=GH#652 #auto-dispatch pr:#654 completed:2026-03-24
   - TTS is a user-facing accessibility feature with no E2E coverage — regressions break audio output silently
   - Create tests/e2e/text-to-speech.spec.js with ≥3 test cases covering toggle, persistence, play button visibility
 
-- [ ] t140 Add E2E tests for white-label branding (custom agent name, colors, logo) @superdav42 #testing ~2h ref=GH#653 #auto-dispatch logged:2026-03-24
+- [x] t140 Add E2E tests for white-label branding (custom agent name, colors, logo) @superdav42 #testing ~2h ref=GH#653 #auto-dispatch pr:#656 completed:2026-03-24
   - White-label is a resale/agency feature — regressions break customer-facing deployments silently
   - Create tests/e2e/white-label.spec.js with ≥4 test cases covering settings fields, name reflection, color update, reset
 
