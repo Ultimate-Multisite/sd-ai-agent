@@ -116,8 +116,8 @@ async function setupMocks( page, options = {} ) {
 	// URLs and calls route.fallback(), which delegates to this handler.
 	if ( sharedSessions !== null || sharedSessionsFn !== null ) {
 		await page.route(
-			( req ) =>
-				decodeURIComponent( req.url() ).includes(
+			( url ) =>
+				decodeURIComponent( url.href ).includes(
 					'gratis-ai-agent/v1/sessions/shared'
 				),
 			async ( route ) => {
@@ -143,11 +143,13 @@ async function setupMocks( page, options = {} ) {
 	// --- /sessions/{id}/share (POST or DELETE) ---
 	if ( shareSuccess !== null ) {
 		await page.route(
-			( req ) =>
-				decodeURIComponent( req.url() ).includes(
-					'gratis-ai-agent/v1/sessions/'
-				) &&
-				decodeURIComponent( req.url() ).includes( '/share' ),
+			( url ) => {
+				const decoded = decodeURIComponent( url.href );
+				return (
+					decoded.includes( 'gratis-ai-agent/v1/sessions/' ) &&
+					decoded.includes( '/share' )
+				);
+			},
 			async ( route ) => {
 				const method = route.request().method();
 				if ( method === 'POST' ) {
@@ -175,8 +177,8 @@ async function setupMocks( page, options = {} ) {
 	// handles wp-env's percent-encoded REST paths.
 	if ( sessions !== null ) {
 		await page.route(
-			( req ) => {
-				const decoded = decodeURIComponent( req.url() );
+			( url ) => {
+				const decoded = decodeURIComponent( url.href );
 				return (
 					decoded.includes( 'gratis-ai-agent/v1/sessions' ) &&
 					! decoded.includes( 'gratis-ai-agent/v1/sessions/' )
@@ -195,8 +197,8 @@ async function setupMocks( page, options = {} ) {
 	// --- /stream ---
 	if ( streamSessionId !== null ) {
 		await page.route(
-			( req ) =>
-				decodeURIComponent( req.url() ).includes(
+			( url ) =>
+				decodeURIComponent( url.href ).includes(
 					'gratis-ai-agent/v1/stream'
 				),
 			async ( route ) => {
@@ -452,8 +454,8 @@ test.describe( 'Shared Conversations (t091)', () => {
 			// percent-encoded REST paths reliably.
 			let isRevoked = false;
 			await page.route(
-				( req ) =>
-					decodeURIComponent( req.url() ).includes(
+				( url ) =>
+					decodeURIComponent( url.href ).includes(
 						'gratis-ai-agent/v1/sessions/shared'
 					),
 				async ( route ) => {
@@ -741,8 +743,8 @@ test.describe( 'Shared Conversations (t091)', () => {
 				// Checks for '/sessions/42' without a trailing slash or digit to
 				// avoid matching /sessions/42/share or /sessions/420.
 				await secondPage.route(
-					( req ) => {
-						const decoded = decodeURIComponent( req.url() );
+					( url ) => {
+						const decoded = decodeURIComponent( url.href );
 						return (
 							decoded.includes(
 								'gratis-ai-agent/v1/sessions/42'
