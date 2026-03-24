@@ -907,8 +907,10 @@ test.describe( 'Agent Builder - Full Lifecycle', () => {
 		await expect(
 			page.locator( '.components-notice.is-success' )
 		).toBeVisible( { timeout: 10000 } );
+		// Allow time for the list to repopulate after the update re-fetch.
 		await expect( getAgentCards( page ).first() ).toContainText(
-			AGENT_FIXTURE_UPDATED.name
+			AGENT_FIXTURE_UPDATED.name,
+			{ timeout: 10_000 }
 		);
 
 		// ---- Step 4: Delete the agent ----
@@ -916,6 +918,9 @@ test.describe( 'Agent Builder - Full Lifecycle', () => {
 
 		await getDeleteButton( getAgentCards( page ).first() ).click();
 
-		await expect( getAgentCards( page ) ).toHaveCount( 0 );
+		// Allow time for the list to update after the delete re-fetch.
+		await expect( getAgentCards( page ) ).toHaveCount( 0, {
+			timeout: 10_000,
+		} );
 	} );
 } );
