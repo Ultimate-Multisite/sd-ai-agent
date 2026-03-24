@@ -90,7 +90,7 @@ const TOOLS = [
 					content: { type: 'string', description: 'New content.' },
 					status: {
 						type: 'string',
-						enum: [ 'draft', 'publish', 'pending', 'private', 'trash' ],
+						enum: [ 'draft', 'publish', 'pending', 'private', 'future', 'trash' ],
 					},
 					excerpt: { type: 'string' },
 					categories: {
@@ -98,6 +98,18 @@ const TOOLS = [
 						items: { type: 'string' },
 					},
 					tags: { type: 'array', items: { type: 'string' } },
+					featured_image_id: {
+						type: 'integer',
+						description: 'Attachment ID to set as the featured image.',
+					},
+					meta: {
+						type: 'object',
+						description: 'Key-value pairs of post meta to update.',
+					},
+					site_url: {
+						type: 'string',
+						description: 'Subsite URL for multisite. Omit for the main site.',
+					},
 				},
 				required: [ 'post_id' ],
 			},

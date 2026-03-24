@@ -548,10 +548,11 @@ test.describe( 'Settings - Abilities Search and Filter (t098)', () => {
 		const expandBtn = page.getByRole( 'button', { name: /expand all/i } );
 		await expandBtn.click();
 
-		// Wait for the first body to be visible before counting — the expand
-		// is synchronous in React but the DOM update may lag slightly on CI.
+		// Wait for React to re-render the category bodies into the DOM.
+		// The bodies are conditionally rendered (not just hidden), so count()
+		// returns 0 if called before the first element is present.
 		await expect( categoryBodies.first() ).toBeVisible( {
-			timeout: 5_000,
+			timeout: 10_000,
 		} );
 
 		// All category bodies should be visible.

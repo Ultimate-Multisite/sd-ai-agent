@@ -123,7 +123,7 @@ class SiteScanner {
 				self::STATUS_OPTION,
 				[
 					'status'       => 'complete',
-					'started_at'   => get_option( self::STATUS_OPTION )['started_at'] ?? current_time( 'mysql', true ),
+					'started_at'   => self::get_status()['started_at'] ?? current_time( 'mysql', true ),
 					'completed_at' => current_time( 'mysql', true ),
 					'site_type'    => $data['site_type'],
 					'post_count'   => $data['post_count'],
