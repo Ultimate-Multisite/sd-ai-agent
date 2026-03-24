@@ -36,6 +36,13 @@ const {
  * `done.generated_title`) are caught by the test rather than masked by a direct
  * store dispatch.
  *
+ * Timing note: the sessions stub is registered BEFORE the stream route so it
+ * is guaranteed to be installed before route.fulfill() returns. A `streamFired`
+ * flag gates the stub so it passes through any pre-stream fetchSessions() calls
+ * (e.g. the mount-time load) and only intercepts the post-stream call. This
+ * eliminates the WP 6.9 race where fetchSessions() fired before the stub could
+ * be registered after route.fulfill().
+ *
  * @param {import('@playwright/test').Page} page
  * @param {Object} [options]
  * @param {string} [options.generatedTitle] - When set, included as
@@ -46,31 +53,93 @@ const {
 async function interceptStream( page, options = {} ) {
 	const { generatedTitle } = options;
 
+	// ── Sessions stub (registered BEFORE the stream route) ──────────────────
+	//
+	// The stub must be registered before route.fulfill() is called on the
+	// stream, not after. On WP 6.9 the store's fetchSessions() GET fires
+	// synchronously as soon as the SSE reader processes the done event — before
+	// any async work following route.fulfill() can complete. Registering the
+	// stub after route.fulfill() (the previous approach) created a race: on
+	// fast environments the GET arrived before the stub was installed, so the
+	// real server responded with "Untitled".
+	//
+	// To avoid the stub being consumed by the mount-time fetchSessions() call
+	// (which fires after waitForLoadState('networkidle') returns), we gate it
+	// on a `streamFired` flag that is set to true just before route.fulfill()
+	// sends the SSE response. Any sessions GET that arrives before the stream
+	// fires is passed through to the real server; only the post-stream call is
+	// intercepted.
+	//
+	// page.route() registration is synchronous — the handler is installed
+	// immediately. Only the handler body is async. This means the stub is
+	// guaranteed to be in place before route.fulfill() returns.
+	let streamFired = false;
+	// Capture sessionId so the sessions stub can reference it. It is set by
+	// the stream handler before route.fulfill() is called.
+	let capturedSessionId = 1;
+
+	if ( generatedTitle ) {
+		// One-shot flag: fulfill only the first post-stream GET to the list endpoint.
+		let sessionsFulfilled = false;
+
+		await page.route(
+			/gratis-ai-agent\/v1\/sessions/,
+			async ( sessionsRoute ) => {
+				const url = sessionsRoute.request().url();
+				const method = sessionsRoute.request().method();
+
+				// Only intercept the first GET to the list endpoint after the
+				// stream has fired. Skip individual-session URLs (/sessions/123),
+				// non-GETs, pre-stream calls, and calls after the first intercept.
+				const isListEndpoint = ! /\/sessions\//.test( url );
+				if (
+					method !== 'GET' ||
+					! isListEndpoint ||
+					! streamFired ||
+					sessionsFulfilled
+				) {
+					await sessionsRoute.continue();
+					return;
+				}
+
+				sessionsFulfilled = true;
+
+				const session = {
+					id: capturedSessionId,
+					title: generatedTitle,
+					created_at: new Date().toISOString(),
+					updated_at: new Date().toISOString(),
+					status: 'active',
+					message_count: 1,
+					provider_id: null,
+					model_id: null,
+					folder_id: null,
+				};
+
+				await sessionsRoute.fulfill( {
+					status: 200,
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify( [ session ] ),
+				} );
+			}
+		);
+	}
+
+	// ── Stream route ─────────────────────────────────────────────────────────
+	//
 	// Intercept the stream endpoint and return a minimal SSE response.
 	// The store POSTs to {wpApiSettings.root}gratis-ai-agent/v1/stream.
 	// We return a token + done event so the store's reader loop completes
 	// and setSending(false) is called, which hides the stop button.
-	//
-	// When generatedTitle is provided, the sessions stub is registered INSIDE
-	// this handler (after route.fulfill) so it only intercepts the fetchSessions
-	// call that fires immediately after the stream's done event is processed.
-	//
-	// Registering the sessions stub before the stream fires is unreliable: the
-	// React app's useEffect calls fetchSessions() on mount, and this fires after
-	// waitForLoadState('networkidle') returns (React effects run post-render).
-	// If the stub is registered before that initial call, it gets consumed by
-	// the mount-time fetchSessions() instead of the post-stream one, and the
-	// sidebar never shows the generated title.
 	await page.route( /gratis-ai-agent\/v1\/stream/, async ( route ) => {
 		// Capture the session_id from the POST body so the sessions stub can
 		// return the same session. The store always creates the session first
 		// via POST /sessions and passes the id here. Fall back to 1 if parsing
 		// fails.
-		let sessionId = 1;
 		try {
 			const postBody = route.request().postDataJSON();
 			if ( postBody?.session_id ) {
-				sessionId = postBody.session_id;
+				capturedSessionId = postBody.session_id;
 			}
 		} catch {
 			// Fall back to 1 if body is not JSON.
@@ -79,7 +148,7 @@ async function interceptStream( page, options = {} ) {
 		// Build the done event payload. Include generated_title when provided
 		// so the store's SSE parsing path is exercised end-to-end.
 		const donePayload = {
-			session_id: sessionId,
+			session_id: capturedSessionId,
 			...( generatedTitle ? { generated_title: generatedTitle } : {} ),
 		};
 
@@ -96,6 +165,10 @@ async function interceptStream( page, options = {} ) {
 			'',
 		].join( '\n' );
 
+		// Set the flag BEFORE fulfilling so the sessions stub is armed when
+		// the store's fetchSessions() fires immediately after the done event.
+		streamFired = true;
+
 		await route.fulfill( {
 			status: 200,
 			headers: {
@@ -104,64 +177,6 @@ async function interceptStream( page, options = {} ) {
 			},
 			body: sseBody,
 		} );
-
-		// Register the sessions stub AFTER the stream response is sent.
-		//
-		// Why this is needed: for a brand-new session, updateSessionTitle() is
-		// a no-op because the session is not yet in state.sessions (it was only
-		// added via setCurrentSession, not setSessions). The title therefore
-		// comes from fetchSessions(), which GETs /gratis-ai-agent/v1/sessions
-		// and replaces state.sessions. Without this stub, fetchSessions hits
-		// the real server which returns "Untitled" (the server never ran AI —
-		// the stream was intercepted), so the sidebar never shows the title.
-		//
-		// The stub is registered here (post-stream) so it only intercepts the
-		// fetchSessions() call the store dispatches after processing the done
-		// event — not any earlier calls (e.g. the initial mount-time load).
-		if ( generatedTitle ) {
-			// One-shot flag: fulfill only the first GET to the sessions list.
-			let sessionsFulfilled = false;
-
-			await page.route(
-				/gratis-ai-agent\/v1\/sessions/,
-				async ( sessionsRoute ) => {
-					const url = sessionsRoute.request().url();
-					const method = sessionsRoute.request().method();
-
-					// Only intercept the first GET to the list endpoint.
-					// Skip individual-session URLs (/sessions/123) and non-GETs.
-					const isListEndpoint = ! /\/sessions\//.test( url );
-					if (
-						method !== 'GET' ||
-						! isListEndpoint ||
-						sessionsFulfilled
-					) {
-						await sessionsRoute.continue();
-						return;
-					}
-
-					sessionsFulfilled = true;
-
-					const session = {
-						id: sessionId,
-						title: generatedTitle,
-						created_at: new Date().toISOString(),
-						updated_at: new Date().toISOString(),
-						status: 'active',
-						message_count: 1,
-						provider_id: null,
-						model_id: null,
-						folder_id: null,
-					};
-
-					await sessionsRoute.fulfill( {
-						status: 200,
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify( [ session ] ),
-					} );
-				}
-			);
-		}
 	} );
 }
 
