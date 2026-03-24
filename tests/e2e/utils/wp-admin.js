@@ -30,20 +30,21 @@ async function loginToWordPress(
 /**
  * Navigate to the Gratis AI Agent admin page.
  *
- * Waits for the sessions list REST response so that session items are rendered
- * in the sidebar before the function returns. This prevents race conditions
- * where tests assert on `.ai-agent-session-item` before React has had time to
- * render the intercepted sessions response.
+ * Waits for both the sessions list and shared sessions REST responses so that
+ * the sidebar is fully populated before the function returns. This prevents
+ * race conditions where tests assert on sidebar elements before React has had
+ * time to render the intercepted responses.
  *
- * The sessions endpoint may be intercepted (returning instantly) or real
- * (network latency). Either way, waiting for the response — rather than just
+ * The endpoints may be intercepted (returning instantly) or real (network
+ * latency). Either way, waiting for the responses — rather than just
  * `networkidle` — guarantees the store has received its data before we proceed.
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  */
 async function goToAgentPage( page ) {
-	// Set up the response waiter BEFORE navigating so we don't miss the request
-	// that fires immediately after React hydrates and dispatches fetchSessions().
+	// Set up the response waiters BEFORE navigating so we don't miss requests
+	// that fire immediately after React hydrates and dispatches fetchSessions()
+	// and fetchSharedSessions().
 	// wp-env may use plain-permalink URLs (?rest_route=...) where slashes are
 	// URL-encoded, so always decode before matching.
 	const sessionsResponsePromise = page
@@ -60,11 +61,28 @@ async function goToAgentPage( page ) {
 		)
 		.catch( () => null ); // Non-fatal: some tests may not trigger a sessions fetch.
 
+	// Also wait for the shared sessions response — fetchSharedSessions() fires
+	// on mount alongside fetchSessions(). Tests that check sharedSessions state
+	// (e.g. context menu showing Unshare) need this to be settled before they
+	// assert. Non-fatal because some tests don't intercept this endpoint.
+	const sharedSessionsResponsePromise = page
+		.waitForResponse(
+			( resp ) => {
+				const decoded = decodeURIComponent( resp.url() );
+				return (
+					decoded.includes( 'gratis-ai-agent/v1/sessions/shared' ) &&
+					resp.status() === 200
+				);
+			},
+			{ timeout: 15_000 }
+		)
+		.catch( () => null );
+
 	await page.goto( '/wp-admin/tools.php?page=gratis-ai-agent' );
 	await page.waitForLoadState( 'domcontentloaded' );
 
-	// Wait for the sessions response so the sidebar is populated before returning.
-	await sessionsResponsePromise;
+	// Wait for both responses so the sidebar is fully populated before returning.
+	await Promise.all( [ sessionsResponsePromise, sharedSessionsResponsePromise ] );
 
 	// Wait for the sidebar filter tabs to be visible. The AdminPageApp returns
 	// null until settingsLoaded=true, so the sidebar (and its tabs) may not

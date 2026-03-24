@@ -540,17 +540,22 @@ class Database {
 			$where[] = $wpdb->prepare( '(title LIKE %s OR messages LIKE %s)', $like, $like );
 		}
 
-		$where_sql = implode( ' AND ', $where );
+		$where_sql    = implode( ' AND ', $where );
+		$shared_table = self::shared_sessions_table_name();
 
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom table query; built from prepared fragments.
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table query; built from prepared fragments; table names from internal methods.
 		return $wpdb->get_results(
-			"SELECT id, user_id, title, provider_id, model_id, status, pinned, folder, created_at, updated_at,
-				JSON_LENGTH(messages) AS message_count
-			FROM {$table}
+			"SELECT s.id, s.user_id, s.title, s.provider_id, s.model_id, s.status,
+				s.pinned, s.folder, s.created_at, s.updated_at,
+				JSON_LENGTH(s.messages) AS message_count,
+				CASE WHEN ss.session_id IS NOT NULL THEN 1 ELSE 0 END AS is_shared,
+				ss.shared_by
+			FROM {$table} s
+			LEFT JOIN {$shared_table} ss ON ss.session_id = s.id
 			WHERE {$where_sql}
-			ORDER BY pinned DESC, updated_at DESC"
+			ORDER BY s.pinned DESC, s.updated_at DESC"
 		);
-		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 	}
 
 	/**

@@ -348,14 +348,19 @@ test.describe( 'Shared Conversations (t091)', () => {
 			await goToAgentPage( page );
 
 			// Wait for the session item to appear before checking the badge.
+			// Use a 10 s timeout to accommodate the async gap between the store
+			// receiving the sessions response and React committing the DOM update.
 			await expect(
 				page.locator( '.ai-agent-session-item' ).first()
-			).toBeVisible();
+			).toBeVisible( { timeout: 10_000 } );
 
+			// The is-shared class and shared icon are rendered synchronously with
+			// the session item when is_shared=true. Wait up to 10 s for the icon
+			// to appear in case there is a brief re-render cycle.
 			const sharedIcon = page
 				.locator( '.ai-agent-session-item.is-shared .ai-agent-shared-icon' )
 				.first();
-			await expect( sharedIcon ).toBeVisible();
+			await expect( sharedIcon ).toBeVisible( { timeout: 10_000 } );
 		} );
 	} );
 
@@ -375,11 +380,14 @@ test.describe( 'Shared Conversations (t091)', () => {
 			page,
 		} ) => {
 			// Set up the request promise BEFORE clicking so we don't miss it.
+			// Increase timeout to 10 s — the DELETE fires after the user clicks
+			// Unshare, which itself requires the context menu to render with the
+			// Unshare option (dependent on sharedSessions state being settled).
 			const deleteRequestPromise = page.waitForRequest(
 				( req ) =>
 					decodeURIComponent( req.url() ).includes( '/share' ) &&
 					req.method() === 'DELETE',
-				{ timeout: 5_000 }
+				{ timeout: 10_000 }
 			);
 
 			await openFirstSessionContextMenu( page );
@@ -387,7 +395,9 @@ test.describe( 'Shared Conversations (t091)', () => {
 			const unshareOption = page.getByRole( 'menuitem', {
 				name: /unshare/i,
 			} );
-			await expect( unshareOption ).toBeVisible();
+			// Use a 10 s timeout — the Unshare option only appears after the
+			// sharedSessions store state is settled (async after HTTP response).
+			await expect( unshareOption ).toBeVisible( { timeout: 10_000 } );
 			await unshareOption.click();
 
 			// Wait for the DELETE to actually fire (reliable vs. fixed timeout).
@@ -406,27 +416,52 @@ test.describe( 'Shared Conversations (t091)', () => {
 			// works with both pretty-permalink and plain-permalink URL formats.
 			await page.route( '**', async ( route ) => {
 				const decoded = decodeUrl( route.request().url() );
-				if (
-					! decoded.includes(
-						'gratis-ai-agent/v1/sessions/shared'
-					)
-				) {
-					return route.continue();
+
+				// Intercept the shared sessions endpoint and count calls.
+				if ( decoded.includes( 'gratis-ai-agent/v1/sessions/shared' ) ) {
+					sharedListCallCount++;
+					// After first call (initial load), return empty list to simulate revocation.
+					const sessions =
+						sharedListCallCount === 1 ? [ MOCK_SESSION ] : [];
+					await route.fulfill( {
+						status: 200,
+						contentType: 'application/json',
+						body: JSON.stringify( sessions ),
+					} );
+					return;
 				}
-				sharedListCallCount++;
-				// After first call (initial load), return empty list to simulate revocation.
-				const sessions =
-					sharedListCallCount === 1 ? [ MOCK_SESSION ] : [];
-				await route.fulfill( {
-					status: 200,
-					contentType: 'application/json',
-					body: JSON.stringify( sessions ),
-				} );
+
+				// Also intercept the sessions list so session items render in the
+				// sidebar (the real server has no sessions in the CI environment).
+				if (
+					decoded.includes( 'gratis-ai-agent/v1/sessions' ) &&
+					! /gratis-ai-agent\/v1\/sessions\/\d/.test( decoded )
+				) {
+					await route.fulfill( {
+						status: 200,
+						contentType: 'application/json',
+						body: JSON.stringify( [ MOCK_SESSION ] ),
+					} );
+					return;
+				}
+
+				// Also intercept the share endpoint so Unshare click doesn't error.
+				if ( /gratis-ai-agent\/v1\/sessions\/\d+\/share/.test( decoded ) ) {
+					await route.fulfill( {
+						status: 200,
+						contentType: 'application/json',
+						body: JSON.stringify( { shared: false } ),
+					} );
+					return;
+				}
+
+				return route.continue();
 			} );
 
 			await goToAgentPage( page );
 
-			// Initial load should have fetched shared sessions once.
+			// goToAgentPage() waits for both the sessions and shared sessions
+			// responses, so sharedListCallCount is guaranteed to be >= 1 here.
 			expect( sharedListCallCount ).toBeGreaterThanOrEqual( 1 );
 
 			await openFirstSessionContextMenu( page );
@@ -504,10 +539,12 @@ test.describe( 'Shared Conversations (t091)', () => {
 			await sharedResponsePromise;
 
 			// The shared session title should appear in the sidebar.
+			// Use a 10 s timeout to accommodate the async gap between the store
+			// receiving the response and React committing the DOM update.
 			const sessionTitle = page.locator( '.ai-agent-session-item' ).filter( {
 				hasText: MOCK_SESSION.title,
 			} );
-			await expect( sessionTitle.first() ).toBeVisible();
+			await expect( sessionTitle.first() ).toBeVisible( { timeout: 10_000 } );
 		} );
 
 		test( 'empty state shown when no shared sessions', async ( { page } ) => {
@@ -578,18 +615,20 @@ test.describe( 'Shared Conversations (t091)', () => {
 				await clickSharedTab( secondPage );
 				await sharedResponsePromise;
 
-				const sessionTitle = secondPage
-					.locator( '.ai-agent-session-item' )
-					.filter( { hasText: MOCK_SESSION.title } );
-				await expect( sessionTitle.first() ).toBeVisible();
-			} finally {
-				// Guard against double-close when the test times out and
-				// Playwright has already closed the context.
-				await secondContext.close().catch( () => {} );
-			}
-		} );
+			const sessionTitle = secondPage
+				.locator( '.ai-agent-session-item' )
+				.filter( { hasText: MOCK_SESSION.title } );
+			// Use a 10 s timeout to accommodate the async gap between the store
+			// receiving the response and React committing the DOM update.
+			await expect( sessionTitle.first() ).toBeVisible( { timeout: 10_000 } );
+		} finally {
+			// Guard against double-close when the test times out and
+			// Playwright has already closed the context.
+			await secondContext.close().catch( () => {} );
+		}
+	} );
 
-		test( 'second admin cannot see Share/Unshare in context menu (non-owner)', async ( {
+	test( 'second admin cannot see Share/Unshare in context menu (non-owner)', async ( {
 			browser,
 		} ) => {
 			const secondContext = await browser.newContext( {
@@ -623,29 +662,36 @@ test.describe( 'Shared Conversations (t091)', () => {
 						) && resp.status() === 200,
 					{ timeout: 5_000 }
 				);
-				await clickSharedTab( secondPage );
-				await sharedResponsePromise;
+			await clickSharedTab( secondPage );
+			await sharedResponsePromise;
 
-				// Open context menu for the shared session.
-				await openFirstSessionContextMenu( secondPage );
+			// Wait for the session item to appear in the Shared tab before
+			// opening the context menu. The store update and React re-render
+			// happen asynchronously after the HTTP response is received.
+			await expect(
+				secondPage.locator( '.ai-agent-session-item' ).first()
+			).toBeVisible( { timeout: 10_000 } );
 
-				// Share/Unshare should NOT be present for non-owners.
-				const shareOption = secondPage.getByRole( 'menuitem', {
-					name: /share with admins/i,
-				} );
-				const unshareOption = secondPage.getByRole( 'menuitem', {
-					name: /unshare/i,
-				} );
+			// Open context menu for the shared session.
+			await openFirstSessionContextMenu( secondPage );
 
-				await expect( shareOption ).not.toBeVisible();
-				await expect( unshareOption ).not.toBeVisible();
-			} finally {
-				await secondContext.close().catch( () => {} );
-			}
-		} );
+			// Share/Unshare should NOT be present for non-owners.
+			const shareOption = secondPage.getByRole( 'menuitem', {
+				name: /share with admins/i,
+			} );
+			const unshareOption = secondPage.getByRole( 'menuitem', {
+				name: /unshare/i,
+			} );
+
+			await expect( shareOption ).not.toBeVisible();
+			await expect( unshareOption ).not.toBeVisible();
+		} finally {
+			await secondContext.close().catch( () => {} );
+		}
 	} );
+} );
 
-	test.describe( 'Second admin — contribute permission', () => {
+test.describe( 'Second admin — contribute permission', () => {
 		test( 'second admin can send a message in a shared session', async ( {
 			browser,
 		} ) => {
@@ -694,15 +740,17 @@ test.describe( 'Shared Conversations (t091)', () => {
 					} );
 				} );
 
-				await goToAgentPage( secondPage );
+			await goToAgentPage( secondPage );
 
-				// Click the shared session to load it.
-				const sessionItem = secondPage
-					.locator( '.ai-agent-session-item' )
-					.filter( { hasText: MOCK_SESSION.title } )
-					.first();
-				await expect( sessionItem ).toBeVisible();
-				await sessionItem.click();
+			// Click the shared session to load it.
+			// Use a 10 s timeout to accommodate the async gap between the store
+			// receiving the sessions response and React committing the DOM update.
+			const sessionItem = secondPage
+				.locator( '.ai-agent-session-item' )
+				.filter( { hasText: MOCK_SESSION.title } )
+				.first();
+			await expect( sessionItem ).toBeVisible( { timeout: 10_000 } );
+			await sessionItem.click();
 
 				// Type a message and send it.
 				const input = secondPage.locator( '.ai-agent-input' );
@@ -753,23 +801,30 @@ test.describe( 'Shared Conversations (t091)', () => {
 						resp.status() === 200,
 					{ timeout: 5_000 }
 				);
-				await clickSharedTab( secondPage );
-				await sharedResponsePromise;
+			await clickSharedTab( secondPage );
+			await sharedResponsePromise;
 
-				await openFirstSessionContextMenu( secondPage );
+			// Wait for the session item to appear in the Shared tab before
+			// opening the context menu. The store update and React re-render
+			// happen asynchronously after the HTTP response is received.
+			await expect(
+				secondPage.locator( '.ai-agent-session-item' ).first()
+			).toBeVisible( { timeout: 10_000 } );
 
-				// Trash/Delete option should not be visible for non-owners on shared sessions.
-				const trashOption = secondPage.getByRole( 'menuitem', {
-					name: /trash|delete/i,
-				} );
-				await expect( trashOption ).not.toBeVisible();
-			} finally {
-				await secondContext.close().catch( () => {} );
-			}
-		} );
+			await openFirstSessionContextMenu( secondPage );
+
+			// Trash/Delete option should not be visible for non-owners on shared sessions.
+			const trashOption = secondPage.getByRole( 'menuitem', {
+				name: /trash|delete/i,
+			} );
+			await expect( trashOption ).not.toBeVisible();
+		} finally {
+			await secondContext.close().catch( () => {} );
+		}
 	} );
+} );
 
-	test.describe( 'Revoke share — second admin loses access', () => {
+test.describe( 'Revoke share — second admin loses access', () => {
 		test( 'after revocation, shared session no longer appears in second admin Shared tab', async ( {
 			browser,
 		} ) => {
@@ -810,14 +865,25 @@ test.describe( 'Shared Conversations (t091)', () => {
 					SECOND_ADMIN_PASS
 				);
 
-				await goToAgentPage( secondPage );
-				await clickSharedTab( secondPage );
+			await goToAgentPage( secondPage );
 
-				// Session should be visible before revocation.
-				const sessionTitle = secondPage
-					.locator( '.ai-agent-session-item' )
-					.filter( { hasText: MOCK_SESSION.title } );
-				await expect( sessionTitle.first() ).toBeVisible();
+			// Wait for the shared sessions response triggered by clicking the tab.
+			const initialSharedResponsePromise = secondPage.waitForResponse(
+				( resp ) =>
+					decodeURIComponent( resp.url() ).includes( '/sessions/shared' ) &&
+					resp.status() === 200,
+				{ timeout: 5_000 }
+			);
+			await clickSharedTab( secondPage );
+			await initialSharedResponsePromise;
+
+			// Session should be visible before revocation.
+			// Use a 10 s timeout to accommodate the async gap between the store
+			// receiving the response and React committing the DOM update.
+			const sessionTitle = secondPage
+				.locator( '.ai-agent-session-item' )
+				.filter( { hasText: MOCK_SESSION.title } );
+			await expect( sessionTitle.first() ).toBeVisible( { timeout: 10_000 } );
 
 				// Simulate revocation by the owner (toggle the flag and trigger a refetch).
 				isRevoked = true;
