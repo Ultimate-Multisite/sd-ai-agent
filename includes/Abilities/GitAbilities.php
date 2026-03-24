@@ -211,10 +211,10 @@ class GitDiffAbility extends AbstractAbility {
 				'package_type' => [
 					'type'        => 'string',
 					'enum'        => [ 'plugin', 'theme' ],
-					'description' => 'Whether the package is a plugin or theme.',
+					'description' => 'Whether the package is a plugin or theme. Defaults to "plugin" if omitted.',
 				],
 			],
-			'required'   => [ 'path', 'package_slug', 'package_type' ],
+			'required'   => [ 'path', 'package_slug' ],
 		];
 	}
 
@@ -315,10 +315,10 @@ class GitRestoreAbility extends AbstractAbility {
 				'package_type' => [
 					'type'        => 'string',
 					'enum'        => [ 'plugin', 'theme' ],
-					'description' => 'Whether the package is a plugin or theme.',
+					'description' => 'Whether the package is a plugin or theme. Defaults to "plugin" if omitted.',
 				],
 			],
-			'required'   => [ 'path', 'package_slug', 'package_type' ],
+			'required'   => [ 'path', 'package_slug' ],
 		];
 	}
 
@@ -501,10 +501,10 @@ class GitPackageSummaryAbility extends AbstractAbility {
 				'package_type' => [
 					'type'        => 'string',
 					'enum'        => [ 'plugin', 'theme' ],
-					'description' => 'Whether the package is a plugin or theme.',
+					'description' => 'Whether the package is a plugin or theme. Defaults to "plugin" if omitted.',
 				],
 			],
-			'required'   => [ 'package_slug', 'package_type' ],
+			'required'   => [ 'package_slug' ],
 		];
 	}
 
@@ -586,10 +586,10 @@ class GitRevertPackageAbility extends AbstractAbility {
 				'package_type' => [
 					'type'        => 'string',
 					'enum'        => [ 'plugin', 'theme' ],
-					'description' => 'Whether the package is a plugin or theme.',
+					'description' => 'Whether the package is a plugin or theme. Defaults to "plugin" if omitted.',
 				],
 			],
-			'required'   => [ 'package_slug', 'package_type' ],
+			'required'   => [ 'package_slug' ],
 		];
 	}
 
