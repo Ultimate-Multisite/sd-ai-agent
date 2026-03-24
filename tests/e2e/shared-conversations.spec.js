@@ -419,10 +419,15 @@ test.describe( 'Shared Conversations (t091)', () => {
 			// Increase timeout to 10 s — the DELETE fires after the user clicks
 			// Unshare, which itself requires the context menu to render with the
 			// Unshare option (dependent on sharedSessions state being settled).
+			//
+			// WordPress apiFetch httpV1Middleware may send DELETE as a POST with
+			// X-HTTP-Method-Override: DELETE. Match on URL only (not method) so
+			// the waiter fires regardless of which transport wp-env uses.
 			const deleteRequestPromise = page.waitForRequest(
 				( req ) =>
-					decodeURIComponent( req.url() ).includes( '/share' ) &&
-					req.method() === 'DELETE',
+					/gratis-ai-agent\/v1\/sessions\/\d+\/share/.test(
+						decodeURIComponent( req.url() )
+					),
 				{ timeout: 10_000 }
 			);
 
