@@ -631,33 +631,56 @@ test.describe( 'Scheduled Automations (t080)', () => {
 		// both the raw method AND the override header.
 		await page.route( '**', async ( route ) => {
 			const decodedUrl = decodeURIComponent( route.request().url() );
-			if ( ! /gratis-ai-agent\/v1\/automations\/1/.test( decodedUrl ) ) {
-				return route.fallback();
-			}
 			const method = route.request().method();
 			const override = route.request().headers()[
 				'x-http-method-override'
 			];
 			const effectiveMethod = override || method;
-			if ( effectiveMethod === 'PATCH' ) {
-				patchCalled = true;
-				patchBody = JSON.parse( route.request().postData() || '{}' );
+
+			// Match /automations/1 for PATCH and individual GET.
+			if ( /gratis-ai-agent\/v1\/automations\/1\b/.test( decodedUrl ) ) {
+				if ( effectiveMethod === 'PATCH' ) {
+					patchCalled = true;
+					patchBody = JSON.parse(
+						route.request().postData() || '{}'
+					);
+					return route.fulfill( {
+						status: 200,
+						contentType: 'application/json',
+						body: JSON.stringify( { success: true } ),
+					} );
+				}
+				// GET /automations/1 — return disabled state after PATCH.
 				return route.fulfill( {
 					status: 200,
 					contentType: 'application/json',
-					body: JSON.stringify( { success: true } ),
+					body: JSON.stringify(
+						patchCalled
+							? { ...MOCK_AUTOMATION, enabled: false }
+							: MOCK_AUTOMATION
+					),
 				} );
 			}
-			// GET /automations/1 — return disabled state after PATCH.
-			return route.fulfill( {
-				status: 200,
-				contentType: 'application/json',
-				body: JSON.stringify(
-					patchCalled
-						? { ...MOCK_AUTOMATION, enabled: false }
-						: MOCK_AUTOMATION
-				),
-			} );
+
+			// Match /automations list endpoint (fetchAll after PATCH).
+			// Only intercept after PATCH so the initial load uses the
+			// beforeEach mock's default data.
+			if (
+				patchCalled &&
+				/gratis-ai-agent\/v1\/automations\b/.test( decodedUrl ) &&
+				! /\/automations\/\d/.test( decodedUrl ) &&
+				effectiveMethod === 'GET'
+			) {
+				return route.fulfill( {
+					status: 200,
+					contentType: 'application/json',
+					body: JSON.stringify( [
+						{ ...MOCK_AUTOMATION, enabled: false },
+					] ),
+				} );
+			}
+
+			return route.fallback();
 		} );
 
 		await goToAutomationsTab( page );
@@ -1027,35 +1050,60 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 		// both the raw method AND the override header.
 		await page.route( '**', async ( route ) => {
 			const decodedUrl = decodeURIComponent( route.request().url() );
-			if (
-				! /gratis-ai-agent\/v1\/event-automations\/1/.test( decodedUrl )
-			) {
-				return route.fallback();
-			}
 			const method = route.request().method();
 			const override = route.request().headers()[
 				'x-http-method-override'
 			];
 			const effectiveMethod = override || method;
-			if ( effectiveMethod === 'PATCH' ) {
-				patchCalled = true;
-				patchBody = JSON.parse( route.request().postData() || '{}' );
+
+			// Match /event-automations/1 for PATCH and individual GET.
+			if (
+				/gratis-ai-agent\/v1\/event-automations\/1\b/.test(
+					decodedUrl
+				)
+			) {
+				if ( effectiveMethod === 'PATCH' ) {
+					patchCalled = true;
+					patchBody = JSON.parse(
+						route.request().postData() || '{}'
+					);
+					return route.fulfill( {
+						status: 200,
+						contentType: 'application/json',
+						body: JSON.stringify( { success: true } ),
+					} );
+				}
+				// GET /event-automations/1 — return disabled after PATCH.
 				return route.fulfill( {
 					status: 200,
 					contentType: 'application/json',
-					body: JSON.stringify( { success: true } ),
+					body: JSON.stringify(
+						patchCalled
+							? { ...MOCK_EVENT, enabled: false }
+							: MOCK_EVENT
+					),
 				} );
 			}
-			// GET /event-automations/1 — return disabled state after PATCH.
-			return route.fulfill( {
-				status: 200,
-				contentType: 'application/json',
-				body: JSON.stringify(
-					patchCalled
-						? { ...MOCK_EVENT, enabled: false }
-						: MOCK_EVENT
-				),
-			} );
+
+			// Match /event-automations list endpoint (fetchAll after PATCH).
+			if (
+				patchCalled &&
+				/gratis-ai-agent\/v1\/event-automations\b/.test(
+					decodedUrl
+				) &&
+				! /\/event-automations\/\d/.test( decodedUrl ) &&
+				effectiveMethod === 'GET'
+			) {
+				return route.fulfill( {
+					status: 200,
+					contentType: 'application/json',
+					body: JSON.stringify( [
+						{ ...MOCK_EVENT, enabled: false },
+					] ),
+				} );
+			}
+
+			return route.fallback();
 		} );
 
 		await goToEventsTab( page );
