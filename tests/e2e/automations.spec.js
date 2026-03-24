@@ -285,8 +285,11 @@ async function mockAutomationRoutes( page, overrides = {} ) {
 			} );
 		}
 
-		// Automation logs.
-		if ( url.includes( '/automation-logs' ) ) {
+		// Automation logs — matches both /automation-logs and /automations/{id}/logs.
+		if (
+			url.includes( '/automation-logs' ) ||
+			/\/automations\/\d+\/logs/.test( url )
+		) {
 			return route.fulfill( {
 				status: 200,
 				contentType: 'application/json',
@@ -489,8 +492,9 @@ test.describe( 'Scheduled Automations (t080)', () => {
 			prompt: 'Do something useful.',
 		};
 
-		// Track whether the POST was made.
+		// Track whether the POST was made and capture the request body.
 		let postMade = false;
+		let postBody = null;
 		// Use a function matcher to precisely target the /automations list
 		// endpoint (not /automations/ID or /automation-templates).
 		// A function matcher is more reliable than a regex with lookahead
@@ -510,6 +514,9 @@ test.describe( 'Scheduled Automations (t080)', () => {
 			async ( route ) => {
 				if ( route.request().method() === 'POST' ) {
 					postMade = true;
+					postBody = JSON.parse(
+						route.request().postData() || '{}'
+					);
 					return route.fulfill( {
 						status: 201,
 						contentType: 'application/json',
@@ -542,7 +549,19 @@ test.describe( 'Scheduled Automations (t080)', () => {
 			page.locator( '.components-notice' ).filter( { hasText: /saved/i } )
 		).toBeVisible( { timeout: 10_000 } );
 
+		// POST must have been made with the correct body fields.
 		expect( postMade ).toBe( true );
+		expect( postBody ).toMatchObject( {
+			name: 'My New Automation',
+			prompt: 'Do something useful.',
+		} );
+
+		// The new automation should appear in the list after the GET refresh.
+		await expect(
+			page
+				.locator( '.ai-agent-skill-cards' )
+				.filter( { hasText: 'My New Automation' } )
+		).toBeVisible( { timeout: 10_000 } );
 	} );
 
 	test( 'enable/disable toggle calls PATCH and updates card state', async ( {
@@ -552,6 +571,8 @@ test.describe( 'Scheduled Automations (t080)', () => {
 		let patchCalled = false;
 		let patchBody = null;
 
+		// After the PATCH the component calls fetchAll(); the GET must return
+		// the updated state so the card re-renders with enabled: false.
 		await page.route(
 			( url ) => {
 				const path = url.pathname || url.toString();
@@ -567,10 +588,15 @@ test.describe( 'Scheduled Automations (t080)', () => {
 						body: JSON.stringify( { success: true } ),
 					} );
 				}
+				// GET /automations/1 — return disabled state after PATCH.
 				return route.fulfill( {
 					status: 200,
 					contentType: 'application/json',
-					body: JSON.stringify( MOCK_AUTOMATION ),
+					body: JSON.stringify(
+						patchCalled
+							? { ...MOCK_AUTOMATION, enabled: false }
+							: MOCK_AUTOMATION
+					),
 				} );
 			}
 		);
@@ -581,7 +607,7 @@ test.describe( 'Scheduled Automations (t080)', () => {
 			.locator( '.ai-agent-skill-card' )
 			.filter( { hasText: MOCK_AUTOMATION.name } );
 
-		// The ToggleControl inside the card header.
+		// The ToggleControl inside the card header renders as a checkbox.
 		const toggle = card.locator( 'input[type="checkbox"]' ).first();
 		await expect( toggle ).toBeChecked(); // enabled by default.
 
@@ -592,6 +618,9 @@ test.describe( 'Scheduled Automations (t080)', () => {
 			.poll( () => patchCalled, { timeout: 5_000 } )
 			.toBe( true );
 		expect( patchBody ).toMatchObject( { enabled: false } );
+
+		// After fetchAll() the toggle should reflect the disabled state.
+		await expect( toggle ).not.toBeChecked( { timeout: 5_000 } );
 	} );
 
 	test( 'disabled automation card has disabled CSS class', async ( {
@@ -795,6 +824,7 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 		};
 
 		let postMade = false;
+		let postBody = null;
 		await page.route(
 			( url ) => {
 				const path = url.pathname || url.toString();
@@ -803,6 +833,9 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 			async ( route ) => {
 				if ( route.request().method() === 'POST' ) {
 					postMade = true;
+					postBody = JSON.parse(
+						route.request().postData() || '{}'
+					);
 					return route.fulfill( {
 						status: 201,
 						contentType: 'application/json',
@@ -838,7 +871,20 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 				.filter( { hasText: /saved/i } )
 		).toBeVisible( { timeout: 10_000 } );
 
+		// POST must have been made with the correct body fields.
 		expect( postMade ).toBe( true );
+		expect( postBody ).toMatchObject( {
+			name: 'My New Event',
+			hook_name: MOCK_TRIGGER.hook_name,
+			prompt_template: 'Handle {{post_title}}.',
+		} );
+
+		// The new event should appear in the list after the GET refresh.
+		await expect(
+			page
+				.locator( '.ai-agent-skill-cards' )
+				.filter( { hasText: 'My New Event' } )
+		).toBeVisible( { timeout: 10_000 } );
 	} );
 
 	test( 'trigger hook select is populated from the event-triggers endpoint', async ( {
@@ -891,6 +937,8 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 		let patchCalled = false;
 		let patchBody = null;
 
+		// After the PATCH the component calls fetchAll(); the GET must return
+		// the updated state so the card re-renders with enabled: false.
 		await page.route(
 			( url ) => {
 				const path = url.pathname || url.toString();
@@ -906,10 +954,15 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 						body: JSON.stringify( { success: true } ),
 					} );
 				}
+				// GET /event-automations/1 — return disabled state after PATCH.
 				return route.fulfill( {
 					status: 200,
 					contentType: 'application/json',
-					body: JSON.stringify( MOCK_EVENT ),
+					body: JSON.stringify(
+						patchCalled
+							? { ...MOCK_EVENT, enabled: false }
+							: MOCK_EVENT
+					),
 				} );
 			}
 		);
@@ -920,15 +973,20 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 			.locator( '.ai-agent-skill-card' )
 			.filter( { hasText: MOCK_EVENT.name } );
 
+		// The ToggleControl inside the card header renders as a checkbox.
 		const toggle = card.locator( 'input[type="checkbox"]' ).first();
 		await expect( toggle ).toBeChecked();
 
 		await toggle.click();
 
+		// PATCH should have been called with enabled: false.
 		await expect
 			.poll( () => patchCalled, { timeout: 5_000 } )
 			.toBe( true );
 		expect( patchBody ).toMatchObject( { enabled: false } );
+
+		// After fetchAll() the toggle should reflect the disabled state.
+		await expect( toggle ).not.toBeChecked( { timeout: 5_000 } );
 	} );
 
 	test( 'disabled event card has disabled CSS class', async ( { page } ) => {
