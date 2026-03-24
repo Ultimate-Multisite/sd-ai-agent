@@ -88,7 +88,11 @@ function decodeUrl( url ) {
  * @param {Object[]} sessions - Sessions to return (defaults to [MOCK_SESSION]).
  */
 async function interceptSessionsList( page, sessions = [ MOCK_SESSION ] ) {
-	await page.route( '**/gratis-ai-agent/v1/**', async ( route ) => {
+	// Use '**' to catch ALL requests, then filter by decoded URL.
+	// wp-env uses plain permalinks (?rest_route=%2Fgratis-ai-agent%2Fv1%2F...)
+	// so the path-based glob '**/gratis-ai-agent/v1/**' does NOT match — the
+	// plugin path appears in the query string, not the URL path.
+	await page.route( '**', async ( route ) => {
 		const decoded = decodeUrl( route.request().url() );
 		// Only handle the sessions list — not /sessions/shared or /sessions/{id}.
 		if (
@@ -116,7 +120,10 @@ async function interceptSessionsList( page, sessions = [ MOCK_SESSION ] ) {
  * @param {Object[]} sessions - Shared sessions to return.
  */
 async function interceptSharedSessionsList( page, sessions = [ MOCK_SESSION ] ) {
-	await page.route( '**/gratis-ai-agent/v1/**', async ( route ) => {
+	// Use '**' to catch ALL requests, then filter by decoded URL.
+	// wp-env uses plain permalinks (?rest_route=%2Fgratis-ai-agent%2Fv1%2F...)
+	// so the path-based glob '**/gratis-ai-agent/v1/**' does NOT match.
+	await page.route( '**', async ( route ) => {
 		const decoded = decodeUrl( route.request().url() );
 		if ( ! decoded.includes( 'gratis-ai-agent/v1/sessions/shared' ) ) {
 			return route.continue();
@@ -139,7 +146,10 @@ async function interceptSharedSessionsList( page, sessions = [ MOCK_SESSION ] ) 
  * @param {boolean}                         success - Whether to simulate success.
  */
 async function interceptShareEndpoint( page, success = true ) {
-	await page.route( '**/gratis-ai-agent/v1/**', async ( route ) => {
+	// Use '**' to catch ALL requests, then filter by decoded URL.
+	// wp-env uses plain permalinks (?rest_route=%2Fgratis-ai-agent%2Fv1%2F...)
+	// so the path-based glob '**/gratis-ai-agent/v1/**' does NOT match.
+	await page.route( '**', async ( route ) => {
 		const decoded = decodeUrl( route.request().url() );
 		if ( ! /gratis-ai-agent\/v1\/sessions\/\d+\/share/.test( decoded ) ) {
 			return route.continue();
@@ -173,7 +183,10 @@ async function interceptShareEndpoint( page, success = true ) {
  * @param {number}                          sessionId
  */
 async function interceptStream( page, sessionId = MOCK_SESSION.id ) {
-	await page.route( '**/gratis-ai-agent/v1/**', async ( route ) => {
+	// Use '**' to catch ALL requests, then filter by decoded URL.
+	// wp-env uses plain permalinks (?rest_route=%2Fgratis-ai-agent%2Fv1%2F...)
+	// so the path-based glob '**/gratis-ai-agent/v1/**' does NOT match.
+	await page.route( '**', async ( route ) => {
 		const decoded = decodeUrl( route.request().url() );
 		if ( ! decoded.includes( 'gratis-ai-agent/v1/stream' ) ) {
 			return route.continue();
@@ -297,26 +310,23 @@ test.describe( 'Shared Conversations (t091)', () => {
 			page,
 		} ) => {
 			// Pre-populate shared sessions so the store considers this session shared.
-			// Use a glob pattern so it works with both pretty-permalink and
-			// plain-permalink (?rest_route=...) URL formats.
-			await page.route(
-				'**/gratis-ai-agent/v1/**',
-				async ( route ) => {
-					const decoded = decodeUrl( route.request().url() );
-					if (
-						! decoded.includes(
-							'gratis-ai-agent/v1/sessions/shared'
-						)
-					) {
-						return route.continue();
-					}
-					await route.fulfill( {
-						status: 200,
-						contentType: 'application/json',
-						body: JSON.stringify( [ MOCK_SESSION ] ),
-					} );
+			// Use '**' to catch ALL requests, then filter by decoded URL so this
+			// works with both pretty-permalink and plain-permalink URL formats.
+			await page.route( '**', async ( route ) => {
+				const decoded = decodeUrl( route.request().url() );
+				if (
+					! decoded.includes(
+						'gratis-ai-agent/v1/sessions/shared'
+					)
+				) {
+					return route.continue();
 				}
-			);
+				await route.fulfill( {
+					status: 200,
+					contentType: 'application/json',
+					body: JSON.stringify( [ MOCK_SESSION ] ),
+				} );
+			} );
 
 			// Reload so the store fetches shared sessions with the new intercept.
 			await goToAgentPage( page );
@@ -387,33 +397,32 @@ test.describe( 'Shared Conversations (t091)', () => {
 		test( 'after revoking, shared sessions list is refreshed', async ( {
 			page,
 		} ) => {
-			// Remove the beforeEach route so our counting handler takes precedence.
-			// Use a glob pattern — regex won't match URL-encoded plain-permalink URLs.
-			await page.unroute( '**/gratis-ai-agent/v1/**' );
+			// Remove ALL beforeEach routes so our counting handler takes precedence.
+			// The beforeEach routes now use '**' so we must unroute '**' to clear them.
+			await page.unrouteAll( { behavior: 'ignoreErrors' } );
 
 			let sharedListCallCount = 0;
-			await page.route(
-				'**/gratis-ai-agent/v1/**',
-				async ( route ) => {
-					const decoded = decodeUrl( route.request().url() );
-					if (
-						! decoded.includes(
-							'gratis-ai-agent/v1/sessions/shared'
-						)
-					) {
-						return route.continue();
-					}
-					sharedListCallCount++;
-					// After first call (initial load), return empty list to simulate revocation.
-					const sessions =
-						sharedListCallCount === 1 ? [ MOCK_SESSION ] : [];
-					await route.fulfill( {
-						status: 200,
-						contentType: 'application/json',
-						body: JSON.stringify( sessions ),
-					} );
+			// Use '**' to catch ALL requests, then filter by decoded URL so this
+			// works with both pretty-permalink and plain-permalink URL formats.
+			await page.route( '**', async ( route ) => {
+				const decoded = decodeUrl( route.request().url() );
+				if (
+					! decoded.includes(
+						'gratis-ai-agent/v1/sessions/shared'
+					)
+				) {
+					return route.continue();
 				}
-			);
+				sharedListCallCount++;
+				// After first call (initial load), return empty list to simulate revocation.
+				const sessions =
+					sharedListCallCount === 1 ? [ MOCK_SESSION ] : [];
+				await route.fulfill( {
+					status: 200,
+					contentType: 'application/json',
+					body: JSON.stringify( sessions ),
+				} );
+			} );
 
 			await goToAgentPage( page );
 
@@ -503,9 +512,9 @@ test.describe( 'Shared Conversations (t091)', () => {
 
 		test( 'empty state shown when no shared sessions', async ( { page } ) => {
 			// Override to return empty list.
-			// Use a glob pattern so it works with both pretty-permalink and
-			// plain-permalink (?rest_route=...) URL formats.
-			await page.route( '**/gratis-ai-agent/v1/**', async ( route ) => {
+			// Use '**' to catch ALL requests, then filter by decoded URL so this
+			// works with both pretty-permalink and plain-permalink URL formats.
+			await page.route( '**', async ( route ) => {
 				const decoded = decodeUrl( route.request().url() );
 				if (
 					! decoded.includes( 'gratis-ai-agent/v1/sessions/shared' )
@@ -663,30 +672,27 @@ test.describe( 'Shared Conversations (t091)', () => {
 
 				// Intercept the single-session GET (openSession thunk fetches
 				// /sessions/{id} to load messages and tool calls).
-				// Use a glob pattern so it works with both pretty-permalink and
-				// plain-permalink (?rest_route=...) URL formats.
-				await secondPage.route(
-					'**/gratis-ai-agent/v1/**',
-					async ( route ) => {
-						const decoded = decodeUrl( route.request().url() );
-						if (
-							! /gratis-ai-agent\/v1\/sessions\/42/.test(
-								decoded
-							)
-						) {
-							return route.continue();
-						}
-						await route.fulfill( {
-							status: 200,
-							contentType: 'application/json',
-							body: JSON.stringify( {
-								...MOCK_SESSION,
-								messages: [],
-								tool_calls: [],
-							} ),
-						} );
+				// Use '**' to catch ALL requests, then filter by decoded URL so
+				// this works with both pretty-permalink and plain-permalink formats.
+				await secondPage.route( '**', async ( route ) => {
+					const decoded = decodeUrl( route.request().url() );
+					if (
+						! /gratis-ai-agent\/v1\/sessions\/42/.test(
+							decoded
+						)
+					) {
+						return route.continue();
 					}
-				);
+					await route.fulfill( {
+						status: 200,
+						contentType: 'application/json',
+						body: JSON.stringify( {
+							...MOCK_SESSION,
+							messages: [],
+							tool_calls: [],
+						} ),
+					} );
+				} );
 
 				await goToAgentPage( secondPage );
 
@@ -777,28 +783,25 @@ test.describe( 'Shared Conversations (t091)', () => {
 				// call (made during the admin dashboard load after login) is intercepted.
 				// Start with the session shared.
 				let isRevoked = false;
-				// Use a glob pattern so it works with both pretty-permalink and
-				// plain-permalink (?rest_route=...) URL formats.
-				await secondPage.route(
-					'**/gratis-ai-agent/v1/**',
-					async ( route ) => {
-						const decoded = decodeUrl( route.request().url() );
-						if (
-							! decoded.includes(
-								'gratis-ai-agent/v1/sessions/shared'
-							)
-						) {
-							return route.continue();
-						}
-						await route.fulfill( {
-							status: 200,
-							contentType: 'application/json',
-							body: JSON.stringify(
-								isRevoked ? [] : [ MOCK_SESSION ]
-							),
-						} );
+				// Use '**' to catch ALL requests, then filter by decoded URL so
+				// this works with both pretty-permalink and plain-permalink formats.
+				await secondPage.route( '**', async ( route ) => {
+					const decoded = decodeUrl( route.request().url() );
+					if (
+						! decoded.includes(
+							'gratis-ai-agent/v1/sessions/shared'
+						)
+					) {
+						return route.continue();
 					}
-				);
+					await route.fulfill( {
+						status: 200,
+						contentType: 'application/json',
+						body: JSON.stringify(
+							isRevoked ? [] : [ MOCK_SESSION ]
+						),
+					} );
+				} );
 				await interceptSessionsList( secondPage, [] );
 
 				await loginToWordPress(
