@@ -59,17 +59,25 @@ const MOCK_SESSION = {
 /**
  * Intercept the REST sessions list endpoint to return a single mock session.
  *
+ * The store calls /gratis-ai-agent/v1/sessions?status=active (with query
+ * params), so the regex must match URLs with a query string. The negative
+ * lookahead (?!\/) ensures we don't accidentally intercept /sessions/shared
+ * or /sessions/{id} sub-paths.
+ *
  * @param {import('@playwright/test').Page} page
  * @param {Object[]} sessions - Sessions to return (defaults to [MOCK_SESSION]).
  */
 async function interceptSessionsList( page, sessions = [ MOCK_SESSION ] ) {
-	await page.route( /gratis-ai-agent\/v1\/sessions(\?|$)/, async ( route ) => {
-		await route.fulfill( {
-			status: 200,
-			contentType: 'application/json',
-			body: JSON.stringify( sessions ),
-		} );
-	} );
+	await page.route(
+		/gratis-ai-agent\/v1\/sessions(?!\/)/,
+		async ( route ) => {
+			await route.fulfill( {
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify( sessions ),
+			} );
+		}
+	);
 }
 
 /**
@@ -475,7 +483,9 @@ test.describe( 'Shared Conversations (t091)', () => {
 					.filter( { hasText: MOCK_SESSION.title } );
 				await expect( sessionTitle.first() ).toBeVisible();
 			} finally {
-				await secondContext.close();
+				// Guard against double-close when the test times out and
+				// Playwright has already closed the context.
+				await secondContext.close().catch( () => {} );
 			}
 		} );
 
@@ -526,7 +536,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 				await expect( shareOption ).not.toBeVisible();
 				await expect( unshareOption ).not.toBeVisible();
 			} finally {
-				await secondContext.close();
+				await secondContext.close().catch( () => {} );
 			}
 		} );
 	} );
@@ -596,7 +606,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 					.first();
 				await expect( messageRow ).toBeVisible( { timeout: 5_000 } );
 			} finally {
-				await secondContext.close();
+				await secondContext.close().catch( () => {} );
 			}
 		} );
 
@@ -639,7 +649,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 				} );
 				await expect( trashOption ).not.toBeVisible();
 			} finally {
-				await secondContext.close();
+				await secondContext.close().catch( () => {} );
 			}
 		} );
 	} );
@@ -707,7 +717,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 				);
 				await expect( emptyState ).toBeVisible();
 			} finally {
-				await secondContext.close();
+				await secondContext.close().catch( () => {} );
 			}
 		} );
 	} );
