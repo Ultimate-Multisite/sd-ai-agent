@@ -15,7 +15,7 @@
 - [x] t133 Add E2E tests for agent builder UI (t082) @superdav42 #testing ~3h ref=GH#608 pr:#612 completed:2026-03-24
   - Agent builder (create/edit/delete custom agents) shipped in t082 with no E2E coverage
 
-- [ ] t132 Add E2E tests for shared conversations feature (t091) @superdav42 #testing ~3h ref=GH#607
+- [x] t132 Add E2E tests for shared conversations feature (t091) @superdav42 #testing ~3h ref=GH#607 pr:#614 completed:2026-03-24
   - Shared conversations (view/contribute permissions, revocation) shipped in t091 with no E2E coverage
 
 - [x] t131 Raise PHPStan level from 9 to 10 (max) and fix new errors @superdav42 #quality ~3h ref=GH#605 pr:#606 completed:2026-03-19
