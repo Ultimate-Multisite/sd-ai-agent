@@ -387,17 +387,8 @@ test.describe( 'Shared Conversations (t091)', () => {
 		test( 'clicking Unshare calls the DELETE share endpoint', async ( {
 			page,
 		} ) => {
-			// Replace the beforeEach handler with a fresh one so the second
-			// navigation uses a clean single handler (avoids stale handler issues).
-			await page.unrouteAll( { behavior: 'ignoreErrors' } );
-			await setupMocks( page, {
-				sessions: [ MOCK_SESSION ],
-				sharedSessions: [ MOCK_SESSION ],
-				shareSuccess: true,
-			} );
-
-			// Navigate again so the store fetches shared sessions with fresh handler.
-			await goToAgentPage( page );
+			// The beforeEach already set up mocks with sharedSessions: [MOCK_SESSION]
+			// and navigated to the agent page. The store has sharedSessions populated.
 
 			// Set up the request promise BEFORE clicking so we don't miss it.
 			// Increase timeout to 10 s — the DELETE fires after the user clicks
@@ -427,21 +418,34 @@ test.describe( 'Shared Conversations (t091)', () => {
 		test( 'after revoking, shared sessions list is refreshed', async ( {
 			page,
 		} ) => {
-			// Replace the beforeEach handler with a counting handler that returns
-			// [MOCK_SESSION] on the first call and [] on subsequent calls.
-			await page.unrouteAll( { behavior: 'ignoreErrors' } );
-			const { getSharedCallCount } = await setupMocks( page, {
-				sessions: [ MOCK_SESSION ],
-				shareSuccess: true,
-				sharedSessionsFn: ( callCount ) =>
-					callCount === 1 ? [ MOCK_SESSION ] : [],
-			} );
+			// The beforeEach already set up mocks and navigated. The store has
+			// sharedSessions populated. We need to track the refetch that happens
+			// after clicking Unshare.
 
+			// Replace the /sessions/shared handler with a counting one that
+			// returns [MOCK_SESSION] on the first call and [] on subsequent calls.
+			// Register on top of the existing handler — LIFO means this runs first.
+			let sharedCallCount = 0;
+			await page.route(
+				/gratis-ai-agent\/v1\/sessions\/shared/,
+				async ( route ) => {
+					sharedCallCount++;
+					const result =
+						sharedCallCount === 1 ? [ MOCK_SESSION ] : [];
+					await route.fulfill( {
+						status: 200,
+						contentType: 'application/json',
+						body: JSON.stringify( result ),
+					} );
+				}
+			);
+
+			// Reload so the store fetches with the new counting handler.
 			await goToAgentPage( page );
 
 			// goToAgentPage() waits for both the sessions and shared sessions
 			// responses, so sharedCallCount is guaranteed to be >= 1 here.
-			expect( getSharedCallCount() ).toBeGreaterThanOrEqual( 1 );
+			expect( sharedCallCount ).toBeGreaterThanOrEqual( 1 );
 
 			await openFirstSessionContextMenu( page );
 			const unshareOption = page.getByRole( 'menuitem', {
@@ -460,7 +464,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 			await unshareOption.click();
 			await refetchPromise;
 
-			expect( getSharedCallCount() ).toBeGreaterThanOrEqual( 2 );
+			expect( sharedCallCount ).toBeGreaterThanOrEqual( 2 );
 		} );
 	} );
 
