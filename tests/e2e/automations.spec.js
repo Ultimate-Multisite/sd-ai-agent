@@ -611,10 +611,13 @@ test.describe( 'Scheduled Automations (t080)', () => {
 		// the updated state so the card re-renders with enabled: false.
 		// Use '**' + decoded URL check to match both pretty-permalink and
 		// plain-permalink (?rest_route=...) URL formats.
+		// IMPORTANT: use route.fallback() (not route.continue()) for non-matching
+		// requests so they pass to the next handler (the beforeEach mock) rather
+		// than going directly to the network and bypassing the mock entirely.
 		await page.route( '**', async ( route ) => {
 			const decodedUrl = decodeURIComponent( route.request().url() );
 			if ( ! /gratis-ai-agent\/v1\/automations\/1/.test( decodedUrl ) ) {
-				return route.continue();
+				return route.fallback();
 			}
 			if ( route.request().method() === 'PATCH' ) {
 				patchCalled = true;
@@ -987,12 +990,15 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 		// the updated state so the card re-renders with enabled: false.
 		// Use '**' + decoded URL check to match both pretty-permalink and
 		// plain-permalink (?rest_route=...) URL formats.
+		// IMPORTANT: use route.fallback() (not route.continue()) for non-matching
+		// requests so they pass to the next handler (the beforeEach mock) rather
+		// than going directly to the network and bypassing the mock entirely.
 		await page.route( '**', async ( route ) => {
 			const decodedUrl = decodeURIComponent( route.request().url() );
 			if (
 				! /gratis-ai-agent\/v1\/event-automations\/1/.test( decodedUrl )
 			) {
-				return route.continue();
+				return route.fallback();
 			}
 			if ( route.request().method() === 'PATCH' ) {
 				patchCalled = true;
