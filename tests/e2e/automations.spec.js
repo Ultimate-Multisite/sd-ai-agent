@@ -694,8 +694,10 @@ test.describe( 'Scheduled Automations (t080)', () => {
 
 		// WordPress ToggleControl renders an opacity:0 <input> that covers
 		// the entire .components-form-toggle area (position:absolute, z-index:1,
-		// width/height 100%). Click with { force: true } to bypass the
-		// opacity:0 visibility check and trigger React's onChange handler.
+		// width/height 100%). Use evaluate() to trigger the native click in the
+		// page's JS context — this properly fires React's synthetic onChange
+		// handler, unlike Playwright's click({ force: true }) which bypasses
+		// the browser's native event dispatch for opacity:0 elements.
 		const checkbox = card
 			.locator( 'input.components-form-toggle__input' )
 			.first();
@@ -703,8 +705,8 @@ test.describe( 'Scheduled Automations (t080)', () => {
 		// Verify the toggle starts in the checked/enabled state.
 		await expect( checkbox ).toBeChecked();
 
-		// Click the checkbox to toggle it off.
-		await checkbox.click( { force: true } );
+		// Trigger the click via evaluate() so React's onChange fires correctly.
+		await checkbox.evaluate( ( el ) => el.click() );
 
 		// PATCH should have been called with enabled: false.
 		await expect
@@ -1116,8 +1118,11 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 		await expect( card ).toBeVisible( { timeout: 10_000 } );
 
 		// WordPress ToggleControl renders an opacity:0 <input> that covers
-		// the entire .components-form-toggle area. Click with { force: true }
-		// to bypass the opacity:0 visibility check.
+		// the entire .components-form-toggle area. Use evaluate() to trigger
+		// the native click in the page's JS context — this properly fires
+		// React's synthetic onChange handler, unlike click({ force: true })
+		// which bypasses the browser's native event dispatch for opacity:0
+		// elements.
 		const checkbox = card
 			.locator( 'input.components-form-toggle__input' )
 			.first();
@@ -1125,8 +1130,8 @@ test.describe( 'Event-Driven Automations (t081)', () => {
 		// Verify the toggle starts in the checked/enabled state.
 		await expect( checkbox ).toBeChecked();
 
-		// Click the checkbox to toggle it off.
-		await checkbox.click( { force: true } );
+		// Trigger the click via evaluate() so React's onChange fires correctly.
+		await checkbox.evaluate( ( el ) => el.click() );
 
 		// PATCH should have been called with enabled: false.
 		await expect
