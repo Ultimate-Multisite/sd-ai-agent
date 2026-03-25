@@ -19,6 +19,7 @@ parameters:
 		- compat/ai-client.php
 		- vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
 	treatPhpDocTypesAsCertain: false
+	reportUnmatchedIgnoredErrors: false
 	ignoreErrors:
 		# WP_CLI is only available when running in CLI context
 		- '#Call to static method .* on an unknown class WP_CLI#'

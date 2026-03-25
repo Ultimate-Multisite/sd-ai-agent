@@ -30,8 +30,8 @@ class BenchmarkRunner {
 		global $wpdb;
 		/** @var \wpdb $wpdb */
 
-		$suite      = BenchmarkSuite::get_suite( $data['test_suite'] );
-		$questions  = $suite ? $suite['questions'] : array();
+		$suite     = BenchmarkSuite::get_suite( $data['test_suite'] );
+		$questions = $suite ? $suite['questions'] : array();
 
 		// Filter to specific questions if provided.
 		if ( ! empty( $data['question_ids'] ) && is_array( $data['question_ids'] ) ) {
@@ -71,11 +71,11 @@ class BenchmarkRunner {
 		set_transient(
 			"gratis_ai_benchmark_run_{$run_id}",
 			array(
-				'run_id'     => $run_id,
-				'models'     => $data['models'],
-				'questions'  => array_values( $questions ),
-				'current_q'  => 0,
-				'total_q'    => $questions_count * count( $data['models'] ),
+				'run_id'    => $run_id,
+				'models'    => $data['models'],
+				'questions' => array_values( $questions ),
+				'current_q' => 0,
+				'total_q'   => $questions_count * count( $data['models'] ),
 			),
 			HOUR_IN_SECONDS
 		);
@@ -116,7 +116,7 @@ class BenchmarkRunner {
 		global $wpdb;
 		/** @var \wpdb $wpdb */
 
-		$table = Database::benchmark_runs_table_name();
+		$table  = Database::benchmark_runs_table_name();
 		$offset = ( $page - 1 ) * $per_page;
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom table query.
@@ -323,7 +323,7 @@ class BenchmarkRunner {
 	 * @return string
 	 */
 	private static function build_prompt( array $question ): string {
-	$prompt = "Question: {$question['question']}\n\n";
+		$prompt = "Question: {$question['question']}\n\n";
 
 		if ( ! empty( $question['options'] ) ) {
 			$prompt .= "Options:\n";
@@ -333,7 +333,7 @@ class BenchmarkRunner {
 			$prompt .= "\n";
 		}
 
-		$prompt .= "Respond with only the letter of the correct answer (A, B, C, or D). Do not include any explanation.";
+		$prompt .= 'Respond with only the letter of the correct answer (A, B, C, or D). Do not include any explanation.';
 
 		return $prompt;
 	}
@@ -386,7 +386,10 @@ class BenchmarkRunner {
 		}
 
 		$messages = array(
-			array( 'role' => 'user', 'content' => $prompt ),
+			array(
+				'role'    => 'user',
+				'content' => $prompt,
+			),
 		);
 
 		$response = wp_ai_client_prompt( $messages, array( 'model' => $model_id ) );
@@ -432,16 +435,19 @@ class BenchmarkRunner {
 			array(
 				'timeout' => 60,
 				'headers' => array(
-					'Content-Type'  => 'application/json',
-					'X-API-Key'     => $api_key,
+					'Content-Type'      => 'application/json',
+					'X-API-Key'         => $api_key,
 					'anthropic-version' => '2023-06-01',
 				),
 				'body'    => (string) wp_json_encode(
 					array(
-						'model'     => $model_id,
+						'model'      => $model_id,
 						'max_tokens' => 10,
-						'messages'  => array(
-							array( 'role' => 'user', 'content' => $prompt ),
+						'messages'   => array(
+							array(
+								'role'    => 'user',
+								'content' => $prompt,
+							),
 						),
 					)
 				),
@@ -494,10 +500,13 @@ class BenchmarkRunner {
 				),
 				'body'    => (string) wp_json_encode(
 					array(
-						'model'     => $model_id,
+						'model'      => $model_id,
 						'max_tokens' => 10,
-						'messages'  => array(
-							array( 'role' => 'user', 'content' => $prompt ),
+						'messages'   => array(
+							array(
+								'role'    => 'user',
+								'content' => $prompt,
+							),
 						),
 					)
 				),
@@ -659,10 +668,10 @@ class BenchmarkRunner {
 
 		// Calculate per-model and per-category statistics.
 		$comparison = array(
-			'runs'       => $runs,
-			'summary'    => self::calculate_comparison_summary( $runs ),
-			'by_model'   => self::calculate_by_model( $runs ),
-			'by_category'=> self::calculate_by_category( $runs ),
+			'runs'        => $runs,
+			'summary'     => self::calculate_comparison_summary( $runs ),
+			'by_model'    => self::calculate_by_model( $runs ),
+			'by_category' => self::calculate_by_category( $runs ),
 		);
 
 		return $comparison;
@@ -678,9 +687,9 @@ class BenchmarkRunner {
 		$summary = array();
 
 		foreach ( $runs as $run ) {
-			$results         = $run->results;
-			$total           = count( $results );
-			$correct         = count(
+			$results      = $run->results;
+			$total        = count( $results );
+			$correct      = count(
 				array_filter(
 					$results,
 					function ( $r ) {
@@ -688,9 +697,9 @@ class BenchmarkRunner {
 					}
 				)
 			);
-			$accuracy        = $total > 0 ? round( ( $correct / $total ) * 100, 2 ) : 0;
-			$avg_latency     = $total > 0 ? round( array_sum( array_column( $results, 'latency_ms' ) ) / $total, 2 ) : 0;
-			$total_tokens    = array_sum( array_column( $results, 'prompt_tokens' ) ) + array_sum( array_column( $results, 'completion_tokens' ) );
+			$accuracy     = $total > 0 ? round( ( $correct / $total ) * 100, 2 ) : 0;
+			$avg_latency  = $total > 0 ? round( array_sum( array_column( $results, 'latency_ms' ) ) / $total, 2 ) : 0;
+			$total_tokens = array_sum( array_column( $results, 'prompt_tokens' ) ) + array_sum( array_column( $results, 'completion_tokens' ) );
 
 			$summary[] = array(
 				'run_id'       => $run->id,
@@ -725,16 +734,16 @@ class BenchmarkRunner {
 						'correct'  => 0,
 					);
 				}
-				$by_model[ $model_id ]['total']++;
+				++$by_model[ $model_id ]['total'];
 				if ( $result->is_correct ) {
-					$by_model[ $model_id ]['correct']++;
+					++$by_model[ $model_id ]['correct'];
 				}
 			}
 		}
 
-		// Calculate accuracy.
+		// Calculate accuracy. Total is always >= 1 here (entries are only created on first result).
 		foreach ( $by_model as &$model ) {
-			$model['accuracy'] = $model['total'] > 0 ? round( ( $model['correct'] / $model['total'] ) * 100, 2 ) : 0;
+			$model['accuracy'] = round( ( $model['correct'] / $model['total'] ) * 100, 2 );
 		}
 
 		return array_values( $by_model );
@@ -759,16 +768,16 @@ class BenchmarkRunner {
 						'correct'  => 0,
 					);
 				}
-				$by_category[ $category ]['total']++;
+				++$by_category[ $category ]['total'];
 				if ( $result->is_correct ) {
-					$by_category[ $category ]['correct']++;
+					++$by_category[ $category ]['correct'];
 				}
 			}
 		}
 
-		// Calculate accuracy.
+		// Calculate accuracy. Total is always >= 1 here (entries are only created on first result).
 		foreach ( $by_category as &$category ) {
-			$category['accuracy'] = $category['total'] > 0 ? round( ( $category['correct'] / $category['total'] ) * 100, 2 ) : 0;
+			$category['accuracy'] = round( ( $category['correct'] / $category['total'] ) * 100, 2 );
 		}
 
 		return array_values( $by_category );
