@@ -44,7 +44,8 @@ function UnifiedAdminApp() {
 			const hash = window.location.hash;
 			if ( hash && hash.startsWith( '#/' ) ) {
 				setCurrentRoute( hash.substring( 2 ) || 'chat' );
-			} else if ( ! hash ) {
+			} else {
+				// Bare '#' or empty hash — default to chat.
 				setCurrentRoute( 'chat' );
 			}
 		};
