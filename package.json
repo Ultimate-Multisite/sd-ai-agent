@@ -26,6 +26,7 @@
 		"wp-env:stop": "wp-env stop",
 		"wp-env:clean": "wp-env clean all",
 		"prepare": "husky",
+		"postprepare": "node -e \"const f='.husky/_/husky.sh',fs=require('fs');if(fs.existsSync(f)){const c=fs.readFileSync(f,'utf8');if(!c.startsWith('#!'))fs.writeFileSync(f,'#!/usr/bin/env sh\\n'+c);}\"",
 		"size": "size-limit"
 	},
 	"devDependencies": {
