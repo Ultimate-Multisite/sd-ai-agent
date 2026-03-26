@@ -9,15 +9,8 @@ import {
 	CardHeader,
 	CardBody,
 	TabPanel,
-	Button,
 	Notice,
-	ProgressBar,
-	CheckboxControl,
-	TextControl,
-	TextareaControl,
-	SelectControl,
 } from '@wordpress/components';
-import { help, arrowLeft } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -34,6 +27,13 @@ import ProvidersManager from '../../settings-page/providers-manager';
  */
 export default function SettingsRoute( { subRoute } ) {
 	const initialTab = subRoute === 'advanced' ? 'advanced' : 'general';
+	const [ providerKeys, setProviderKeys ] = useState( {} );
+
+	useEffect( () => {
+		apiFetch( { path: '/gratis-ai-agent/v1/settings/provider-keys' } )
+			.then( ( data ) => setProviderKeys( data || {} ) )
+			.catch( () => {} );
+	}, [] );
 
 	const tabs = [
 		{ name: 'general', title: __( 'General', 'gratis-ai-agent' ) },
@@ -59,7 +59,11 @@ export default function SettingsRoute( { subRoute } ) {
 								case 'general':
 									return <SettingsApp />;
 								case 'providers':
-									return <ProvidersManager />;
+									return (
+										<ProvidersManager
+											providerKeys={ providerKeys }
+										/>
+									);
 								case 'advanced':
 									return <AdvancedSettings />;
 								default:
@@ -74,344 +78,22 @@ export default function SettingsRoute( { subRoute } ) {
 }
 
 /**
- * Advanced Settings Tab — includes the benchmark feature.
+ * Advanced Settings Tab.
  *
  * @return {JSX.Element} Advanced settings element.
  */
 function AdvancedSettings() {
-	const [ showBenchmark, setShowBenchmark ] = useState( false );
-
 	return (
 		<div className="gratis-ai-advanced-settings">
-			{ ! showBenchmark ? (
-				<div className="gratis-ai-benchmark-section">
-					<h4>{ __( 'Model Benchmark', 'gratis-ai-agent' ) }</h4>
-					<p className="description">
-						{ __(
-							'Benchmark AI models against WordPress knowledge tests. Compare performance, accuracy, and cost across different providers.',
-							'gratis-ai-agent'
-						) }
-					</p>
-					<Notice
-						status="warning"
-						isDismissible={ false }
-						className="gratis-ai-notice-advanced"
-					>
-						{ __(
-							'This feature is for advanced users and will consume API credits.',
-							'gratis-ai-agent'
-						) }
-					</Notice>
-					<Button
-						variant="secondary"
-						onClick={ () => setShowBenchmark( true ) }
-						icon={ help }
-						style={ { marginTop: '12px' } }
-					>
-						{ __( 'Open Model Benchmark', 'gratis-ai-agent' ) }
-					</Button>
-				</div>
-			) : (
-				<div className="gratis-ai-benchmark-section">
-					<Button
-						variant="tertiary"
-						onClick={ () => setShowBenchmark( false ) }
-						icon={ arrowLeft }
-						style={ { marginBottom: '16px' } }
-					>
-						{ __( 'Back to Advanced Settings', 'gratis-ai-agent' ) }
-					</Button>
-					<EmbeddedBenchmark />
-				</div>
-			) }
-		</div>
-	);
-}
-
-/**
- * Embedded Benchmark Component
- *
- * @return {JSX.Element} Embedded benchmark element.
- */
-function EmbeddedBenchmark() {
-	const [ activeTab, setActiveTab ] = useState( 'new-run' );
-	const [ suites, setSuites ] = useState( [] );
-	const [ runs, setRuns ] = useState( [] );
-	const [ isLoading, setIsLoading ] = useState( false );
-	const [ notice, setNotice ] = useState( null );
-
-	const [ runName, setRunName ] = useState( '' );
-	const [ runDescription, setRunDescription ] = useState( '' );
-	const [ selectedSuite, setSelectedSuite ] = useState( 'wp-core-v1' );
-	const [ selectedModels, setSelectedModels ] = useState( [] );
-	const [ runProgress, setRunProgress ] = useState( null );
-	const [ isRunning, setIsRunning ] = useState( false );
-
-	const availableModels = [
-		{
-			id: 'claude-sonnet-4',
-			name: 'Claude Sonnet 4',
-			provider: 'anthropic',
-		},
-		{ id: 'gpt-4o', name: 'GPT-4o', provider: 'openai' },
-		{ id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'openai' },
-		{ id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', provider: 'google' },
-	];
-
-	useEffect( () => {
-		apiFetch( { path: '/gratis-ai-agent/v1/benchmark/suites' } )
-			.then( setSuites )
-			.catch( () => {} );
-		apiFetch( { path: '/gratis-ai-agent/v1/benchmark/runs' } )
-			.then( ( data ) => setRuns( data.runs || [] ) )
-			.catch( () => {} );
-	}, [] );
-
-	const handleCreateRun = async () => {
-		if ( ! runName.trim() || selectedModels.length === 0 ) {
-			setNotice( {
-				status: 'error',
-				message: __(
-					'Enter a name and select models.',
-					'gratis-ai-agent'
-				),
-			} );
-			return;
-		}
-		setIsLoading( true );
-		try {
-			const run = await apiFetch( {
-				path: '/gratis-ai-agent/v1/benchmark/runs',
-				method: 'POST',
-				data: {
-					name: runName,
-					description: runDescription,
-					test_suite: selectedSuite,
-					models: selectedModels.map( ( m ) => ( {
-						provider_id: m.provider,
-						model_id: m.id,
-					} ) ),
-				},
-			} );
-			setIsRunning( true );
-			setRunProgress( { completed: 0, total: run.questions_count } );
-			runBenchmark( run.id );
-		} catch ( error ) {
-			setNotice( {
-				status: 'error',
-				message: error.message || __( 'Failed.', 'gratis-ai-agent' ),
-			} );
-			setIsLoading( false );
-		}
-	};
-
-	const runBenchmark = async ( runId ) => {
-		try {
-			const result = await apiFetch( {
-				path: `/gratis-ai-agent/v1/benchmark/runs/${ runId }/run-next`,
-				method: 'POST',
-			} );
-			if ( result.status === 'completed' ) {
-				setIsRunning( false );
-				setIsLoading( false );
-				setRunProgress( result.progress );
-				apiFetch( { path: '/gratis-ai-agent/v1/benchmark/runs' } )
-					.then( ( data ) => setRuns( data.runs || [] ) )
-					.catch( () => {} );
-				return;
-			}
-			setRunProgress( result.progress );
-			runBenchmark( runId );
-		} catch {
-			setIsRunning( false );
-			setIsLoading( false );
-		}
-	};
-
-	const toggleModel = ( model ) => {
-		if ( selectedModels.find( ( m ) => m.id === model.id ) ) {
-			setSelectedModels(
-				selectedModels.filter( ( m ) => m.id !== model.id )
-			);
-		} else {
-			setSelectedModels( [ ...selectedModels, model ] );
-		}
-	};
-
-	const benchmarkTabs = [
-		{ name: 'new-run', title: __( 'New Benchmark', 'gratis-ai-agent' ) },
-		{ name: 'history', title: __( 'History', 'gratis-ai-agent' ) },
-	];
-
-	return (
-		<div className="gratis-ai-benchmark-embedded">
-			{ notice && (
-				<Notice
-					status={ notice.status }
-					isDismissible
-					onRemove={ () => setNotice( null ) }
-				>
-					{ notice.message }
+			<div className="gratis-ai-benchmark-section">
+				<h4>{ __( 'Model Benchmark', 'gratis-ai-agent' ) }</h4>
+				<Notice status="info" isDismissible={ false }>
+					{ __(
+						'Model Benchmark will be available in a follow-up release.',
+						'gratis-ai-agent'
+					) }
 				</Notice>
-			) }
-			<TabPanel
-				tabs={ benchmarkTabs }
-				initialTabName={ activeTab }
-				onSelect={ setActiveTab }
-			>
-				{ ( tab ) => {
-					if ( tab.name === 'new-run' ) {
-						return (
-							<div style={ { padding: '16px 0' } }>
-								{ isRunning && runProgress && (
-									<div className="gratis-ai-benchmark-progress">
-										<Notice
-											status="info"
-											isDismissible={ false }
-										>
-											{ __(
-												'Benchmark running…',
-												'gratis-ai-agent'
-											) }
-										</Notice>
-										<ProgressBar
-											value={
-												( runProgress.completed /
-													runProgress.total ) *
-												100
-											}
-										/>
-										<p>
-											{ runProgress.completed } /{ ' ' }
-											{ runProgress.total }{ ' ' }
-											{ __(
-												'completed',
-												'gratis-ai-agent'
-											) }
-										</p>
-									</div>
-								) }
-								<TextControl
-									label={ __(
-										'Run Name',
-										'gratis-ai-agent'
-									) }
-									value={ runName }
-									onChange={ setRunName }
-									disabled={ isRunning }
-								/>
-								<TextareaControl
-									label={ __(
-										'Description',
-										'gratis-ai-agent'
-									) }
-									value={ runDescription }
-									onChange={ setRunDescription }
-									disabled={ isRunning }
-								/>
-								<SelectControl
-									label={ __(
-										'Test Suite',
-										'gratis-ai-agent'
-									) }
-									value={ selectedSuite }
-									options={ suites.map( ( s ) => ( {
-										label: s.name,
-										value: s.slug,
-									} ) ) }
-									onChange={ setSelectedSuite }
-									disabled={ isRunning }
-								/>
-								<div className="gratis-ai-benchmark-models">
-									<h4>
-										{ __(
-											'Select Models',
-											'gratis-ai-agent'
-										) }
-									</h4>
-									{ availableModels.map( ( model ) => (
-										<CheckboxControl
-											key={ model.id }
-											label={ `${ model.name } (${ model.provider })` }
-											checked={
-												!! selectedModels.find(
-													( m ) => m.id === model.id
-												)
-											}
-											onChange={ () =>
-												toggleModel( model )
-											}
-											disabled={ isRunning }
-										/>
-									) ) }
-								</div>
-								<Button
-									variant="primary"
-									onClick={ handleCreateRun }
-									disabled={ isLoading || isRunning }
-									isBusy={ isLoading }
-								>
-									{ isRunning
-										? __( 'Running…', 'gratis-ai-agent' )
-										: __(
-												'Start Benchmark',
-												'gratis-ai-agent'
-										  ) }
-								</Button>
-							</div>
-						);
-					}
-					return (
-						<div style={ { padding: '16px 0' } }>
-							{ runs.length === 0 ? (
-								<p>
-									{ __(
-										'No benchmark runs yet.',
-										'gratis-ai-agent'
-									) }
-								</p>
-							) : (
-								<table className="wp-list-table widefat fixed striped">
-									<thead>
-										<tr>
-											<th>
-												{ __(
-													'Name',
-													'gratis-ai-agent'
-												) }
-											</th>
-											<th>
-												{ __(
-													'Status',
-													'gratis-ai-agent'
-												) }
-											</th>
-											<th>
-												{ __(
-													'Progress',
-													'gratis-ai-agent'
-												) }
-											</th>
-										</tr>
-									</thead>
-									<tbody>
-										{ runs.map( ( run ) => (
-											<tr key={ run.id }>
-												<td>{ run.name }</td>
-												<td>{ run.status }</td>
-												<td>
-													{ run.completed_count } /{ ' ' }
-													{ run.questions_count }
-												</td>
-											</tr>
-										) ) }
-									</tbody>
-								</table>
-							) }
-						</div>
-					);
-				} }
-			</TabPanel>
+			</div>
 		</div>
 	);
 }

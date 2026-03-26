@@ -89,7 +89,7 @@ class UnifiedAdminMenu {
 		}
 
 		// Hook for enqueuing assets.
-		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
+		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueueAssets' ] );
 	}
 
 	/**
@@ -115,7 +115,7 @@ class UnifiedAdminMenu {
 	 *
 	 * @param string $hook_suffix The current admin page hook suffix.
 	 */
-	public static function enqueue_assets( string $hook_suffix ): void {
+	public static function enqueueAssets( string $hook_suffix ): void {
 		// Only enqueue on our pages.
 		if ( strpos( $hook_suffix, 'toplevel_page_' . self::SLUG ) !== 0 &&
 			strpos( $hook_suffix, '_page_' . self::SLUG ) === false ) {
