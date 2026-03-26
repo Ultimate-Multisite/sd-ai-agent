@@ -7,11 +7,15 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   e2e:
     name: Playwright E2E (WP ${{ matrix.wp }})
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
     # WP trunk may fail due to PSR namespace conflicts between our compat
     # layer and core's native AI Client SDK (see tests.yml for details).
     continue-on-error: ${{ matrix.wp == 'trunk' }}
@@ -83,19 +87,26 @@ jobs:
 
       - name: Start wp-env
         run: npm run wp-env:start
+        timeout-minutes: 10
         env:
           WP_ENV_HOME: /tmp/wp-env
 
       - name: Wait for wp-env to be ready
         run: |
+          ready=0
           for i in $(seq 1 30); do
             if curl -s -o /dev/null -w "%{http_code}" http://localhost:8888/wp-login.php | grep -q "200"; then
               echo "wp-env is ready"
+              ready=1
               break
             fi
             echo "Waiting for wp-env... attempt $i"
             sleep 5
           done
+          if [ "$ready" -ne 1 ]; then
+            echo "wp-env did not become ready in time" >&2
+            exit 1
+          fi
 
       - name: Configure plugin for E2E tests
         run: |
