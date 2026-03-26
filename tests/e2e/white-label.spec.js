@@ -9,7 +9,7 @@
  *   - Resetting fields to empty restores the default preview values
  *
  * Tests run against the settings page at:
- *   /wp-admin/tools.php?page=gratis-ai-agent-settings
+ *   /wp-admin/admin.php?page=gratis-ai-agent#/settings
  *
  * The branding panel lives on the "Branding" tab of the settings page.
  * REST API calls to /gratis-ai-agent/v1/settings are intercepted so tests
@@ -143,7 +143,20 @@ async function mockSettingsApi( page, initialSettings = DEFAULT_SETTINGS ) {
  * @param {import('@playwright/test').Page} page
  */
 async function goToBrandingTab( page ) {
-	await goToSettingsPage( page, 'branding' );
+	// UnifiedAdminMenu uses hash-based routing. The settings route is at
+	// admin.php?page=gratis-ai-agent#/settings. The old URL
+	// (tools.php?page=gratis-ai-agent-settings) triggers a wp_safe_redirect()
+	// which causes Playwright to hang — use the canonical hash URL directly.
+	await page.goto( '/wp-admin/admin.php?page=gratis-ai-agent#/settings' );
+	await page.waitForLoadState( 'domcontentloaded' );
+	// Wait for the settings route container to render.
+	await page
+		.locator( '.gratis-ai-route-settings' )
+		.waitFor( { state: 'visible', timeout: 15_000 } )
+		.catch( () => {} );
+	// Click the Branding tab (present in the unified settings route).
+	const tab = page.getByRole( 'tab', { name: /branding/i } );
+	await tab.click();
 	await page
 		.locator( '.gratis-ai-agent-branding-manager' )
 		.waitFor( { state: 'visible', timeout: 15000 } );

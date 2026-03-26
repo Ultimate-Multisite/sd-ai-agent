@@ -388,8 +388,17 @@ async function mockAutomationRoutes( page, overrides = {} ) {
  * @param {import('@playwright/test').Page} page - Playwright page.
  */
 async function goToAutomationsTab( page ) {
-	await page.goto( '/wp-admin/tools.php?page=gratis-ai-agent-settings' );
-	await page.waitForLoadState( 'networkidle' );
+	// UnifiedAdminMenu uses hash-based routing. The settings route is at
+	// admin.php?page=gratis-ai-agent#/settings. The old URL
+	// (tools.php?page=gratis-ai-agent-settings) triggers a wp_safe_redirect()
+	// which causes Playwright to hang — use the canonical hash URL directly.
+	await page.goto( '/wp-admin/admin.php?page=gratis-ai-agent#/settings' );
+	await page.waitForLoadState( 'domcontentloaded' );
+	// Wait for the settings route container to render.
+	await page
+		.locator( '.gratis-ai-route-settings' )
+		.waitFor( { state: 'visible', timeout: 15_000 } )
+		.catch( () => {} );
 	const tab = page.getByRole( 'tab', { name: /automations/i } );
 	await tab.click();
 	// Wait for the manager container to confirm the tab content has rendered.
@@ -414,8 +423,17 @@ async function goToAutomationsTab( page ) {
  * @param {import('@playwright/test').Page} page - Playwright page.
  */
 async function goToEventsTab( page ) {
-	await page.goto( '/wp-admin/tools.php?page=gratis-ai-agent-settings' );
-	await page.waitForLoadState( 'networkidle' );
+	// UnifiedAdminMenu uses hash-based routing. The settings route is at
+	// admin.php?page=gratis-ai-agent#/settings. The old URL
+	// (tools.php?page=gratis-ai-agent-settings) triggers a wp_safe_redirect()
+	// which causes Playwright to hang — use the canonical hash URL directly.
+	await page.goto( '/wp-admin/admin.php?page=gratis-ai-agent#/settings' );
+	await page.waitForLoadState( 'domcontentloaded' );
+	// Wait for the settings route container to render.
+	await page
+		.locator( '.gratis-ai-route-settings' )
+		.waitFor( { state: 'visible', timeout: 15_000 } )
+		.catch( () => {} );
 	const tab = page.getByRole( 'tab', { name: /events/i } );
 	await tab.click();
 	// Wait for the manager container to confirm the tab content has rendered.

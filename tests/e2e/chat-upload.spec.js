@@ -9,7 +9,7 @@
  *   - Per-attachment remove button
  *   - Send button enabled when only attachments are present (no text)
  *
- * Tests run against the admin page at /wp-admin/tools.php?page=gratis-ai-agent.
+ * Tests run against the admin page at /wp-admin/admin.php?page=gratis-ai-agent.
  * No live AI provider is required — file attachment state is purely client-side.
  *
  * Run: npm run test:e2e:playwright
