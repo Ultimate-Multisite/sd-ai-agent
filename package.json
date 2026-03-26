@@ -26,6 +26,7 @@
 		"wp-env:stop": "wp-env stop",
 		"wp-env:clean": "wp-env clean all",
 		"prepare": "husky",
+		"postprepare": "[ -f .husky/_/husky.sh ] && grep -q '^#!' .husky/_/husky.sh || sed -i '1s|^|#!/usr/bin/env sh\\n|' .husky/_/husky.sh || true",
 		"size": "size-limit"
 	},
 	"devDependencies": {
