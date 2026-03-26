@@ -27,7 +27,7 @@ class UnifiedAdminMenu {
 	 *
 	 * @return array
 	 */
-	public static function get_menu_items(): array {
+	public static function getMenuItems(): array {
 		return array(
 			array(
 				'slug'       => 'chat',
@@ -76,7 +76,7 @@ class UnifiedAdminMenu {
 		);
 
 		// Submenu items — all point to the same render callback.
-		$menu_items = self::get_menu_items();
+		$menu_items = self::getMenuItems();
 		foreach ( $menu_items as $item ) {
 			add_submenu_page(
 				self::SLUG,
@@ -97,7 +97,7 @@ class UnifiedAdminMenu {
 	 *
 	 * @return string
 	 */
-	public static function get_current_route(): string {
+	public static function getCurrentRoute(): string {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No nonce required, reading only.
 		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : self::SLUG;
 
@@ -166,8 +166,8 @@ class UnifiedAdminMenu {
 				'restNamespace'     => 'gratis-ai-agent/v1',
 				'ajaxUrl'           => admin_url( 'admin-ajax.php' ),
 				'nonce'             => wp_create_nonce( 'wp_rest' ),
-				'initialRoute'      => self::get_current_route(),
-				'menuItems'         => self::get_menu_items(),
+				'initialRoute'      => self::getCurrentRoute(),
+				'menuItems'         => self::getMenuItems(),
 				'aiClientAvailable' => function_exists( 'wp_ai_client_prompt' ),
 			]
 		);
@@ -178,7 +178,7 @@ class UnifiedAdminMenu {
 	 */
 	public static function render(): void {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
-			self::render_compatibility_notice();
+			self::renderCompatibilityNotice();
 			return;
 		}
 
@@ -192,7 +192,7 @@ class UnifiedAdminMenu {
 	/**
 	 * Render compatibility notice when AI Client is not available.
 	 */
-	private static function render_compatibility_notice(): void {
+	private static function renderCompatibilityNotice(): void {
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
@@ -214,7 +214,7 @@ class UnifiedAdminMenu {
 	 * Redirect old menu URLs to new unified structure.
 	 * Call this on admin_init to handle legacy bookmarks.
 	 */
-	public static function handle_legacy_redirects(): void {
+	public static function handleLegacyRedirects(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Safe redirect, no state change.
 		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
 

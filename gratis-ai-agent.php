@@ -118,7 +118,7 @@ add_action( 'rest_api_init', [ BenchmarkController::class, 'register_routes' ] )
 add_action( 'admin_menu', [ UnifiedAdminMenu::class, 'register' ] );
 
 // Redirect old menu URLs to the unified structure.
-add_action( 'admin_init', [ UnifiedAdminMenu::class, 'handle_legacy_redirects' ] );
+add_action( 'admin_init', [ UnifiedAdminMenu::class, 'handleLegacyRedirects' ] );
 
 // Register ability category.
 add_action(
