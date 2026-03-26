@@ -93,20 +93,17 @@ class UnifiedAdminMenu {
 	}
 
 	/**
-	 * Get the current route from the page parameter.
+	 * Get the initial route hint for the localized script data.
 	 *
-	 * @return string
+	 * PHP never receives URL fragments (browsers strip them before sending HTTP
+	 * requests), so deep-link detection must happen client-side. The JS entry
+	 * point (index.js) reads window.location.hash directly and uses it as the
+	 * authoritative initial route, falling back to this PHP-provided value only
+	 * when no hash is present (e.g. a plain admin.php?page=gratis-ai-agent load).
+	 *
+	 * @return string Always 'chat' — the default route when no hash is present.
 	 */
 	public static function getCurrentRoute(): string {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No nonce required, reading only.
-		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : self::SLUG;
-
-		// Extract route from page parameter (e.g., "gratis-ai-agent#/chat" -> "chat").
-		if ( strpos( $page, '#/' ) !== false ) {
-			$parts = explode( '#/', $page );
-			return $parts[1] ?? 'chat';
-		}
-
 		return 'chat';
 	}
 
