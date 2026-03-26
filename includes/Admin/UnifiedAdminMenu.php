@@ -27,7 +27,7 @@ class UnifiedAdminMenu {
 	 *
 	 * @return array
 	 */
-	public static function get_menu_items(): array {
+	public static function getMenuItems(): array {
 		return array(
 			array(
 				'slug'       => 'chat',
@@ -76,7 +76,7 @@ class UnifiedAdminMenu {
 		);
 
 		// Submenu items — all point to the same render callback.
-		$menu_items = self::get_menu_items();
+		$menu_items = self::getMenuItems();
 		foreach ( $menu_items as $item ) {
 			add_submenu_page(
 				self::SLUG,
@@ -89,24 +89,21 @@ class UnifiedAdminMenu {
 		}
 
 		// Hook for enqueuing assets.
-		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
+		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueueAssets' ] );
 	}
 
 	/**
-	 * Get the current route from the page parameter.
+	 * Get the initial route hint for the localized script data.
 	 *
-	 * @return string
+	 * PHP never receives URL fragments (browsers strip them before sending HTTP
+	 * requests), so deep-link detection must happen client-side. The JS entry
+	 * point (index.js) reads window.location.hash directly and uses it as the
+	 * authoritative initial route, falling back to this PHP-provided value only
+	 * when no hash is present (e.g. a plain admin.php?page=gratis-ai-agent load).
+	 *
+	 * @return string Always 'chat' — the default route when no hash is present.
 	 */
-	public static function get_current_route(): string {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No nonce required, reading only.
-		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : self::SLUG;
-
-		// Extract route from page parameter (e.g., "gratis-ai-agent#/chat" -> "chat").
-		if ( strpos( $page, '#/' ) !== false ) {
-			$parts = explode( '#/', $page );
-			return $parts[1] ?? 'chat';
-		}
-
+	public static function getCurrentRoute(): string {
 		return 'chat';
 	}
 
@@ -115,7 +112,7 @@ class UnifiedAdminMenu {
 	 *
 	 * @param string $hook_suffix The current admin page hook suffix.
 	 */
-	public static function enqueue_assets( string $hook_suffix ): void {
+	public static function enqueueAssets( string $hook_suffix ): void {
 		// Only enqueue on our pages.
 		if ( strpos( $hook_suffix, 'toplevel_page_' . self::SLUG ) !== 0 &&
 			strpos( $hook_suffix, '_page_' . self::SLUG ) === false ) {
@@ -166,8 +163,8 @@ class UnifiedAdminMenu {
 				'restNamespace'     => 'gratis-ai-agent/v1',
 				'ajaxUrl'           => admin_url( 'admin-ajax.php' ),
 				'nonce'             => wp_create_nonce( 'wp_rest' ),
-				'initialRoute'      => self::get_current_route(),
-				'menuItems'         => self::get_menu_items(),
+				'initialRoute'      => self::getCurrentRoute(),
+				'menuItems'         => self::getMenuItems(),
 				'aiClientAvailable' => function_exists( 'wp_ai_client_prompt' ),
 			]
 		);
@@ -178,7 +175,7 @@ class UnifiedAdminMenu {
 	 */
 	public static function render(): void {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
-			self::render_compatibility_notice();
+			self::renderCompatibilityNotice();
 			return;
 		}
 
@@ -192,7 +189,7 @@ class UnifiedAdminMenu {
 	/**
 	 * Render compatibility notice when AI Client is not available.
 	 */
-	private static function render_compatibility_notice(): void {
+	private static function renderCompatibilityNotice(): void {
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
@@ -214,7 +211,7 @@ class UnifiedAdminMenu {
 	 * Redirect old menu URLs to new unified structure.
 	 * Call this on admin_init to handle legacy bookmarks.
 	 */
-	public static function handle_legacy_redirects(): void {
+	public static function handleLegacyRedirects(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Safe redirect, no state change.
 		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
 

@@ -9,7 +9,7 @@
  *   - Delete an agent
  *
  * Tests run against the settings page at:
- *   /wp-admin/tools.php?page=gratis-ai-agent-settings
+ *   /wp-admin/admin.php?page=gratis-ai-agent#/settings
  *
  * The agent builder lives on the "Agents" tab of the settings page.
  * REST API calls to /gratis-ai-agent/v1/agents are intercepted so tests
@@ -420,7 +420,20 @@ function getAgentSelector( page ) {
  * @param {import('@playwright/test').Page} page
  */
 async function goToAgentsTab( page ) {
-	await goToSettingsPage( page, 'agents' );
+	// UnifiedAdminMenu uses hash-based routing. The settings route is at
+	// admin.php?page=gratis-ai-agent#/settings. The old URL
+	// (tools.php?page=gratis-ai-agent-settings) triggers a wp_safe_redirect()
+	// which causes Playwright to hang — use the canonical hash URL directly.
+	await page.goto( '/wp-admin/admin.php?page=gratis-ai-agent#/settings' );
+	await page.waitForLoadState( 'domcontentloaded' );
+	// Wait for the settings route container to render.
+	await page
+		.locator( '.gratis-ai-route-settings' )
+		.waitFor( { state: 'visible', timeout: 15_000 } )
+		.catch( () => {} );
+	// Click the Agents tab (present in the unified settings route).
+	const tab = page.getByRole( 'tab', { name: /agents/i } );
+	await tab.click();
 	// Wait for the AgentBuilder container to be visible.
 	await page
 		.locator( '.gratis-ai-agent-agent-builder' )

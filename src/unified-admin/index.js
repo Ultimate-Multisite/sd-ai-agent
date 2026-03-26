@@ -13,16 +13,29 @@ import Navigation from './navigation';
 import { AppProvider } from './context';
 
 /**
+ * Derive the initial route from the URL hash (JS-side), falling back to the
+ * PHP-localized value (which cannot read fragments) or 'chat'.
+ *
+ * @return {string} Initial route string.
+ */
+function getInitialRoute() {
+	const hash = window.location.hash;
+	if ( hash && hash.startsWith( '#/' ) ) {
+		return hash.substring( 2 ) || 'chat';
+	}
+	return window.gratisAiAgentData?.initialRoute || 'chat';
+}
+
+/**
  * Unified Admin App Component
  *
- * Main entry point for the unified admin interface with hash-based routing.
+ * Main entry point for the unified admin SPA. Manages hash-based routing,
+ * listens for hashchange events, and updates the document title on navigation.
  *
  * @return {JSX.Element} App element.
  */
 function UnifiedAdminApp() {
-	const [ currentRoute, setCurrentRoute ] = useState(
-		window.gratisAiAgentData?.initialRoute || 'chat'
-	);
+	const [ currentRoute, setCurrentRoute ] = useState( getInitialRoute );
 	const [ notice, setNotice ] = useState( null );
 
 	// Listen for hash changes.
@@ -30,12 +43,14 @@ function UnifiedAdminApp() {
 		const handleHashChange = () => {
 			const hash = window.location.hash;
 			if ( hash && hash.startsWith( '#/' ) ) {
-				setCurrentRoute( hash.substring( 2 ) );
+				setCurrentRoute( hash.substring( 2 ) || 'chat' );
+			} else {
+				// Bare '#' or empty hash — default to chat.
+				setCurrentRoute( 'chat' );
 			}
 		};
 
 		window.addEventListener( 'hashchange', handleHashChange );
-		handleHashChange();
 
 		return () =>
 			window.removeEventListener( 'hashchange', handleHashChange );

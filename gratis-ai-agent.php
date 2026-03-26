@@ -72,8 +72,6 @@ use GratisAiAgent\Abilities\WordPressAbilities;
 use GratisAiAgent\Admin\FloatingWidget;
 use GratisAiAgent\Admin\ScreenMetaPanel;
 use GratisAiAgent\Admin\UnifiedAdminMenu;
-use GratisAiAgent\Benchmark\BenchmarkRunner;
-use GratisAiAgent\Benchmark\BenchmarkSuite;
 use GratisAiAgent\REST\BenchmarkController;
 use GratisAiAgent\Automations\AutomationRunner;
 use GratisAiAgent\Models\GitTrackerManager;
@@ -120,7 +118,7 @@ add_action( 'rest_api_init', [ BenchmarkController::class, 'register_routes' ] )
 add_action( 'admin_menu', [ UnifiedAdminMenu::class, 'register' ] );
 
 // Redirect old menu URLs to the unified structure.
-add_action( 'admin_init', [ UnifiedAdminMenu::class, 'handle_legacy_redirects' ] );
+add_action( 'admin_init', [ UnifiedAdminMenu::class, 'handleLegacyRedirects' ] );
 
 // Register ability category.
 add_action(

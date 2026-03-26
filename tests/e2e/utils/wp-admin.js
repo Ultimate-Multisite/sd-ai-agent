@@ -28,7 +28,11 @@ async function loginToWordPress(
 }
 
 /**
- * Navigate to the Gratis AI Agent admin page.
+ * Navigate to the Gratis AI Agent admin page (Chat route).
+ *
+ * The UnifiedAdminMenu consolidates all admin pages into a single React SPA
+ * at admin.php?page=gratis-ai-agent with hash-based routing. The chat route
+ * is the default (no hash or #/chat).
  *
  * Waits for both the sessions list and shared sessions REST responses so that
  * the sidebar is fully populated before the function returns. This prevents
@@ -78,29 +82,28 @@ async function goToAgentPage( page ) {
 		)
 		.catch( () => null );
 
-	await page.goto( '/wp-admin/tools.php?page=gratis-ai-agent' );
+	// UnifiedAdminMenu registers a top-level menu page at admin.php (not
+	// tools.php). The chat route is the default — no hash suffix needed.
+	await page.goto( '/wp-admin/admin.php?page=gratis-ai-agent' );
 	await page.waitForLoadState( 'domcontentloaded' );
 
 	// Wait for both responses so the sidebar is fully populated before returning.
 	await Promise.all( [ sessionsResponsePromise, sharedSessionsResponsePromise ] );
 
-	// Wait for the sidebar filter tabs to be visible. The AdminPageApp returns
-	// null until settingsLoaded=true, so the sidebar (and its tabs) may not
-	// exist immediately after domcontentloaded. Waiting here prevents tests
-	// from asserting on sidebar elements before React has finished rendering.
+	// Wait for the unified admin app root to be present. The SPA mounts into
+	// #gratis-ai-agent-root and renders .gratis-ai-unified-admin once React
+	// has hydrated. This replaces the old .ai-agent-sidebar-filters wait which
+	// targeted the previous AdminPageApp structure.
 	await page
-		.locator( '.ai-agent-sidebar-filters' )
+		.locator( '.gratis-ai-unified-admin' )
 		.waitFor( { state: 'visible', timeout: 15_000 } )
-		.catch( () => {} ); // Non-fatal: some tests navigate away before sidebar renders.
+		.catch( () => {} ); // Non-fatal: some tests navigate away before app renders.
 
-	// Wait for the session list to settle: either a session item or the empty
-	// state must be visible. This bridges the async gap between the HTTP
-	// response being received and React committing the DOM update. Without this
-	// wait, tests that assert on session items or sharedSessions-dependent UI
-	// (e.g. the Unshare context menu option) may run before the store has
-	// processed the response.
+	// Wait for the chat container to be present — ChatRoute mounts the chat
+	// app into #gratis-ai-chat-container. Either the container or the session
+	// list / empty state must be visible before we return.
 	await page
-		.locator( '.ai-agent-session-item, .ai-agent-session-empty' )
+		.locator( '#gratis-ai-chat-container, .ai-agent-session-item, .ai-agent-session-empty' )
 		.first()
 		.waitFor( { state: 'visible', timeout: 10_000 } )
 		.catch( () => {} ); // Non-fatal: some tests navigate away before list renders.
@@ -199,37 +202,88 @@ function getChatPanel( page ) {
 /**
  * Navigate to the Gratis AI Agent Changes admin page.
  *
+ * The UnifiedAdminMenu uses hash-based routing. The changes route is at
+ * admin.php?page=gratis-ai-agent#/changes. The old URL
+ * (tools.php?page=gratis-ai-agent-changes) triggers a wp_safe_redirect()
+ * which causes Playwright to hang waiting for networkidle on the redirect
+ * target — use the canonical hash URL directly to avoid the redirect.
+ *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  */
 async function goToChangesPage( page ) {
-	await page.goto( '/wp-admin/tools.php?page=gratis-ai-agent-changes' );
-	await page.waitForLoadState( 'networkidle' );
+	await page.goto( '/wp-admin/admin.php?page=gratis-ai-agent#/changes' );
+	await page.waitForLoadState( 'domcontentloaded' );
+
+	// Wait for the unified admin app and the changes route container to render.
+	await page
+		.locator( '.gratis-ai-route-changes' )
+		.waitFor( { state: 'visible', timeout: 15_000 } )
+		.catch( () => {} );
 }
 
 /**
  * Navigate to the Gratis AI Agent settings page and optionally activate a tab.
  *
- * The settings page is at /wp-admin/tools.php?page=gratis-ai-agent-settings.
- * Tabs are rendered by the WordPress TabPanel component; clicking a tab button
- * activates it. Pass `tabName` to click a specific tab after navigation.
+ * The UnifiedAdminMenu uses hash-based routing. The settings route is at
+ * admin.php?page=gratis-ai-agent#/settings. The old URL
+ * (tools.php?page=gratis-ai-agent-settings) triggers a wp_safe_redirect()
+ * which causes Playwright to hang — use the canonical hash URL directly.
+ *
+ * The settings route renders a TabPanel with tabs: general, providers, advanced.
+ * Pass `tabName` to click a specific tab after navigation.
  *
  * @param {import('@playwright/test').Page} page      - Playwright page object.
- * @param {string}                          [tabName] - Optional tab name to activate (e.g. 'abilities').
+ * @param {string}                          [tabName] - Optional tab name to activate (e.g. 'general').
  */
 async function goToSettingsPage( page, tabName ) {
-	await page.goto( '/wp-admin/tools.php?page=gratis-ai-agent-settings' );
-	await page.waitForLoadState( 'networkidle' );
+	await page.goto( '/wp-admin/admin.php?page=gratis-ai-agent#/settings' );
+	await page.waitForLoadState( 'domcontentloaded' );
+
+	// Wait for the settings route container to render.
+	await page
+		.locator( '.gratis-ai-route-settings' )
+		.waitFor( { state: 'visible', timeout: 15_000 } )
+		.catch( () => {} );
 
 	if ( tabName ) {
 		// WordPress TabPanel renders tab buttons with role="tab" and a name
-		// matching the tab title. The 'abilities' tab has title 'Abilities'.
+		// matching the tab title.
 		const tabButton = page.getByRole( 'tab', {
 			name: new RegExp( tabName, 'i' ),
 		} );
 		await tabButton.click();
-		// Wait for the tab panel content to render.
-		await page.waitForLoadState( 'networkidle' );
+		// Wait for the tab panel content to render after clicking.
+		await page
+			.locator( '.gratis-ai-settings-tabs [role="tabpanel"]' )
+			.waitFor( { state: 'visible', timeout: 10_000 } )
+			.catch( () => {} );
 	}
+}
+
+/**
+ * Navigate to the Gratis AI Agent Abilities admin page.
+ *
+ * The UnifiedAdminMenu uses hash-based routing. The abilities route is at
+ * admin.php?page=gratis-ai-agent#/abilities and renders AbilitiesExplorerApp
+ * directly (not as a tab inside the settings page).
+ *
+ * @param {import('@playwright/test').Page} page - Playwright page object.
+ */
+async function goToAbilitiesPage( page ) {
+	await page.goto( '/wp-admin/admin.php?page=gratis-ai-agent#/abilities' );
+	await page.waitForLoadState( 'domcontentloaded' );
+
+	// Wait for the abilities route container and the abilities manager to render.
+	await page
+		.locator( '.gratis-ai-route-abilities' )
+		.waitFor( { state: 'visible', timeout: 15_000 } )
+		.catch( () => {} );
+
+	// Wait for AbilitiesExplorerApp to finish loading abilities.
+	await page
+		.locator( '.ai-agent-abilities-manager' )
+		.waitFor( { state: 'visible', timeout: 15_000 } )
+		.catch( () => {} );
 }
 
 /**
@@ -259,6 +313,7 @@ module.exports = {
 	loginToWordPress,
 	goToAgentPage,
 	goToAdminDashboard,
+	goToAbilitiesPage,
 	goToChangesPage,
 	goToSettingsPage,
 	getFloatingButton,

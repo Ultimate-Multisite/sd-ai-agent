@@ -1,8 +1,12 @@
 /**
- * E2E tests for the Gratis AI Agent full admin page.
+ * E2E tests for the Gratis AI Agent unified admin page.
  *
- * Tests the two-column layout with session sidebar and chat panel
- * at /wp-admin/tools.php?page=gratis-ai-agent.
+ * The UnifiedAdminMenu consolidates all admin pages into a single React SPA
+ * at admin.php?page=gratis-ai-agent with hash-based routing:
+ *   - Chat:      admin.php?page=gratis-ai-agent (or #/chat)
+ *   - Abilities: admin.php?page=gratis-ai-agent#/abilities
+ *   - Changes:   admin.php?page=gratis-ai-agent#/changes
+ *   - Settings:  admin.php?page=gratis-ai-agent#/settings
  *
  * Run: npm run test:e2e:playwright
  */
@@ -11,7 +15,7 @@ const { test, expect } = require( '@playwright/test' );
 const {
 	loginToWordPress,
 	goToAgentPage,
-	goToSettingsPage,
+	goToAbilitiesPage,
 	getMessageInput,
 	getSendButton,
 	getStopButton,
@@ -186,21 +190,23 @@ test.describe( 'Admin Page - Keyboard Shortcuts', () => {
 /**
  * Abilities search and filter (t098)
  *
- * The Settings > Abilities tab renders AbilitiesManager which provides:
+ * The UnifiedAdminMenu routes abilities to admin.php?page=gratis-ai-agent#/abilities
+ * which renders AbilitiesExplorerApp directly (not as a tab inside settings).
+ * AbilitiesExplorerApp provides:
  *   - A SearchControl that filters abilities by name/description.
  *   - A SelectControl that filters by category.
  *   - Collapsible category sections with Expand all / Collapse all buttons.
  *   - A result count paragraph that updates as filters change.
  *
- * These tests navigate to the settings page, activate the Abilities tab, and
- * verify each UI feature. Assertions are environment-agnostic: the total
- * ability count is read dynamically from the DOM, and filter assertions verify
- * relative changes (filtered < total) rather than hardcoded counts.
+ * These tests navigate to the abilities route and verify each UI feature.
+ * Assertions are environment-agnostic: the total ability count is read
+ * dynamically from the DOM, and filter assertions verify relative changes
+ * (filtered < total) rather than hardcoded counts.
  */
-test.describe( 'Settings - Abilities Search and Filter (t098)', () => {
+test.describe( 'Abilities - Search and Filter (t098)', () => {
 	test.beforeEach( async ( { page } ) => {
 		await loginToWordPress( page );
-		await goToSettingsPage( page, 'abilities' );
+		await goToAbilitiesPage( page );
 	} );
 
 	/**

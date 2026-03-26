@@ -1,30 +1,20 @@
 /**
- * WordPress dependencies
+ * Internal dependencies
  */
-import { __ } from '@wordpress/i18n';
-import { Card, CardHeader, CardBody } from '@wordpress/components';
+import AbilitiesExplorerApp from '../../abilities-explorer/abilities-explorer-app';
+import '../../abilities-explorer/style.css';
 
 /**
  * Abilities Route Component
+ *
+ * Renders the Abilities Explorer within the unified admin SPA.
  *
  * @return {JSX.Element} Abilities route element.
  */
 export default function AbilitiesRoute() {
 	return (
 		<div className="gratis-ai-route gratis-ai-route-abilities">
-			<Card>
-				<CardHeader>
-					<h2>{ __( 'Abilities', 'gratis-ai-agent' ) }</h2>
-				</CardHeader>
-				<CardBody>
-					<p>
-						{ __(
-							'Explore available abilities and tools that the AI agent can use.',
-							'gratis-ai-agent'
-						) }
-					</p>
-				</CardBody>
-			</Card>
+			<AbilitiesExplorerApp />
 		</div>
 	);
 }
