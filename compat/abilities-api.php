@@ -1,5 +1,13 @@
 <?php
 /**
+ * @package GratisAiAgent
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * Abilities API: core functions for registering and managing abilities.
  *
  * The Abilities API provides a unified, extensible framework for registering
