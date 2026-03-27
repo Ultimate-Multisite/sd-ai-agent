@@ -35,7 +35,9 @@ async function loginToWordPress(
  * is the default (no hash or #/chat).
  *
  * The chat UI (AdminPageApp) is mounted by the unified admin's ChatRoute via
- * window.gratisAiAgentChat.mount(). AdminPageApp renders null until
+ * window.gratisAiAgentChat.mount(). ChatRoute polls for the API (up to 10 s)
+ * to handle the race condition where admin-page.js loads after unified-admin.js
+ * has already rendered ChatRoute. AdminPageApp renders null until
  * settingsLoaded=true, then renders .gratis-ai-agent-layout inside
  * #gratis-ai-chat-container. We wait for the non-compact chat panel to confirm
  * the app has fully hydrated before returning.
@@ -67,7 +69,7 @@ async function goToAgentPage( page ) {
 					resp.status() === 200
 				);
 			},
-			{ timeout: 15_000 }
+			{ timeout: 10_000 }
 		)
 		.catch( () => null ); // Non-fatal: some tests may not trigger a sessions fetch.
 
@@ -84,7 +86,7 @@ async function goToAgentPage( page ) {
 					resp.status() === 200
 				);
 			},
-			{ timeout: 15_000 }
+			{ timeout: 10_000 }
 		)
 		.catch( () => null );
 
@@ -96,25 +98,16 @@ async function goToAgentPage( page ) {
 	// Wait for both responses so the sidebar is fully populated before returning.
 	await Promise.all( [ sessionsResponsePromise, sharedSessionsResponsePromise ] );
 
-	// Wait for the unified admin app root to be present. The SPA mounts into
-	// #gratis-ai-agent-root and renders .gratis-ai-unified-admin once React
-	// has hydrated.
-	await page
-		.locator( '.gratis-ai-unified-admin' )
-		.waitFor( { state: 'visible', timeout: 15_000 } )
-		.catch( () => {} ); // Non-fatal: some tests navigate away before app renders.
-
 	// Wait for the AdminPageApp to mount inside #gratis-ai-chat-container.
-	// ChatRoute calls window.gratisAiAgentChat.mount(container) which renders
-	// AdminPageApp. AdminPageApp returns null until settingsLoaded=true, then
-	// renders .gratis-ai-agent-layout. The non-compact chat panel
-	// (.gratis-ai-agent-chat-panel:not(.is-compact)) confirms the app has
-	// fully hydrated. The floating widget renders a compact panel (is-compact),
+	// ChatRoute polls for window.gratisAiAgentChat.mount() (up to 10 s) to
+	// handle the async script loading race. AdminPageApp renders null until
+	// settingsLoaded=true, then renders .gratis-ai-agent-layout. The non-compact
+	// chat panel (.gratis-ai-agent-chat-panel:not(.is-compact)) confirms the app
+	// has fully hydrated. The floating widget renders a compact panel (is-compact),
 	// so this selector uniquely identifies the admin page chat.
 	await page
 		.locator( '.gratis-ai-agent-chat-panel:not(.is-compact)' )
-		.waitFor( { state: 'visible', timeout: 20_000 } )
-		.catch( () => {} ); // Non-fatal: some tests navigate away before app renders.
+		.waitFor( { state: 'visible', timeout: 15_000 } );
 }
 
 /**
@@ -320,17 +313,12 @@ async function goToAbilitiesPage( page ) {
 	await page.goto( '/wp-admin/admin.php?page=gratis-ai-agent#/abilities' );
 	await page.waitForLoadState( 'domcontentloaded' );
 
-	// Wait for the abilities route container and the abilities manager to render.
-	await page
-		.locator( '.gratis-ai-route-abilities' )
-		.waitFor( { state: 'visible', timeout: 15_000 } )
-		.catch( () => {} );
-
 	// Wait for AbilitiesExplorerApp to finish loading abilities.
+	// .ai-agent-abilities-manager is the outer wrapper rendered by
+	// AbilitiesExplorerApp once the REST fetch completes.
 	await page
 		.locator( '.ai-agent-abilities-manager' )
-		.waitFor( { state: 'visible', timeout: 15_000 } )
-		.catch( () => {} );
+		.waitFor( { state: 'visible', timeout: 20_000 } );
 }
 
 /**

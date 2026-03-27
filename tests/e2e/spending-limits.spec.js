@@ -236,7 +236,13 @@ async function goToGeneralTab( page ) {
 		.locator( '.gratis-ai-route-settings' )
 		.waitFor( { state: 'visible', timeout: 15_000 } )
 		.catch( () => {} );
-	const tab = page.getByRole( 'tab', { name: /^general$/i } );
+	// Scope to the settings route container to avoid matching the floating
+	// widget's settings panel which also renders a "General" tab. Without
+	// scoping, Playwright strict mode throws because two elements match.
+	const tab = page
+		.locator( '.gratis-ai-route-settings' )
+		.getByRole( 'tab', { name: /^general$/i } )
+		.first();
 	await tab.click();
 	// Wait for the settings section container to confirm the tab content has rendered.
 	const section = page.locator( '.gratis-ai-agent-settings-section' );
