@@ -394,9 +394,10 @@ test.describe( 'Abilities - Search and Filter (t098)', () => {
 
 		await searchInput.fill( 'xyzzy_nonexistent_ability' );
 
-		// AbilitiesManager renders a "No abilities match your search." paragraph.
+		// AbilitiesExplorerApp renders a "No abilities match your current filters."
+		// paragraph when the filtered list is empty but abilities are registered.
 		const noResults = page.locator(
-			'text=No abilities match your search.'
+			'text=No abilities match your current filters.'
 		);
 		await expect( noResults ).toBeVisible();
 	} );
@@ -486,7 +487,7 @@ test.describe( 'Abilities - Search and Filter (t098)', () => {
 		} else {
 			// No results — count shows 0, which is less than total.
 			const noResults = page.locator(
-				'text=No abilities match your search.'
+				'text=No abilities match your current filters.'
 			);
 			await expect( noResults ).toBeVisible();
 		}

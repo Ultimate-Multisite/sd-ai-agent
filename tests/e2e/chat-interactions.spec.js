@@ -147,6 +147,12 @@ test.describe( 'Chat Input Interactions', () => {
 	} );
 
 	test( 'stop button appears while sending', async ( { page } ) => {
+		// Intercept the stream endpoint BEFORE sending so the request stays
+		// in-flight long enough for the stop button to be visible. Without this
+		// mock the backend returns an error immediately (no AI provider in CI),
+		// setting sending=false before the 5 s assertion window.
+		await interceptStream( page );
+
 		const input = getMessageInput( page );
 		await input.fill( 'Trigger a response' );
 		await input.press( 'Enter' );

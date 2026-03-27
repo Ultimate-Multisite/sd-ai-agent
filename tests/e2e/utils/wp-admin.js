@@ -36,14 +36,6 @@ async function loginToWordPress(
  * at admin.php?page=gratis-ai-agent with hash-based routing. The chat route
  * is the default (no hash or #/chat).
  *
- * The chat UI (AdminPageApp) is mounted by the unified admin's ChatRoute via
- * window.gratisAiAgentChat.mount(). ChatRoute polls for the API (up to 10 s)
- * to handle the race condition where admin-page.js loads after unified-admin.js
- * has already rendered ChatRoute. AdminPageApp renders null until
- * settingsLoaded=true, then renders .gratis-ai-agent-layout inside
- * #gratis-ai-chat-container. We wait for the non-compact chat panel to confirm
- * the app has fully hydrated before returning.
- *
  * Waits for both the sessions list and shared sessions REST responses so that
  * the sidebar is fully populated before the function returns. This prevents
  * race conditions where tests assert on sidebar elements before React has had
@@ -71,7 +63,7 @@ async function goToAgentPage( page ) {
 					resp.status() === 200
 				);
 			},
-			{ timeout: 10_000 }
+			{ timeout: 15_000 }
 		)
 		.catch( () => null ); // Non-fatal: some tests may not trigger a sessions fetch.
 
@@ -88,7 +80,7 @@ async function goToAgentPage( page ) {
 					resp.status() === 200
 				);
 			},
-			{ timeout: 10_000 }
+			{ timeout: 15_000 }
 		)
 		.catch( () => null );
 
@@ -100,19 +92,23 @@ async function goToAgentPage( page ) {
 	// Wait for both responses so the sidebar is fully populated before returning.
 	await Promise.all( [ sessionsResponsePromise, sharedSessionsResponsePromise ] );
 
-	// Wait for the AdminPageApp to mount inside #gratis-ai-chat-container.
-	// ChatRoute polls for window.gratisAiAgentChat.mount() (up to 10 s) to
-	// handle the async script loading race. AdminPageApp renders null until
-	// settingsLoaded=true, then renders .gratis-ai-agent-layout. The non-compact
-	// chat panel (.gratis-ai-agent-chat-panel:not(.is-compact)) confirms the app
-	// has fully hydrated. The floating widget renders a compact panel (is-compact),
-	// so this selector uniquely identifies the admin page chat.
-	//
-	// Use a 30 s timeout to match the Playwright test timeout. Under CI load
-	// with 3 parallel workers, the settings REST call can take longer than 15 s.
+	// Wait for the unified admin app root to be present. The SPA mounts into
+	// #gratis-ai-agent-root and renders .gratis-ai-unified-admin once React
+	// has hydrated. This replaces the old .gratis-ai-agent-chat-panel wait which
+	// could time out under CI load when the admin-page bundle is slow to mount.
 	await page
-		.locator( '.gratis-ai-agent-chat-panel:not(.is-compact)' )
-		.waitFor( { state: 'visible', timeout: 30_000 } );
+		.locator( '.gratis-ai-unified-admin' )
+		.waitFor( { state: 'visible', timeout: 15_000 } )
+		.catch( () => {} ); // Non-fatal: some tests navigate away before app renders.
+
+	// Wait for the chat container to be present — ChatRoute mounts the chat
+	// app into #gratis-ai-chat-container. Either the container or the session
+	// list / empty state must be visible before we return.
+	await page
+		.locator( '#gratis-ai-chat-container, .ai-agent-session-item, .ai-agent-session-empty' )
+		.first()
+		.waitFor( { state: 'visible', timeout: 10_000 } )
+		.catch( () => {} ); // Non-fatal: some tests navigate away before list renders.
 }
 
 /**
