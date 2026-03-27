@@ -236,14 +236,38 @@ async function goToGeneralTab( page ) {
 		.locator( '.gratis-ai-route-settings' )
 		.waitFor( { state: 'visible', timeout: 15_000 } )
 		.catch( () => {} );
-	// Scope to the settings route container to avoid matching the floating
-	// widget's settings panel which also renders a "General" tab. Without
-	// scoping, Playwright strict mode throws because two elements match.
-	const tab = page
-		.locator( '.gratis-ai-route-settings' )
-		.getByRole( 'tab', { name: /^general$/i } )
-		.first();
-	await tab.click();
+
+	// The SettingsRoute outer TabPanel (class: gratis-ai-settings-tabs) has
+	// General/Providers/Advanced tabs. The outer "General" tab is active by
+	// default (initialTabName='general'), so SettingsApp renders immediately.
+	//
+	// SettingsApp itself renders an inner TabPanel with tabs:
+	// providers, general, system-prompt, memory, skills, etc.
+	// The inner tabs have className='gratis-ai-agent-settings-tab'.
+	// The inner "General" tab contains the Spending Limits section.
+	// The inner TabPanel defaults to the first tab ("providers"), so we must
+	// explicitly click the inner "General" tab.
+	//
+	// Wait for SettingsApp to finish loading (settingsLoaded=true) before
+	// clicking the inner tab — SettingsApp renders a spinner until then.
+	await page
+		.locator( '.gratis-ai-agent-settings-loading' )
+		.waitFor( { state: 'hidden', timeout: 15_000 } )
+		.catch( () => {} ); // Non-fatal: spinner may not appear if settings load instantly.
+
+	// Click the inner "General" tab inside SettingsApp.
+	// The inner SettingsApp TabPanel tab buttons have className
+	// 'gratis-ai-agent-settings-tab'. The outer SettingsRoute TabPanel tabs
+	// do NOT have this class. Filtering by this class uniquely identifies the
+	// inner tabs and avoids matching the outer "General" tab or the floating
+	// widget's "General" tab.
+	const innerGeneralTab = page
+		.locator(
+			'.gratis-ai-route-settings .gratis-ai-agent-settings-tab'
+		)
+		.filter( { hasText: /^general$/i } );
+	await innerGeneralTab.click();
+
 	// Wait for the settings section container to confirm the tab content has rendered.
 	const section = page.locator( '.gratis-ai-agent-settings-section' );
 	await section.waitFor( { state: 'visible', timeout: 15_000 } );
