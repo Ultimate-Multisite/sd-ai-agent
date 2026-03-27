@@ -24,7 +24,9 @@ async function loginToWordPress(
 	await page.fill( '#user_login', username );
 	await page.fill( '#user_pass', password );
 	await page.click( '#wp-submit' );
-	await page.waitForURL( /wp-admin/ );
+	// Use a generous timeout for the login redirect — WP trunk can be slow
+	// to respond on CI runners under load.
+	await page.waitForURL( /wp-admin/, { timeout: 60_000 } );
 }
 
 /**
@@ -105,19 +107,33 @@ async function goToAgentPage( page ) {
 	// chat panel (.gratis-ai-agent-chat-panel:not(.is-compact)) confirms the app
 	// has fully hydrated. The floating widget renders a compact panel (is-compact),
 	// so this selector uniquely identifies the admin page chat.
+	//
+	// Use a 30 s timeout to match the Playwright test timeout. Under CI load
+	// with 3 parallel workers, the settings REST call can take longer than 15 s.
 	await page
 		.locator( '.gratis-ai-agent-chat-panel:not(.is-compact)' )
-		.waitFor( { state: 'visible', timeout: 15_000 } );
+		.waitFor( { state: 'visible', timeout: 30_000 } );
 }
 
 /**
  * Navigate to any admin page where the floating widget is rendered.
+ *
+ * Waits for the floating action button to be visible before returning so
+ * that tests which immediately click the FAB don't race against React mount.
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  */
 async function goToAdminDashboard( page ) {
 	await page.goto( '/wp-admin/index.php' );
 	await page.waitForLoadState( 'networkidle' );
+	// Wait for the floating widget React app to mount and render the FAB.
+	// The FAB renders after FloatingWidget mounts and fetchSettings() resolves.
+	// Without this wait, tests that immediately call fab.click() can time out
+	// when the CI runner is under load.
+	await page
+		.locator( '.gratis-ai-agent-fab' )
+		.waitFor( { state: 'visible', timeout: 15_000 } )
+		.catch( () => {} ); // Non-fatal: some tests may not need the FAB.
 }
 
 /**
@@ -255,10 +271,11 @@ async function goToChangesPage( page ) {
 	await page.waitForLoadState( 'domcontentloaded' );
 
 	// Wait for the unified admin app and the changes route container to render.
+	// Use 30 s to match the Playwright test timeout — the unified admin SPA
+	// can be slow to render on CI runners under load with 3 parallel workers.
 	await page
 		.locator( '.gratis-ai-route-changes' )
-		.waitFor( { state: 'visible', timeout: 15_000 } )
-		.catch( () => {} );
+		.waitFor( { state: 'visible', timeout: 30_000 } );
 }
 
 /**
@@ -280,10 +297,11 @@ async function goToSettingsPage( page, tabName ) {
 	await page.waitForLoadState( 'domcontentloaded' );
 
 	// Wait for the settings route container to render.
+	// Use 30 s to match the Playwright test timeout — the unified admin SPA
+	// can be slow to render on CI runners under load with 3 parallel workers.
 	await page
 		.locator( '.gratis-ai-route-settings' )
-		.waitFor( { state: 'visible', timeout: 15_000 } )
-		.catch( () => {} );
+		.waitFor( { state: 'visible', timeout: 30_000 } );
 
 	if ( tabName ) {
 		// WordPress TabPanel renders tab buttons with role="tab" and a name
@@ -316,9 +334,11 @@ async function goToAbilitiesPage( page ) {
 	// Wait for AbilitiesExplorerApp to finish loading abilities.
 	// .ai-agent-abilities-manager is the outer wrapper rendered by
 	// AbilitiesExplorerApp once the REST fetch completes.
+	// Use 30 s to match the Playwright test timeout — the abilities REST fetch
+	// can be slow on CI runners under load with 3 parallel workers.
 	await page
 		.locator( '.ai-agent-abilities-manager' )
-		.waitFor( { state: 'visible', timeout: 20_000 } );
+		.waitFor( { state: 'visible', timeout: 30_000 } );
 }
 
 /**

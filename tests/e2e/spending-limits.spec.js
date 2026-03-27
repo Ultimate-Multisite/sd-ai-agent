@@ -232,10 +232,11 @@ async function goToGeneralTab( page ) {
 	await page.goto( '/wp-admin/admin.php?page=gratis-ai-agent#/settings' );
 	await page.waitForLoadState( 'domcontentloaded' );
 	// Wait for the settings route container to render.
+	// Use 30 s to match the Playwright test timeout — the unified admin SPA
+	// can be slow to render on CI runners under load with 3 parallel workers.
 	await page
 		.locator( '.gratis-ai-route-settings' )
-		.waitFor( { state: 'visible', timeout: 15_000 } )
-		.catch( () => {} );
+		.waitFor( { state: 'visible', timeout: 30_000 } );
 
 	// The SettingsRoute outer TabPanel (class: gratis-ai-settings-tabs) has
 	// General/Providers/Advanced tabs. The outer "General" tab is active by
