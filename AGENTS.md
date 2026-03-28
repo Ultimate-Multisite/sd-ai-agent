@@ -5,7 +5,15 @@
 - **Dev**: `npm start` or `npx wp-scripts start` (watch mode)
 - **Install**: `npm install && composer install`
 - **Autoload**: `composer dump-autoload` (after adding/moving PHP classes)
-- **No tests configured** (add PHPUnit/Jest if needed)
+- **Lint JS**: `npm run lint:js` (ESLint with `@wordpress/eslint-plugin`)
+- **Lint CSS**: `npm run lint:css` (Stylelint)
+- **Lint PHP**: `npm run lint:php` or `composer phpcs` (WordPress Coding Standards via PHPCS)
+- **Fix lint**: `npm run lint:js:fix`, `npm run lint:css:fix`, `npm run lint:php:fix`
+- **Static analysis**: `composer phpstan` (PHPStan with WordPress extensions)
+- **Test JS**: `npm run test:js` (Jest via `@wordpress/scripts`)
+- **Test PHP**: `npm run test:php` (PHPUnit via `@wordpress/env`)
+- **Test E2E**: `npm run test:e2e:playwright` (Playwright)
+- **Pre-commit**: Husky + lint-staged runs lint fixes on staged files
 
 ## Code Style & Architecture
 
@@ -16,10 +24,11 @@
 - **Directory structure**:
   - `includes/Core/` - Core classes (Database, Settings, AgentLoop)
   - `includes/Models/` - Data models (Memory, Skill, Chunker)
-  - `includes/Abilities/` - WordPress Abilities API implementations
+  - `includes/Abilities/` - WordPress Abilities API implementations (30 ability classes)
   - `includes/Knowledge/` - Knowledge base system
   - `includes/Tools/` - Custom tools and profiles
   - `includes/Automations/` - Scheduled and event-driven automations
+  - `includes/Benchmark/` - Performance benchmarking
   - `includes/REST/` - REST API controller
   - `includes/Admin/` - Admin pages and widgets
   - `includes/CLI/` - WP-CLI commands
@@ -37,11 +46,11 @@
 - **Framework**: React 18 with `@wordpress/element` and `@wordpress/components`
 - **State**: Redux via `@wordpress/data` store (see `src/store/index.js`)
 - **Imports**: WordPress packages first, then internal dependencies
-- **File structure**: React components in `src/components/`, entry points in `src/{admin-page,floating-widget,settings-page}/`
+- **File structure**: React components in `src/components/`, entry points in `src/{admin-page,floating-widget,screen-meta,settings-page,changes-page,abilities-explorer}/`
 - **Styling**: CSS modules in same directory as component (`style.css`)
 - **i18n**: Always use `__( 'text', 'gratis-ai-agent' )` for translatable strings
 - **Hooks**: Use WordPress data hooks (`useSelect`, `useDispatch`) consistently
-- **Build**: Webpack via `@wordpress/scripts` targeting 3 entry points
+- **Build**: Webpack via `@wordpress/scripts` targeting 6 entry points (admin-page, floating-widget, screen-meta, settings-page, changes-page, abilities-explorer)
 
 ### Naming Conventions
 - **Variables**: camelCase in both JS and PHP
