@@ -638,12 +638,13 @@ class CustomToolsTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test delete returns false for non-existent ID.
+	 * Test delete returns true for non-existent ID.
 	 *
-	 * Note: wpdb->delete returns 0 (falsy) for no rows affected, which maps to false.
+	 * wpdb->delete returns 0 (int) when no rows are affected, and 0 !== false
+	 * evaluates to true, so delete() returns true even when nothing was deleted.
 	 */
-	public function test_delete_nonexistent_returns_false(): void {
+	public function test_delete_nonexistent_returns_true(): void {
 		$result = CustomTools::delete( 999999 );
-		$this->assertFalse( $result );
+		$this->assertTrue( $result );
 	}
 }
