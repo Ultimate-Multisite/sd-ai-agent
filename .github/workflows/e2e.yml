@@ -33,7 +33,9 @@ jobs:
           - wp: 'trunk'
             wp_env_port: '8888'
             wp_env_override: '{"core":"WordPress/WordPress#master"}'
-            playwright_workers: '3'
+            # 2 workers on WP trunk: same resource contention as WP 6.9 —
+            # 3 workers cause login and SPA-render timeouts on CI runners.
+            playwright_workers: '2'
 
     steps:
       - name: Checkout code
