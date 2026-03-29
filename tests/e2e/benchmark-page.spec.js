@@ -259,14 +259,12 @@ test.describe( 'Benchmark Page - Form Inputs', () => {
 		await expect( startBtn ).toBeVisible();
 	} );
 
-	test( 'Start Benchmark button is disabled when no model is selected', async ( {
+	test( 'Start Benchmark button is enabled by default (validation is runtime, not disabled state)', async ( {
 		page,
 	} ) => {
-		// The button is disabled when isLoading or isRunning is true, but also
-		// when no models are selected (handleCreateRun shows a notice instead of
-		// submitting). The button itself is not disabled by the no-model guard —
-		// it is always enabled when not loading/running. Verify it is enabled
-		// (clickable) in the default state (no models selected, not running).
+		// The button is always enabled when not loading/running. The no-model
+		// guard fires at runtime (handleCreateRun shows a notice) rather than
+		// disabling the button. Verify it is clickable in the default state.
 		const startBtn = page.getByRole( 'button', {
 			name: /start benchmark/i,
 		} );
