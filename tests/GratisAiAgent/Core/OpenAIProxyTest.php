@@ -24,6 +24,15 @@ use WP_UnitTestCase;
 class OpenAIProxyTest extends WP_UnitTestCase {
 
 	/**
+	 * Clean up all HTTP and plugin filters after each test to prevent state pollution.
+	 */
+	public function tear_down(): void {
+		remove_all_filters( 'pre_http_request' );
+		remove_all_filters( 'gratis_ai_agent_max_tools' );
+		parent::tear_down();
+	}
+
+	/**
 	 * Build a minimal OpenAIProxy instance for testing.
 	 *
 	 * @param array<string, mixed> $overrides Constructor argument overrides.

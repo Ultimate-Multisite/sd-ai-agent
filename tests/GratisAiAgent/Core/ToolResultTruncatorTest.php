@@ -233,7 +233,12 @@ class ToolResultTruncatorTest extends WP_UnitTestCase {
 	public function test_content_analyze_strategy_truncates_posts_without_featured_image(): void {
 		$posts = [];
 		for ( $i = 1; $i <= 20; $i++ ) {
-			$posts[] = [ 'id' => $i, 'title' => "Post $i", 'url' => "https://example.com/post-$i" ];
+			// Use a long URL to ensure the encoded result exceeds MAX_RESULT_BYTES.
+			$posts[] = [
+				'id'    => $i,
+				'title' => "Post $i — " . str_repeat( 'a', 50 ),
+				'url'   => 'https://example.com/post-' . str_repeat( 'slug-', 20 ) . $i,
+			];
 		}
 		$input = [
 			'posts_without_featured_image' => $posts,
