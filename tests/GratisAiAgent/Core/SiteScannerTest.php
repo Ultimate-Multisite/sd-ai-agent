@@ -18,11 +18,15 @@ use WP_UnitTestCase;
 class SiteScannerTest extends WP_UnitTestCase {
 
 	/**
-	 * Clean up options after each test.
+	 * Clean up options and scheduled events after each test.
 	 */
 	public function tear_down(): void {
 		parent::tear_down();
 		delete_option( SiteScanner::STATUS_OPTION );
+		$ts = wp_next_scheduled( SiteScanner::CRON_HOOK );
+		if ( $ts ) {
+			wp_unschedule_event( $ts, SiteScanner::CRON_HOOK );
+		}
 	}
 
 	// ── constants ─────────────────────────────────────────────────────────

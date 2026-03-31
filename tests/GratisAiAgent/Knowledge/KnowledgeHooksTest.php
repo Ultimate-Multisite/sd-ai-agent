@@ -20,13 +20,14 @@ use WP_UnitTestCase;
 class KnowledgeHooksTest extends WP_UnitTestCase {
 
 	/**
-	 * Clean up scheduled events after each test.
+	 * Clean up scheduled events and options after each test.
 	 */
 	public function tear_down(): void {
 		$ts = wp_next_scheduled( 'wp_ai_agent_reindex' );
 		if ( $ts ) {
 			wp_unschedule_event( $ts, 'wp_ai_agent_reindex' );
 		}
+		delete_option( 'gratis_ai_agent_settings' );
 		parent::tear_down();
 	}
 
