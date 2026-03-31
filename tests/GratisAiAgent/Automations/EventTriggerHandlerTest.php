@@ -47,10 +47,24 @@ class EventTriggerHandlerTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Tear down: delete the event automation created for this test.
+	 * Tear down: clean up event automation and reset static state.
 	 */
 	public function tear_down(): void {
 		EventAutomations::delete( $this->event_id );
+
+		// Reset the static $registered_hooks array to prevent cross-test pollution.
+		$ref = new \ReflectionProperty( EventTriggerHandler::class, 'registered_hooks' );
+		$ref->setAccessible( true );
+		$ref->setValue( null, [] );
+
+		// Reset the static $executing guard.
+		$ref = new \ReflectionProperty( EventTriggerHandler::class, 'executing' );
+		$ref->setAccessible( true );
+		$ref->setValue( null, false );
+
+		// Remove actions added by register().
+		remove_action( 'init', [ EventTriggerHandler::class, 'attach_hooks' ], 99 );
+
 		parent::tear_down();
 	}
 
