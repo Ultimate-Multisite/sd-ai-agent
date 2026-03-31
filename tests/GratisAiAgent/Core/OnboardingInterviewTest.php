@@ -26,6 +26,13 @@ class OnboardingInterviewTest extends WP_UnitTestCase {
 	public function set_up(): void {
 		parent::set_up();
 		OnboardingInterview::reset();
+		global $wpdb;
+		$wpdb->query(
+			$wpdb->prepare(
+				'DELETE FROM %i',
+				$wpdb->prefix . 'gratis_ai_agent_memories'
+			)
+		);
 	}
 
 	/**
@@ -34,6 +41,13 @@ class OnboardingInterviewTest extends WP_UnitTestCase {
 	public function tear_down(): void {
 		OnboardingInterview::reset();
 		delete_option( SiteScanner::STATUS_OPTION );
+		global $wpdb;
+		$wpdb->query(
+			$wpdb->prepare(
+				'DELETE FROM %i',
+				$wpdb->prefix . 'gratis_ai_agent_memories'
+			)
+		);
 		parent::tear_down();
 	}
 
@@ -323,13 +337,36 @@ class OnboardingInterviewTest extends WP_UnitTestCase {
 	 * save_answers() skips blank answers.
 	 */
 	public function test_save_answers_skips_blank_answers(): void {
+		global $wpdb;
+		$table = $wpdb->prefix . 'gratis_ai_agent_memories';
+
 		// Only non-blank answers should be stored.
 		$result = OnboardingInterview::save_answers( [
-			'primary_goal'   => 'Real answer',
+			'primary_goal'    => 'Real answer',
 			'target_audience' => '   ', // whitespace only — should be skipped.
 		] );
 
 		$this->assertTrue( $result );
+
+		// Verify primary_goal was stored.
+		$primary = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT content FROM %i WHERE content = %s",
+				$table,
+				'Real answer'
+			)
+		);
+		$this->assertSame( 'Real answer', $primary );
+
+		// Verify blank target_audience was not stored.
+		$blank = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM %i WHERE content = %s",
+				$table,
+				'   '
+			)
+		);
+		$this->assertSame( '0', (string) $blank );
 	}
 
 	/**
@@ -337,28 +374,62 @@ class OnboardingInterviewTest extends WP_UnitTestCase {
 	 */
 	public function test_save_answers_stores_memories(): void {
 		global $wpdb;
+		$table = $wpdb->prefix . 'gratis_ai_agent_memories';
 
 		OnboardingInterview::save_answers( [
-			'primary_goal'   => 'Generate leads',
+			'primary_goal'    => 'Generate leads',
 			'target_audience' => 'Small business owners',
 		] );
 
-		$count = $wpdb->get_var(
-			"SELECT COUNT(*) FROM {$wpdb->prefix}gratis_ai_agent_memories"
+		$count = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM %i",
+				$table
+			)
 		);
+		$this->assertGreaterThanOrEqual( 2, $count );
 
-		$this->assertGreaterThanOrEqual( 2, (int) $count );
+		// Verify specific memories were stored.
+		$primary = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT content FROM %i WHERE content = %s",
+				$table,
+				'Generate leads'
+			)
+		);
+		$this->assertSame( 'Generate leads', $primary );
+
+		$audience = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT content FROM %i WHERE content = %s",
+				$table,
+				'Small business owners'
+			)
+		);
+		$this->assertSame( 'Small business owners', $audience );
 	}
 
 	/**
 	 * save_answers() uses fallback label for unknown question IDs.
 	 */
 	public function test_save_answers_uses_fallback_label_for_unknown_id(): void {
-		// Should not throw for unknown question IDs.
+		global $wpdb;
+		$table = $wpdb->prefix . 'gratis_ai_agent_memories';
+
 		$result = OnboardingInterview::save_answers( [
 			'unknown_question_id' => 'Some answer',
 		] );
 
 		$this->assertTrue( $result );
+
+		// Verify a memory row was inserted for the unknown question.
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM %i WHERE content = %s",
+				$table,
+				'Some answer'
+			)
+		);
+		$this->assertNotNull( $row );
 	}
 }

@@ -193,10 +193,10 @@ class FreshInstallDetectorTest extends WP_UnitTestCase {
 			]
 		);
 
-		// With only default-titled content, result depends on theme.
-		// We just verify the method runs without error.
-		$result = FreshInstallDetector::isFreshInstall();
-		$this->assertIsBool( $result );
+		// Default-titled posts/pages should not count as real content.
+		$status = FreshInstallDetector::getStatus();
+		$this->assertFalse( $status['has_real_posts'] );
+		$this->assertFalse( $status['has_real_pages'] );
 	}
 
 	// ── getStatus ─────────────────────────────────────────────────────────────

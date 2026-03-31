@@ -26,12 +26,26 @@ class ChangeLoggerTest extends WP_UnitTestCase {
 	public function set_up(): void {
 		parent::set_up();
 		ChangeLogger::end();
+		global $wpdb;
+		$wpdb->query(
+			$wpdb->prepare(
+				'DELETE FROM %i',
+				$wpdb->prefix . 'gratis_ai_agent_changes_log'
+			)
+		);
 	}
 
 	/**
 	 * Reset static state after each test.
 	 */
 	public function tear_down(): void {
+		global $wpdb;
+		$wpdb->query(
+			$wpdb->prepare(
+				'DELETE FROM %i',
+				$wpdb->prefix . 'gratis_ai_agent_changes_log'
+			)
+		);
 		ChangeLogger::end();
 		parent::tear_down();
 	}

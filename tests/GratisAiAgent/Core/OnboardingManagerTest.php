@@ -28,6 +28,13 @@ class OnboardingManagerTest extends WP_UnitTestCase {
 		parent::set_up();
 		OnboardingManager::reset();
 		OnboardingInterview::reset();
+		global $wpdb;
+		$wpdb->query(
+			$wpdb->prepare(
+				'DELETE FROM %i',
+				$wpdb->prefix . 'gratis_ai_agent_memories'
+			)
+		);
 	}
 
 	/**
@@ -36,6 +43,13 @@ class OnboardingManagerTest extends WP_UnitTestCase {
 	public function tear_down(): void {
 		OnboardingManager::reset();
 		OnboardingInterview::reset();
+		global $wpdb;
+		$wpdb->query(
+			$wpdb->prepare(
+				'DELETE FROM %i',
+				$wpdb->prefix . 'gratis_ai_agent_memories'
+			)
+		);
 		parent::tear_down();
 	}
 
@@ -200,6 +214,7 @@ class OnboardingManagerTest extends WP_UnitTestCase {
 		OnboardingManager::maybe_trigger();
 
 		$this->assertTrue( (bool) get_option( OnboardingManager::TRIGGERED_OPTION ) );
+		$this->assertNotFalse( wp_next_scheduled( SiteScanner::CRON_HOOK ) );
 	}
 
 	// ── reset ─────────────────────────────────────────────────────────────
