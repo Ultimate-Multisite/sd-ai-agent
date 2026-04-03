@@ -366,20 +366,22 @@ class RolePermissionsTest extends WP_UnitTestCase {
 	 * Test user with no matching role config gets empty array (deny all).
 	 */
 	public function test_user_with_no_role_config_gets_empty_array(): void {
-		// Clear all saved permissions so no role matches.
-		update_option( RolePermissions::OPTION_NAME, [] );
+		// Use a custom role that exists in neither defaults nor saved options.
+		// get_allowed_abilities_for_current_user() returns [] (deny all) when
+		// no role config is found for the current user's roles.
+		$custom_role = 'custom_no_config_role';
+		add_role( $custom_role, 'Custom No Config Role' );
 
-		// Create a user with a role that has no config.
-		$user_id = $this->factory->user->create( [ 'role' => 'subscriber' ] );
+		$user_id = $this->factory->user->create( [ 'role' => $custom_role ] );
 		wp_set_current_user( $user_id );
 
-		// Subscriber has no config in empty saved options, defaults give chat_access=false.
-		// get_allowed_abilities should return [] (deny all) since no role config found.
 		$allowed = RolePermissions::get_allowed_abilities_for_current_user();
 
-		// Either null (unrestricted via defaults) or empty array (deny all).
-		// With empty saved options, defaults apply: subscriber has empty allowed_abilities = unrestricted.
-		$this->assertTrue( null === $allowed || is_array( $allowed ) );
+		// No matching role config → deny-all: must return an empty array, not null.
+		$this->assertSame( [], $allowed );
+
+		// Clean up the custom role.
+		remove_role( $custom_role );
 	}
 
 	// ── current_user_can_use_ability ──────────────────────────────────────
