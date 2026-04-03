@@ -156,7 +156,7 @@ CREATE TABLE {$usage_table} (
 			// @phpstan-ignore-next-line
 			'monthly_token_quota'    => (int) ( $data['monthly_token_quota'] ?? 0 ),
 			// @phpstan-ignore-next-line
-			'tokens_used_this_month' => (int) ( $data['tokens_used_this_month'] ?? 0 ),
+			'tokens_used_this_month' => max( 0, (int) ( $data['tokens_used_this_month'] ?? 0 ) ),
 			'quota_reset_at'         => $data['quota_reset_at'] ?? null,
 			'allowed_models'         => wp_json_encode( $data['allowed_models'] ?? [] ),
 			// @phpstan-ignore-next-line
