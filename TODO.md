@@ -211,7 +211,7 @@
   - Benchmark page (React SPA with REST API) shipped with no E2E coverage
   - Create tests/e2e/benchmark-page.spec.js with ≥4 test cases: page render, form inputs, run list
 
-- [ ] t143 Fix wp.org plugin review blockers: SSL, uninstall, i18n, permissions #devops #auto-dispatch ~4h ref:GH#724 logged:2026-04-03
+- [x] t143 Fix wp.org plugin review blockers: SSL, uninstall, i18n, permissions #devops #auto-dispatch ~4h ref:GH#724 logged:2026-04-03 pr:#725 completed:2026-04-03
   - Remove sslverify=>false (8 locations), create uninstall.php, add load_plugin_textdomain + wp_set_script_translations
   - Move auth into permission_callback for webhook/resale endpoints, harden CLI exec, wrap error_log in WP_DEBUG
   - Fix blueprint slugs, add MODELS.md to .distignore, update PHPCS min WP version to 6.9
