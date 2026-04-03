@@ -158,16 +158,20 @@ Yes, the plugin works on both single-site and multisite WordPress installations.
 
 == Changelog ==
 
-= 1.3.0 =
+= 1.3.0 - Released on 2026-04-03 =
+* New: Unified admin menu — consolidates 4 separate admin_menu hooks into a single React SPA with hash-based routing
+* New: Model benchmark admin page with REST controller and benchmark engine for comparing AI provider performance
 * New: Gemini 2.5 Flash and Gemini 2.5 Flash Lite models added to the model selector
 * New: o3, o4-mini, claude-sonnet-4-6, and claude-opus-4-6 models added to the model selector
 * New: Claude 3.5 Haiku and Gemini 2.0 Flash models added to the model selector
 * New: JS bundle size budget enforced in CI to prevent regressions
-* New: Playwright E2E tests for shared conversations, agent builder, automations, and Changes page
 * New: PHPStan raised to level 10 (maximum) with all new errors resolved
+* New: Unit tests for 50+ classes across Core, REST, Abilities, Models, Admin, Knowledge, and Automations
+* New: Playwright E2E tests for shared conversations, agent builder, automations, Changes page, UnifiedAdminMenu, and benchmark page
 * Enhancement: WP.org SVN submission guide and deploy script
 * Enhancement: GPL-2.0-or-later license headers added to all PHP files
 * Enhancement: Security hardening, i18n compliance, and code safety improvements
+* Fix: tokens_used_this_month clamped to non-negative before database insert
 * Fix: get_option() result guarded before array offset access in SiteScanner
 * Fix: get-plugins truncator field mismatch (status/slug to active/file)
 * Fix: google/ OpenRouter prefix removed from Google direct provider model IDs
@@ -175,6 +179,7 @@ Yes, the plugin works on both single-site and multisite WordPress installations.
 * Fix: Collapsed sections now force-open when filtering activates in abilities manager
 * Fix: package_type schema/runtime inconsistency in GitAbilities
 * Fix: ShellCheck violations resolved in tests/ and .husky/
+* Fix: 96 failing Playwright E2E tests after UnifiedAdminMenu merge
 
 = 1.2.0 =
 * New: Support all three official AI providers — OpenAI, Anthropic, and Google Gemini
