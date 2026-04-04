@@ -232,10 +232,10 @@
 - [x] t145 Split RestController.php (6,416 lines) into domain controllers #refactor ~8h logged:2026-04-03 ref:GH#729 #auto-dispatch pr:#746 completed:2026-04-04
   - 73 routes and 101 handlers in one file — split into SessionController, SettingsController, MemoryController, AutomationController, KnowledgeController, ToolController, ProviderController, ExportController
 
-- [ ] t146 Delete dead code — orphaned admin pages, OpenAIProxy, legacy E2E scripts #refactor ~2h logged:2026-04-03 ref:GH#730 #auto-dispatch
+- [x] t146 Delete dead code — orphaned admin pages, OpenAIProxy, legacy E2E scripts #refactor ~2h logged:2026-04-03 ref:GH#730 #auto-dispatch pr:#738 completed:2026-04-04
   - AdminPage.php, ChangesAdminPage.php, AbilitiesExplorerAdminPage.php (never registered), OpenAIProxy.php (452 lines, only referenced by own test), 4 legacy E2E scripts (1,840 lines), placeholder dirs, Settings::register() dead method
 
-- [ ] t147 Remove redundant webpack entry points (changes-page, settings-page, abilities-explorer standalone) #refactor ~1h logged:2026-04-03 ref:GH#731 #auto-dispatch blocked-by:t146
+- [x] t147 Remove redundant webpack entry points (changes-page, settings-page, abilities-explorer standalone) #refactor ~1h logged:2026-04-03 ref:GH#731 #auto-dispatch blocked-by:t146 pr:#738 completed:2026-04-04
   - These produce build artifacts that are never loaded — their PHP registration pages are dead code
 
 - [x] t148 Standardize CSS class prefix to gratis-ai-agent- across all components #refactor ~4h logged:2026-04-03 ref:GH#732 #auto-dispatch pr:#739 completed:2026-04-04
@@ -250,7 +250,7 @@
 - [ ] t151 Remove dead CSS rules and consolidate shared component styles #refactor ~2h logged:2026-04-03 ref:GH#735 #auto-dispatch blocked-by:t148
   - Dead selectors for old Tools page, shared ChatPanel/MessageList styles duplicated across entry points
 
-- [ ] t152 Fix AGENTS.md to document actual conventions and WP 7.0 requirement #docs ~30m logged:2026-04-03 ref:GH#736 #auto-dispatch
+- [x] t152 Fix AGENTS.md to document actual conventions and WP 7.0 requirement #docs ~30m logged:2026-04-03 ref:GH#736 #auto-dispatch pr:#738 completed:2026-04-04
   - Says camelCase but codebase is 95% snake_case, references removed compat layer, stale class mapping table
 
 ### UI Design Polish — WP Admin Aesthetic (P1)
