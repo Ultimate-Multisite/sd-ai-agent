@@ -275,7 +275,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - FAB button is fine; keep the circular shape and theme color
   - Session tabs: current pill style is ok but font-size 11px is too small — bump to 12px
 
-- [ ] t156 Settings page: reduce tab count, improve section spacing and form layout #ui ~3h logged:2026-04-03 ref:GH#751 #auto-dispatch
+- [x] t156 Settings page: reduce tab count, improve section spacing and form layout #ui ~3h logged:2026-04-03 ref:GH#751 #auto-dispatch pr:#760 completed:2026-04-04
   - 18 tabs is too many — group into 5-6 top-level tabs with sub-sections inside each panel
   - Section padding (20px 24px) and gap (16px) are good; keep
   - Form fields: use WP's `<BaseControl>` with proper label/help text instead of raw inputs
