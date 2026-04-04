@@ -287,7 +287,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - Folder tabs (pill shape, #e0e0e0 background) look out of place — replace with plain text tabs matching filter tabs
   - Context menu: already clean; no changes needed
 
-- [ ] t158 Message bubbles and input area: align with wp-admin form conventions #ui ~2h logged:2026-04-03 ref:GH#753 #auto-dispatch
+- [x] t158 Message bubbles and input area: align with wp-admin form conventions #ui ~2h logged:2026-04-03 ref:GH#753 #auto-dispatch pr:#762 completed:2026-04-04
   - User bubble (blue, right-aligned) is fine — standard chat convention
   - Assistant bubble (#f0f0f1 background) is fine — keep
   - Input area: background #f6f7f7 with border-top is correct; the textarea border (#8c8f94) is slightly dark — use #c3c4c7 to match WP inputs
