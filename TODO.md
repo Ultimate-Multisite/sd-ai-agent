@@ -218,7 +218,7 @@
 
 ## In Progress
 
-- [ ] t144 WP 7.0 cleanup: fix settings tab overflow, flatten tab hierarchy, remove custom provider management @superdav42 #refactor ~9h logged:2026-04-03 started:2026-04-03 ref:GH#727 assignee:superdav42
+- [x] t144 WP 7.0 cleanup: fix settings tab overflow, flatten tab hierarchy, remove custom provider management @superdav42 #refactor ~9h logged:2026-04-03 started:2026-04-03 ref:GH#727 assignee:superdav42 pr:#738 completed:2026-04-04
   - Settings tab bar has CSS selector mismatch causing 9 of 18 tabs to be hidden off-screen
   - Two-level tab nesting creates duplicate tab names (General, Providers, Advanced at both levels)
   - Custom provider key management duplicates WP 7.0 Connectors API — remove and delegate to core
