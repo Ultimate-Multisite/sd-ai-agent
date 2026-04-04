@@ -172,7 +172,9 @@ parameters:
 		# send_prompt() returns the result of the WP AI Client SDK chain — mixed at analysis time
 		- '#Method GratisAiAgent\\Core\\AgentLoop::send_prompt\(\) should return .* but returns mixed#'
 		# array_map with typed Closure on mixed-typed array — safe at runtime
-		- '#Parameter #1 \$callback of function array_map expects \(callable\(mixed\): mixed\)\|null, Closure\(string\): string given#'
+		# Note: cannot use #1 in pattern (# is the PCRE delimiter); match broadly on the identifier instead
+		- message: '#\$callback of function array_map expects \(callable\(mixed\): mixed\)\|null, Closure\(string\): string given#'
+		  identifier: argument.type
 		# GratisAiAgent\Admin\AdminPage — referenced in ScreenMetaPanel for SLUG constant;
 		# class was removed/renamed but the reference remains. Suppress until class is restored.
 		- '#Access to constant SLUG on an unknown class GratisAiAgent\\Admin\\AdminPage#'
