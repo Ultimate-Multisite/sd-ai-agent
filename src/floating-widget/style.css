@@ -262,27 +262,28 @@
 
 .gratis-ai-agent-floating-panel .gratis-ai-agent-input-area {
 	padding: 8px 10px;
-	position: relative;
 	flex-direction: column;
 	gap: 0;
+	background: #fff;
+	border-top: 1px solid #dcdcde;
 }
 
 .gratis-ai-agent-floating-panel .gratis-ai-agent-input {
 	font-size: 13px;
-	padding: 6px 70px 6px 8px;
+	padding: 6px 8px;
 	width: 100%;
 	box-sizing: border-box;
+	border-radius: 0;
 }
 
 .gratis-ai-agent-floating-panel .gratis-ai-agent-send-btn {
-	position: absolute;
-	right: 14px;
-	bottom: 12px;
+	flex-shrink: 0;
 	min-width: auto;
 	width: 28px;
 	height: 28px;
 	padding: 0;
-	border-radius: 50%;
+	border-radius: 2px;
+	align-self: flex-end;
 }
 
 .gratis-ai-agent-floating-panel .gratis-ai-agent-send-btn svg {
@@ -292,17 +293,16 @@
 
 /* Mic button — floating panel */
 .gratis-ai-agent-floating-panel .gratis-ai-agent-mic-btn {
-	position: absolute;
-	right: 48px;
-	bottom: 12px;
+	flex-shrink: 0;
 	min-width: auto;
 	width: 28px;
 	height: 28px;
 	padding: 0;
-	border-radius: 50%;
+	border-radius: 2px;
 	color: #787c82;
 	background: transparent;
 	border: 1px solid #c3c4c7;
+	align-self: flex-end;
 	transition: color 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
@@ -341,19 +341,23 @@
 	display: none;
 }
 
-/* Bubbles (needed for floating widget) */
+/* Bubbles (needed for floating widget) — wp-admin form conventions */
 .gratis-ai-agent-floating-panel .gratis-ai-agent-user {
-	background: var(--wp-admin-theme-color, #2271b1);
-	color: #fff;
+	background: #f0f6fc;
+	color: #1d2327;
 	align-self: flex-end;
-	border-bottom-right-radius: 2px;
+	border: 1px solid #c5d9ed;
+	border-right: 3px solid var(--wp-admin-theme-color, #2271b1);
+	border-radius: 2px;
 }
 
 .gratis-ai-agent-floating-panel .gratis-ai-agent-assistant {
-	background: #f0f0f1;
+	background: #fff;
 	color: #1d2327;
 	align-self: flex-start;
-	border-bottom-left-radius: 2px;
+	border: 1px solid #dcdcde;
+	border-left: 3px solid #a7aaad;
+	border-radius: 2px;
 	white-space: normal;
 }
 
@@ -855,18 +859,10 @@
 	align-items: flex-end;
 	gap: 4px;
 	width: 100%;
-	position: relative;
 }
 
 .gratis-ai-agent-floating-panel .gratis-ai-agent-input-row .gratis-ai-agent-input {
 	flex: 1;
-	padding-right: 8px;
-}
-
-.gratis-ai-agent-floating-panel .gratis-ai-agent-input-row .gratis-ai-agent-send-btn,
-.gratis-ai-agent-floating-panel .gratis-ai-agent-input-row .gratis-ai-agent-stop-btn {
-	position: static;
-	flex-shrink: 0;
 }
 
 .gratis-ai-agent-floating-panel .gratis-ai-agent-templates-btn {
@@ -874,14 +870,13 @@
 	padding: 2px 6px;
 	height: 28px;
 	align-self: flex-end;
-	margin-bottom: 2px;
 }
 
 /* Floating panel: upload button */
 .gratis-ai-agent-floating-panel .gratis-ai-agent-upload-btn {
 	width: 28px;
 	height: 28px;
-	margin-bottom: 2px;
+	border-radius: 2px;
 }
 
 /* Floating panel: attachment thumbnail strip */
