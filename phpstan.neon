@@ -26,7 +26,21 @@ parameters:
 		- '#Binary operation "\." between .* and mixed results in an error#'
 		# WordPress functions that may not be stubbed
 		- '#Function _wp_connectors_get_real_api_key not found#'
-		# Compat layer classes loaded conditionally
+		# WP 7.0 AI Client SDK — provided by WordPress core at runtime, not in stubs
+		# wp_ai_client_prompt() returns a PromptBuilder but PHPStan sees it as mixed
+		- '#Function wp_ai_client_prompt not found#'
+		- '#unknown class WP_AI_Client_Prompt_Builder#'
+		- '#Instantiated class WP_AI_Client_Prompt_Builder not found#'
+		- '#has invalid return type WP_AI_Client_Prompt_Builder#'
+		- '#Call to method .* on an unknown class WP_AI_Client_Prompt_Builder#'
+		- '#PHPDoc tag .* contains unknown class WP_AI_Client_Prompt_Builder#'
+		- '#Parameter .* has invalid type WP_AI_Client_Prompt_Builder#'
+		# wp_ai_client_prompt() return type is mixed until WP stubs include it;
+		# callers chain methods on the result which PHPStan cannot type-check
+		- '#Cannot call method (using_system_instruction|using_temperature|using_candidate_count|using_model_preference|using_model|using_provider|using_abilities|using_max_tokens|with_history|with_file|generate_text|generate_texts|generate_text_result|as_json_response)\(\) on mixed#'
+		- message: '#Method .*AgentLoop::send_prompt\(\) should return .* but returns mixed#'
+		  identifier: return.type
+		# Compat layer classes loaded conditionally (kept for reportUnmatchedIgnoredErrors: false)
 		- '#unknown class WP_AI_Client_Ability_Function_Resolver#'
 		- '#Instantiated class WP_AI_Client_Ability_Function_Resolver not found#'
 		- '#has invalid return type WP_AI_Client_Ability_Function_Resolver#'
@@ -131,8 +145,10 @@ parameters:
 		  identifier: argument.type
 		- message: '#\$array of function implode expects array, mixed given#'
 		  identifier: argument.type
-		# array_map with 'strtolower' callback — safe, strtolower accepts mixed at runtime
+		# array_map with typed Closure callbacks — safe, PHP coerces types at runtime
 		- message: '#\$callback of function array_map expects \(callable\(mixed\): mixed\)\|null, .strtolower. given#'
+		  identifier: argument.type
+		- message: '#\$callback of function array_map expects \(callable\(mixed\): mixed\)\|null, Closure\(string\): string given#'
 		  identifier: argument.type
 		# get_posts() with mixed args — safe when value is from trusted source
 		- message: '#\$args of function get_posts expects array#'
