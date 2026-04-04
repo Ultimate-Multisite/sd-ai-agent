@@ -15,9 +15,6 @@ use GratisAiAgent\Core\RolePermissions;
 use WP_Error;
 use WP_REST_Request;
 
-/**
- * @property Database $database Injected database dependency (required by session permission methods).
- */
 trait PermissionTrait {
 
 	/**
@@ -74,7 +71,7 @@ trait PermissionTrait {
 		}
 
 		$session_id = self::get_int_param( $request, 'id' );
-		$session    = $this->database->get_session( $session_id );
+		$session    = Database::get_session( $session_id );
 
 		if ( ! $session ) {
 			return false;
@@ -115,7 +112,7 @@ trait PermissionTrait {
 		}
 
 		$session_id = self::get_int_param( $request, 'id' );
-		$session    = $this->database->get_session( $session_id );
+		$session    = Database::get_session( $session_id );
 
 		if ( ! $session ) {
 			return false;

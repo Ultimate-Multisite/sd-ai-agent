@@ -54,22 +54,7 @@ class RestController {
 	 */
 	const JOB_TTL = 600;
 
-	/** @var Settings Injected settings dependency. */
-	private Settings $settings;
 
-	/** @var Database Injected database dependency. */
-	private Database $database;
-
-	/**
-	 * Constructor — accepts injected dependencies for testability.
-	 *
-	 * @param Settings|null $settings  Settings service (defaults to new Settings()).
-	 * @param Database|null $database  Database service (defaults to new Database()).
-	 */
-	public function __construct( ?Settings $settings = null, ?Database $database = null ) {
-		$this->settings = $settings ?? new Settings();
-		$this->database = $database ?? new Database();
-	}
 
 	/**
 	 * Register REST routes.
