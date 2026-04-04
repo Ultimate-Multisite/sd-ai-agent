@@ -10,14 +10,10 @@ declare(strict_types=1);
 
 namespace GratisAiAgent\REST;
 
-use GratisAiAgent\Core\Database;
 use GratisAiAgent\Core\RolePermissions;
 use WP_Error;
 use WP_REST_Request;
 
-/**
- * @property Database $database Injected database dependency (required by session permission methods).
- */
 trait PermissionTrait {
 
 	/**
@@ -60,68 +56,6 @@ trait PermissionTrait {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Permission check for session-specific endpoints.
-	 *
-	 * Verifies chat access + (session ownership OR session is shared with all admins).
-	 * Destructive operations (delete, trash, archive) additionally require ownership.
-	 */
-	public function check_session_permission( WP_REST_Request $request ): bool {
-		if ( ! RolePermissions::current_user_has_chat_access() ) {
-			return false;
-		}
-
-		$session_id = self::get_int_param( $request, 'id' );
-		$session    = $this->database->get_session( $session_id );
-
-		if ( ! $session ) {
-			return false;
-		}
-
-		$is_owner = (int) $session->user_id === get_current_user_id();
-
-		if ( $is_owner ) {
-			return true;
-		}
-
-		// Non-owners may access shared sessions (read + continue), but not delete/trash/archive.
-		$method = $request->get_method();
-		if ( 'DELETE' === $method ) {
-			return false;
-		}
-
-		// For PATCH (update), only allow title/pinned/folder changes by non-owners on shared sessions.
-		// Status changes (archive/trash) are owner-only.
-		if ( 'PATCH' === $method ) {
-			$status = $request->get_param( 'status' );
-			if ( ! empty( $status ) ) {
-				return false;
-			}
-		}
-
-		// Allow if the session is shared.
-		$shared = Database::get_shared_session( $session_id );
-		return $shared !== null;
-	}
-
-	/**
-	 * Permission check for share/unshare endpoints — owner only.
-	 */
-	public function check_session_owner_permission( WP_REST_Request $request ): bool {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return false;
-		}
-
-		$session_id = self::get_int_param( $request, 'id' );
-		$session    = $this->database->get_session( $session_id );
-
-		if ( ! $session ) {
-			return false;
-		}
-
-		return (int) $session->user_id === get_current_user_id();
 	}
 
 	/**

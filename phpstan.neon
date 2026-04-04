@@ -60,9 +60,6 @@ parameters:
 		# array_map with typed Closure on mixed array (result of wp_ai_client_prompt())
 		- message: '#\$callback of function array_map expects \(callable\(mixed\): mixed\)\|null, Closure\(string\): string given#'
 		  identifier: argument.type
-		# AdminPage class was deleted in t146 (dead code removal); ScreenMetaPanel still
-		# references AdminPage::SLUG — suppress until the reference is cleaned up.
-		- '#Access to constant SLUG on an unknown class GratisAiAgent\\\\Admin\\\\AdminPage#'
 		# WP_Block_Type properties may be empty strings
 		- '#Property WP_Block_Type::.* on left side of \?\? is not nullable#'
 		- '#Property WP_Block_Template::.* on left side of \?\? is not nullable#'
@@ -210,8 +207,6 @@ parameters:
 		# Note: cannot use #1 in pattern (# is the PCRE delimiter); match broadly on the identifier instead
 		- message: '#\$callback of function array_map expects \(callable\(mixed\): mixed\)\|null, Closure\(string\): string given#'
 		  identifier: argument.type
-		# GratisAiAgent\Admin\AdminPage — referenced in ScreenMetaPanel for SLUG constant;
-		# class was removed/renamed but the reference remains. Suppress until class is restored.
-		- '#Access to constant SLUG on an unknown class GratisAiAgent\\Admin\\AdminPage#'
+
 
 

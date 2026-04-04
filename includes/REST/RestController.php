@@ -30,7 +30,6 @@ namespace GratisAiAgent\REST;
 use GratisAiAgent\Core\AgentLoop;
 use GratisAiAgent\Core\CostCalculator;
 use GratisAiAgent\Core\Database;
-use GratisAiAgent\Core\RolePermissions;
 use GratisAiAgent\Core\Settings;
 use GratisAiAgent\Models\Agent;
 use WP_Error;
@@ -53,23 +52,6 @@ class RestController {
 	 * How long job data persists (seconds).
 	 */
 	const JOB_TTL = 600;
-
-	/** @var Settings Injected settings dependency. */
-	private Settings $settings;
-
-	/** @var Database Injected database dependency. */
-	private Database $database;
-
-	/**
-	 * Constructor — accepts injected dependencies for testability.
-	 *
-	 * @param Settings|null $settings  Settings service (defaults to new Settings()).
-	 * @param Database|null $database  Database service (defaults to new Database()).
-	 */
-	public function __construct( ?Settings $settings = null, ?Database $database = null ) {
-		$this->settings = $settings ?? new Settings();
-		$this->database = $database ?? new Database();
-	}
 
 	/**
 	 * Register REST routes.
