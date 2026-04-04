@@ -294,7 +294,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - Send button (circular, absolute positioned) is non-standard for wp-admin — consider a standard rectangular "Send" button or keep circle but ensure it doesn't overlap text
   - Token counter below input: good addition, ensure it uses wp-admin muted text color (#646970)
 
-- [ ] t159 Welcome screen / empty state: simplify and reduce visual weight #ui ~1h logged:2026-04-03 ref:GH#754 #auto-dispatch
+- [x] t159 Welcome screen / empty state: simplify and reduce visual weight #ui ~1h logged:2026-04-03 ref:GH#754 #auto-dispatch pr:#763 completed:2026-04-04
   - Current: 3-column card grid with border + hover shadow — looks like a marketing page
   - Replace with a simple centered text + 2-3 plain suggestion links (no cards, no borders)
   - Greeting text (18px, font-weight 600) is too large for an admin tool — reduce to 15px, normal weight
