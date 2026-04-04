@@ -7,16 +7,12 @@ parameters:
 		- includes
 		- gratis-ai-agent.php
 	excludePaths:
-		- compat
 		- includes/CLI
 	scanDirectories:
 		- vendor/wordpress/php-ai-client/src
 	bootstrapFiles:
 		- vendor/autoload.php
 	scanFiles:
-		- compat/abilities-api/class-abstract-ability.php
-		- compat/ai-client/class-wp-ai-client-prompt-builder.php
-		- compat/ai-client.php
 		- vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
 	treatPhpDocTypesAsCertain: false
 	reportUnmatchedIgnoredErrors: false
