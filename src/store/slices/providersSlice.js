@@ -11,8 +11,7 @@ import apiFetch from '@wordpress/api-fetch';
 export const initialState = {
 	providers: [],
 	providersLoaded: false,
-	selectedProviderId:
-		localStorage.getItem( 'gratisAiAgentProvider' ) || '',
+	selectedProviderId: localStorage.getItem( 'gratisAiAgentProvider' ) || '',
 	selectedModelId: localStorage.getItem( 'gratisAiAgentModel' ) || '',
 };
 
@@ -133,8 +132,8 @@ export const selectors = {
 };
 
 /**
- * @param {import('../../types').StoreState} state
- * @param {Object} action
+ * @param {import('../../types').StoreState} state  - Current state.
+ * @param {Object}                           action - Dispatched action.
  * @return {import('../../types').StoreState} Next state.
  */
 export function reducer( state, action ) {
