@@ -115,8 +115,9 @@ class ScreenMetaPanel {
 			return;
 		}
 
-		// Skip the dedicated full-page admin page.
-		if ( AdminPage::SLUG === $screen->id ) {
+		// Skip the dedicated full-page admin page (top-level and submenu pages).
+		if ( 'toplevel_page_' . UnifiedAdminMenu::SLUG === $screen->id ||
+			strpos( $screen->id, '_page_' . UnifiedAdminMenu::SLUG ) !== false ) {
 			return;
 		}
 
