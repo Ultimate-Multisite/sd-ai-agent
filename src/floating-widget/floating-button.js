@@ -10,7 +10,7 @@ import { Icon, comment } from '@wordpress/icons';
  * Internal dependencies
  */
 import STORE_NAME from '../store';
-import { getBranding, getBrandingStyle } from '../utils/branding';
+import { getBranding } from '../utils/branding';
 
 /**
  * Floating action button that opens the AI Agent chat panel.
@@ -28,7 +28,8 @@ export default function FloatingButton() {
 	);
 
 	const branding = getBranding();
-	const fabStyle = getBrandingStyle();
+	// FAB uses light background; only apply custom icon color from branding if set.
+	const fabStyle = branding.primaryColor ? { color: branding.primaryColor } : {};
 	const agentLabel = branding.agentName
 		? sprintf(
 				/* translators: %s: agent display name */
@@ -52,7 +53,7 @@ export default function FloatingButton() {
 					aria-hidden="true"
 				/>
 			) : (
-				<Icon icon={ comment } size={ 24 } />
+				<Icon icon={ comment } size={ 20 } />
 			) }
 			{ alertCount > 0 && (
 				<span
