@@ -14,7 +14,7 @@ import ChatPanel from '../components/chat-panel';
 import SessionTabs from './session-tabs';
 import useDrag from './use-drag';
 import useResize from './use-resize';
-import { getBranding, getBrandingStyle } from '../utils/branding';
+import { getBranding } from '../utils/branding';
 
 /**
  * Draggable, resizable floating chat panel.
@@ -42,7 +42,6 @@ export default function FloatingPanel() {
 	const { size, isResizing, handleResizeMouseDown, resetSize } = useResize();
 
 	const branding = getBranding();
-	const titleBarStyle = getBrandingStyle();
 	const displayName =
 		branding.agentName || __( 'AI Agent', 'gratis-ai-agent' );
 
@@ -72,12 +71,11 @@ export default function FloatingPanel() {
 
 	return (
 		<div className={ classNames } style={ panelStyle }>
-			<div
-				role="presentation"
-				className="gratis-ai-agent-floating-titlebar"
-				style={ titleBarStyle }
-				onMouseDown={ handleMouseDown }
-			>
+		<div
+			role="presentation"
+			className="gratis-ai-agent-floating-titlebar"
+			onMouseDown={ handleMouseDown }
+		>
 				{ branding.logoUrl && (
 					<img
 						src={ branding.logoUrl }
