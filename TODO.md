@@ -300,7 +300,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - Greeting text (18px, font-weight 600) is too large for an admin tool — reduce to 15px, normal weight
   - Hint text (#a7aaad) is too light — use #646970
 
-- [ ] t160 Benchmark and changes pages: apply consistent wp-admin card/table layout #ui ~2h logged:2026-04-03 ref:GH#755 #auto-dispatch
+- [x] t160 Benchmark and changes pages: apply consistent wp-admin card/table layout #ui ~2h logged:2026-04-03 ref:GH#755 #auto-dispatch pr:#764 completed:2026-04-04
   - Benchmark page: use WP's `<Card>` component for run list items instead of custom styling
   - Changes page: ensure it uses standard WP admin table markup (widefat, striped classes) where applicable
   - Both pages: max-width 1200px container is fine; ensure headings use wp-admin h2 style (not custom font-size)
