@@ -441,6 +441,7 @@ export function ModelPricingHint( { modelId } ) {
  * and renders a pricing badge below the selector for the selected model.
  *
  * @param {Object}   props              - Component props.
+ * @param {string}   props.id           - ID forwarded to the underlying SelectControl.
  * @param {string}   props.label        - SelectControl label.
  * @param {string}   props.value        - Currently selected model ID.
  * @param {Array}    props.models       - Models from the REST API.
@@ -449,6 +450,7 @@ export function ModelPricingHint( { modelId } ) {
  * @return {JSX.Element} Model selector with pricing hints.
  */
 export default function ModelPricingSelector( {
+	id,
 	label,
 	value,
 	models,
@@ -472,6 +474,7 @@ export default function ModelPricingSelector( {
 	return (
 		<div className="gratis-ai-agent-model-pricing-selector">
 			<SelectControl
+				id={ id }
 				label={ label }
 				value={ value }
 				options={ options }

@@ -388,7 +388,7 @@ export default function SettingsApp() {
 											<tbody>
 												<tr>
 													<th scope="row">
-														<label>
+														<label htmlFor="gratis-default-provider">
 															{ __(
 																'Default Provider',
 																'gratis-ai-agent'
@@ -397,6 +397,7 @@ export default function SettingsApp() {
 													</th>
 													<td>
 														<SelectControl
+															id="gratis-default-provider"
 															value={
 																local.default_provider
 															}
@@ -415,7 +416,7 @@ export default function SettingsApp() {
 												</tr>
 												<tr>
 													<th scope="row">
-														<label>
+														<label htmlFor="gratis-default-model">
 															{ __(
 																'Default Model',
 																'gratis-ai-agent'
@@ -424,6 +425,7 @@ export default function SettingsApp() {
 													</th>
 													<td>
 														<ModelPricingSelector
+															id="gratis-default-model"
 															value={
 																local.default_model
 															}
@@ -724,7 +726,7 @@ export default function SettingsApp() {
 											<tbody>
 												<tr>
 													<th scope="row">
-														<label>
+														<label htmlFor="gratis-image-size">
 															{ __(
 																'Default Image Size',
 																'gratis-ai-agent'
@@ -733,6 +735,7 @@ export default function SettingsApp() {
 													</th>
 													<td>
 														<SelectControl
+															id="gratis-image-size"
 															value={
 																local.image_generation_size ||
 																'1024x1024'
@@ -776,7 +779,7 @@ export default function SettingsApp() {
 												</tr>
 												<tr>
 													<th scope="row">
-														<label>
+														<label htmlFor="gratis-image-quality">
 															{ __(
 																'Default Image Quality',
 																'gratis-ai-agent'
@@ -785,6 +788,7 @@ export default function SettingsApp() {
 													</th>
 													<td>
 														<SelectControl
+															id="gratis-image-quality"
 															value={
 																local.image_generation_quality ||
 																'standard'
@@ -821,7 +825,7 @@ export default function SettingsApp() {
 												</tr>
 												<tr>
 													<th scope="row">
-														<label>
+														<label htmlFor="gratis-image-style">
 															{ __(
 																'Default Image Style',
 																'gratis-ai-agent'
@@ -830,6 +834,7 @@ export default function SettingsApp() {
 													</th>
 													<td>
 														<SelectControl
+															id="gratis-image-style"
 															value={
 																local.image_generation_style ||
 																'vivid'
@@ -959,7 +964,7 @@ export default function SettingsApp() {
 												</tr>
 												<tr>
 													<th scope="row">
-														<label>
+														<label htmlFor="gratis-budget-warning-threshold">
 															{ __(
 																'Warning Threshold (%)',
 																'gratis-ai-agent'
@@ -968,6 +973,7 @@ export default function SettingsApp() {
 													</th>
 													<td>
 														<RangeControl
+															id="gratis-budget-warning-threshold"
 															value={
 																local.budget_warning_threshold ??
 																80
@@ -990,7 +996,7 @@ export default function SettingsApp() {
 												</tr>
 												<tr>
 													<th scope="row">
-														<label>
+														<label htmlFor="gratis-budget-exceeded-action">
 															{ __(
 																'Action When Budget Exceeded',
 																'gratis-ai-agent'
@@ -999,6 +1005,7 @@ export default function SettingsApp() {
 													</th>
 													<td>
 														<SelectControl
+															id="gratis-budget-exceeded-action"
 															value={
 																local.budget_exceeded_action ||
 																'pause'
@@ -1083,7 +1090,7 @@ export default function SettingsApp() {
 													{ ttsVoices.length > 0 && (
 														<tr>
 															<th scope="row">
-																<label>
+																<label htmlFor="gratis-tts-voice">
 																	{ __(
 																		'Voice',
 																		'gratis-ai-agent'
@@ -1092,6 +1099,7 @@ export default function SettingsApp() {
 															</th>
 															<td>
 																<SelectControl
+																	id="gratis-tts-voice"
 																	value={
 																		ttsVoiceURI
 																	}
@@ -1126,7 +1134,7 @@ export default function SettingsApp() {
 													) }
 													<tr>
 														<th scope="row">
-															<label>
+															<label htmlFor="gratis-tts-rate">
 																{ __(
 																	'Speech Rate',
 																	'gratis-ai-agent'
@@ -1135,6 +1143,7 @@ export default function SettingsApp() {
 														</th>
 														<td>
 															<RangeControl
+																id="gratis-tts-rate"
 																value={
 																	ttsRate
 																}
@@ -1153,7 +1162,7 @@ export default function SettingsApp() {
 													</tr>
 													<tr>
 														<th scope="row">
-															<label>
+															<label htmlFor="gratis-tts-pitch">
 																{ __(
 																	'Pitch',
 																	'gratis-ai-agent'
@@ -1162,6 +1171,7 @@ export default function SettingsApp() {
 														</th>
 														<td>
 															<RangeControl
+																id="gratis-tts-pitch"
 																value={
 																	ttsPitch
 																}
@@ -1513,7 +1523,7 @@ export default function SettingsApp() {
 											<tbody>
 												<tr>
 													<th scope="row">
-														<label>
+														<label htmlFor="gratis-temperature">
 															{ __(
 																'Temperature',
 																'gratis-ai-agent'
@@ -1522,6 +1532,7 @@ export default function SettingsApp() {
 													</th>
 													<td>
 														<RangeControl
+															id="gratis-temperature"
 															value={
 																local.temperature
 															}
@@ -1620,7 +1631,7 @@ export default function SettingsApp() {
 											<tbody>
 												<tr>
 													<th scope="row">
-														<label>
+														<label htmlFor="gratis-tool-discovery-mode">
 															{ __(
 																'Discovery Mode',
 																'gratis-ai-agent'
@@ -1629,6 +1640,7 @@ export default function SettingsApp() {
 													</th>
 													<td>
 														<SelectControl
+															id="gratis-tool-discovery-mode"
 															value={
 																local.tool_discovery_mode ||
 																'auto'
