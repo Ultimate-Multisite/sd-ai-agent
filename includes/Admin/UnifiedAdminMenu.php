@@ -151,6 +151,8 @@ class UnifiedAdminMenu {
 			$asset['version']
 		);
 
+		wp_style_add_data( 'gratis-ai-agent-unified-admin', 'rtl', 'replace' );
+
 		wp_enqueue_script(
 			'gratis-ai-agent-unified-admin',
 			GRATIS_AI_AGENT_URL . 'build/unified-admin.js',
@@ -176,6 +178,8 @@ class UnifiedAdminMenu {
 				array( 'wp-components' ),
 				$admin_page_asset['version']
 			);
+
+			wp_style_add_data( 'gratis-ai-agent-admin-page', 'rtl', 'replace' );
 
 			wp_enqueue_script(
 				'gratis-ai-agent-admin-page',
