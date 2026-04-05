@@ -8,8 +8,6 @@ parameters:
 		- gratis-ai-agent.php
 	excludePaths:
 		- includes/CLI
-	scanDirectories:
-		- vendor/wordpress/php-ai-client/src
 	bootstrapFiles:
 		- vendor/autoload.php
 	scanFiles:
