@@ -4,45 +4,45 @@
 	max-width: 1200px;
 }
 
-.gratis-abilities-loading {
+.gratis-ai-agent-abilities-loading {
 	display: flex;
 	align-items: center;
 	gap: 12px;
 	padding: 24px 0;
 }
 
-.gratis-ability-title {
+.gratis-ai-agent-ability-title {
 	font-weight: 600;
 	font-size: 14px;
 	line-height: 1.4;
 }
 
-.gratis-ability-name {
+.gratis-ai-agent-ability-name {
 	font-size: 11px;
 	color: #757575;
 	font-family: monospace;
 	margin-top: 2px;
 }
 
-.gratis-ability-description {
+.gratis-ai-agent-ability-description {
 	font-size: 13px;
 	color: #1e1e1e;
 	margin: 0 0 8px;
 }
 
-.gratis-ability-meta {
+.gratis-ai-agent-ability-meta {
 	font-size: 12px;
 	color: #757575;
 	margin-bottom: 8px;
 }
 
-.gratis-ability-params,
-.gratis-ability-required {
+.gratis-ai-agent-ability-params,
+.gratis-ai-agent-ability-required {
 	font-size: 12px;
 	color: #757575;
 }
 
-.gratis-ability-category {
+.gratis-ai-agent-ability-category {
 	font-size: 11px;
 	color: #757575;
 	text-transform: uppercase;
@@ -50,20 +50,20 @@
 	margin: 0 0 6px;
 }
 
-.gratis-ability-notice {
+.gratis-ai-agent-ability-notice {
 	margin: 0 !important;
 	padding: 8px 12px !important;
 }
 
-.gratis-ability-notice a {
+.gratis-ai-agent-ability-notice a {
 	margin-left: 4px;
 }
 
-.gratis-ability-schema-toggle {
+.gratis-ai-agent-ability-schema-toggle {
 	margin-top: 8px;
 }
 
-.gratis-ability-schema {
+.gratis-ai-agent-ability-schema {
 	background: #f6f7f7;
 	border: 1px solid #ddd;
 	border-radius: 3px;
@@ -181,16 +181,16 @@
 }
 
 /* Ability row inside a category */
-.gratis-ability-row {
+.gratis-ai-agent-ability-row {
 	padding: 10px 16px;
 	border-bottom: 1px solid #f0f0f0;
 }
 
-.gratis-ability-row:last-child {
+.gratis-ai-agent-ability-row:last-child {
 	border-bottom: none;
 }
 
-.gratis-ability-row-header {
+.gratis-ai-agent-ability-row-header {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: baseline;
@@ -198,11 +198,11 @@
 	margin-bottom: 4px;
 }
 
-.gratis-ability-row-body {
+.gratis-ai-agent-ability-row-body {
 	padding-left: 0;
 }
 
-.gratis-ability-badges {
+.gratis-ai-agent-ability-badges {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 4px;

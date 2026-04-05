@@ -118,11 +118,13 @@ function AbilityRow( { ability } ) {
 	} = ability;
 
 	return (
-		<div className="gratis-ability-row">
-			<div className="gratis-ability-row-header">
-				<div className="gratis-ability-title">{ label || name }</div>
-				<div className="gratis-ability-name">{ name }</div>
-				<div className="gratis-ability-badges">
+		<div className="gratis-ai-agent-ability-row">
+			<div className="gratis-ai-agent-ability-row-header">
+				<div className="gratis-ai-agent-ability-title">
+					{ label || name }
+				</div>
+				<div className="gratis-ai-agent-ability-name">{ name }</div>
+				<div className="gratis-ai-agent-ability-badges">
 					{ isConfigured ? (
 						<Badge intent="success">
 							{ __( 'Configured', 'gratis-ai-agent' ) }
@@ -154,14 +156,14 @@ function AbilityRow( { ability } ) {
 					) }
 				</div>
 			</div>
-			<div className="gratis-ability-row-body">
-				<p className="gratis-ability-category">{ category }</p>
-				<p className="gratis-ability-description">
+			<div className="gratis-ai-agent-ability-row-body">
+				<p className="gratis-ai-agent-ability-category">{ category }</p>
+				<p className="gratis-ai-agent-ability-description">
 					{ description ||
 						__( 'No description available.', 'gratis-ai-agent' ) }
 				</p>
-				<div className="gratis-ability-meta">
-					<span className="gratis-ability-params">
+				<div className="gratis-ai-agent-ability-meta">
+					<span className="gratis-ai-agent-ability-params">
 						{ paramCount === 1
 							? __( '1 parameter', 'gratis-ai-agent' )
 							: sprintf(
@@ -171,7 +173,7 @@ function AbilityRow( { ability } ) {
 							  ) }
 					</span>
 					{ requiredParams && requiredParams.length > 0 && (
-						<span className="gratis-ability-required">
+						<span className="gratis-ai-agent-ability-required">
 							{ __( 'Required:', 'gratis-ai-agent' ) }{ ' ' }
 							<code>{ requiredParams.join( ', ' ) }</code>
 						</span>
@@ -183,7 +185,7 @@ function AbilityRow( { ability } ) {
 						<Notice
 							status="warning"
 							isDismissible={ false }
-							className="gratis-ability-notice"
+							className="gratis-ai-agent-ability-notice"
 						>
 							{ __( 'Requires:', 'gratis-ai-agent' ) }{ ' ' }
 							{ requiredApiKeys.join( ', ' ) }{ ' ' }
@@ -198,7 +200,7 @@ function AbilityRow( { ability } ) {
 						</Notice>
 					) }
 				{ outputSchema && Object.keys( outputSchema ).length > 0 && (
-					<div className="gratis-ability-schema-toggle">
+					<div className="gratis-ai-agent-ability-schema-toggle">
 						<Button
 							variant="link"
 							onClick={ () => setExpanded( ( v ) => ! v ) }
@@ -212,7 +214,7 @@ function AbilityRow( { ability } ) {
 								  ) }
 						</Button>
 						{ expanded && (
-							<pre className="gratis-ability-schema">
+							<pre className="gratis-ai-agent-ability-schema">
 								{ JSON.stringify( outputSchema, null, 2 ) }
 							</pre>
 						) }
@@ -418,7 +420,7 @@ export default function AbilitiesExplorerApp() {
 
 	if ( loading ) {
 		return (
-			<div className="gratis-abilities-loading">
+			<div className="gratis-ai-agent-abilities-loading">
 				<Spinner />
 				<span>{ __( 'Loading abilities…', 'gratis-ai-agent' ) }</span>
 			</div>
