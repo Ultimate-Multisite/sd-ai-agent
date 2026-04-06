@@ -965,19 +965,20 @@ class SessionController {
 			return new WP_Error( 'gratis_ai_agent_forbidden', __( 'Not authorized.', 'gratis-ai-agent' ), array( 'status' => 403 ) );
 		}
 
-		// "Always allow" — update tool_permissions to auto.
+		// "Always allow" — persist permission so this tool auto-executes in future.
 		if ( $request->get_param( 'always_allow' ) && ! empty( $job['pending_tools'] ) ) {
-			$settings = $this->settings->get();
-			/** @var array<string, mixed> $settings */
-			$perms = $settings['tool_permissions'] ?? array();
-			/** @var array<string, mixed> $perms */
 			// @phpstan-ignore-next-line
 			foreach ( $job['pending_tools'] as $tool ) {
 				/** @var array<string, mixed> $tool */
-				// @phpstan-ignore-next-line
-				$perms[ (string) $tool['name'] ] = 'auto';
+				$tool_name = (string) ( $tool['name'] ?? '' );
+				// Convert function name (wpab__...) to ability name for storage.
+				if ( str_starts_with( $tool_name, 'wpab__' ) && class_exists( 'WP_AI_Client_Ability_Function_Resolver' ) ) {
+					$tool_name = \WP_AI_Client_Ability_Function_Resolver::function_name_to_ability_name( $tool_name );
+				}
+				if ( '' !== $tool_name ) {
+					AgentLoop::set_always_allow( $tool_name );
+				}
 			}
-			$this->settings->update( array( 'tool_permissions' => $perms ) );
 		}
 
 		return $this->resume_job( $job_id, $job, 'confirm' );

@@ -34,6 +34,28 @@ use WordPress\AiClient\Tools\DTO\FunctionCall;
 
 class AgentLoop {
 
+	// ── Production Hardening Constants ────────────────────────────────────
+
+	/**
+	 * Wall-clock timeout in seconds. Prevents runaway loops from burning
+	 * tokens indefinitely when round/token limits are not hit.
+	 */
+	const LOOP_TIMEOUT_SECONDS = 120;
+
+	/**
+	 * Consecutive no-progress rounds before forced exit.
+	 * If the model calls the exact same tools with the same args N times
+	 * in a row, it's spinning and we bail out.
+	 */
+	const MAX_IDLE_ROUNDS = 3;
+
+	/**
+	 * Maximum token-estimated size (in characters) for a single tool result
+	 * fed back into the loop. Results exceeding this are truncated.
+	 * ~40K chars ≈ 10K tokens — generous but bounded.
+	 */
+	const MAX_TOOL_RESULT_CHARS = 40000;
+
 	/** @var string */
 	private $user_message;
 
@@ -94,6 +116,14 @@ class AgentLoop {
 	/** @var int Session ID for change attribution (0 = no session). */
 	private int $session_id = 0;
 
+	// ── Spin Detection State ─────────────────────────────────────────────
+
+	/** @var int Consecutive rounds with identical tool signatures. */
+	private int $idle_rounds = 0;
+
+	/** @var string Hash of the previous round's tool calls for spin detection. */
+	private string $last_tool_signature = '';
+
 	/**
 	 * Image attachments for the current user message.
 	 * Each entry: [ 'name' => string, 'type' => string, 'data_url' => string, 'is_image' => bool ]
@@ -150,10 +180,12 @@ class AgentLoop {
 		$this->system_instruction = $options['system_instruction'] ?? $this->build_system_instruction( $settings );
 
 		// Tool permissions, YOLO mode, and resumable state.
+		// Options override settings for tool_permissions and yolo_mode so
+		// callers (e.g. CLI, automations) can inject per-run overrides.
 		// @phpstan-ignore-next-line
-		$this->tool_permissions = $settings['tool_permissions'] ?? array();
+		$this->tool_permissions = $options['tool_permissions'] ?? ( $settings['tool_permissions'] ?? array() );
 		// @phpstan-ignore-next-line
-		$this->yolo_mode = (bool) ( $settings['yolo_mode'] ?? false );
+		$this->yolo_mode = (bool) ( $options['yolo_mode'] ?? ( $settings['yolo_mode'] ?? false ) );
 		// @phpstan-ignore-next-line
 		$this->tool_call_log = $options['tool_call_log'] ?? array();
 		// @phpstan-ignore-next-line
@@ -253,9 +285,30 @@ class AgentLoop {
 	private function run_loop( int $iterations ) {
 		$last_was_tool_call = false;
 
+		// Wall-clock deadline prevents runaway loops even when round count
+		// and token budget are within limits (e.g. cheap read-only tool
+		// calls in a spin cycle).
+		$deadline = microtime( true ) + self::LOOP_TIMEOUT_SECONDS;
+
 		while ( $iterations > 0 ) {
 			--$iterations;
 			++$this->iterations_used;
+
+			// Wall-clock timeout check.
+			if ( microtime( true ) >= $deadline ) {
+				return array(
+					'reply'           => __(
+						'This request took longer than expected and was stopped to protect your usage budget. You can continue the conversation to pick up where it left off.',
+						'gratis-ai-agent'
+					),
+					'history'         => $this->serialize_history(),
+					'tool_calls'      => $this->tool_call_log,
+					'token_usage'     => $this->token_usage,
+					'iterations_used' => $this->iterations_used,
+					'model_id'        => $this->model_id,
+					'exit_reason'     => 'timeout',
+				);
+			}
 
 			// Smart conversation trimming before each LLM call.
 			// @phpstan-ignore-next-line
@@ -386,6 +439,30 @@ class AgentLoop {
 					}
 				}
 			}
+
+			// Spin detection: if this round's tool calls are identical to the
+			// previous round's, the model is looping without making progress.
+			$current_signature = $this->build_tool_signature( $assistant_message );
+			if ( '' !== $current_signature && $current_signature === $this->last_tool_signature ) {
+				++$this->idle_rounds;
+				if ( $this->idle_rounds >= self::MAX_IDLE_ROUNDS ) {
+					return array(
+						'reply'           => __(
+							'I\'ve been repeating the same operations without making progress. Here\'s what I found so far. Try rephrasing your request or providing more specifics.',
+							'gratis-ai-agent'
+						),
+						'history'         => $this->serialize_history(),
+						'tool_calls'      => $this->tool_call_log,
+						'token_usage'     => $this->token_usage,
+						'iterations_used' => $this->iterations_used,
+						'model_id'        => $this->model_id,
+						'exit_reason'     => 'spin_detected',
+					);
+				}
+			} else {
+				$this->idle_rounds = 0;
+			}
+			$this->last_tool_signature = $current_signature;
 		}
 
 		// Exhausted iterations. If the last AI turn was a tool call (not text),
@@ -1154,6 +1231,18 @@ class AgentLoop {
 		$body = wp_remote_retrieve_body( $response );
 		$data = json_decode( $body, true );
 
+		// Guard against null/malformed JSON responses.
+		if ( ! is_array( $data ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_proxy_error',
+				sprintf(
+					/* translators: %d: HTTP status code */
+					__( 'Invalid JSON response from AI endpoint (HTTP %d).', 'gratis-ai-agent' ),
+					$code
+				)
+			);
+		}
+
 		if ( 200 !== $code ) {
 			// @phpstan-ignore-next-line
 			$msg = isset( $data['error']['message'] ) ? $data['error']['message'] : "HTTP $code from proxy";
@@ -1162,7 +1251,19 @@ class AgentLoop {
 		}
 
 		// @phpstan-ignore-next-line
-		$text = $data['choices'][0]['message']['content'] ?? '';
+		$message = $data['choices'][0]['message'] ?? array();
+
+		// Extract text content. Thinking models (Kimi K2.5, DeepSeek-R1, etc.)
+		// may return null content with a 'reasoning' field containing the
+		// chain-of-thought. Fall back to reasoning when content is null/empty.
+		// @phpstan-ignore-next-line
+		$text = $message['content'] ?? '';
+		if ( ( null === $text || '' === $text ) && ! empty( $message['reasoning'] ) ) {
+			// @phpstan-ignore-next-line
+			$text = (string) $message['reasoning'];
+		}
+		// Ensure $text is always a string (some APIs return null).
+		$text = (string) ( $text ?? '' );
 
 		// @phpstan-ignore-next-line
 		return new SimpleAiResult( $text, $data );
@@ -1244,12 +1345,23 @@ class AgentLoop {
 			// @phpstan-ignore-next-line
 			$delta = $chunk['choices'][0]['delta'] ?? array();
 
-			// Text token delta.
+			// Text token delta — includes 'content' and 'reasoning' (thinking models).
 			// @phpstan-ignore-next-line
-			if ( isset( $delta['content'] ) && is_string( $delta['content'] ) && '' !== $delta['content'] ) {
-				$full_text .= $delta['content'];
+			$token = $delta['content'] ?? null;
+			// Thinking models (Kimi K2.5, DeepSeek-R1) stream reasoning tokens
+			// in a separate 'reasoning' or 'reasoning_content' field.
+			if ( ( null === $token || '' === $token ) && ! empty( $delta['reasoning'] ) ) {
+				// @phpstan-ignore-next-line
+				$token = $delta['reasoning'];
+			}
+			if ( ( null === $token || '' === $token ) && ! empty( $delta['reasoning_content'] ) ) {
+				// @phpstan-ignore-next-line
+				$token = $delta['reasoning_content'];
+			}
+			if ( is_string( $token ) && '' !== $token ) {
+				$full_text .= $token;
 				if ( null !== $this->sse_streamer ) {
-					$this->sse_streamer->send_token( $delta['content'] );
+					$this->sse_streamer->send_token( $token );
 				}
 			}
 
@@ -1496,6 +1608,17 @@ class AgentLoop {
 	/**
 	 * Check which tool calls in an assistant message require user confirmation.
 	 *
+	 * Permission resolution order (first match wins):
+	 * 1. YOLO mode → skip all confirmations.
+	 * 2. Explicit tool_permissions setting ('auto'|'confirm'|'disabled'|'always_allow') → use it.
+	 * 3. Annotation-based classification:
+	 *    - readonly=true  → auto-execute (read-only, safe).
+	 *    - readonly=false or null → require confirmation (write operation).
+	 *
+	 * This means by default (no tool_permissions configured), read-only tools
+	 * execute automatically and write tools pause for user approval — matching
+	 * the PressArk-style "Preview → Approve → Execute" pattern.
+	 *
 	 * @param Message $message The assistant's tool-call message.
 	 * @return list<array<string, mixed>> Array of tool details needing confirmation (empty if none).
 	 */
@@ -1505,38 +1628,109 @@ class AgentLoop {
 			return array();
 		}
 
-		if ( empty( $this->tool_permissions ) ) {
-			return array();
-		}
-
-		$confirm = array();
+		$confirm       = array();
+		$all_abilities = function_exists( 'wp_get_abilities' ) ? wp_get_abilities() : array();
 
 		foreach ( $message->getParts() as $part ) {
 			$call = $part->getFunctionCall();
-			if ( $call ) {
-				$fn_name = (string) $call->getName();
+			if ( ! $call ) {
+				continue;
+			}
 
-				// The function call name uses the wpab__ format (e.g. wpab__gratis-ai-agent__memory-save)
-				// while tool_permissions uses ability name format (e.g. gratis-ai-agent/memory-save).
-				// Convert function name to ability name for the lookup.
-				$ability_name = $fn_name;
-				if ( str_starts_with( $fn_name, 'wpab__' ) && class_exists( 'WP_AI_Client_Ability_Function_Resolver' ) ) {
-					$ability_name = \WP_AI_Client_Ability_Function_Resolver::function_name_to_ability_name( $fn_name );
+			$fn_name = (string) $call->getName();
+
+			// Convert function name to ability name for lookups.
+			$ability_name = $fn_name;
+			if ( str_starts_with( $fn_name, 'wpab__' ) && class_exists( 'WP_AI_Client_Ability_Function_Resolver' ) ) {
+				$ability_name = \WP_AI_Client_Ability_Function_Resolver::function_name_to_ability_name( $fn_name );
+			}
+
+			// 1. Check explicit tool_permissions setting first.
+			if ( ! empty( $this->tool_permissions ) ) {
+				$permission = $this->tool_permissions[ $ability_name ] ?? null;
+
+				if ( null !== $permission ) {
+					// Explicit permission set for this tool.
+					if ( 'confirm' === $permission ) {
+						$confirm[] = array(
+							'id'   => $call->getId(),
+							'name' => $fn_name,
+							'args' => $call->getArgs(),
+						);
+					}
+					// 'auto', 'always_allow', 'disabled' → no confirmation needed.
+					continue;
 				}
+			}
 
-				$permission = $this->tool_permissions[ $ability_name ] ?? 'auto';
+			// 2. No explicit permission — use annotation-based classification.
+			// Look up the ability's readonly annotation.
+			$ability = $all_abilities[ $ability_name ] ?? null;
 
-				if ( 'confirm' === $permission ) {
+			if ( null !== $ability ) {
+				$classification = self::classify_ability( $ability );
+
+				if ( 'write' === $classification ) {
 					$confirm[] = array(
 						'id'   => $call->getId(),
 						'name' => $fn_name,
 						'args' => $call->getArgs(),
 					);
 				}
+				// 'read' → auto-execute.
+			} elseif ( null === $ability ) {
+				// If ability not found in registry (e.g. custom tool), default to
+				// requiring confirmation for safety.
+				$confirm[] = array(
+					'id'   => $call->getId(),
+					'name' => $fn_name,
+					'args' => $call->getArgs(),
+				);
 			}
 		}
 
 		return $confirm;
+	}
+
+	/**
+	 * Persist an "always allow" permission for a specific ability.
+	 *
+	 * Called when the user approves a write tool and chooses "Always Allow".
+	 * Stores the permission in the tool_permissions setting so future calls
+	 * to this ability skip confirmation.
+	 *
+	 * @param string $ability_name The ability name (e.g. 'gratis-ai-agent/memory-save').
+	 */
+	public static function set_always_allow( string $ability_name ): void {
+		$all   = Settings::get();
+		$perms = $all['tool_permissions'] ?? array();
+
+		// @phpstan-ignore-next-line
+		$perms[ $ability_name ] = 'always_allow';
+
+		Settings::update( array( 'tool_permissions' => $perms ) );
+	}
+
+	/**
+	 * Get the list of abilities that have been set to "always allow".
+	 *
+	 * @return string[] Ability names with always_allow permission.
+	 */
+	public static function get_always_allowed(): array {
+		$perms = Settings::get( 'tool_permissions' );
+
+		if ( ! is_array( $perms ) ) {
+			return array();
+		}
+
+		$always = array();
+		foreach ( $perms as $name => $level ) {
+			if ( 'always_allow' === $level ) {
+				$always[] = $name;
+			}
+		}
+
+		return $always;
 	}
 
 	/**
@@ -1691,6 +1885,59 @@ class AgentLoop {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Build a deterministic signature of the tool calls in a message.
+	 *
+	 * Used for spin detection: if two consecutive rounds produce the same
+	 * signature, the model is calling the same tools with the same args
+	 * and making no progress.
+	 *
+	 * @param Message $message The assistant message containing tool calls.
+	 * @return string A hash signature, or empty string if no tool calls.
+	 */
+	private function build_tool_signature( Message $message ): string {
+		$parts = array();
+
+		foreach ( $message->getParts() as $part ) {
+			$call = $part->getFunctionCall();
+			if ( $call ) {
+				$parts[] = (string) $call->getName() . ':' . wp_json_encode( $call->getArgs() ?: array() );
+			}
+		}
+
+		if ( empty( $parts ) ) {
+			return '';
+		}
+
+		sort( $parts );
+		return md5( implode( '|', $parts ) );
+	}
+
+	/**
+	 * Classify an ability as 'read' or 'write' based on its meta annotations.
+	 *
+	 * Uses the WordPress Abilities API `readonly` annotation:
+	 * - readonly=true  → 'read' (auto-execute, no confirmation needed)
+	 * - readonly=false → 'write' (needs confirmation unless always-allowed)
+	 * - readonly=null  → 'write' (default to safe — require confirmation)
+	 *
+	 * @param \WP_Ability $ability The ability to classify.
+	 * @return string 'read' or 'write'.
+	 */
+	public static function classify_ability( \WP_Ability $ability ): string {
+		$meta = $ability->get_meta();
+
+		// Check the annotations.readonly field.
+		if ( isset( $meta['annotations'] ) && is_array( $meta['annotations'] ) ) {
+			if ( true === ( $meta['annotations']['readonly'] ?? null ) ) {
+				return 'read';
+			}
+		}
+
+		// Default to 'write' — safe by default.
+		return 'write';
 	}
 
 	/**
