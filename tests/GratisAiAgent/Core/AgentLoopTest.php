@@ -956,4 +956,479 @@ class AgentLoopTest extends WP_UnitTestCase {
 		$this->assertGreaterThanOrEqual( 1, count( $result['tool_calls'] ) );
 		$this->assertSame( 'call_prior', $result['tool_calls'][0]['id'] );
 	}
+
+	// -------------------------------------------------------------------------
+	// Production hardening: spin detection
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test run() detects spin (identical tool calls repeated) and exits gracefully.
+	 *
+	 * When the model calls the exact same tool with the same args on every
+	 * round, the loop should detect the spin after MAX_IDLE_ROUNDS and exit
+	 * with exit_reason = 'spin_detected'.
+	 */
+	public function test_run_detects_spin_and_exits(): void {
+		if ( ! class_exists( 'WP_AI_Client_Ability_Function_Resolver' ) ) {
+			$this->markTestSkipped( 'WP_AI_Client_Ability_Function_Resolver not available.' );
+		}
+
+		// Always return the exact same tool call — this is a spin.
+		add_filter(
+			'pre_http_request',
+			static function ( $preempt, $args, $url ) {
+				if ( false !== strpos( $url, 'fake-ai-proxy.test' ) ) {
+					$body = wp_json_encode(
+						[
+							'id'      => 'chatcmpl-spin',
+							'object'  => 'chat.completion',
+							'choices' => [
+								[
+									'index'         => 0,
+									'message'       => [
+										'role'       => 'assistant',
+										'content'    => null,
+										'tool_calls' => [
+											[
+												'id'       => 'call_spin',
+												'type'     => 'function',
+												'function' => [
+													'name'      => 'wpab__gratis-ai-agent__memory-list',
+													'arguments' => '{}',
+												],
+											],
+										],
+									],
+									'finish_reason' => 'tool_calls',
+								],
+							],
+							'usage'   => [ 'prompt_tokens' => 5, 'completion_tokens' => 5, 'total_tokens' => 10 ],
+						]
+					);
+					return [
+						'headers'  => [ 'content-type' => 'application/json' ],
+						'body'     => $body,
+						'response' => [ 'code' => 200, 'message' => 'OK' ],
+						'cookies'  => [],
+						'filename' => '',
+					];
+				}
+				return $preempt;
+			},
+			10,
+			3
+		);
+
+		// Use enough iterations that spin detection triggers before exhaustion.
+		$loop   = new AgentLoop( 'Spin forever', [], [], [ 'max_iterations' => 10 ] );
+		$result = $loop->run();
+
+		// Should exit with spin_detected, not max_iterations.
+		$this->assertIsArray( $result );
+		$this->assertArrayHasKey( 'exit_reason', $result );
+		$this->assertSame( 'spin_detected', $result['exit_reason'] );
+		// Should have used MAX_IDLE_ROUNDS + 1 iterations (first is unique, then 3 identical).
+		$this->assertLessThanOrEqual( AgentLoop::MAX_IDLE_ROUNDS + 1, $result['iterations_used'] );
+	}
+
+	// -------------------------------------------------------------------------
+	// Production hardening: wall-clock timeout
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test that the LOOP_TIMEOUT_SECONDS constant is defined and reasonable.
+	 */
+	public function test_loop_timeout_constant_is_defined(): void {
+		$this->assertGreaterThan( 0, AgentLoop::LOOP_TIMEOUT_SECONDS );
+		$this->assertLessThanOrEqual( 300, AgentLoop::LOOP_TIMEOUT_SECONDS );
+	}
+
+	/**
+	 * Test that MAX_IDLE_ROUNDS constant is defined and reasonable.
+	 */
+	public function test_max_idle_rounds_constant_is_defined(): void {
+		$this->assertGreaterThan( 0, AgentLoop::MAX_IDLE_ROUNDS );
+		$this->assertLessThanOrEqual( 10, AgentLoop::MAX_IDLE_ROUNDS );
+	}
+
+	// -------------------------------------------------------------------------
+	// Ability classification
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test classify_ability returns 'read' for abilities with readonly=true.
+	 */
+	public function test_classify_ability_readonly_true(): void {
+		if ( ! class_exists( 'WP_Ability' ) ) {
+			$this->markTestSkipped( 'WP_Ability not available.' );
+		}
+
+		// Create a mock ability with readonly=true.
+		$ability = new \WP_Ability(
+			'test/read-ability',
+			[
+				'label'            => 'Test Read',
+				'description'      => 'A read-only test ability.',
+				'execute_callback' => '__return_true',
+				'meta'             => [
+					'annotations' => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
+				],
+			]
+		);
+
+		$this->assertSame( 'read', AgentLoop::classify_ability( $ability ) );
+	}
+
+	/**
+	 * Test classify_ability returns 'write' for abilities with readonly=false.
+	 */
+	public function test_classify_ability_readonly_false(): void {
+		if ( ! class_exists( 'WP_Ability' ) ) {
+			$this->markTestSkipped( 'WP_Ability not available.' );
+		}
+
+		$ability = new \WP_Ability(
+			'test/write-ability',
+			[
+				'label'            => 'Test Write',
+				'description'      => 'A write test ability.',
+				'execute_callback' => '__return_true',
+				'meta'             => [
+					'annotations' => [
+						'readonly'    => false,
+						'destructive' => false,
+						'idempotent'  => false,
+					],
+				],
+			]
+		);
+
+		$this->assertSame( 'write', AgentLoop::classify_ability( $ability ) );
+	}
+
+	/**
+	 * Test classify_ability returns 'write' for abilities with readonly=null (safe default).
+	 */
+	public function test_classify_ability_readonly_null_defaults_to_write(): void {
+		if ( ! class_exists( 'WP_Ability' ) ) {
+			$this->markTestSkipped( 'WP_Ability not available.' );
+		}
+
+		$ability = new \WP_Ability(
+			'test/unknown-ability',
+			[
+				'label'            => 'Test Unknown',
+				'description'      => 'An ability with no readonly annotation.',
+				'execute_callback' => '__return_true',
+				'meta'             => [
+					'annotations' => [
+						'readonly'    => null,
+						'destructive' => null,
+						'idempotent'  => null,
+					],
+				],
+			]
+		);
+
+		$this->assertSame( 'write', AgentLoop::classify_ability( $ability ) );
+	}
+
+	// -------------------------------------------------------------------------
+	// Always-allow persistence
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test set_always_allow persists the permission in settings.
+	 */
+	public function test_set_always_allow_persists_permission(): void {
+		AgentLoop::set_always_allow( 'gratis-ai-agent/memory-save' );
+
+		$settings = new Settings();
+		$perms    = $settings->get( 'tool_permissions' );
+
+		$this->assertIsArray( $perms );
+		$this->assertArrayHasKey( 'gratis-ai-agent/memory-save', $perms );
+		$this->assertSame( 'always_allow', $perms['gratis-ai-agent/memory-save'] );
+	}
+
+	/**
+	 * Test get_always_allowed returns abilities with always_allow permission.
+	 */
+	public function test_get_always_allowed_returns_correct_abilities(): void {
+		Settings::update(
+			[
+				'tool_permissions' => [
+					'gratis-ai-agent/memory-save'   => 'always_allow',
+					'gratis-ai-agent/memory-list'   => 'auto',
+					'gratis-ai-agent/file-write'    => 'always_allow',
+					'gratis-ai-agent/file-read'     => 'disabled',
+				],
+			]
+		);
+
+		$always = AgentLoop::get_always_allowed();
+
+		$this->assertIsArray( $always );
+		$this->assertCount( 2, $always );
+		$this->assertContains( 'gratis-ai-agent/memory-save', $always );
+		$this->assertContains( 'gratis-ai-agent/file-write', $always );
+		$this->assertNotContains( 'gratis-ai-agent/memory-list', $always );
+		$this->assertNotContains( 'gratis-ai-agent/file-read', $always );
+	}
+
+	/**
+	 * Test get_always_allowed returns empty array when no permissions set.
+	 */
+	public function test_get_always_allowed_returns_empty_when_no_perms(): void {
+		delete_option( Settings::OPTION_NAME );
+
+		$always = AgentLoop::get_always_allowed();
+
+		$this->assertIsArray( $always );
+		$this->assertEmpty( $always );
+	}
+
+	// -------------------------------------------------------------------------
+	// Annotation-based confirmation: write tools require confirmation by default
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test that a write tool (readonly=false) triggers confirmation when no
+	 * explicit tool_permissions are set (the new default behavior).
+	 */
+	public function test_write_tool_requires_confirmation_by_default(): void {
+		if ( ! class_exists( 'WP_AI_Client_Ability_Function_Resolver' ) ) {
+			$this->markTestSkipped( 'WP_AI_Client_Ability_Function_Resolver not available.' );
+		}
+
+		// Ensure NO tool_permissions are set — rely on annotation-based classification.
+		delete_option( Settings::OPTION_NAME );
+
+		// Register a test ability with readonly=false.
+		if ( function_exists( 'wp_register_ability' ) ) {
+			wp_register_ability(
+				'gratis-ai-agent/test-write-tool',
+				[
+					'label'            => 'Test Write Tool',
+					'description'      => 'A write tool for testing.',
+					'execute_callback' => '__return_true',
+					'meta'             => [
+						'annotations' => [
+							'readonly'    => false,
+							'destructive' => false,
+							'idempotent'  => false,
+						],
+					],
+				]
+			);
+		} else {
+			$this->markTestSkipped( 'wp_register_ability() not available.' );
+		}
+
+		// Mock a response that calls the write tool.
+		$this->mock_ai_response(
+			'',
+			[
+				[
+					'id'       => 'call_write_test',
+					'type'     => 'function',
+					'function' => [
+						'name'      => 'wpab__gratis-ai-agent__test-write-tool',
+						'arguments' => '{}',
+					],
+				],
+			]
+		);
+
+		$loop   = new AgentLoop( 'Do a write operation' );
+		$result = $loop->run();
+
+		// Should pause for confirmation since it's a write tool.
+		$this->assertIsArray( $result );
+		$this->assertArrayHasKey( 'awaiting_confirmation', $result );
+		$this->assertTrue( $result['awaiting_confirmation'] );
+	}
+
+	/**
+	 * Test that a read tool (readonly=true) auto-executes without confirmation
+	 * when no explicit tool_permissions are set.
+	 */
+	public function test_read_tool_auto_executes_by_default(): void {
+		if ( ! class_exists( 'WP_AI_Client_Ability_Function_Resolver' ) ) {
+			$this->markTestSkipped( 'WP_AI_Client_Ability_Function_Resolver not available.' );
+		}
+
+		// Ensure NO tool_permissions are set.
+		delete_option( Settings::OPTION_NAME );
+
+		// The memory-list ability is registered with readonly=true.
+		// Mock: first call returns tool call, second returns text.
+		$call_count = 0;
+		add_filter(
+			'pre_http_request',
+			static function ( $preempt, $args, $url ) use ( &$call_count ) {
+				if ( false !== strpos( $url, 'fake-ai-proxy.test' ) ) {
+					++$call_count;
+					if ( 1 === $call_count ) {
+						$body = wp_json_encode(
+							[
+								'id'      => 'chatcmpl-read',
+								'object'  => 'chat.completion',
+								'choices' => [
+									[
+										'index'         => 0,
+										'message'       => [
+											'role'       => 'assistant',
+											'content'    => null,
+											'tool_calls' => [
+												[
+													'id'       => 'call_read',
+													'type'     => 'function',
+													'function' => [
+														'name'      => 'wpab__gratis-ai-agent__memory-list',
+														'arguments' => '{}',
+													],
+												],
+											],
+										],
+										'finish_reason' => 'tool_calls',
+									],
+								],
+								'usage'   => [ 'prompt_tokens' => 10, 'completion_tokens' => 5, 'total_tokens' => 15 ],
+							]
+						);
+					} else {
+						$body = wp_json_encode(
+							[
+								'id'      => 'chatcmpl-done',
+								'object'  => 'chat.completion',
+								'choices' => [
+									[
+										'index'         => 0,
+										'message'       => [ 'role' => 'assistant', 'content' => 'Here are your memories.' ],
+										'finish_reason' => 'stop',
+									],
+								],
+								'usage'   => [ 'prompt_tokens' => 20, 'completion_tokens' => 10, 'total_tokens' => 30 ],
+							]
+						);
+					}
+					return [
+						'headers'  => [ 'content-type' => 'application/json' ],
+						'body'     => $body,
+						'response' => [ 'code' => 200, 'message' => 'OK' ],
+						'cookies'  => [],
+						'filename' => '',
+					];
+				}
+				return $preempt;
+			},
+			10,
+			3
+		);
+
+		$loop   = new AgentLoop( 'List my memories' );
+		$result = $loop->run();
+
+		// Should NOT pause for confirmation — read tools auto-execute.
+		$this->assertIsArray( $result );
+		$this->assertArrayNotHasKey( 'awaiting_confirmation', $result );
+		$this->assertArrayHasKey( 'reply', $result );
+		$this->assertSame( 'Here are your memories.', $result['reply'] );
+	}
+
+	/**
+	 * Test that always_allow permission skips confirmation for write tools.
+	 */
+	public function test_always_allow_skips_confirmation_for_write_tools(): void {
+		if ( ! class_exists( 'WP_AI_Client_Ability_Function_Resolver' ) ) {
+			$this->markTestSkipped( 'WP_AI_Client_Ability_Function_Resolver not available.' );
+		}
+
+		// Set the write tool to always_allow.
+		Settings::update(
+			[
+				'tool_permissions' => [
+					'gratis-ai-agent/memory-save' => 'always_allow',
+				],
+			]
+		);
+
+		// Mock: first call returns tool call, second returns text.
+		$call_count = 0;
+		add_filter(
+			'pre_http_request',
+			static function ( $preempt, $args, $url ) use ( &$call_count ) {
+				if ( false !== strpos( $url, 'fake-ai-proxy.test' ) ) {
+					++$call_count;
+					if ( 1 === $call_count ) {
+						$body = wp_json_encode(
+							[
+								'id'      => 'chatcmpl-aa',
+								'object'  => 'chat.completion',
+								'choices' => [
+									[
+										'index'         => 0,
+										'message'       => [
+											'role'       => 'assistant',
+											'content'    => null,
+											'tool_calls' => [
+												[
+													'id'       => 'call_aa',
+													'type'     => 'function',
+													'function' => [
+														'name'      => 'wpab__gratis-ai-agent__memory-save',
+														'arguments' => wp_json_encode( [ 'content' => 'Test' ] ),
+													],
+												],
+											],
+										],
+										'finish_reason' => 'tool_calls',
+									],
+								],
+								'usage'   => [ 'prompt_tokens' => 10, 'completion_tokens' => 5, 'total_tokens' => 15 ],
+							]
+						);
+					} else {
+						$body = wp_json_encode(
+							[
+								'id'      => 'chatcmpl-done',
+								'object'  => 'chat.completion',
+								'choices' => [
+									[
+										'index'         => 0,
+										'message'       => [ 'role' => 'assistant', 'content' => 'Saved!' ],
+										'finish_reason' => 'stop',
+									],
+								],
+								'usage'   => [ 'prompt_tokens' => 20, 'completion_tokens' => 10, 'total_tokens' => 30 ],
+							]
+						);
+					}
+					return [
+						'headers'  => [ 'content-type' => 'application/json' ],
+						'body'     => $body,
+						'response' => [ 'code' => 200, 'message' => 'OK' ],
+						'cookies'  => [],
+						'filename' => '',
+					];
+				}
+				return $preempt;
+			},
+			10,
+			3
+		);
+
+		$loop   = new AgentLoop( 'Save something' );
+		$result = $loop->run();
+
+		// Should NOT pause — always_allow skips confirmation.
+		$this->assertIsArray( $result );
+		$this->assertArrayNotHasKey( 'awaiting_confirmation', $result );
+		$this->assertArrayHasKey( 'reply', $result );
+	}
 }

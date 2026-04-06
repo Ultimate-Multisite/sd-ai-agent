@@ -371,11 +371,25 @@ class RestController {
 			$job_id = wp_generate_uuid4();
 			$token  = wp_generate_password( 40, false );
 
+			// Enrich pending tools with classification info for the frontend.
+			$pending_tools = $result['pending_tools'] ?? array();
+			$all_abilities = function_exists( 'wp_get_abilities' ) ? wp_get_abilities() : array();
+			foreach ( $pending_tools as &$pt ) {
+				$pt_name = (string) ( $pt['name'] ?? '' );
+				if ( str_starts_with( $pt_name, 'wpab__' ) && class_exists( 'WP_AI_Client_Ability_Function_Resolver' ) ) {
+					$pt_name = \WP_AI_Client_Ability_Function_Resolver::function_name_to_ability_name( $pt_name );
+				}
+				$pt['ability_name']     = $pt_name;
+				$pt['classification']   = 'write'; // Default — these are all write tools.
+				$pt['can_always_allow'] = true;    // Frontend can show "Always Allow" button.
+			}
+			unset( $pt );
+
 			$job = array(
 				'status'             => 'awaiting_confirmation',
 				'token'              => $token,
 				'user_id'            => get_current_user_id(),
-				'pending_tools'      => $result['pending_tools'] ?? array(),
+				'pending_tools'      => $pending_tools,
 				'confirmation_state' => array(
 					'history'              => $result['history'] ?? array(),
 					'tool_call_log'        => $result['tool_call_log'] ?? array(),
@@ -486,6 +500,11 @@ class RestController {
 			),
 			'tool_calls'      => $result['tool_calls'] ?? array(),
 		);
+
+		// Include exit reason if the loop terminated early (timeout, spin, budget).
+		if ( ! empty( $result['exit_reason'] ) ) {
+			$done_payload['exit_reason'] = $result['exit_reason'];
+		}
 
 		if ( null !== $generated_title ) {
 			$done_payload['generated_title'] = $generated_title;

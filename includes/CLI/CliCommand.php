@@ -127,8 +127,10 @@ class CliCommand extends \WP_CLI_Command {
 			$options['provider_id'] = $provider;
 		}
 
-		// In CLI mode, set all tool permissions to 'auto' so nothing blocks.
-		$options['tool_permissions'] = [];
+		// In CLI mode, enable YOLO mode so write tools auto-execute without
+		// pausing for confirmation. Passed as an option override so it only
+		// affects this run, not the persisted settings.
+		$options['yolo_mode'] = true;
 
 		// If --skip-tools, pass a bogus ability name so nothing resolves.
 		$abilities = $no_tools ? [ '__none__' ] : [];

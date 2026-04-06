@@ -11,6 +11,11 @@ const { defineConfig, devices } = require( '@playwright/test' );
 
 const ciWorkers = Number.parseInt( process.env.PLAYWRIGHT_WORKERS || '2', 10 );
 
+/** @param {number} n @returns {number} */
+function getWorkerCount( n ) {
+	return Number.isFinite( n ) && n > 0 ? n : 2;
+}
+
 module.exports = defineConfig( {
 	testDir: './tests/e2e',
 	testMatch: '**/*.spec.js',
@@ -34,9 +39,7 @@ module.exports = defineConfig( {
 	 * contention that manifests as login and SPA-render timeouts on CI
 	 * runners. The suite is sharded (3 shards per WP version) so 2 workers
 	 * per shard is sufficient to complete within the 45-min shard timeout. */
-	workers: process.env.CI
-		? ( Number.isFinite( ciWorkers ) && ciWorkers > 0 ? ciWorkers : 2 )
-		: undefined,
+	workers: process.env.CI ? getWorkerCount( ciWorkers ) : undefined,
 
 	/* Reporter to use. */
 	reporter: process.env.CI

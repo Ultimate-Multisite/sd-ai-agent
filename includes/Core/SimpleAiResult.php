@@ -61,14 +61,37 @@ class SimpleAiResult {
 		if ( null === $this->message ) {
 			$parts = [];
 
+			// Parse OpenAI-format tool_calls from the raw response.
+			// @phpstan-ignore-next-line
+			$tool_calls = $this->raw['choices'][0]['message']['tool_calls'] ?? [];
+			// Filter out empty tool_calls arrays (some models return []).
+			if ( ! is_array( $tool_calls ) ) {
+				$tool_calls = [];
+			}
+			$tool_calls = array_filter(
+				$tool_calls,
+				function ( $tc ) {
+					return ! empty( $tc['function']['name'] );
+				}
+			);
+
+			// If no structured tool_calls, try to parse text-based tool calls.
+			// Some models (Kimi K2.5, DeepSeek V3.2 via Synthetic API) output
+			// tool calls as text tokens instead of using the function calling API.
+			if ( empty( $tool_calls ) && '' !== $this->text ) {
+				$parsed = self::parse_text_tool_calls( $this->text );
+				if ( ! empty( $parsed['tool_calls'] ) ) {
+					$tool_calls = $parsed['tool_calls'];
+					// Remove the tool call markup from the text content.
+					$this->text = $parsed['clean_text'];
+				}
+			}
+
 			// Add text part if present.
 			if ( '' !== $this->text ) {
 				$parts[] = new MessagePart( $this->text );
 			}
 
-			// Parse OpenAI-format tool_calls from the raw response.
-			// @phpstan-ignore-next-line
-			$tool_calls = $this->raw['choices'][0]['message']['tool_calls'] ?? [];
 			// @phpstan-ignore-next-line
 			foreach ( $tool_calls as $tc ) {
 				// @phpstan-ignore-next-line
@@ -82,6 +105,9 @@ class SimpleAiResult {
 					$fn_args = json_decode( $fn_args, true ) ?: [];
 				}
 
+				// Empty list args [] are left as-is — WP core's execute() sees
+				// empty($args)=true, passes null, and normalize_input() returns
+				// the ability's 'default' value ([] for no-arg abilities).
 				$parts[] = new MessagePart(
 					// @phpstan-ignore-next-line
 					new FunctionCall( $fn_id, $fn_name, $fn_args )
@@ -96,6 +122,103 @@ class SimpleAiResult {
 			$this->message = new ModelMessage( $parts );
 		}
 		return $this->message;
+	}
+
+	/**
+	 * Parse tool calls embedded as text tokens in the response content.
+	 *
+	 * Some models (Kimi K2.5, DeepSeek V3.2 via Synthetic API proxies) output
+	 * tool calls as text instead of using the OpenAI function calling format.
+	 *
+	 * Supported formats:
+	 *
+	 * 1. Kimi/DeepSeek special tokens:
+	 *    <|tool_calls_section_begin|> <|tool_call_begin|>
+	 *    functions.namespace/tool-name:0
+	 *    <|tool_call_argument_begin|> {"key": "value"} <|tool_call_end|>
+	 *    <|tool_calls_section_end|>
+	 *
+	 * 2. JSON code blocks with tool/function schema:
+	 *    ```json
+	 *    {"tool": "namespace/tool-name", "args": {"key": "value"}}
+	 *    ```
+	 *
+	 * @param string $text The response text to parse.
+	 * @return array{tool_calls: list<array<string, mixed>>, clean_text: string}
+	 */
+	private static function parse_text_tool_calls( string $text ): array {
+		$tool_calls = [];
+		$clean_text = $text;
+
+		// Pattern 1: Kimi/DeepSeek special token format.
+		// Match: <|tool_calls_section_begin|> ... <|tool_calls_section_end|>
+		if ( str_contains( $text, '<|tool_call' ) ) {
+			// Extract individual tool calls.
+			$pattern = '/<\|tool_call_begin\|>\s*(?:functions\.)?([^\s:]+)(?::\d+)?\s*<\|tool_call_argument_begin\|>\s*(\{[^}]*\})\s*<\|tool_call_end\|>/s';
+			if ( preg_match_all( $pattern, $text, $matches, PREG_SET_ORDER ) ) {
+				foreach ( $matches as $i => $match ) {
+					$fn_name = trim( $match[1] );
+					$fn_args = $match[2];
+
+					// Convert ability name format (namespace/tool) to wpab__ format.
+					$wpab_name = 'wpab__' . str_replace( '/', '__', $fn_name );
+
+					$tool_calls[] = [
+						'id'       => 'parsed_' . $i,
+						'type'     => 'function',
+						'function' => [
+							'name'      => $wpab_name,
+							'arguments' => $fn_args,
+						],
+					];
+				}
+			}
+
+			// Remove the entire tool calls section from text.
+			$clean_text = preg_replace( '/<\|tool_calls_section_begin\|>.*?<\|tool_calls_section_end\|>/s', '', $text );
+			$clean_text = trim( $clean_text ?? '' );
+		}
+
+		// Pattern 2: JSON code blocks with tool/function schema.
+		// Match: ```json\n{"tool": "...", "args": {...}}\n```
+		if ( empty( $tool_calls ) && preg_match_all( '/```(?:json)?\s*\n?\s*(\{[^`]*?"(?:tool|function)"[^`]*?\})\s*\n?\s*```/s', $text, $matches ) ) {
+			foreach ( $matches[1] as $i => $json_str ) {
+				$parsed = json_decode( $json_str, true );
+				if ( ! is_array( $parsed ) ) {
+					continue;
+				}
+
+				$fn_name = $parsed['tool'] ?? $parsed['function'] ?? $parsed['name'] ?? '';
+				$fn_args = $parsed['args'] ?? $parsed['arguments'] ?? $parsed['parameters'] ?? [];
+
+				if ( empty( $fn_name ) ) {
+					continue;
+				}
+
+				// Convert ability name format to wpab__ format.
+				$wpab_name = 'wpab__' . str_replace( '/', '__', $fn_name );
+
+				$tool_calls[] = [
+					'id'       => 'parsed_json_' . $i,
+					'type'     => 'function',
+					'function' => [
+						'name'      => $wpab_name,
+						'arguments' => is_string( $fn_args ) ? $fn_args : wp_json_encode( $fn_args ),
+					],
+				];
+			}
+
+			if ( ! empty( $tool_calls ) ) {
+				// Remove the matched code blocks from text.
+				$clean_text = preg_replace( '/```(?:json)?\s*\n?\s*\{[^`]*?"(?:tool|function)"[^`]*?\}\s*\n?\s*```/s', '', $text );
+				$clean_text = trim( $clean_text ?? '' );
+			}
+		}
+
+		return [
+			'tool_calls' => $tool_calls,
+			'clean_text' => $clean_text,
+		];
 	}
 
 	/**
