@@ -385,6 +385,7 @@ class GitRestoreAbility extends AbstractAbility {
 	protected function meta(): array {
 		return [
 			'annotations'  => [
+				'readonly'    => false,
 				'destructive' => true,
 			],
 			'show_in_rest' => true,
@@ -641,6 +642,7 @@ class GitRevertPackageAbility extends AbstractAbility {
 	protected function meta(): array {
 		return [
 			'annotations'  => [
+				'readonly'    => false,
 				'destructive' => true,
 			],
 			'show_in_rest' => true,

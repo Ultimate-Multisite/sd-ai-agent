@@ -62,6 +62,13 @@ class KnowledgeAbilities {
 						'error'   => [ 'type' => 'string' ],
 					],
 				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_knowledge_search' ],
 				'permission_callback' => function () {
 					return current_user_can( 'manage_options' ); },

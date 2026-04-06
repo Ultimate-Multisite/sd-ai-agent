@@ -163,7 +163,8 @@ class SiteHealthAbilities {
 				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
-					'properties' => new \stdClass(),
+					'properties' => (object) [],
+					'default'    => [],
 				],
 				'output_schema'       => [
 					'type'       => 'object',
@@ -204,7 +205,8 @@ class SiteHealthAbilities {
 				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
-					'properties' => new \stdClass(),
+					'properties' => (object) [],
+					'default'    => [],
 				],
 				'output_schema'       => [
 					'type'       => 'object',
@@ -242,7 +244,8 @@ class SiteHealthAbilities {
 				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
-					'properties' => new \stdClass(),
+					'properties' => (object) [],
+					'default'    => [],
 				],
 				'output_schema'       => [
 					'type'       => 'object',
@@ -473,11 +476,15 @@ class SiteHealthAbilities {
 		$uploads_dir        = wp_upload_dir();
 		$uploads_size_mb    = self::get_directory_size_mb( $uploads_dir['basedir'] );
 
-		// Determine status.
-		$status = 'ok';
-		if ( $disk_used_percent >= 90 ) {
+		// Determine status based on absolute free space, not percentage.
+		// Percentage thresholds are misleading on large disks — 10% free on a
+		// 1TB disk is 100GB, while 10% free on a 10GB disk is only 1GB.
+		// Use absolute thresholds: < 2GB free = critical, < 5GB free = warning.
+		$disk_free_gb = $disk_free / ( 1024 ** 3 );
+		$status       = 'ok';
+		if ( $disk_free_gb < 2.0 ) {
 			$status = 'critical';
-		} elseif ( $disk_used_percent >= 75 ) {
+		} elseif ( $disk_free_gb < 5.0 ) {
 			$status = 'warning';
 		}
 

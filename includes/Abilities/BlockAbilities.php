@@ -65,6 +65,11 @@ class BlockAbilities {
 					return current_user_can( 'edit_posts' );
 				},
 				'meta'                => [
+					'annotations'  => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
 					'show_in_rest' => false,
 					'ai_hidden'    => true,
 				],
@@ -109,6 +114,13 @@ class BlockAbilities {
 						'categories'  => [ 'type' => 'object' ],
 					],
 				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_list_block_types' ],
 				'permission_callback' => function () {
 					return current_user_can( 'edit_posts' );
@@ -144,6 +156,13 @@ class BlockAbilities {
 						'supports'       => [ 'type' => 'object' ],
 						'example_markup' => [ 'type' => 'string' ],
 						'error'          => [ 'type' => 'string' ],
+					],
+				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
 					],
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_get_block_type' ],
@@ -189,6 +208,13 @@ class BlockAbilities {
 						'categories' => [ 'type' => 'object' ],
 					],
 				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_list_block_patterns' ],
 				'permission_callback' => function () {
 					return current_user_can( 'edit_posts' );
@@ -217,6 +243,13 @@ class BlockAbilities {
 					'properties' => [
 						'templates' => [ 'type' => 'array' ],
 						'total'     => [ 'type' => 'integer' ],
+					],
+				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
 					],
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_list_block_templates' ],
@@ -255,6 +288,11 @@ class BlockAbilities {
 					return current_user_can( 'edit_posts' );
 				},
 				'meta'                => [
+					'annotations'  => [
+						'readonly'    => false,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
 					'show_in_rest' => false,
 					'ai_hidden'    => true,
 				],
@@ -291,6 +329,13 @@ class BlockAbilities {
 						'blocks'      => [ 'type' => 'array' ],
 						'block_count' => [ 'type' => 'integer' ],
 						'error'       => [ 'type' => 'string' ],
+					],
+				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
 					],
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_parse_block_content' ],
