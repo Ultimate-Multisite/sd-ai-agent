@@ -161,8 +161,8 @@ export default function DataTable( { children } ) {
 
 	return (
 		<div className="gratis-ai-agent-data-table-wrap">
-			{ /* Filter bar — only shown when the table has data */ }
-			{ rawRows.length > 0 && (
+			{ /* Filter bar — only shown when the table has more than 10 rows */ }
+			{ rawRows.length > 10 && (
 				<div className="gratis-ai-agent-data-table-toolbar">
 					<div className="gratis-ai-agent-data-table-filter">
 						<input
