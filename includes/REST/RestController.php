@@ -310,11 +310,11 @@ class RestController {
 		if ( $session_id ) {
 			$session = Database::get_session( $session_id );
 			if ( $session ) {
+				/** @var list<array<string, mixed>> $session_messages */
 				$session_messages = json_decode( $session->messages, true ) ?: array();
 				if ( ! empty( $session_messages ) ) {
 					try {
-						// @phpstan-ignore-next-line
-						$history = AgentLoop::deserialize_history( $session_messages );
+						$history = AgentLoop::deserialize_history( array_values( $session_messages ) );
 					} catch ( \Exception $e ) {
 						$history = array();
 					}
