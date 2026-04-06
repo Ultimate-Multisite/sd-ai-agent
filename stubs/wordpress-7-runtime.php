@@ -1,0 +1,468 @@
+<?php
+/**
+ * Stubs for WordPress 7.0+ runtime APIs not yet covered by php-stubs/wordpress-stubs
+ * or the intelephense built-in WordPress stub set.
+ *
+ * Covers:
+ *   - WordPress\AiClient SDK (WP 7.0 core AI Client)
+ *   - WP_AI_Client_Ability_Function_Resolver (WP 7.0 compat class)
+ *   - WP_Ability / wp_register_ability / wp_get_abilities (WP 7.0 Abilities API)
+ *   - wp_register_ability_category (WP 7.0 Abilities API)
+ *   - OpenAiCompatibleConnector namespace functions (WP Connectors API)
+ *   - _wp_connectors_get_* internal functions (WP Connectors API)
+ *   - WP_CLI class and constant (WP-CLI)
+ *
+ * These are provided at runtime by WordPress 7.0+ core or WP-CLI.
+ * This file exists solely for LSP (intelephense) type resolution and is
+ * never loaded at runtime.
+ *
+ * @package GratisAiAgent
+ */
+
+// phpcs:disable
+
+namespace WordPress\AiClient\Messages\Enums {
+
+	/**
+	 * Enum for message roles (stub).
+	 */
+	class MessageRoleEnum {
+		/** @var string */
+		public string $value = '';
+
+		/**
+		 * Get the role value string.
+		 *
+		 * @return string
+		 */
+		public function getValue(): string {
+			return $this->value;
+		}
+	}
+}
+
+namespace WordPress\AiClient\Tools\DTO {
+
+	/**
+	 * Represents an AI function call (stub).
+	 */
+	class FunctionCall {
+		/**
+		 * Constructor.
+		 *
+		 * @param string               $id   Function call ID.
+		 * @param string               $name Function name.
+		 * @param array<string, mixed> $args Function arguments.
+		 */
+		public function __construct( string $id, string $name, array $args = array() ) {}
+
+		/** @return string */
+		public function getId(): string { return ''; }
+
+		/** @return string */
+		public function getName(): string { return ''; }
+
+		/** @return array<string, mixed> */
+		public function getArgs(): array { return array(); }
+	}
+
+	/**
+	 * Represents an AI function response (stub).
+	 */
+	class FunctionResponse {
+		/**
+		 * Constructor.
+		 *
+		 * @param string $id       Function call ID.
+		 * @param string $name     Function name.
+		 * @param mixed  $response Response data.
+		 */
+		public function __construct( string $id, string $name, mixed $response = null ) {}
+
+		/** @return string */
+		public function getId(): string { return ''; }
+
+		/** @return string */
+		public function getName(): string { return ''; }
+
+		/** @return mixed */
+		public function getResponse(): mixed { return null; }
+	}
+}
+
+namespace WordPress\AiClient\Messages\DTO {
+
+	use WordPress\AiClient\Messages\Enums\MessageRoleEnum;
+	use WordPress\AiClient\Tools\DTO\FunctionCall;
+	use WordPress\AiClient\Tools\DTO\FunctionResponse;
+
+	/**
+	 * Represents the type of a message part (stub).
+	 */
+	class MessagePartType {
+		/** @return bool */
+		public function isFunctionCall(): bool { return false; }
+
+		/** @return bool */
+		public function isFunctionResponse(): bool { return false; }
+
+		/** @return bool */
+		public function isText(): bool { return false; }
+	}
+
+	/**
+	 * Represents a single part of an AI message (stub).
+	 */
+	class MessagePart {
+		/**
+		 * Constructor.
+		 *
+		 * @param string|FunctionCall|\WordPress\AiClient\Tools\DTO\FunctionResponse $content Text, function call, or function response.
+		 */
+		public function __construct( string|FunctionCall|\WordPress\AiClient\Tools\DTO\FunctionResponse $content = '' ) {}
+
+		/** @return string */
+		public function getText(): string { return ''; }
+
+		/** @return MessagePartType */
+		public function getType(): MessagePartType { return new MessagePartType(); }
+
+		/** @return FunctionCall|null */
+		public function getFunctionCall(): ?FunctionCall { return null; }
+
+		/** @return FunctionResponse|null */
+		public function getFunctionResponse(): ?FunctionResponse { return null; }
+	}
+
+	/**
+	 * Base class for AI conversation messages (stub).
+	 */
+	class Message {
+		/**
+		 * Get the message role.
+		 *
+		 * @return MessageRoleEnum
+		 */
+		public function getRole(): MessageRoleEnum { return new MessageRoleEnum(); }
+
+		/**
+		 * Get the message parts.
+		 *
+		 * @return MessagePart[]
+		 */
+		public function getParts(): array { return array(); }
+
+		/**
+		 * Serialize the message to an array.
+		 *
+		 * @return array<string, mixed>
+		 */
+		public function toArray(): array { return array(); }
+
+		/**
+		 * Deserialize a message from an array.
+		 *
+		 * @param array<string, mixed> $data Serialized message data.
+		 * @return static
+		 */
+		public static function fromArray( array $data ): static { return new static(); }
+	}
+
+	/**
+	 * Represents a user message in an AI conversation (stub).
+	 */
+	class UserMessage extends Message {
+		/**
+		 * Constructor.
+		 *
+		 * @param MessagePart[] $parts Message parts.
+		 */
+		public function __construct( array $parts = array() ) {}
+	}
+
+	/**
+	 * Represents a model (assistant) message in an AI conversation (stub).
+	 */
+	class ModelMessage extends Message {
+		/**
+		 * Constructor.
+		 *
+		 * @param MessagePart[] $parts Message parts.
+		 */
+		public function __construct( array $parts = array() ) {}
+	}
+}
+
+namespace WordPress\AiClient\Results\DTO {
+
+	use WordPress\AiClient\Messages\DTO\Message;
+
+	/**
+	 * Result from a generative AI request (stub).
+	 */
+	class GenerativeAiResult {
+		/** @return Message */
+		public function getMessage(): Message { return new Message(); }
+
+		/** @return Message[] */
+		public function getCandidates(): array { return array(); }
+
+		/**
+		 * Convert the result to a Message for conversation history.
+		 *
+		 * @return Message
+		 */
+		public function toMessage(): Message { return new Message(); }
+
+		/**
+		 * Get the text content of the result.
+		 *
+		 * @return string
+		 */
+		public function toText(): string { return ''; }
+
+		/**
+		 * Check whether the result contains ability (tool) calls.
+		 *
+		 * @return bool
+		 */
+		public function has_ability_calls(): bool { return false; }
+	}
+}
+
+namespace WordPress\AiClient {
+
+	/**
+	 * AI model registry (stub).
+	 */
+	class ModelRegistry {
+		/** @param string $provider_id */
+		public function hasProvider( string $provider_id ): bool { return false; }
+
+		/**
+		 * @param string $provider_id
+		 * @param string $model_id
+		 * @return mixed
+		 */
+		public function getProviderModel( string $provider_id, string $model_id ): mixed { return null; }
+
+		/** @param string $provider_id */
+		public function getProviderRequestAuthentication( string $provider_id ): mixed { return null; }
+
+		/**
+		 * @param string $provider_id
+		 * @param mixed  $authentication
+		 */
+		public function setProviderRequestAuthentication( string $provider_id, mixed $authentication ): void {}
+	}
+
+	/**
+	 * WordPress AI Client (stub).
+	 *
+	 * @since 7.0.0
+	 */
+	class AiClient {
+		/** @return ModelRegistry */
+		public static function defaultRegistry(): ModelRegistry { return new ModelRegistry(); }
+	}
+}
+
+namespace OpenAiCompatibleConnector {
+
+	/**
+	 * Get the default model ID for the OpenAI-compatible connector (stub).
+	 *
+	 * @return string
+	 */
+	function get_default_model(): string { return ''; }
+
+	/**
+	 * List available models via REST (stub).
+	 *
+	 * @param \WP_REST_Request $request
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	function rest_list_models( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+		return new \WP_REST_Response();
+	}
+}
+
+namespace {
+
+	/** WP-CLI is active (stub constant — false at analysis time). */
+	const WP_CLI = false;
+
+	/**
+	 * WP-CLI framework class (stub).
+	 */
+	class WP_CLI {
+		/**
+		 * @param string          $name
+		 * @param callable|string $callable
+		 * @param array           $args
+		 */
+		public static function add_command( string $name, $callable, array $args = array() ): void {}
+
+		/** @param string $message */
+		public static function success( string $message ): void {}
+
+		/**
+		 * @param string $message
+		 * @param bool   $exit
+		 */
+		public static function error( string $message, bool $exit = true ): void {}
+
+		/** @param string $message */
+		public static function log( string $message ): void {}
+
+		/** @param string $message */
+		public static function warning( string $message ): void {}
+	}
+
+	/**
+	 * WordPress Ability class (stub).
+	 *
+	 * @since 7.0.0
+	 */
+	class WP_Ability {
+		/** @return string */
+		public function get_name(): string { return ''; }
+
+		/** @return string */
+		public function get_label(): string { return ''; }
+
+		/** @return string */
+		public function get_description(): string { return ''; }
+
+		/** @return array<string, mixed> */
+		public function get_params(): array { return array(); }
+
+		/**
+		 * Get the JSON Schema for the ability's input parameters.
+		 *
+		 * @return array<string, mixed>
+		 */
+		public function get_input_schema(): array { return array(); }
+
+		/**
+		 * Get the ability category slug.
+		 *
+		 * @return string
+		 */
+		public function get_category(): string { return ''; }
+
+		/**
+		 * Get ability metadata.
+		 *
+		 * @return array<string, mixed>
+		 */
+		public function get_meta(): array { return array(); }
+
+		/** @return mixed */
+		public function call( array $params ): mixed { return null; }
+	}
+
+	/**
+	 * Resolves between WP Ability names and AI function call names (stub).
+	 *
+	 * @since 7.0.0
+	 */
+	class WP_AI_Client_Ability_Function_Resolver {
+		/** @param WP_Ability ...$abilities */
+		public function __construct( WP_Ability ...$abilities ) {}
+
+		/** @param string $ability_name */
+		public static function ability_name_to_function_name( string $ability_name ): string { return ''; }
+
+		/** @param string $function_name */
+		public static function function_name_to_ability_name( string $function_name ): string { return ''; }
+
+		/** @return array<int, array<string, mixed>> */
+		public function get_tools(): array { return array(); }
+
+		/**
+		 * Check whether a message contains ability (tool) calls.
+		 *
+		 * @param \WordPress\AiClient\Messages\DTO\Message $message
+		 * @return bool
+		 */
+		public function has_ability_calls( \WordPress\AiClient\Messages\DTO\Message $message ): bool { return false; }
+
+		/**
+		 * Execute all ability calls in a message and return the response message.
+		 *
+		 * @param \WordPress\AiClient\Messages\DTO\Message $message
+		 * @return \WordPress\AiClient\Messages\DTO\Message
+		 */
+		public function execute_abilities( \WordPress\AiClient\Messages\DTO\Message $message ): \WordPress\AiClient\Messages\DTO\Message {
+			return new \WordPress\AiClient\Messages\DTO\UserMessage();
+		}
+	}
+
+	/**
+	 * Register a WordPress ability.
+	 *
+	 * @since 7.0.0
+	 *
+	 * @param string               $name Namespaced ability name.
+	 * @param array<string, mixed> $args Ability configuration.
+	 * @return WP_Ability|null
+	 */
+	function wp_register_ability( string $name, array $args ): ?WP_Ability { return null; }
+
+	/**
+	 * Unregister a WordPress ability.
+	 *
+	 * @since 7.0.0
+	 *
+	 * @param string $name Namespaced ability name.
+	 * @return WP_Ability|null
+	 */
+	function wp_unregister_ability( string $name ): ?WP_Ability { return null; }
+
+	/**
+	 * Get a registered WordPress ability by name.
+	 *
+	 * @since 7.0.0
+	 *
+	 * @param string $name Namespaced ability name.
+	 * @return WP_Ability|null
+	 */
+	function wp_get_ability( string $name ): ?WP_Ability { return null; }
+
+	/**
+	 * Get all registered WordPress abilities.
+	 *
+	 * @since 7.0.0
+	 *
+	 * @return WP_Ability[]
+	 */
+	function wp_get_abilities(): array { return array(); }
+
+	/**
+	 * Register a WordPress ability category.
+	 *
+	 * @since 7.0.0
+	 *
+	 * @param string               $slug Category slug.
+	 * @param array<string, mixed> $args Category configuration.
+	 * @return mixed
+	 */
+	function wp_register_ability_category( string $slug, array $args ): mixed { return null; }
+
+	/**
+	 * Get all registered connector provider settings.
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	function _wp_connectors_get_provider_settings(): array { return array(); }
+
+	/**
+	 * Get the real (unmasked) API key for a connector setting.
+	 *
+	 * @param string $setting_name Setting name.
+	 * @param string $mask         Masked key value.
+	 * @return string
+	 */
+	function _wp_connectors_get_real_api_key( string $setting_name, string $mask ): string { return ''; }
+}

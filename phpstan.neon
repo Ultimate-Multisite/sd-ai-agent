@@ -12,6 +12,7 @@ parameters:
 		- vendor/autoload.php
 	scanFiles:
 		- vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+		- stubs/wordpress-7-runtime.php
 	treatPhpDocTypesAsCertain: false
 	reportUnmatchedIgnoredErrors: false
 	ignoreErrors:
