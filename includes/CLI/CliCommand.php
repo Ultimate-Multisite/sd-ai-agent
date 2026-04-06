@@ -164,7 +164,7 @@ class CliCommand extends \WP_CLI_Command {
 			/** @var list<array<string, mixed>> $result_history */
 			$result_history = $result['history'] ?? [];
 			$history        = AgentLoop::deserialize_history( array_values( $result_history ) );
-			$remaining = $result['iterations_remaining'] ?? $max_iterations;
+			$remaining      = $result['iterations_remaining'] ?? $max_iterations;
 
 			$resume_options                  = $options;
 			$resume_options['tool_call_log'] = $result['tool_call_log'] ?? [];
