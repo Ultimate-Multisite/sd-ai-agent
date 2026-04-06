@@ -15,8 +15,8 @@ jobs:
   e2e:
     name: Playwright E2E (WP ${{ matrix.wp }} shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
-    # Each shard runs ~1/3 of the 13 spec files. 45 min gives ample headroom
-    # (worst case: 5 specs × 60 s/test × 1 retry / 2 workers ≈ 25 min).
+    # Each shard runs ~1/4 of the 224 tests (~56 tests). 45 min gives ample
+    # headroom (worst case: 56 tests × 60 s × 1 retry / 2 workers ≈ 28 min).
     timeout-minutes: 45
     # WP trunk may fail due to PSR namespace conflicts between our compat
     # layer and core's native AI Client SDK (see tests.yml for details).
@@ -26,9 +26,9 @@ jobs:
       fail-fast: false
       matrix:
         wp: ['6.9', 'trunk']
-        # 3 shards split 13 spec files into ~4-5 files each, keeping each
-        # shard well within the 45-min timeout even with retries.
-        shard: [1, 2, 3]
+        # 4 shards split 224 tests into ~56 each, keeping each shard well
+        # within the 45-min timeout even with retries (28 min worst case).
+        shard: [1, 2, 3, 4]
         include:
           - wp: '6.9'
             wp_env_port: '8888'
@@ -149,8 +149,8 @@ jobs:
         env:
           WP_ENV_HOME: /tmp/wp-env
 
-      - name: Run Playwright E2E tests (shard ${{ matrix.shard }}/3)
-        run: npx playwright test --shard=${{ matrix.shard }}/3
+      - name: Run Playwright E2E tests (shard ${{ matrix.shard }}/4)
+        run: npx playwright test --shard=${{ matrix.shard }}/4
         env:
           WP_BASE_URL: http://localhost:8888
           WP_ADMIN_USER: admin
