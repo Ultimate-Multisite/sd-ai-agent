@@ -1220,7 +1220,7 @@ class SessionController {
 			$state     = $job['confirmation_state'] ?? array();
 
 			/** @var list<array<string, mixed>> $state_history */
-			$state_history  = $state['history'] ?? array();
+			$state_history = $state['history'] ?? array();
 			try {
 				$resume_history = AgentLoop::deserialize_history( array_values( $state_history ) );
 			} catch ( \Exception $e ) {
