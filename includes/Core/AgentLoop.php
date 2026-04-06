@@ -110,6 +110,24 @@ class AgentLoop {
 	/** @var SseStreamer|null Optional SSE streamer for token-by-token output. */
 	private ?SseStreamer $sse_streamer = null;
 
+	/**
+	 * Whether the current run has already pushed reply tokens to the SSE
+	 * streamer character-by-character. The direct streaming path sets this so
+	 * the REST controller knows it does not need to flush the final reply as
+	 * a single token at the end of the run.
+	 *
+	 * @var bool
+	 */
+	private bool $reply_streamed = false;
+
+	/**
+	 * Whether the final reply text has already been pushed to the SSE
+	 * streamer token-by-token by a streaming provider implementation.
+	 */
+	public function reply_was_streamed(): bool {
+		return $this->reply_streamed;
+	}
+
 	/** @var Settings Injected settings dependency. */
 	private $settings_service;
 
@@ -1362,6 +1380,7 @@ class AgentLoop {
 				$full_text .= $token;
 				if ( null !== $this->sse_streamer ) {
 					$this->sse_streamer->send_token( $token );
+					$this->reply_streamed = true;
 				}
 			}
 
