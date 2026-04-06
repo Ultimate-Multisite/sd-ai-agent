@@ -138,6 +138,7 @@ class MediaAbilities {
 				],
 				'meta'                => [
 					'annotations'  => [
+						'readonly'    => false,
 						'destructive' => false,
 					],
 					'show_in_rest' => true,
@@ -179,6 +180,7 @@ class MediaAbilities {
 				],
 				'meta'                => [
 					'annotations'  => [
+						'readonly'    => false,
 						'destructive' => true,
 					],
 					'show_in_rest' => true,

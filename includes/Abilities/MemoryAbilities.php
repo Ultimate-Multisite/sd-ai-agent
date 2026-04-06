@@ -63,6 +63,13 @@ class MemoryAbilities {
 						'error'   => [ 'type' => 'string' ],
 					],
 				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => false,
+						'destructive' => false,
+						'idempotent'  => false,
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_memory_save' ],
 				'permission_callback' => function () {
 					return current_user_can( 'manage_options' ); },
@@ -77,13 +84,21 @@ class MemoryAbilities {
 				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
-					'properties' => new \stdClass(),
+					'properties' => (object) [],
+					'default'    => [],
 				],
 				'output_schema'       => [
 					'type'       => 'object',
 					'properties' => [
 						'memories' => [ 'type' => 'array' ],
 						'message'  => [ 'type' => 'string' ],
+					],
+				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
 					],
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_memory_list' ],
@@ -114,6 +129,13 @@ class MemoryAbilities {
 						'success' => [ 'type' => 'boolean' ],
 						'message' => [ 'type' => 'string' ],
 						'error'   => [ 'type' => 'string' ],
+					],
+				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => false,
+						'destructive' => true,
+						'idempotent'  => true,
 					],
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_memory_delete' ],

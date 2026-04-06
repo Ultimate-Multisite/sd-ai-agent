@@ -127,7 +127,7 @@ class NavigateAbility extends AbstractAbility {
 	protected function meta(): array {
 		return [
 			'annotations'  => [
-				'readonly'    => true,
+				'readonly'    => false,
 				'destructive' => false,
 				'idempotent'  => false,
 			],

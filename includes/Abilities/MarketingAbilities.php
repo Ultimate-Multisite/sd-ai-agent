@@ -60,6 +60,13 @@ class MarketingAbilities {
 						'error'            => [ 'type' => 'string' ],
 					],
 				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_fetch_url' ],
 				'permission_callback' => function () {
 					return current_user_can( 'edit_posts' );
@@ -92,6 +99,13 @@ class MarketingAbilities {
 						'performance' => [ 'type' => 'array' ],
 						'cdn'         => [ 'type' => 'array' ],
 						'error'       => [ 'type' => 'string' ],
+					],
+				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
 					],
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_analyze_headers' ],

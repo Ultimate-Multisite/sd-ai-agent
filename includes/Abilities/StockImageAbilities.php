@@ -72,6 +72,13 @@ class StockImageAbilities {
 						'error'         => [ 'type' => 'string' ],
 					],
 				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => false,
+						'destructive' => false,
+						'idempotent'  => false,
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_import' ],
 				'permission_callback' => [ __CLASS__, 'check_permission' ],
 			]

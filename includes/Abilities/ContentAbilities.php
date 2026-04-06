@@ -71,6 +71,13 @@ class ContentAbilities {
 						'thin_content_count'             => [ 'type' => 'integer' ],
 					],
 				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_content_analyze' ],
 				'permission_callback' => function () {
 					return current_user_can( 'edit_posts' );
@@ -110,6 +117,13 @@ class ContentAbilities {
 						'all_posts_by_status'       => [ 'type' => 'object' ],
 						'drafts_pending_review'     => [ 'type' => 'array' ],
 						'drafts_pending_count'      => [ 'type' => 'integer' ],
+					],
+				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
 					],
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_performance_report' ],

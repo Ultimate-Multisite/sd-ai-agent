@@ -126,6 +126,7 @@ class UserAbilities {
 				],
 				'meta'                => [
 					'annotations'  => [
+						'readonly'    => false,
 						'destructive' => false,
 					],
 					'show_in_rest' => true,
@@ -172,6 +173,7 @@ class UserAbilities {
 				],
 				'meta'                => [
 					'annotations'  => [
+						'readonly'    => false,
 						'destructive' => false,
 					],
 					'show_in_rest' => true,

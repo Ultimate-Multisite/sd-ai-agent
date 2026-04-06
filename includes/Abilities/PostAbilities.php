@@ -157,6 +157,7 @@ class PostAbilities {
 				],
 				'meta'                => [
 					'annotations'  => [
+						'readonly'    => false,
 						'destructive' => false,
 					],
 					'show_in_rest' => true,
@@ -233,6 +234,7 @@ class PostAbilities {
 				],
 				'meta'                => [
 					'annotations'  => [
+						'readonly'    => false,
 						'destructive' => false,
 					],
 					'show_in_rest' => true,
@@ -279,6 +281,7 @@ class PostAbilities {
 				],
 				'meta'                => [
 					'annotations'  => [
+						'readonly'    => false,
 						'destructive' => true,
 					],
 					'show_in_rest' => true,
@@ -356,7 +359,10 @@ class PostAbilities {
 					],
 				],
 				'meta'                => [
-					'annotations'  => [ 'destructive' => false ],
+					'annotations'  => [
+						'readonly'    => false,
+						'destructive' => false,
+					],
 					'show_in_rest' => true,
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_create_post_with_image' ],

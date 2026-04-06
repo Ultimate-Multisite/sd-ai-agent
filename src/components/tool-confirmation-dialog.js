@@ -93,7 +93,7 @@ export default function ToolConfirmationDialog( {
 							}
 						/>
 						{ __(
-							'Always allow these tools (change permission to Auto)',
+							'Always allow these tools without asking',
 							'gratis-ai-agent'
 						) }
 					</label>

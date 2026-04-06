@@ -96,6 +96,11 @@ class GscAbilities {
 					'required'   => [],
 				],
 				'meta'                => [
+					'annotations'  => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
 					'show_in_rest' => true,
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_top_queries' ],
@@ -146,6 +151,11 @@ class GscAbilities {
 					'required'   => [],
 				],
 				'meta'                => [
+					'annotations'  => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
 					'show_in_rest' => true,
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_page_performance' ],
@@ -184,6 +194,11 @@ class GscAbilities {
 					'required'   => [ 'query' ],
 				],
 				'meta'                => [
+					'annotations'  => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
 					'show_in_rest' => true,
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_query_details' ],
@@ -222,6 +237,11 @@ class GscAbilities {
 					'required'   => [],
 				],
 				'meta'                => [
+					'annotations'  => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
 					'show_in_rest' => true,
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_site_summary' ],

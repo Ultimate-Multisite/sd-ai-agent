@@ -74,6 +74,13 @@ class SeoAbilities {
 						'error'                   => [ 'type' => 'string' ],
 					],
 				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
+				],
 				'execute_callback'    => [ __CLASS__, 'handle_audit_url' ],
 				'permission_callback' => function () {
 					return current_user_can( 'edit_posts' );
@@ -128,6 +135,13 @@ class SeoAbilities {
 						'recommendations'            => [ 'type' => 'array' ],
 						'recommendation_count'       => [ 'type' => 'integer' ],
 						'error'                      => [ 'type' => 'string' ],
+					],
+				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
 					],
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_analyze_content' ],
