@@ -1154,19 +1154,16 @@ class SessionController {
 			if ( $session ) {
 				$session_messages = json_decode( $session->messages, true ) ?: array();
 				if ( ! empty( $session_messages ) ) {
-					try {
-						// @phpstan-ignore-next-line
-						$history = AgentLoop::deserialize_history( $session_messages );
-					} catch ( \Exception $e ) {
-						$history = array();
-					}
+				try {
+					$history = AgentLoop::deserialize_history( array_values( $session_messages ) );
+				} catch ( \Exception $e ) {
+					$history = array();
+				}
 				}
 			}
 		} elseif ( ! empty( $params['history'] ) && is_array( $params['history'] ) ) {
 			try {
-				/** @var list<array<string, mixed>> $params_history */
-				$params_history = $params['history'];
-				$history        = AgentLoop::deserialize_history( $params_history );
+				$history = AgentLoop::deserialize_history( array_values( $params['history'] ) );
 			} catch ( \Exception $e ) {
 				$job['status'] = 'error';
 				$job['error']  = __( 'Invalid conversation history format.', 'gratis-ai-agent' );
@@ -1220,8 +1217,7 @@ class SessionController {
 			$state     = $job['confirmation_state'] ?? array();
 
 			try {
-				// @phpstan-ignore-next-line
-				$resume_history = AgentLoop::deserialize_history( $state['history'] ?? array() );
+				$resume_history = AgentLoop::deserialize_history( array_values( $state['history'] ?? array() ) );
 			} catch ( \Exception $e ) {
 				$job['status'] = 'error';
 				$job['error']  = __( 'Failed to resume conversation.', 'gratis-ai-agent' );
