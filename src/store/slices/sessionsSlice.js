@@ -799,6 +799,7 @@ export const actions = {
 
 			// Handle tool confirmation pause.
 			if ( result?.awaiting_confirmation ) {
+				dispatch.setCurrentJobId( result.job_id );
 				dispatch.setPendingConfirmation( {
 					jobId: result.job_id,
 					tools: result.pending_tools || [],

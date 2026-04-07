@@ -65,6 +65,39 @@ function UnifiedAdminApp() {
 		if ( currentItem ) {
 			document.title = `${ currentItem.label } - AI Agent`;
 		}
+
+		// Sync WordPress admin submenu highlight with the current hash route.
+		// WordPress marks the active submenu server-side, but since all our
+		// submenu items share the same `page=gratis-ai-agent` query and only
+		// differ by URL fragment (which the server never sees), only the first
+		// item is ever highlighted. Update the `current` class client-side.
+		const parentMenu = document.getElementById(
+			'toplevel_page_gratis-ai-agent'
+		);
+		if ( parentMenu ) {
+			const links = parentMenu.querySelectorAll( '.wp-submenu a' );
+			links.forEach( ( link ) => {
+				const href = decodeURIComponent(
+					link.getAttribute( 'href' ) || ''
+				);
+				const li = link.parentElement;
+				let isCurrent = false;
+				if ( baseRoute === 'chat' ) {
+					isCurrent =
+						/[?&]page=gratis-ai-agent$/.test( href ) &&
+						! href.includes( '#' );
+				} else {
+					isCurrent = href.endsWith( '#/' + baseRoute );
+				}
+				if ( isCurrent ) {
+					link.classList.add( 'current' );
+					li?.classList.add( 'current' );
+				} else {
+					link.classList.remove( 'current' );
+					li?.classList.remove( 'current' );
+				}
+			} );
+		}
 	}, [ currentRoute ] );
 
 	const appContext = {

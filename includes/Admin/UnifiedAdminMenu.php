@@ -71,7 +71,7 @@ class UnifiedAdminMenu {
 			self::CAPABILITY,
 			self::SLUG,
 			array( __CLASS__, 'render' ),
-			'dashicons-robot',
+			GRATIS_AI_AGENT_URL . 'assets/menu-icon.svg',
 			30 // Position after Dashboard
 		);
 
