@@ -510,6 +510,18 @@ class RestController {
 			$done_payload['generated_title'] = $generated_title;
 		}
 
+		// Providers routed through the WP AI Client SDK do not stream tokens
+		// individually — the full reply is only available after run() returns.
+		// In that case, push the reply as a single token before sending `done`
+		// so the frontend (which only commits accumulated token text) can
+		// display the assistant message. Streaming providers (handled by
+		// send_prompt_direct_streaming) set reply_was_streamed() and skip this.
+		// @phpstan-ignore-next-line
+		$reply_text = (string) ( $result['reply'] ?? '' );
+		if ( '' !== $reply_text && ! $loop->reply_was_streamed() ) {
+			$streamer->send_token( $reply_text );
+		}
+
 		$streamer->send_done( $done_payload );
 
 		exit;
