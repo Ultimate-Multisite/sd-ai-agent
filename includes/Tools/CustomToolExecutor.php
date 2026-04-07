@@ -227,9 +227,8 @@ class CustomToolExecutor {
 		ob_start();
 
 		try {
-			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Hook name is prefixed with gratis_ai_agent_ above.
 			// @phpstan-ignore-next-line
-			do_action( $hook_name, ...$args );
+			do_action( $hook_name, ...$args ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Hook name is forced to gratis_ai_agent_ prefix above.
 			$output = ob_get_clean();
 
 			return [

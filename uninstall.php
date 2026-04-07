@@ -19,7 +19,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 global $wpdb;
 
 // ── 1. Drop all plugin database tables ──────────────────────────────────────
-$tables = [
+$gratis_ai_agent_tables = [
 	$wpdb->prefix . 'gratis_ai_agent_sessions',
 	$wpdb->prefix . 'gratis_ai_agent_usage',
 	$wpdb->prefix . 'gratis_ai_agent_memories',
@@ -38,13 +38,13 @@ $tables = [
 	$wpdb->prefix . 'gratis_ai_agent_benchmark_results',
 ];
 
-foreach ( $tables as $table ) {
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange -- uninstall handler must drop tables; names are from $wpdb->prefix only.
-	$wpdb->query( "DROP TABLE IF EXISTS `{$table}`" );
+foreach ( $gratis_ai_agent_tables as $gratis_ai_agent_table ) {
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Uninstall handler must drop tables; names are from $wpdb->prefix only, caching is irrelevant on uninstall.
+	$wpdb->query( "DROP TABLE IF EXISTS `{$gratis_ai_agent_table}`" );
 }
 
 // ── 2. Delete all plugin options ─────────────────────────────────────────────
-$options = [
+$gratis_ai_agent_options = [
 	'gratis_ai_agent_settings',
 	'gratis_ai_agent_db_version',
 	'gratis_ai_agent_claude_max_token',
@@ -55,12 +55,12 @@ $options = [
 	'gratis_ai_agent_migrated_from_ai_agent',
 ];
 
-foreach ( $options as $option ) {
-	delete_option( $option );
+foreach ( $gratis_ai_agent_options as $gratis_ai_agent_option ) {
+	delete_option( $gratis_ai_agent_option );
 }
 
 // ── 3. Delete user meta with plugin prefix ───────────────────────────────────
-// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- uninstall-only, acceptable cost.
+// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Uninstall-only, caching is irrelevant on uninstall.
 $wpdb->query(
 	$wpdb->prepare(
 		"DELETE FROM {$wpdb->usermeta} WHERE meta_key LIKE %s",
@@ -69,13 +69,13 @@ $wpdb->query(
 );
 
 // ── 4. Clear scheduled cron events ───────────────────────────────────────────
-$cron_hooks = [
+$gratis_ai_agent_cron_hooks = [
 	'gratis_ai_agent_run_automation',
 	'gratis_ai_agent_run_event_automation',
 	'gratis_ai_agent_site_scan',
 	'wp_gratis_ai_agent_reindex',
 ];
 
-foreach ( $cron_hooks as $hook ) {
-	wp_clear_scheduled_hook( $hook );
+foreach ( $gratis_ai_agent_cron_hooks as $gratis_ai_agent_hook ) {
+	wp_clear_scheduled_hook( $gratis_ai_agent_hook );
 }

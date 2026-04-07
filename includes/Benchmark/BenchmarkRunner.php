@@ -125,7 +125,7 @@ class BenchmarkRunner {
 		$table  = Database::benchmark_runs_table_name();
 		$offset = ( $page - 1 ) * $per_page;
 
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom table query.
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table query; table name comes from internal Database helper.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT * FROM {$table} ORDER BY started_at DESC LIMIT %d OFFSET %d",
@@ -157,7 +157,7 @@ class BenchmarkRunner {
 
 		$table = Database::benchmark_results_table_name();
 
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom table query.
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table query; table name comes from internal Database helper.
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT * FROM {$table} WHERE run_id = %d ORDER BY id ASC",
