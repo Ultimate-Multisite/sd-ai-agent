@@ -130,6 +130,119 @@ add_action( 'admin_menu', [ ModelBenchmarkPage::class, 'register' ] );
 // Redirect old menu URLs to the unified structure.
 add_action( 'admin_init', [ UnifiedAdminMenu::class, 'handleLegacyRedirects' ] );
 
+// Normalise ability input schemas so every ability exposes a JSON Schema
+// draft-2020-12 compatible object schema. Anthropic's tool-use API validates
+// `input_schema` strictly and rejects bare arrays, missing `type`, or arrays
+// used where objects are expected — we saw 400 errors from third-party
+// abilities like `core/get-user-info` and `mcp-adapter/discover-abilities`
+// that registered `input_schema => []`.
+if ( ! function_exists( 'gratis_ai_agent_normalize_ability_schema' ) ) {
+	/**
+	 * Recursively normalise a JSON schema so it satisfies Anthropic's
+	 * draft-2020-12 tool-use validator. Coerces empty `properties` / `items`
+	 * arrays to stdClass (so they serialise as `{}` instead of `[]`), ensures
+	 * object schemas have a `type` and a `properties` field, and drops stray
+	 * empty-array `default` entries that mis-type object schemas.
+	 *
+	 * @param mixed $schema Schema node (array or scalar).
+	 * @return mixed Normalised schema.
+	 */
+	function gratis_ai_agent_normalize_ability_schema( $schema ) {
+		if ( ! is_array( $schema ) ) {
+			return $schema;
+		}
+
+		// Top-level: empty schema → empty object schema.
+		if ( empty( $schema ) ) {
+			return [
+				'type'       => 'object',
+				'properties' => (object) [],
+			];
+		}
+
+		// Ensure `type` is set on object-shaped schemas (heuristic: presence
+		// of `properties` / `required` or no other type hints).
+		if ( ! isset( $schema['type'] ) && ( isset( $schema['properties'] ) || isset( $schema['required'] ) ) ) {
+			$schema['type'] = 'object';
+		}
+
+		// `properties`: must serialise as a JSON object, never an array.
+		if ( array_key_exists( 'properties', $schema ) ) {
+			$props = $schema['properties'];
+			if ( is_array( $props ) && empty( $props ) ) {
+				$schema['properties'] = (object) [];
+			} elseif ( is_array( $props ) ) {
+				$promoted_required = [];
+				foreach ( $props as $k => $v ) {
+					// Strip draft-04 style boolean `required` from property
+					// schemas and promote `required: true` to the parent
+					// object's `required` array (draft-2020-12 form).
+					if ( is_array( $v ) && array_key_exists( 'required', $v ) && is_bool( $v['required'] ) ) {
+						if ( true === $v['required'] ) {
+							$promoted_required[] = $k;
+						}
+						unset( $v['required'] );
+					}
+					$props[ $k ] = gratis_ai_agent_normalize_ability_schema( $v );
+				}
+				$schema['properties'] = $props;
+
+				if ( ! empty( $promoted_required ) ) {
+					$existing = isset( $schema['required'] ) && is_array( $schema['required'] ) ? $schema['required'] : [];
+					$schema['required'] = array_values( array_unique( array_merge( $existing, $promoted_required ) ) );
+				}
+			}
+		}
+
+		// Object schemas must have a `properties` field.
+		if ( isset( $schema['type'] ) && 'object' === $schema['type'] && ! isset( $schema['properties'] ) ) {
+			$schema['properties'] = (object) [];
+		}
+
+		// `items`: draft-2020-12 requires a schema object or boolean, never
+		// an array. Coerce empty/list-form arrays to an empty object schema.
+		if ( array_key_exists( 'items', $schema ) && is_array( $schema['items'] ) ) {
+			if ( empty( $schema['items'] ) || array_is_list( $schema['items'] ) ) {
+				$schema['items'] = (object) [];
+			} else {
+				$schema['items'] = gratis_ai_agent_normalize_ability_schema( $schema['items'] );
+			}
+		}
+
+		// Drop stray empty-array `default` entries that mis-type object schemas.
+		if ( isset( $schema['default'] ) && is_array( $schema['default'] ) && empty( $schema['default'] ) ) {
+			unset( $schema['default'] );
+		}
+
+		// Recurse into any remaining nested schema keywords.
+		foreach ( [ 'anyOf', 'oneOf', 'allOf' ] as $combiner ) {
+			if ( isset( $schema[ $combiner ] ) && is_array( $schema[ $combiner ] ) ) {
+				foreach ( $schema[ $combiner ] as $k => $sub ) {
+					$schema[ $combiner ][ $k ] = gratis_ai_agent_normalize_ability_schema( $sub );
+				}
+			}
+		}
+
+		return $schema;
+	}
+}
+
+add_filter(
+	'wp_register_ability_args',
+	function ( $args ) {
+		if ( ! isset( $args['input_schema'] ) ) {
+			$args['input_schema'] = [
+				'type'       => 'object',
+				'properties' => (object) [],
+			];
+			return $args;
+		}
+
+		$args['input_schema'] = gratis_ai_agent_normalize_ability_schema( $args['input_schema'] );
+		return $args;
+	}
+);
+
 // Register ability category.
 add_action(
 	'wp_abilities_api_categories_init',

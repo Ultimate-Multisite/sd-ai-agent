@@ -80,7 +80,6 @@ class SkillAbilities {
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => (object) [],
-					'default'    => [],
 				],
 				'output_schema'       => [
 					'type'       => 'object',

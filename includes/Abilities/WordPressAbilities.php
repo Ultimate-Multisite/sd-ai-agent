@@ -163,7 +163,10 @@ class GetPluginsAbility extends AbstractAbility {
 	}
 
 	protected function input_schema(): array {
-		return [];
+		return [
+			'type'       => 'object',
+			'properties' => (object) [],
+		];
 	}
 
 	protected function output_schema(): array {
@@ -239,7 +242,10 @@ class GetThemesAbility extends AbstractAbility {
 	}
 
 	protected function input_schema(): array {
-		return [];
+		return [
+			'type'       => 'object',
+			'properties' => (object) [],
+		];
 	}
 
 	protected function output_schema(): array {
@@ -572,7 +578,6 @@ class RunPhpAbility extends AbstractAbility {
 					'type'        => 'array',
 					'description' => 'Ordered array of arguments to pass to the function. Defaults to an empty array.',
 					'items'       => [],
-					'default'     => [],
 				],
 			],
 			'required'   => [ 'function' ],

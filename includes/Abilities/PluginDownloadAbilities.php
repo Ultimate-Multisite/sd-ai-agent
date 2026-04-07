@@ -118,7 +118,7 @@ class ListModifiedPluginsAbility extends AbstractAbility {
 	protected function input_schema(): array {
 		return [
 			'type'       => 'object',
-			'properties' => [],
+			'properties' => (object) [],
 		];
 	}
 

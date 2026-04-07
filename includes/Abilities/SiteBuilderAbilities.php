@@ -216,7 +216,10 @@ class DetectFreshInstallAbility extends AbstractAbility {
 	}
 
 	protected function input_schema(): array {
-		return [];
+		return [
+			'type'       => 'object',
+			'properties' => (object) [],
+		];
 	}
 
 	protected function output_schema(): array {
@@ -351,7 +354,10 @@ class GetSiteBuilderStatusAbility extends AbstractAbility {
 	}
 
 	protected function input_schema(): array {
-		return [];
+		return [
+			'type'       => 'object',
+			'properties' => (object) [],
+		];
 	}
 
 	protected function output_schema(): array {
@@ -414,7 +420,10 @@ class CompleteSiteBuilderAbility extends AbstractAbility {
 	}
 
 	protected function input_schema(): array {
-		return [];
+		return [
+			'type'       => 'object',
+			'properties' => (object) [],
+		];
 	}
 
 	protected function output_schema(): array {

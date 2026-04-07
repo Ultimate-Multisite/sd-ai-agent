@@ -159,7 +159,6 @@ class DiscoveryListAbility extends AbstractAbility {
 				'category' => [
 					'type'        => 'string',
 					'description' => __( 'Optional category to filter abilities (e.g., "content", "media", "users")', 'gratis-ai-agent' ),
-					'required'    => false,
 				],
 			],
 		];
@@ -265,9 +264,9 @@ class DiscoveryGetAbility extends AbstractAbility {
 				'ability' => [
 					'type'        => 'string',
 					'description' => __( 'The ability identifier (e.g., "memory/save_memory", "file/read_file")', 'gratis-ai-agent' ),
-					'required'    => true,
 				],
 			],
+			'required'   => [ 'ability' ],
 		];
 	}
 
@@ -370,14 +369,14 @@ class DiscoveryExecuteAbility extends AbstractAbility {
 				'ability'   => [
 					'type'        => 'string',
 					'description' => __( 'The ability identifier to execute', 'gratis-ai-agent' ),
-					'required'    => true,
 				],
 				'arguments' => [
 					'type'        => 'object',
 					'description' => __( 'Arguments to pass to the ability (schema varies by ability)', 'gratis-ai-agent' ),
-					'required'    => false,
+					'properties'  => (object) [],
 				],
 			],
+			'required'   => [ 'ability' ],
 		];
 	}
 

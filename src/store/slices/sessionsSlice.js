@@ -766,57 +766,18 @@ export const actions = {
 
 			dispatch.setSendTimestamp( Date.now() );
 
-			// Build the URL with nonce for authentication.
-			const streamUrl =
-				( window.wpApiSettings?.root || '/wp-json/' ) +
-				'gratis-ai-agent/v1/stream';
-
-			const abortController = new AbortController();
-			dispatch.setStreamAbortController( abortController );
-
-			// 120-second timeout: abort the stream if no completion within limit.
-			const STREAM_TIMEOUT_MS = 120000;
-			let timeoutId = setTimeout( () => {
-				abortController.abort( 'timeout' );
-			}, STREAM_TIMEOUT_MS );
-
-			let response;
+			// Streaming was removed when all chat routing was delegated to the
+			// WP AI Client SDK, which does not expose a streaming interface.
+			// Fire a single synchronous POST to /chat and append the full reply
+			// once the agent loop completes.
+			let result;
 			try {
-				response = await fetch( streamUrl, {
+				result = await apiFetch( {
+					path: '/gratis-ai-agent/v1/chat',
 					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'X-WP-Nonce': window.wpApiSettings?.nonce || '',
-					},
-					body: JSON.stringify( body ),
-					signal: abortController.signal,
+					data: body,
 				} );
 			} catch ( err ) {
-				clearTimeout( timeoutId );
-				if ( err.name === 'AbortError' ) {
-					const isTimeout =
-						err.message === 'timeout' ||
-						String( abortController.signal?.reason ) === 'timeout';
-					if ( isTimeout ) {
-						dispatch.appendMessage( {
-							role: 'system',
-							parts: [
-								{
-									text: __(
-										'Error: The request timed out after 120 seconds. The server may be overloaded. Please try again.',
-										'gratis-ai-agent'
-									),
-								},
-							],
-						} );
-						dispatch.setStreamError( true );
-					}
-					dispatch.setSending( false );
-					dispatch.setIsStreaming( false );
-					dispatch.setStreamingText( '' );
-					dispatch.setStreamAbortController( null );
-					return;
-				}
 				dispatch.appendMessage( {
 					role: 'system',
 					parts: [
@@ -824,7 +785,7 @@ export const actions = {
 							text: `${ __( 'Error:', 'gratis-ai-agent' ) } ${
 								err.message ||
 								__(
-									'Failed to connect to stream',
+									'Failed to reach chat endpoint',
 									'gratis-ai-agent'
 								)
 							}`,
@@ -833,235 +794,36 @@ export const actions = {
 				} );
 				dispatch.setStreamError( true );
 				dispatch.setSending( false );
-				dispatch.setStreamAbortController( null );
 				return;
 			}
-
-			if ( ! response.ok ) {
-				clearTimeout( timeoutId );
-				// Detect non-SSE responses (e.g. PHP fatal error HTML pages).
-				const contentType =
-					response.headers.get( 'Content-Type' ) || '';
-				const isHtml = contentType.includes( 'text/html' );
-				const errorText = isHtml
-					? __(
-							'Error: The server returned an unexpected response (possibly a PHP error). Check your server logs.',
-							'gratis-ai-agent'
-					  )
-					: `${ __( 'Error: HTTP', 'gratis-ai-agent' ) } ${
-							response.status
-					  } ${ __( 'from stream endpoint', 'gratis-ai-agent' ) }`;
-				dispatch.appendMessage( {
-					role: 'system',
-					parts: [ { text: errorText } ],
-				} );
-				dispatch.setStreamError( true );
-				dispatch.setSending( false );
-				dispatch.setStreamAbortController( null );
-				return;
-			}
-
-			// Verify the response is actually an SSE stream before reading.
-			const responseContentType =
-				response.headers.get( 'Content-Type' ) || '';
-			if ( ! responseContentType.includes( 'text/event-stream' ) ) {
-				clearTimeout( timeoutId );
-				dispatch.appendMessage( {
-					role: 'system',
-					parts: [
-						{
-							text: __(
-								'Error: The server did not return a streaming response. This may indicate a PHP error or misconfiguration.',
-								'gratis-ai-agent'
-							),
-						},
-					],
-				} );
-				dispatch.setStreamError( true );
-				dispatch.setSending( false );
-				dispatch.setStreamAbortController( null );
-				return;
-			}
-
-			dispatch.setIsStreaming( true );
-
-			const reader = response.body.getReader();
-			const decoder = new TextDecoder();
-			let buffer = '';
-			let accumulatedText = '';
-			let doneMetadata = null;
-			let pendingConfirmationData = null;
-
-			try {
-				// eslint-disable-next-line no-constant-condition
-				while ( true ) {
-					const { done, value } = await reader.read();
-					if ( done ) {
-						clearTimeout( timeoutId );
-						break;
-					}
-					// Reset timeout on each received chunk — stream is alive.
-					clearTimeout( timeoutId );
-					timeoutId = setTimeout( () => {
-						abortController.abort( 'timeout' );
-					}, STREAM_TIMEOUT_MS );
-
-					buffer += decoder.decode( value, { stream: true } );
-
-					// Process complete SSE messages (terminated by \n\n).
-					const sseChunks = buffer.split( '\n\n' );
-					// Keep the last (possibly incomplete) chunk in the buffer.
-					buffer = sseChunks.pop() || '';
-
-					for ( const part of sseChunks ) {
-						const lines = part.split( '\n' );
-						let eventName = 'message';
-						let dataLine = '';
-
-						for ( const line of lines ) {
-							if ( line.startsWith( 'event: ' ) ) {
-								eventName = line.slice( 7 );
-							} else if ( line.startsWith( 'data: ' ) ) {
-								dataLine = line.slice( 6 );
-							}
-						}
-
-						if ( ! dataLine ) {
-							continue;
-						}
-
-						let payload;
-						try {
-							payload = JSON.parse( dataLine );
-						} catch {
-							continue;
-						}
-
-						switch ( eventName ) {
-							case 'token':
-								accumulatedText += payload.token || '';
-								dispatch.appendStreamingText(
-									payload.token || ''
-								);
-								break;
-
-							case 'tool_call':
-								// Tool calls are surfaced in the done metadata.
-								break;
-
-							case 'tool_result':
-								// Tool results are surfaced in the done metadata.
-								break;
-
-							case 'confirmation_required':
-								pendingConfirmationData = payload;
-								break;
-
-							case 'done':
-								doneMetadata = payload;
-								break;
-
-							case 'error':
-								clearTimeout( timeoutId );
-								dispatch.setIsStreaming( false );
-								dispatch.setStreamingText( '' );
-								dispatch.appendMessage( {
-									role: 'system',
-									parts: [
-										{
-											text: `${ __(
-												'Error:',
-												'gratis-ai-agent'
-											) } ${
-												payload.message ||
-												__(
-													'Unknown error',
-													'gratis-ai-agent'
-												)
-											}`,
-										},
-									],
-								} );
-								dispatch.setStreamError( true );
-								dispatch.setSending( false );
-								dispatch.setStreamAbortController( null );
-								return;
-						}
-					}
-				}
-			} catch ( err ) {
-				clearTimeout( timeoutId );
-				if ( err.name === 'AbortError' ) {
-					const isTimeout =
-						err.message === 'timeout' ||
-						String( abortController.signal?.reason ) === 'timeout';
-					if ( isTimeout ) {
-						dispatch.appendMessage( {
-							role: 'system',
-							parts: [
-								{
-									text: __(
-										'Error: The response timed out after 120 seconds. Please try again.',
-										'gratis-ai-agent'
-									),
-								},
-							],
-						} );
-						dispatch.setStreamError( true );
-					}
-				} else {
-					dispatch.appendMessage( {
-						role: 'system',
-						parts: [
-							{
-								text: `${ __( 'Error:', 'gratis-ai-agent' ) } ${
-									err.message ||
-									__( 'Stream read error', 'gratis-ai-agent' )
-								}`,
-							},
-						],
-					} );
-					dispatch.setStreamError( true );
-				}
-				dispatch.setIsStreaming( false );
-				dispatch.setStreamingText( '' );
-				dispatch.setSending( false );
-				dispatch.setStreamAbortController( null );
-				return;
-			}
-
-			dispatch.setIsStreaming( false );
-			dispatch.setStreamingText( '' );
-			dispatch.setStreamAbortController( null );
-			dispatch.setStreamError( false );
 
 			// Handle tool confirmation pause.
-			if ( pendingConfirmationData ) {
+			if ( result?.awaiting_confirmation ) {
 				dispatch.setPendingConfirmation( {
-					jobId: pendingConfirmationData.job_id,
-					tools: pendingConfirmationData.pending_tools || [],
+					jobId: result.job_id,
+					tools: result.pending_tools || [],
 				} );
 				// Keep sending=true — we're still waiting for user input.
 				return;
 			}
 
-			// Commit the streamed text as a proper message.
-			if ( accumulatedText ) {
+			// Append the assistant reply.
+			if ( result?.reply ) {
 				const msg = {
 					role: 'model',
-					parts: [ { text: accumulatedText } ],
-					toolCalls: doneMetadata?.tool_calls || [],
+					parts: [ { text: result.reply } ],
+					toolCalls: result.tool_calls || [],
 				};
 
-				if ( select.isDebugMode() && doneMetadata ) {
+				if ( select.isDebugMode() ) {
 					const sendTs = select.getSendTimestamp();
 					const elapsed = sendTs ? Date.now() - sendTs : 0;
-					const tu = doneMetadata.token_usage || {};
+					const tu = result.token_usage || {};
 					const completionTokens = tu.completion || 0;
 					const promptTokens = tu.prompt || 0;
 					const tokPerSec =
 						elapsed > 0 ? completionTokens / ( elapsed / 1000 ) : 0;
-					const tc = doneMetadata.tool_calls || [];
+					const tc = result.tool_calls || [];
 					const toolCalls = tc.filter( ( t ) => t.type === 'call' );
 					const toolNames = [
 						...new Set( toolCalls.map( ( t ) => t.name ) ),
@@ -1074,9 +836,9 @@ export const actions = {
 							completion: completionTokens,
 						},
 						tokensPerSecond: Math.round( tokPerSec * 10 ) / 10,
-						modelId: doneMetadata.model_id || '',
-						costEstimate: doneMetadata.cost_estimate || 0,
-						iterationsUsed: doneMetadata.iterations_used || 0,
+						modelId: result.model_id || '',
+						costEstimate: result.cost_estimate || 0,
+						iterationsUsed: result.iterations_used || 0,
 						toolCallCount: toolCalls.length,
 						toolNames,
 					};
@@ -1085,33 +847,28 @@ export const actions = {
 				dispatch.appendMessage( msg );
 			}
 
-			if ( doneMetadata?.session_id ) {
+			if ( result?.session_id ) {
 				dispatch.setCurrentSession(
-					doneMetadata.session_id,
+					result.session_id,
 					select.getCurrentSessionMessages(),
 					select.getCurrentSessionToolCalls()
 				);
 			}
 
-			if ( doneMetadata?.token_usage ) {
+			if ( result?.token_usage ) {
 				const current = select.getTokenUsage();
 				dispatch.setTokenUsage( {
-					prompt:
-						current.prompt +
-						( doneMetadata.token_usage.prompt || 0 ),
+					prompt: current.prompt + ( result.token_usage.prompt || 0 ),
 					completion:
 						current.completion +
-						( doneMetadata.token_usage.completion || 0 ),
+						( result.token_usage.completion || 0 ),
 				} );
 
-				// Live token counter (t111).
-				const tu = doneMetadata.token_usage;
+				const tu = result.token_usage;
 				const totalTokens = ( tu.prompt || 0 ) + ( tu.completion || 0 );
-				const cost = doneMetadata.cost_estimate || 0;
+				const cost = result.cost_estimate || 0;
 				dispatch.accumulateSessionTokens( totalTokens, cost );
 
-				// Record per-message token data at the index of the message
-				// we just appended (last in the list after appendMessage).
 				const msgs = select.getCurrentSessionMessages();
 				const msgIndex = msgs.length - 1;
 				if ( msgIndex >= 0 ) {
@@ -1123,12 +880,10 @@ export const actions = {
 				}
 			}
 
-			// Optimistically update the session title in the sidebar when the
-			// server generated one (first message only — title is empty before).
-			if ( doneMetadata?.generated_title && doneMetadata?.session_id ) {
+			if ( result?.generated_title && result?.session_id ) {
 				dispatch.updateSessionTitle(
-					doneMetadata.session_id,
-					doneMetadata.generated_title
+					result.session_id,
+					result.generated_title
 				);
 			}
 
@@ -1206,11 +961,10 @@ export const actions = {
 	},
 
 	/**
-	 * Send a message via the polling (non-streaming) endpoint.
-	 * Creates a session lazily on the first message.
-	 *
-	 * Routes to streamMessage when streaming is available (Fetch + ReadableStream).
-	 * Falls back to the polling /run endpoint when streaming is unavailable.
+	 * Send a message to the synchronous /chat endpoint.
+	 * Delegates to streamMessage, which now performs a single POST to /chat
+	 * (streaming was removed when chat routing was delegated to the WP AI
+	 * Client SDK, which does not expose a streaming interface).
 	 *
 	 * @param {string} message     - User message text.
 	 * @param {Array}  attachments - Optional array of attachment objects with
@@ -1218,135 +972,8 @@ export const actions = {
 	 * @return {Function} Redux thunk.
 	 */
 	sendMessage( message, attachments = [] ) {
-		return async ( { dispatch, select } ) => {
-			// Prefer streaming when the browser supports it.
-			if (
-				typeof fetch !== 'undefined' &&
-				typeof ReadableStream !== 'undefined'
-			) {
-				dispatch.streamMessage( message, attachments );
-				return;
-			}
-
-			dispatch.setSending( true );
-
-			// Build message parts — text first, then image attachments.
-			const parts = [];
-			if ( message ) {
-				parts.push( { text: message } );
-			}
-			const imageAttachments = attachments.filter( ( a ) => a.isImage );
-			imageAttachments.forEach( ( att ) => {
-				parts.push( { image_url: att.dataUrl, image_name: att.name } );
-			} );
-
-			// Append user message to UI immediately.
-			dispatch.appendMessage( {
-				role: 'user',
-				parts: parts.length ? parts : [ { text: '' } ],
-				attachments: imageAttachments,
-			} );
-
-			let sessionId = select.getCurrentSessionId();
-
-			// Lazy create session on first message.
-			if ( ! sessionId ) {
-				try {
-					const sessionData = {
-						provider_id: select.getSelectedProviderId(),
-						model_id: select.getSelectedModelId(),
-					};
-					const agentIdForSession = select.getSelectedAgentId();
-					if ( agentIdForSession ) {
-						sessionData.agent_id = agentIdForSession;
-					}
-					const session = await apiFetch( {
-						path: '/gratis-ai-agent/v1/sessions',
-						method: 'POST',
-						data: sessionData,
-					} );
-					sessionId = session.id;
-					dispatch.setCurrentSession(
-						session.id,
-						select.getCurrentSessionMessages(),
-						[]
-					);
-				} catch {
-					dispatch.appendMessage( {
-						role: 'system',
-						parts: [
-							{
-								text: 'Error: Failed to create session.',
-							},
-						],
-					} );
-					dispatch.setSending( false );
-					return;
-				}
-			}
-
-			// Build the request body.
-			const body = {
-				message,
-				session_id: sessionId,
-				provider_id: select.getSelectedProviderId(),
-				model_id: select.getSelectedModelId(),
-			};
-
-			// Include image attachments as base64 data URLs for vision models.
-			if ( attachments?.length ) {
-				body.attachments = attachments.map( ( att ) => ( {
-					name: att.name,
-					type: att.type,
-					data_url: att.dataUrl,
-					is_image: att.isImage,
-				} ) );
-			}
-
-			// Include structured page context if available.
-			const pageContext = select.getPageContext();
-			if ( pageContext ) {
-				// Normalise to object — screen-meta may set a string.
-				body.page_context =
-					typeof pageContext === 'string'
-						? { summary: pageContext }
-						: pageContext;
-			}
-
-			// Include selected agent if set.
-			const selectedAgentId = select.getSelectedAgentId();
-			if ( selectedAgentId ) {
-				body.agent_id = selectedAgentId;
-			}
-
-			dispatch.setSendTimestamp( Date.now() );
-
-			try {
-				const result = await apiFetch( {
-					path: '/gratis-ai-agent/v1/run',
-					method: 'POST',
-					data: body,
-				} );
-
-				if ( ! result.job_id ) {
-					throw new Error( 'No job_id returned' );
-				}
-
-				dispatch.setCurrentJobId( result.job_id );
-				dispatch.pollJob( result.job_id );
-			} catch ( err ) {
-				dispatch.appendMessage( {
-					role: 'system',
-					parts: [
-						{
-							text: `Error: ${
-								err.message || 'Failed to start job'
-							}`,
-						},
-					],
-				} );
-				dispatch.setSending( false );
-			}
+		return ( { dispatch } ) => {
+			dispatch.streamMessage( message, attachments );
 		};
 	},
 
