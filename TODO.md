@@ -203,6 +203,10 @@
 
 ## New Tasks
 
+- [ ] t162 Fix systemic CI failures: PHPStan, PHPUnit, Playwright E2E #bug #auto-dispatch ~4h ref:GH#803 logged:2026-04-07
+  - PHPStan: ~40 errors from WP 7.0 Abilities API stubs not matching actual API; PHPUnit: 7 errors + 20 failures in AgentLoopTest (WP_Error returned where array expected + WP_Ability category fixture); Playwright: 6 shards failing, likely /stream → /chat rename in #802
+  - Fix stubs in includes/stubs/, update AgentLoopTest fixtures, update frontend endpoint reference from /stream to /chat
+
 - [x] t141 Add E2E tests for UnifiedAdminMenu (PR #665) @superdav42 #testing #auto-dispatch ~2h ref=GH#680 pr:#683 completed:2026-03-29
   - UnifiedAdminMenu (hash-based React SPA) shipped with no E2E coverage — regressions break all admin navigation
   - Create tests/e2e/unified-admin-menu.spec.js with ≥5 test cases: navigation, routing, active state, access control
