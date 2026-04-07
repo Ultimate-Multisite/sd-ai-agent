@@ -67,6 +67,9 @@ migrations
 # JSON schemas (dev reference only)
 schemas
 
+# PHP stubs for LSP/static analysis (never loaded at runtime)
+stubs
+
 # AI agent / automation tooling
 .agents
 .claude
