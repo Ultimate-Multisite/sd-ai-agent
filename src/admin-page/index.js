@@ -16,6 +16,8 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import STORE_NAME from '../store';
+// Register gratis-ai-agent-js/* client-side abilities before the chat mounts (t163).
+import '../abilities';
 import SessionSidebar from '../components/session-sidebar';
 import ChatPanel from '../components/chat-panel';
 import OnboardingWizard from '../components/onboarding-wizard';

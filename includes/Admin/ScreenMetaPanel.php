@@ -86,6 +86,13 @@ class ScreenMetaPanel {
 
 		wp_set_script_translations( 'gratis-ai-agent-screen-meta', 'gratis-ai-agent' );
 
+		// WP 7.0+: enqueue the `@wordpress/abilities` script module so our
+		// client-side ability registry (src/abilities/*) can resolve the
+		// bare specifier via the document import map at runtime. See t163.
+		if ( function_exists( 'wp_enqueue_script_module' ) ) {
+			wp_enqueue_script_module( '@wordpress/abilities' );
+		}
+
 		// Pass screen context to JS.
 		$screen_context = self::get_screen_context();
 

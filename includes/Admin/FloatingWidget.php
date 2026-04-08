@@ -118,6 +118,13 @@ class FloatingWidget {
 
 		wp_set_script_translations( 'gratis-ai-agent-floating-widget', 'gratis-ai-agent' );
 
+		// WP 7.0+: enqueue the `@wordpress/abilities` script module so our
+		// client-side ability registry (src/abilities/*) can resolve the
+		// bare specifier via the document import map at runtime. See t163.
+		if ( function_exists( 'wp_enqueue_script_module' ) ) {
+			wp_enqueue_script_module( '@wordpress/abilities' );
+		}
+
 		// Detect fresh install and pass site-builder context to the widget.
 		$is_fresh     = FreshInstallDetector::isFreshInstall();
 		$site_builder = (bool) Settings::get( 'site_builder_mode' );

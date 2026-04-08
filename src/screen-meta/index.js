@@ -18,6 +18,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import STORE_NAME from '../store';
+// Register gratis-ai-agent-js/* client-side abilities before the chat mounts (t163).
+import '../abilities';
 import ChatPanel from '../components/chat-panel';
 import './style.css';
 
