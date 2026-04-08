@@ -211,7 +211,7 @@
   - PR 1 of 2 splitting #806. Adds includes/Abilities/Js/JsAbilityCatalog.php (pure metadata mirror), src/abilities/{registry,navigation,editor,index}.js, wires into 4 entry points, enqueues @wordpress/abilities script module on our admin hooks. No AgentLoop or REST changes in this slice.
   - Brief: todo/tasks/t163-brief.md. Follow-up: t164 (agent-loop pause/resume).
 
-- [ ] t164 Seamless PHP+JS abilities — AgentLoop pause/resume + /chat/tool-result + sessionsSlice round-trip #feature ~5h For #806 blocked-by:t163 logged:2026-04-08
+- [x] t164 Seamless PHP+JS abilities — AgentLoop pause/resume + /chat/tool-result + sessionsSlice round-trip #feature ~5h For #806 blocked-by:t163 logged:2026-04-08 pr:#815 completed:2026-04-08
   - PR 2 of 2 splitting #806. Teaches AgentLoop to pause on gratis-ai-agent-js/* tool calls, return pending_client_tool_calls, and resume via a new /chat/tool-result REST route. Adds sessionsSlice round-trip, tool-call-details "Ran in browser" badge, abilities-explorer client badge, and PHPUnit coverage.
   - Brief: todo/tasks/t164-brief.md. Depends on t163 being merged first.
 
