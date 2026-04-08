@@ -15,8 +15,12 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
+import { ensureRegistered } from '../abilities';
 import STORE_NAME from '../store';
 import SessionSidebar from '../components/session-sidebar';
+
+// Register client-side abilities before the app mounts.
+ensureRegistered();
 import ChatPanel from '../components/chat-panel';
 import OnboardingWizard from '../components/onboarding-wizard';
 import OnboardingInterview from '../components/onboarding-interview';

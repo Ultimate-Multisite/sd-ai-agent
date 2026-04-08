@@ -385,6 +385,31 @@ FloatingWidget::register();
 // Screen-meta Help tab chat panel.
 ScreenMetaPanel::register();
 
+// Enqueue the @wordpress/abilities script module on admin pages and the
+// frontend so the JS abilities registry is available before our entry points
+// mount. Core already enqueues @wordpress/core-abilities on all admin pages,
+// which mirrors server-side abilities into the JS store automatically.
+// We enqueue @wordpress/abilities explicitly so our client-side abilities
+// (gratis-ai-agent-js/*) can be registered into the same store.
+if ( ! function_exists( 'gratis_ai_agent_enqueue_abilities_module' ) ) {
+	/**
+	 * Enqueue the @wordpress/abilities script module.
+	 *
+	 * Called on admin_enqueue_scripts and wp_enqueue_scripts so the module
+	 * is available on every page where our entry points run.
+	 */
+	function gratis_ai_agent_enqueue_abilities_module(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		if ( function_exists( 'wp_enqueue_script_module' ) ) {
+			wp_enqueue_script_module( '@wordpress/abilities' );
+		}
+	}
+}
+add_action( 'admin_enqueue_scripts', 'gratis_ai_agent_enqueue_abilities_module' );
+add_action( 'wp_enqueue_scripts', 'gratis_ai_agent_enqueue_abilities_module' );
+
 // WP-CLI command.
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	\WP_CLI::add_command( 'gratis-ai-agent', CliCommand::class );

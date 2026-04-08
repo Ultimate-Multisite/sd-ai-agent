@@ -7,9 +7,13 @@ import { Notice } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import { ensureRegistered } from '../abilities';
 import './style.css';
 import Router from './router';
 import { AppProvider } from './context';
+
+// Register client-side abilities before the app mounts.
+ensureRegistered();
 
 /**
  * Derive the initial route from the URL hash (JS-side), falling back to the

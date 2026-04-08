@@ -8,8 +8,12 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { ensureRegistered } from '../abilities';
 import STORE_NAME from '../store';
 import ErrorBoundary from '../components/error-boundary';
+
+// Register client-side abilities before the widget mounts.
+ensureRegistered();
 import FloatingButton from './floating-button';
 import FloatingPanel from './floating-panel';
 import SiteBuilderOverlay from './site-builder-overlay';

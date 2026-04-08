@@ -17,9 +17,13 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { ensureRegistered } from '../abilities';
 import STORE_NAME from '../store';
 import ChatPanel from '../components/chat-panel';
 import './style.css';
+
+// Register client-side abilities before the panel mounts.
+ensureRegistered();
 
 /**
  * Build a human-readable context string from the screen context object
