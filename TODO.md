@@ -203,9 +203,9 @@
 
 ## New Tasks
 
-- [ ] t162 Fix systemic CI failures: PHPStan, PHPUnit, Playwright E2E #bug #auto-dispatch ~4h ref:GH#803 logged:2026-04-07
+- [ ] t162 Fix systemic CI failures: PHPStan, PHPUnit, Playwright E2E #bug #auto-dispatch ~4h ref:GH#803 logged:2026-04-07 pr:#820
   - PHPStan: ~40 errors from WP 7.0 Abilities API stubs not matching actual API; PHPUnit: 7 errors + 20 failures in AgentLoopTest (WP_Error returned where array expected + WP_Ability category fixture); Playwright: 6 shards failing, likely /stream → /chat rename in #802
-  - Fix stubs in stubs/, update AgentLoopTest fixtures, update frontend endpoint reference from /stream to /chat
+  - PHPStan fixed in PR #820 (stubs + code fixes, verified [OK] No errors locally). PHPUnit and Playwright still need fixing.
 
 - [x] t163 Seamless PHP+JS abilities — foundation slice (JsAbilityCatalog, client registry, entry wiring) #feature #interactive ~3h For #806 logged:2026-04-08 pr:#815 completed:2026-04-08
   - Bundled into t164's PR #815 by a parallel pulse worker that implemented #806 whole, ignoring the split t163/t164 briefs committed to main. The split-PR attempt (#816) was closed as a dup with merge conflicts. Foundation files (JsAbilityCatalog.php, src/abilities/{registry,navigation,editor,index}.js, entry-point wiring, script-module enqueue) are all on main.
