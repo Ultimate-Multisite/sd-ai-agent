@@ -63,6 +63,7 @@ use GratisAiAgent\Abilities\SiteBuilderAbilities;
 use GratisAiAgent\Abilities\SiteHealthAbilities;
 use GratisAiAgent\Abilities\SkillAbilities;
 use GratisAiAgent\Abilities\StockImageAbilities;
+use GratisAiAgent\Abilities\TaxonomyAbilities;
 use GratisAiAgent\Abilities\ToolCapabilities;
 use GratisAiAgent\Abilities\WooCommerceAbilities;
 use GratisAiAgent\Abilities\WordPressAbilities;
@@ -358,6 +359,9 @@ NavigationAbilities::register();
 
 // Post management abilities (get, create, update, delete posts).
 PostAbilities::register();
+
+// Taxonomy management abilities (register custom taxonomies with persistence, term CRUD).
+TaxonomyAbilities::register();
 
 // User management abilities (list, create, update role).
 UserAbilities::register();
