@@ -370,7 +370,7 @@ export default function SettingsApp() {
 				className="gratis-ai-agent-providers-link-notice"
 			>
 				{ __(
-					'Provider API keys are configured network-wide on the Connectors page.',
+					'Provider API keys are configured on the Connectors page.',
 					'gratis-ai-agent'
 				) }{ ' ' }
 				<a

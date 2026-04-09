@@ -227,9 +227,7 @@ class UnifiedAdminMenu {
 				'nonce'           => wp_create_nonce( 'wp_rest' ),
 				'initialRoute'    => self::getCurrentRoute(),
 				'menuItems'       => self::getMenuItems(),
-				'connectorsUrl'   => is_multisite()
-					? network_admin_url( 'options-connectors.php' )
-					: admin_url( 'options-connectors.php' ),
+				'connectorsUrl'   => admin_url( 'options-connectors.php' ),
 			)
 		);
 	}
