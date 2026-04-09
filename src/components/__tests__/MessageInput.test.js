@@ -233,7 +233,7 @@ describe( 'MessageInput rendering', () => {
 	test( 'renders ai-agent-input-area wrapper', () => {
 		setupMocks();
 		const html = renderToStaticMarkup( createElement( MessageInput, {} ) );
-		expect( html ).toContain( 'ai-agent-input-area' );
+		expect( html ).toContain( 'gratis-ai-agent-input-area' );
 	} );
 
 	test( 'applies is-compact class in compact mode', () => {
@@ -259,33 +259,29 @@ describe( 'MessageInput rendering', () => {
 	test( 'renders send button when not sending', () => {
 		setupMocks( { sending: false } );
 		const html = renderToStaticMarkup( createElement( MessageInput, {} ) );
-		expect( html ).toContain( 'ai-agent-send-btn' );
-		expect( html ).not.toContain( 'ai-agent-stop-btn' );
+		expect( html ).toContain( 'gratis-ai-agent-send-btn' );
+		expect( html ).not.toContain( 'gratis-ai-agent-stop-btn' );
 	} );
 
 	test( 'renders stop button when sending is true', () => {
 		setupMocks( { sending: true } );
 		const html = renderToStaticMarkup( createElement( MessageInput, {} ) );
-		expect( html ).toContain( 'ai-agent-stop-btn' );
-		expect( html ).not.toContain( 'ai-agent-send-btn' );
+		expect( html ).toContain( 'gratis-ai-agent-stop-btn' );
+		expect( html ).not.toContain( 'gratis-ai-agent-send-btn' );
 	} );
 
-	test( 'renders templates button', () => {
-		setupMocks();
-		const html = renderToStaticMarkup( createElement( MessageInput, {} ) );
-		expect( html ).toContain( 'ai-agent-templates-btn' );
-	} );
+	// Templates button was removed in the gratis-ai-agent CSS prefix refactor.
 
 	test( 'renders upload button (paperclip)', () => {
 		setupMocks();
 		const html = renderToStaticMarkup( createElement( MessageInput, {} ) );
-		expect( html ).toContain( 'ai-agent-upload-btn' );
+		expect( html ).toContain( 'gratis-ai-agent-upload-btn' );
 	} );
 
 	test( 'renders hidden file input', () => {
 		setupMocks();
 		const html = renderToStaticMarkup( createElement( MessageInput, {} ) );
-		expect( html ).toContain( 'ai-agent-file-input' );
+		expect( html ).toContain( 'gratis-ai-agent-file-input' );
 	} );
 } );
 
@@ -315,7 +311,7 @@ describe( 'MessageInput interactions', () => {
 			root.render( createElement( MessageInput, {} ) );
 		} );
 
-		const sendBtn = container.querySelector( '.ai-agent-send-btn' );
+		const sendBtn = container.querySelector( '.gratis-ai-agent-send-btn' );
 		expect( sendBtn ).not.toBeNull();
 		expect( sendBtn.disabled ).toBe( true );
 	} );
@@ -327,7 +323,9 @@ describe( 'MessageInput interactions', () => {
 			root.render( createElement( MessageInput, {} ) );
 		} );
 
-		const textarea = container.querySelector( 'textarea.ai-agent-input' );
+		const textarea = container.querySelector(
+			'textarea.gratis-ai-agent-input'
+		);
 
 		// Use the native value setter + React-compatible change event to trigger
 		// React's synthetic onChange handler.
@@ -343,7 +341,7 @@ describe( 'MessageInput interactions', () => {
 		} );
 
 		// After the state update, the send button should be enabled.
-		const sendBtn = container.querySelector( '.ai-agent-send-btn' );
+		const sendBtn = container.querySelector( '.gratis-ai-agent-send-btn' );
 		expect( sendBtn ).not.toBeNull();
 		// canSend = text.trim().length > 0 && !sending — should be enabled.
 		expect( sendBtn.disabled ).toBe( false );
@@ -356,7 +354,9 @@ describe( 'MessageInput interactions', () => {
 			root.render( createElement( MessageInput, {} ) );
 		} );
 
-		const textarea = container.querySelector( 'textarea.ai-agent-input' );
+		const textarea = container.querySelector(
+			'textarea.gratis-ai-agent-input'
+		);
 		expect( textarea.disabled ).toBe( true );
 	} );
 
@@ -367,7 +367,9 @@ describe( 'MessageInput interactions', () => {
 			root.render( createElement( MessageInput, {} ) );
 		} );
 
-		const textarea = container.querySelector( 'textarea.ai-agent-input' );
+		const textarea = container.querySelector(
+			'textarea.gratis-ai-agent-input'
+		);
 		expect( textarea.disabled ).toBe( false );
 	} );
 
@@ -378,7 +380,7 @@ describe( 'MessageInput interactions', () => {
 			root.render( createElement( MessageInput, {} ) );
 		} );
 
-		const stopBtn = container.querySelector( '.ai-agent-stop-btn' );
+		const stopBtn = container.querySelector( '.gratis-ai-agent-stop-btn' );
 		expect( stopBtn ).not.toBeNull();
 		act( () => {
 			stopBtn.click();
@@ -393,7 +395,9 @@ describe( 'MessageInput interactions', () => {
 			root.render( createElement( MessageInput, {} ) );
 		} );
 
-		const textarea = container.querySelector( 'textarea.ai-agent-input' );
+		const textarea = container.querySelector(
+			'textarea.gratis-ai-agent-input'
+		);
 
 		// Set text value via React synthetic event.
 		act( () => {
@@ -424,7 +428,9 @@ describe( 'MessageInput interactions', () => {
 			root.render( createElement( MessageInput, {} ) );
 		} );
 
-		const textarea = container.querySelector( 'textarea.ai-agent-input' );
+		const textarea = container.querySelector(
+			'textarea.gratis-ai-agent-input'
+		);
 
 		act( () => {
 			const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
@@ -455,7 +461,9 @@ describe( 'MessageInput interactions', () => {
 			root.render( createElement( MessageInput, {} ) );
 		} );
 
-		const textarea = container.querySelector( 'textarea.ai-agent-input' );
+		const textarea = container.querySelector(
+			'textarea.gratis-ai-agent-input'
+		);
 
 		act( () => {
 			const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
@@ -479,7 +487,9 @@ describe( 'MessageInput interactions', () => {
 			root.render( createElement( MessageInput, {} ) );
 		} );
 
-		const textarea = container.querySelector( 'textarea.ai-agent-input' );
+		const textarea = container.querySelector(
+			'textarea.gratis-ai-agent-input'
+		);
 
 		act( () => {
 			const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
@@ -503,7 +513,9 @@ describe( 'MessageInput interactions', () => {
 			root.render( createElement( MessageInput, {} ) );
 		} );
 
-		const textarea = container.querySelector( 'textarea.ai-agent-input' );
+		const textarea = container.querySelector(
+			'textarea.gratis-ai-agent-input'
+		);
 
 		act( () => {
 			const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
@@ -533,7 +545,9 @@ describe( 'MessageInput interactions', () => {
 			root.render( createElement( MessageInput, {} ) );
 		} );
 
-		const textarea = container.querySelector( 'textarea.ai-agent-input' );
+		const textarea = container.querySelector(
+			'textarea.gratis-ai-agent-input'
+		);
 
 		act( () => {
 			const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
@@ -563,7 +577,9 @@ describe( 'MessageInput interactions', () => {
 			root.render( createElement( MessageInput, {} ) );
 		} );
 
-		const textarea = container.querySelector( 'textarea.ai-agent-input' );
+		const textarea = container.querySelector(
+			'textarea.gratis-ai-agent-input'
+		);
 
 		act( () => {
 			const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
@@ -668,6 +684,6 @@ describe( 'AttachmentPreviews rendering', () => {
 	test( 'no attachment previews rendered initially', () => {
 		setupMocks();
 		const html = renderToStaticMarkup( createElement( MessageInput, {} ) );
-		expect( html ).not.toContain( 'ai-agent-attachment-previews' );
+		expect( html ).not.toContain( 'gratis-ai-agent-attachment-previews' );
 	} );
 } );

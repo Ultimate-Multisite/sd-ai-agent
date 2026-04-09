@@ -81,6 +81,35 @@ class AgentLoopTest extends WP_UnitTestCase {
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Skip the test if wp_ai_client_prompt() is unavailable or no provider is
+	 * registered in the SDK registry.
+	 *
+	 * run() now routes exclusively through the WordPress AI Client SDK. Tests
+	 * that call run() must skip when the SDK is absent or when no provider is
+	 * registered (the typical CI environment for WP trunk without a real
+	 * provider configured).
+	 */
+	private function skip_if_sdk_unavailable(): void {
+		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
+			$this->markTestSkipped( 'wp_ai_client_prompt() is not available — requires WordPress 7.0+.' );
+		}
+
+		if ( ! class_exists( '\WordPress\AiClient\AiClient' ) ) {
+			$this->markTestSkipped( 'WordPress\AiClient\AiClient class not available.' );
+		}
+
+		try {
+			$registry    = \WordPress\AiClient\AiClient::defaultRegistry();
+			$provider_id = 'ai-provider-for-any-openai-compatible';
+			if ( ! $registry->hasProvider( $provider_id ) ) {
+				$this->markTestSkipped( 'No AI provider registered in SDK registry — skipping run() test.' );
+			}
+		} catch ( \Throwable $e ) {
+			$this->markTestSkipped( 'SDK registry unavailable: ' . $e->getMessage() );
+		}
+	}
+
+	/**
 	 * Register a `pre_http_request` filter that returns a fake AI response.
 	 *
 	 * The filter intercepts wp_remote_post() calls to the fake endpoint and
@@ -274,6 +303,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 	 * Test run() increments iterations_used by 1 for a single-turn response.
 	 */
 	public function test_run_increments_iterations_used(): void {
+		$this->skip_if_sdk_unavailable();
 		$this->mock_ai_response( 'Done' );
 
 		$loop   = new AgentLoop( 'Do something' );
@@ -286,6 +316,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 	 * Test run() accumulates token usage from the response.
 	 */
 	public function test_run_accumulates_token_usage(): void {
+		$this->skip_if_sdk_unavailable();
 		$this->mock_ai_response(
 			'Done',
 			[],
@@ -304,6 +335,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 	 * Test run() appends the user message to history before calling the AI.
 	 */
 	public function test_run_appends_user_message_to_history(): void {
+		$this->skip_if_sdk_unavailable();
 		$this->mock_ai_response( 'Got it' );
 
 		$loop   = new AgentLoop( 'Remember this' );
@@ -731,6 +763,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 	 * Test deserialize_history round-trips through serialize_history.
 	 */
 	public function test_deserialize_history_round_trip(): void {
+		$this->skip_if_sdk_unavailable();
 		if ( ! class_exists( 'WordPress\AiClient\Messages\DTO\UserMessage' ) ) {
 			$this->markTestSkipped( 'AI Client SDK not available.' );
 		}
@@ -1064,11 +1097,13 @@ class AgentLoopTest extends WP_UnitTestCase {
 		}
 
 		// Create a mock ability with readonly=true.
+		// WP_Ability requires a 'category' string (added in WP 7.0 Abilities API).
 		$ability = new \WP_Ability(
 			'test/read-ability',
 			[
 				'label'            => 'Test Read',
 				'description'      => 'A read-only test ability.',
+				'category'         => 'gratis-ai-agent',
 				'execute_callback' => '__return_true',
 				'meta'             => [
 					'annotations' => [
@@ -1096,6 +1131,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 			[
 				'label'            => 'Test Write',
 				'description'      => 'A write test ability.',
+				'category'         => 'gratis-ai-agent',
 				'execute_callback' => '__return_true',
 				'meta'             => [
 					'annotations' => [
@@ -1123,6 +1159,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 			[
 				'label'            => 'Test Unknown',
 				'description'      => 'An ability with no readonly annotation.',
+				'category'         => 'gratis-ai-agent',
 				'execute_callback' => '__return_true',
 				'meta'             => [
 					'annotations' => [

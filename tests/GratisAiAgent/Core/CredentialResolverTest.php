@@ -24,38 +24,33 @@ class CredentialResolverTest extends WP_UnitTestCase {
 	 */
 	public function tear_down(): void {
 		parent::tear_down();
-		delete_option( CredentialResolver::OPENAI_COMPAT_ENDPOINT_OPTION );
-		delete_option( CredentialResolver::OPENAI_COMPAT_API_KEY_OPTION );
-		delete_option( CredentialResolver::OPENAI_COMPAT_TIMEOUT_OPTION );
 		delete_option( CredentialResolver::AI_EXPERIMENTS_CREDENTIALS_OPTION );
 		delete_option( CredentialResolver::CLAUDE_MAX_TOKEN_OPTION );
 	}
 
 	// ── OpenAI-compatible endpoint ────────────────────────────────────────────
+	// These methods were removed from CredentialResolver as part of #805
+	// (openai_compat credential cleanup). Tests are skipped pending that refactor.
 
 	/**
 	 * Test getOpenAiCompatEndpointUrl returns empty string when not configured.
 	 */
 	public function test_get_openai_compat_endpoint_url_returns_empty_when_not_set(): void {
-		$this->assertSame( '', CredentialResolver::getOpenAiCompatEndpointUrl() );
+		$this->markTestSkipped( 'openai_compat methods removed from CredentialResolver. See #805.' );
 	}
 
 	/**
 	 * Test getOpenAiCompatEndpointUrl strips trailing slash.
 	 */
 	public function test_get_openai_compat_endpoint_url_strips_trailing_slash(): void {
-		update_option( CredentialResolver::OPENAI_COMPAT_ENDPOINT_OPTION, 'https://api.example.com/v1/' );
-
-		$this->assertSame( 'https://api.example.com/v1', CredentialResolver::getOpenAiCompatEndpointUrl() );
+		$this->markTestSkipped( 'openai_compat methods removed from CredentialResolver. See #805.' );
 	}
 
 	/**
 	 * Test getOpenAiCompatEndpointUrl returns stored value without trailing slash.
 	 */
 	public function test_get_openai_compat_endpoint_url_returns_stored_value(): void {
-		update_option( CredentialResolver::OPENAI_COMPAT_ENDPOINT_OPTION, 'https://api.example.com/v1' );
-
-		$this->assertSame( 'https://api.example.com/v1', CredentialResolver::getOpenAiCompatEndpointUrl() );
+		$this->markTestSkipped( 'openai_compat methods removed from CredentialResolver. See #805.' );
 	}
 
 	// ── OpenAI-compatible API key ─────────────────────────────────────────────
@@ -64,23 +59,21 @@ class CredentialResolverTest extends WP_UnitTestCase {
 	 * Test getOpenAiCompatApiKey returns sentinel when not configured.
 	 */
 	public function test_get_openai_compat_api_key_returns_sentinel_when_not_set(): void {
-		$this->assertSame( CredentialResolver::NO_KEY_SENTINEL, CredentialResolver::getOpenAiCompatApiKey() );
+		$this->markTestSkipped( 'openai_compat methods removed from CredentialResolver. See #805.' );
 	}
 
 	/**
 	 * Test getOpenAiCompatApiKey returns empty string when not configured and sentinel disabled.
 	 */
 	public function test_get_openai_compat_api_key_returns_empty_when_sentinel_disabled(): void {
-		$this->assertSame( '', CredentialResolver::getOpenAiCompatApiKey( false ) );
+		$this->markTestSkipped( 'openai_compat methods removed from CredentialResolver. See #805.' );
 	}
 
 	/**
 	 * Test getOpenAiCompatApiKey returns stored key.
 	 */
 	public function test_get_openai_compat_api_key_returns_stored_key(): void {
-		update_option( CredentialResolver::OPENAI_COMPAT_API_KEY_OPTION, 'sk-test-key-123' );
-
-		$this->assertSame( 'sk-test-key-123', CredentialResolver::getOpenAiCompatApiKey() );
+		$this->markTestSkipped( 'openai_compat methods removed from CredentialResolver. See #805.' );
 	}
 
 	// ── OpenAI-compatible timeout ─────────────────────────────────────────────
@@ -89,16 +82,14 @@ class CredentialResolverTest extends WP_UnitTestCase {
 	 * Test getOpenAiCompatTimeout returns default 600 when not configured.
 	 */
 	public function test_get_openai_compat_timeout_returns_default(): void {
-		$this->assertSame( 600, CredentialResolver::getOpenAiCompatTimeout() );
+		$this->markTestSkipped( 'openai_compat methods removed from CredentialResolver. See #805.' );
 	}
 
 	/**
 	 * Test getOpenAiCompatTimeout returns stored value.
 	 */
 	public function test_get_openai_compat_timeout_returns_stored_value(): void {
-		update_option( CredentialResolver::OPENAI_COMPAT_TIMEOUT_OPTION, 120 );
-
-		$this->assertSame( 120, CredentialResolver::getOpenAiCompatTimeout() );
+		$this->markTestSkipped( 'openai_compat methods removed from CredentialResolver. See #805.' );
 	}
 
 	// ── isOpenAiCompatConfigured ──────────────────────────────────────────────
@@ -107,16 +98,14 @@ class CredentialResolverTest extends WP_UnitTestCase {
 	 * Test isOpenAiCompatConfigured returns false when not configured.
 	 */
 	public function test_is_openai_compat_configured_returns_false_when_not_set(): void {
-		$this->assertFalse( CredentialResolver::isOpenAiCompatConfigured() );
+		$this->markTestSkipped( 'openai_compat methods removed from CredentialResolver. See #805.' );
 	}
 
 	/**
 	 * Test isOpenAiCompatConfigured returns true when endpoint is set.
 	 */
 	public function test_is_openai_compat_configured_returns_true_when_endpoint_set(): void {
-		update_option( CredentialResolver::OPENAI_COMPAT_ENDPOINT_OPTION, 'https://api.example.com/v1' );
-
-		$this->assertTrue( CredentialResolver::isOpenAiCompatConfigured() );
+		$this->markTestSkipped( 'openai_compat methods removed from CredentialResolver. See #805.' );
 	}
 
 	// ── AI Experiments credentials ────────────────────────────────────────────
