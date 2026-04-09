@@ -43,6 +43,7 @@ if ( file_exists( GRATIS_AI_AGENT_DIR . '/vendor/autoload_packages.php' ) ) {
 use GratisAiAgent\Abilities\AiImageAbilities;
 use GratisAiAgent\Abilities\BlockAbilities;
 use GratisAiAgent\Abilities\ContentAbilities;
+use GratisAiAgent\Abilities\CustomPostTypeAbilities;
 use GratisAiAgent\Abilities\DatabaseAbilities;
 use GratisAiAgent\Abilities\EditorialAbilities;
 use GratisAiAgent\Abilities\FileAbilities;
@@ -358,6 +359,9 @@ NavigationAbilities::register();
 
 // Post management abilities (get, create, update, delete posts).
 PostAbilities::register();
+
+// Custom post type abilities (register, list, delete CPTs with persistence).
+CustomPostTypeAbilities::register();
 
 // User management abilities (list, create, update role).
 UserAbilities::register();
