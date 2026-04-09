@@ -309,7 +309,9 @@ class UpdateOptionAbility extends AbstractAbility {
 		}
 
 		$option_value = $input['option_value'];
-		$autoload     = isset( $input['autoload'] ) && 'no' === $input['autoload'] ? 'no' : 'yes';
+		// WordPress 7.0+ update_option() accepts bool|null for $autoload.
+		// false = do not autoload, true = autoload, null = keep existing setting.
+		$autoload = isset( $input['autoload'] ) && 'no' === $input['autoload'] ? false : true;
 
 		$updated = update_option( $option_name, $option_value, $autoload );
 
@@ -550,7 +552,6 @@ class ListOptionsAbility extends AbstractAbility {
 	}
 
 	protected function execute_callback( $input ) {
-		/** @var array<string, mixed> $input */
 		global $wpdb;
 		/** @var \wpdb $wpdb */
 
