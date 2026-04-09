@@ -367,7 +367,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - Blocklist for dangerous options (siteurl, home, active_plugins, etc.)
   - EDIT: includes/Abilities/WordPressAbilities.php — add get_option/update_option abilities
   - Verify: `composer phpcs && composer phpstan`
-- [ ] t174 Global styles (theme.json) management ability #feature #auto-dispatch ~4h logged:2026-04-09 ref:GH#852
+- [x] t174 Global styles (theme.json) management ability #feature #auto-dispatch ~4h logged:2026-04-09 ref:GH#852 pr:#856 completed:2026-04-09
   - Read and update theme.json global styles (colors, typography, spacing, layout)
   - Uses wp_global_styles CPT internally
   - NEW: includes/Abilities/GlobalStylesAbilities.php — model on BlockAbilities.php
