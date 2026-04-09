@@ -332,36 +332,60 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
 
 ### Complete Site Building Abilities (P0)
 
-- [ ] t161 Smart plugin discovery: search-plugin-directory ability #feature ~3h logged:2026-04-09
+- [ ] t161 Smart plugin discovery: search-plugin-directory ability #feature #auto-dispatch ~3h logged:2026-04-09 ref:GH#840
   - Search WordPress.org by keyword, return results with active installs, rating, block support
   - Completes the discover-then-install flow (install_plugin already exists)
-- [ ] t162 Installable abilities registry and recommend-plugin ability #feature ~3h logged:2026-04-09
+  - EDIT: includes/Abilities/WordPressAbilities.php — add search_plugin_directory ability
+  - Model on existing install_plugin ability pattern in same file
+  - Verify: `composer phpcs -- includes/Abilities/WordPressAbilities.php && composer phpstan`
+- [ ] t162 Installable abilities registry and recommend-plugin ability #feature #auto-dispatch ~3h logged:2026-04-09 ref:GH#841
   - Curated registry of plugins known to register abilities (slug, ability count, categories)
   - recommend-plugin ability: given a need category, return ranked recommendations
   - Preference order: has abilities > has blocks > popular
-- [ ] t163 Register custom post type ability with persistence #feature ~4h logged:2026-04-09
+  - EDIT: includes/Abilities/WordPressAbilities.php — add recommend_plugin ability
+  - NEW: includes/Core/AbilityPluginRegistry.php — curated registry as PHP array constant
+  - Verify: `composer phpcs && composer phpstan`
+- [ ] t163 Register custom post type ability with persistence #feature #auto-dispatch ~4h logged:2026-04-09 ref:GH#842
   - register-custom-post-type: labels, supports, menu icon, REST API, rewrite rules
   - Persist via gratis_ai_agent_custom_post_types option, register on init
-- [ ] t164 Register custom taxonomy ability with persistence #feature ~3h logged:2026-04-09
+  - NEW: includes/Abilities/CustomPostTypeAbilities.php — model on PostAbilities.php
+  - EDIT: gratis-ai-agent.php — register the new abilities class
+  - Verify: `composer phpcs && composer phpstan && wp plugin activate gratis-ai-agent`
+- [ ] t164 Register custom taxonomy ability with persistence #feature #auto-dispatch ~3h logged:2026-04-09 ref:GH#843
   - register-custom-taxonomy: associate with post types, hierarchical, labels
   - Same persistence pattern as CPTs
-- [ ] t165 Navigation menu management ability #feature ~4h logged:2026-04-09
+  - EDIT: includes/Abilities/CustomPostTypeAbilities.php — add taxonomy abilities to same file
+  - Verify: `composer phpcs && composer phpstan`
+- [ ] t165 Navigation menu management ability #feature #auto-dispatch ~4h logged:2026-04-09 ref:GH#844
   - Create menus, add/update/remove items, assign to theme locations
-  - Biggest ecosystem gap -- only bjornfix/mcp-expose-abilities has this
-- [ ] t166 Options management ability with safety blocklist #feature ~2h logged:2026-04-09
+  - Biggest ecosystem gap — only bjornfix/mcp-expose-abilities has this
+  - NEW: includes/Abilities/MenuAbilities.php — model on NavigationAbilities.php
+  - EDIT: gratis-ai-agent.php — register the new abilities class
+  - Verify: `composer phpcs && composer phpstan`
+- [ ] t166 Options management ability with safety blocklist #feature #auto-dispatch ~2h logged:2026-04-09 ref:GH#845
   - Get/set WordPress options (site title, tagline, permalinks, timezone, date format)
   - Blocklist for dangerous options (siteurl, home, active_plugins, etc.)
-- [ ] t167 Global styles (theme.json) management ability #feature ~4h logged:2026-04-09
+  - EDIT: includes/Abilities/WordPressAbilities.php — add get_option/update_option abilities
+  - Verify: `composer phpcs && composer phpstan`
+- [ ] t167 Global styles (theme.json) management ability #feature #auto-dispatch ~4h logged:2026-04-09 ref:GH#846
   - Read and update theme.json global styles (colors, typography, spacing, layout)
   - Uses wp_global_styles CPT internally
+  - NEW: includes/Abilities/GlobalStylesAbilities.php — model on BlockAbilities.php
+  - EDIT: gratis-ai-agent.php — register the new abilities class
+  - Verify: `composer phpcs && composer phpstan`
 - [ ] t168 Site builder orchestration v2: system prompt + multi-step builds #feature ~8h logged:2026-04-09
   - Rewrite site builder prompt to use new abilities + plugin discovery
   - Plan generation, progress tracking, error recovery
-- [ ] t169 Design system: custom CSS injection, block patterns, site logo, theme presets #feature ~6h logged:2026-04-09
+  - Blocked by: t161-t167 (needs all abilities available first)
+- [ ] t169 Design system: custom CSS injection, block patterns, site logo, theme presets #feature #auto-dispatch ~6h logged:2026-04-09 ref:GH#847
   - inject-custom-css, curated block patterns, set-site-logo, theme.json presets
+  - NEW: includes/Abilities/DesignAbilities.php — model on BlockAbilities.php
+  - EDIT: gratis-ai-agent.php — register the new abilities class
+  - Verify: `composer phpcs && composer phpstan`
 - [ ] t170 Benchmark validation: ac-016 restaurant website end-to-end test #testing ~3h logged:2026-04-09
   - Run full prompt on fresh WordPress install, document gaps
   - Create follow-up issues for ac-017 through ac-024
+  - Blocked by: t168 (needs orchestration working first)
 
 Full plan: [todo/PLANS.md#complete-site-building-abilities](PLANS.md#2026-04-09-complete-site-building-abilities)
 
