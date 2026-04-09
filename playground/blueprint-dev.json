@@ -6,7 +6,7 @@
     "author": "Ultimate-Multisite",
     "categories": ["AI", "Automation", "Chat"]
   },
-  "landingPage": "/wp-admin/admin.php?page=ai-agent",
+  "landingPage": "/wp-admin/admin.php?page=gratis-ai-agent",
   "login": {
     "username": "admin",
     "password": "password"

@@ -3,7 +3,7 @@
  * Plugin Name: Gratis AI Agent
  * Plugin URI:  https://github.com/Ultimate-Multisite/gratis-ai-agent
  * Description: Agentic AI loop for WordPress — chat with an AI that can call WordPress abilities (tools) autonomously.
- * Version:     1.3.0
+ * Version:     1.3.2
  * Author:      superdav42
  * Author URI:  https://github.com/superdav42
  * License:     GPL-2.0-or-later
@@ -206,14 +206,20 @@ if ( ! function_exists( 'gratis_ai_agent_normalize_ability_schema' ) ) {
 		}
 
 		// `items`: draft-2020-12 requires a schema object, never an array.
-		// If empty/list-form, drop it entirely so the validator skips it
-		// (valid: an array schema may omit `items`).
+		// If empty/list-form, replace with a permissive object so the
+		// validator doesn't reject it (OpenAI requires `items` on arrays).
 		if ( array_key_exists( 'items', $schema ) && is_array( $schema['items'] ) ) {
 			if ( empty( $schema['items'] ) || array_is_list( $schema['items'] ) ) {
-				unset( $schema['items'] );
+				$schema['items'] = (object) [];
 			} else {
 				$schema['items'] = gratis_ai_agent_normalize_ability_schema( $schema['items'] );
 			}
+		}
+
+		// Array schemas must have `items` — OpenAI's function-calling
+		// validator rejects array types without it.
+		if ( isset( $schema['type'] ) && 'array' === $schema['type'] && ! array_key_exists( 'items', $schema ) ) {
+			$schema['items'] = (object) [];
 		}
 
 		// Drop stray empty-array `default` entries that mis-type object schemas.

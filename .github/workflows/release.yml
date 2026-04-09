@@ -44,39 +44,46 @@ jobs:
 
       - name: Create plugin directory
         run: |
-          mkdir -p build/gratis-ai-agent
-          
-          # Copy PHP files
-          cp gratis-ai-agent.php build/gratis-ai-agent/
-          cp -r includes build/gratis-ai-agent/
-          cp -r compat build/gratis-ai-agent/
-          
-          # Copy built assets
-          cp -r build/*.js build/*.css build/*.asset.php build/gratis-ai-agent/build/ 2>/dev/null || true
-          mkdir -p build/gratis-ai-agent/build
-          cp -r build/*.js build/*.css build/*.asset.php build/gratis-ai-agent/build/ 2>/dev/null || true
-          
-          # Copy other assets
-          cp -r assets build/gratis-ai-agent/ 2>/dev/null || true
-          cp -r languages build/gratis-ai-agent/ 2>/dev/null || true
-          
-          # Copy vendor (production only)
-          cp -r vendor build/gratis-ai-agent/
-          
-          # Copy documentation
-          cp README.md build/gratis-ai-agent/
-          cp readme.txt build/gratis-ai-agent/
-          cp LICENSE build/gratis-ai-agent/
+          # Save built assets out of the way before creating the plugin tree
+          mkdir -p /tmp/gratis-build
+          cp build/*.js build/*.css build/*.asset.php /tmp/gratis-build/ 2>/dev/null || true
+          cp build/*.map /tmp/gratis-build/ 2>/dev/null || true
 
-      - name: Create ZIP file
+          mkdir -p dist/gratis-ai-agent/build
+
+          # Copy PHP files
+          cp gratis-ai-agent.php dist/gratis-ai-agent/
+          cp -r includes dist/gratis-ai-agent/
+          cp -r stubs dist/gratis-ai-agent/ 2>/dev/null || true
+
+          # Copy built assets
+          cp /tmp/gratis-build/* dist/gratis-ai-agent/build/ 2>/dev/null || true
+
+          # Copy other assets
+          cp -r assets dist/gratis-ai-agent/ 2>/dev/null || true
+          cp -r languages dist/gratis-ai-agent/ 2>/dev/null || true
+
+          # Copy vendor (production only)
+          cp -r vendor dist/gratis-ai-agent/
+
+          # Copy documentation
+          cp README.md dist/gratis-ai-agent/
+          cp readme.txt dist/gratis-ai-agent/
+          cp LICENSE dist/gratis-ai-agent/
+
+      - name: Create ZIP files
         run: |
-          cd build
+          cd dist
           zip -r ../gratis-ai-agent-${{ steps.version.outputs.VERSION }}.zip gratis-ai-agent -x "*.DS_Store" -x "*.git*"
+          # Stable-name zip so playground blueprints can reference /releases/latest/download/
+          cp ../gratis-ai-agent-${{ steps.version.outputs.VERSION }}.zip ../gratis-ai-agent.zip
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: gratis-ai-agent-${{ steps.version.outputs.VERSION }}.zip
+          files: |
+            gratis-ai-agent-${{ steps.version.outputs.VERSION }}.zip
+            gratis-ai-agent.zip
           name: Gratis AI Agent v${{ steps.version.outputs.VERSION }}
           draft: false
           prerelease: false

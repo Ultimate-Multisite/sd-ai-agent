@@ -1,68 +1,101 @@
-# AI Agent
+# Gratis AI Agent
 
 [![Tests](https://github.com/Ultimate-Multisite/ai-agent/actions/workflows/tests.yml/badge.svg)](https://github.com/Ultimate-Multisite/ai-agent/actions/workflows/tests.yml)
 [![Code Quality](https://github.com/Ultimate-Multisite/ai-agent/actions/workflows/code-quality.yml/badge.svg)](https://github.com/Ultimate-Multisite/ai-agent/actions/workflows/code-quality.yml)
 [![PHP 8.2+](https://img.shields.io/badge/php-%3E%3D%208.2-blue.svg)](https://www.php.net/)
-[![WordPress 6.9+](https://img.shields.io/badge/WordPress-%3E%3D%206.9-blue.svg)](https://wordpress.org/)
+[![WordPress 7.0+](https://img.shields.io/badge/WordPress-%3E%3D%207.0-blue.svg)](https://wordpress.org/)
 [![License: GPL v2+](https://img.shields.io/badge/License-GPL%20v2%2B-blue.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
 [![Try in Playground](https://img.shields.io/badge/Try%20in-WordPress%20Playground-3858e9?logo=wordpress&logoColor=white)](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Ultimate-Multisite/ai-agent/main/.wordpress-org/blueprints/blueprint.json)
 
 [Documentation](https://github.com/Ultimate-Multisite/ai-agent/wiki)
 
-An agentic AI assistant that lives inside your WordPress dashboard. It can chat, remember context across sessions, call WordPress tools autonomously, run scheduled tasks, react to WordPress events, and manage your site — all powered by the AI provider of your choice.
+A universal AI agent for WordPress. It connects to every plugin on your site through WordPress's Abilities API, giving a single AI assistant the power to manage content, products, users, SEO, analytics, media, and more — across any plugin that registers abilities. Bring your own API key, choose any AI provider, and pay only what your provider charges.
 
-Built on the **WordPress AI Client SDK** and **Abilities API** (WordPress 6.9+), AI Agent avoids vendor lock-in entirely. Bring your own API key, swap providers at any time, and keep every token charge on your own account.
+## How it works
 
-## Why Bring Your Own Key?
+WordPress 7.0 introduced two core APIs that make this possible:
 
-Most WordPress AI plugins lock you into a proprietary proxy that marks up API costs 2-10x. AI Agent takes a different approach:
+- **AI Client SDK** — A unified interface for AI providers. Any connector plugin (OpenAI, Anthropic, Google, Ollama, etc.) registered through the Connectors API works automatically. Switch providers or models at any time.
+- **Abilities API** — A standard way for plugins to register actions an AI can take. AI Agent discovers every registered ability on your site and makes it available to the AI. Install a WooCommerce extension that registers abilities and the agent can manage orders without any extra configuration.
 
-- **Direct API calls** — Your WordPress talks directly to OpenAI, Anthropic, or any OpenAI-compatible endpoint. No middleman, no markup.
-- **Full model choice** — Use GPT-4o, Claude Opus 4, a local Ollama instance, or anything the WordPress AI Client connector supports. Switch models per-session.
-- **Transparent pricing** — You see exactly what you spend in your provider's dashboard. The plugin's Usage tab tracks token counts and estimated costs locally.
+This means the agent gets more capable as your site grows. Every plugin that registers abilities expands what the AI can do — no glue code, no per-plugin setup.
+
+## What the agent can do out of the box
+
+AI Agent ships with 28 built-in ability classes covering:
+
+| Domain | Examples |
+|--------|----------|
+| **Content** | Create, edit, and manage posts, pages, and custom post types. Manage categories and tags. |
+| **Editorial** | Review content, check readability, manage editorial workflows |
+| **WooCommerce** | Manage products, orders, customers, and view sales analytics |
+| **Media** | Upload, search, and manage images and files in the media library |
+| **SEO** | Analyze pages, check meta tags, review structured data, find issues |
+| **Site Health** | Run diagnostics, check plugin status, review security and performance |
+| **Users** | List, create, and manage user accounts and roles |
+| **Blocks** | Browse block types, patterns, and templates |
+| **Navigation** | Manage WordPress navigation menus |
+| **Site Builder** | Build and modify page layouts |
+| **Analytics** | Query Google Analytics data and Google Search Console metrics |
+| **Knowledge** | Search indexed content, PDFs, and external URLs (RAG) |
+| **AI Images** | Generate images with AI and insert them into content |
+| **Stock Images** | Search and download stock photography |
+| **Database** | Run read queries against the WordPress database |
+| **Files** | Read and search files on the server |
+| **Marketing** | Review CDN, security headers, and performance settings |
+| **Memory & Skills** | Save and recall facts across sessions; load reusable instruction guides |
+
+Any plugin can register additional abilities through the WordPress Abilities API — the agent discovers and uses them automatically.
+
+## Bring Your Own Key
+
+Most WordPress AI plugins route calls through a proprietary proxy that marks up API costs. AI Agent talks directly to your provider:
+
+- **Direct API calls** — Your site connects straight to OpenAI, Anthropic, Google, or any OpenAI-compatible endpoint. No middleman.
+- **Full model choice** — GPT-4o, Claude Opus 4, Gemini, a local Ollama instance, or anything the WordPress AI Client connector supports. Switch models per session.
+- **Transparent pricing** — You see exactly what you spend in your provider's dashboard. The plugin tracks token counts and estimated costs locally.
 - **Privacy** — Conversations go directly to your chosen provider. Nothing routes through a third-party relay.
-
-## Why the WordPress SDK?
-
-AI Agent is built entirely on WordPress core APIs shipping in 6.9:
-
-- **AI Client SDK** (`wp_ai_client_prompt`) — Unified interface for all AI providers. Any connector plugin (OpenAI, Anthropic, Ollama, etc.) registered through the WordPress Connectors API works automatically.
-- **Abilities API** (`wp_register_ability`) — The WordPress-native tool/function-calling registry. Every ability registered by any plugin is automatically available to the agent. This means AI Agent gets smarter as your site grows — install a SEO plugin that registers abilities and the agent can use them without any configuration.
-- **Future-proof** — As WordPress core evolves its AI infrastructure, AI Agent inherits improvements for free. No fragile custom API wrappers to maintain.
 
 ## Features
 
-### Agentic Chat
+### Agentic chat
 - Autonomous tool-calling loop — the AI plans, executes tools, reads results, and iterates until the task is done
 - Configurable max iterations (1-50) to control how many tool calls per request
-- Tool confirmation system — approve or reject destructive actions before they run, with "always allow" memory
+- Tool confirmation — approve or reject destructive actions before they run, with "always allow" memory
 - Full markdown rendering with syntax-highlighted code blocks
-- Message actions: regenerate, edit & resend, delete
+- Message actions: regenerate, edit and resend, delete
 
-### Two Chat Interfaces
+### Three chat interfaces
 - **Full-page admin panel** (Tools > AI Agent) — two-column layout with session sidebar, folder organization, search, and filtering
-- **Floating widget** — draggable FAB button on every admin page, expandable chat panel with multi-tab sessions
+- **Floating widget** — draggable button on every admin page, expandable chat panel with multi-tab sessions
+- **Screen meta panel** — collapsible panel in the WordPress screen meta area (alongside Screen Options and Help)
 
-### Session Management
-- Persistent conversation history stored in a dedicated database table
+### Custom agents
+Build specialized agents with the Agent Builder:
+- Custom system prompts, greeting messages, and avatar icons
+- Per-agent provider and model overrides
+- Per-agent temperature and max iteration settings
+- Enable or disable agents; users can switch between them in chat
+
+### Session management
+- Persistent conversation history in a dedicated database table
 - Organize sessions into folders, pin favorites, archive old conversations
 - Search across all sessions by title or content
-- Export sessions to JSON (reimportable) or Markdown (human-readable)
-- Import sessions from JSON backups
+- Export to JSON (reimportable) or Markdown (human-readable)
 - Per-session token usage tracking with cost estimates
 
 ### Memory
 - Persistent knowledge base the AI retains across sessions
 - Categories: site info, user preferences, technical notes, workflows, general
 - Auto-memory mode — the AI proactively saves important facts it learns
-- Full CRUD through both the settings UI and the AI itself (via abilities)
+- Full CRUD through the settings UI and through chat
 
 ### Skills
 - Reusable instruction guides the AI can load on demand
 - Define complex workflows once ("how to optimize images", "content publishing checklist") and the agent follows them when relevant
-- Enable/disable per skill, manage through settings UI or chat
+- Enable or disable per skill
 
-### Knowledge Base (RAG)
+### Knowledge base (RAG)
 - Index WordPress posts, pages, and custom post types into searchable collections
 - Upload PDF documents and external URLs
 - Automatic chunking with configurable size and overlap
@@ -70,33 +103,25 @@ AI Agent is built entirely on WordPress core APIs shipping in 6.9:
 - Auto-index on post publish/update (optional)
 - The AI searches knowledge automatically when relevant context is needed
 
-### Custom Tools
+### Custom tools
 Create tools the AI can use without writing plugin code:
 
 - **HTTP tools** — Call any external API (weather, Zapier, Slack, etc.) with `{{placeholder}}` substitution in URLs, headers, and body
 - **ACTION tools** — Fire any WordPress `do_action()` hook with arguments
 - **CLI tools** — Run WP-CLI commands with argument schemas
 
-5 example tools are seeded on first activation (Weather API, Zapier Webhook, Clear Object Cache, Maintenance Mode, Site Health Check). Test any tool directly from the settings UI.
+5 example tools are seeded on first activation (Weather API, Zapier Webhook, Clear Object Cache, Maintenance Mode, Site Health Check).
 
-### Tool Profiles
-Named sets of tools that restrict what the AI can access:
-
-- 6 built-in profiles: WP Read Only, WP Full Management, Content Management, User Management, Maintenance, Developer
-- Create custom profiles with tool name prefix matching
-- Set an active profile globally, or per-automation/event
-- Useful for security (read-only mode for public-facing agents) and token savings (fewer tools = smaller system prompt)
-
-### Scheduled Automations
+### Scheduled automations
 Cron-based AI tasks that run unattended:
 
 - Define a prompt, pick a schedule (hourly / twice daily / daily / weekly), and let the agent work
 - 5 quick-start templates: Daily Site Health Report, Weekly Plugin Update Check, Content Moderation, Broken Link Check, Database Optimization
-- Per-automation tool profile restrictions and max iteration limits
+- Per-automation max iteration limits
 - Run any automation manually with "Run Now"
 - Execution logs with duration, token usage, status, and full response
 
-### Event-Driven Automations
+### Event-driven automations
 React to WordPress hooks in real time:
 
 - 20+ pre-registered triggers across WordPress core, WooCommerce, and form plugins
@@ -106,37 +131,42 @@ React to WordPress hooks in real time:
 - Conditional execution — only fire when conditions match (post type, status, role, etc.)
 - Shared logging infrastructure with scheduled automations
 
-### Tool Discovery
+### Tool discovery
 When your site has many registered abilities (20+), the agent uses meta-tools to discover what's available instead of loading every tool definition into the system prompt:
 
 - `list-tools` — Browse tools by category with pagination
 - `execute-tool` — Run a discovered tool by name
 - Configurable threshold and mode (auto / always / never)
-- Dramatically reduces token usage on sites with dozens of tools
+- Reduces token usage on sites with dozens of tools
 
-### Smart Conversation Trimming
+### Smart conversation trimming
 Prevents context window overflow in long agentic loops:
 
 - Counts tool-call/response cycles and trims at safe boundaries
 - Never cuts mid-tool-cycle or drops the first turn
 - Configurable max history turns (default: 20)
-- Transparent trimming marker injected so the AI knows context was compressed
+- Transparent trimming marker so the AI knows context was compressed
 
-### Suggestion Chips
+### Suggestion chips
 After each AI response, clickable follow-up suggestions appear:
 
 - AI generates 2-4 contextual suggestions
 - One click sends the suggestion as your next message
-- Configurable count (0-5) in settings
+- Configurable count (0-5)
 
-### Usage Dashboard
-Track token consumption and estimated costs:
+### Access and branding
+- Role-based permissions — control which WordPress roles can access the agent
+- Custom branding — set a custom name, logo, and colors for the chat interface
 
+### Usage dashboard
 - Per-session and aggregate token counts (prompt + completion)
 - Cost estimates based on current model pricing
 - Breakdown by model and time period
 
-### Context Providers
+### Provider trace
+Debug mode that captures the raw HTTP traffic between WordPress and your AI provider. Useful for troubleshooting connection issues and inspecting the exact prompts and responses.
+
+### Context providers
 The AI automatically receives relevant context about the current page:
 
 - Current admin page URL and title
@@ -145,7 +175,7 @@ The AI automatically receives relevant context about the current page:
 
 ## Requirements
 
-- WordPress 6.9+ (for AI Client SDK and Abilities API)
+- WordPress 7.0+
 - PHP 8.2+
 - An AI provider connector plugin (e.g., WordPress AI: OpenAI, or any OpenAI-compatible connector)
 - An API key from your chosen provider
@@ -154,7 +184,7 @@ The AI automatically receives relevant context about the current page:
 
 1. Upload the `gratis-ai-agent` folder to `/wp-content/plugins/`
 2. Activate through the Plugins screen
-3. Configure an AI provider in **Settings > AI Credentials** (this is part of WordPress core's Connectors API)
+3. Configure an AI provider in **Settings > AI Credentials** (WordPress core Connectors API)
 4. Go to **Tools > AI Agent Settings** to select your default provider and model
 5. Open **Tools > AI Agent** to start chatting
 
@@ -164,17 +194,15 @@ All settings live under **Tools > AI Agent Settings** with these tabs:
 
 | Tab | What it controls |
 |-----|-----------------|
-| General | Default provider, model, max iterations, greeting message |
-| System Prompt | Custom system instructions (leave empty for built-in default) |
-| Memory | Auto-memory toggle, memory CRUD |
+| General | Default provider, model, max iterations, system prompt, greeting message |
+| Memory & Knowledge | Auto-memory toggle, memory CRUD, RAG collections and sources |
 | Skills | Create and manage instruction guides |
-| Knowledge | Enable/configure RAG, manage collections and sources |
-| Custom Tools | Create HTTP/ACTION/CLI tools |
-| Tool Profiles | Manage and activate tool restriction profiles |
-| Automations | Scheduled cron-based AI tasks |
-| Events | Event-driven hook-based automations |
-| Abilities | Per-tool permission controls (auto / confirm / disabled) |
+| Tools | Custom HTTP/ACTION/CLI tools, per-ability permission controls (auto / confirm / disabled) |
+| Automations | Scheduled cron-based AI tasks and event-driven hook automations |
+| Agents | Create and manage custom agents with their own prompts, models, and settings |
+| Access & Branding | Role permissions, custom name, logo, and colors |
 | Usage | Token counts and cost tracking |
+| Provider Trace | Debug HTTP traffic between WordPress and AI providers |
 | Advanced | Temperature, max tokens, context window, tool discovery settings |
 
 ## Architecture
@@ -183,7 +211,7 @@ All settings live under **Tools > AI Agent Settings** with these tabs:
 gratis-ai-agent/
 ├── gratis-ai-agent.php             # Bootstrap, requires, hooks
 ├── includes/
-│   ├── Abilities/                   # 30 ability classes (tools the AI can call)
+│   ├── Abilities/                   # 28 ability classes (tools the AI can call)
 │   ├── Admin/                       # Admin pages, floating widget, screen-meta panel
 │   ├── Automations/                 # Scheduled + event-driven automation system
 │   ├── Benchmark/                   # Model benchmark runner and suite
@@ -192,20 +220,24 @@ gratis-ai-agent/
 │   ├── Enums/                       # PHP 8.1 enums (ToolType, Schedule, etc.)
 │   ├── Knowledge/                   # RAG pipeline (collections, sources, chunks)
 │   ├── Models/                      # Data models (Memory, Skill, Agent, Chunker, etc.)
-│   ├── REST/                        # REST API, SSE streamer, MCP, webhooks, resale proxy
-│   └── Tools/                       # Custom tools, tool discovery, tool profiles
-├── compat/                          # WordPress < 7.0 compatibility (AI Client SDK + Abilities API)
+│   ├── REST/                        # REST API, SSE streamer, MCP server, webhooks
+│   └── Tools/                       # Custom tools, tool discovery
 ├── src/
 │   ├── admin-page/                  # Full-page chat React app
 │   ├── floating-widget/             # Draggable widget React app
+│   ├── screen-meta/                 # Screen meta panel React app
+│   ├── benchmark-page/              # Model benchmark React app
+│   ├── unified-admin/               # Unified admin menu entry point
 │   ├── settings-page/               # Settings React app
+│   ├── abilities-explorer/          # Abilities browser
+│   ├── changes-page/                # Changelog viewer
 │   ├── components/                  # Shared React components
 │   ├── store/                       # Redux store (actions, selectors)
 │   └── utils/                       # Keyboard shortcuts, helpers
 └── build/                           # Compiled assets
 ```
 
-### REST API Pattern
+### REST API pattern
 
 The agent uses an **async job + polling** pattern to handle long-running inference:
 
@@ -273,16 +305,14 @@ composer phpstan    # Static analysis
 composer test       # PHPUnit tests
 ```
 
-The plugin builds three entry points: `admin-page`, `floating-widget`, and `settings-page`.
-
-### WordPress Playground Testing
+### WordPress Playground testing
 
 Test the plugin instantly in your browser without any local setup:
 
 - **Latest release**: [Open in WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Ultimate-Multisite/ai-agent/main/.wordpress-org/blueprints/blueprint.json) (login: `admin` / `password`)
 - **Development branch**: [Open dev version](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Ultimate-Multisite/ai-agent/main/playground/blueprint-dev.json)
 
-The canonical blueprint lives at `.wordpress-org/blueprints/blueprint.json` — this is the path WordPress.org uses when displaying the plugin in the plugin directory. The `playground/` directory contains additional variants (debug mode, dev builds).
+The canonical blueprint lives at `.wordpress-org/blueprints/blueprint.json` — this is the path WordPress.org uses when displaying the plugin in the plugin directory.
 
 ## License
 
