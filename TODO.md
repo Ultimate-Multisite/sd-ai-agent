@@ -338,7 +338,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - EDIT: includes/Abilities/WordPressAbilities.php — add search_plugin_directory ability
   - Model on existing install_plugin ability pattern in same file
   - Verify: `composer phpcs -- includes/Abilities/WordPressAbilities.php && composer phpstan`
-- [ ] t171 Installable abilities registry and recommend-plugin ability #feature #auto-dispatch ~3h logged:2026-04-09 ref:GH#849
+- [x] t171 Installable abilities registry and recommend-plugin ability #feature #auto-dispatch ~3h logged:2026-04-09 ref:GH#849 pr:#861 completed:2026-04-09
   - Curated registry of plugins known to register abilities (slug, ability count, categories)
   - recommend-plugin ability: given a need category, return ranked recommendations
   - Preference order: has abilities > has blocks > popular
