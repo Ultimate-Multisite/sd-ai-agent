@@ -274,6 +274,10 @@ class AgentLoopTest extends WP_UnitTestCase {
 	 * Test run() increments iterations_used by 1 for a single-turn response.
 	 */
 	public function test_run_increments_iterations_used(): void {
+		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
+			$this->markTestSkipped( 'wp_ai_client_prompt() is not available — requires WordPress 7.0+.' );
+		}
+
 		$this->mock_ai_response( 'Done' );
 
 		$loop   = new AgentLoop( 'Do something' );
@@ -286,6 +290,10 @@ class AgentLoopTest extends WP_UnitTestCase {
 	 * Test run() accumulates token usage from the response.
 	 */
 	public function test_run_accumulates_token_usage(): void {
+		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
+			$this->markTestSkipped( 'wp_ai_client_prompt() is not available — requires WordPress 7.0+.' );
+		}
+
 		$this->mock_ai_response(
 			'Done',
 			[],
@@ -304,6 +312,10 @@ class AgentLoopTest extends WP_UnitTestCase {
 	 * Test run() appends the user message to history before calling the AI.
 	 */
 	public function test_run_appends_user_message_to_history(): void {
+		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
+			$this->markTestSkipped( 'wp_ai_client_prompt() is not available — requires WordPress 7.0+.' );
+		}
+
 		$this->mock_ai_response( 'Got it' );
 
 		$loop   = new AgentLoop( 'Remember this' );
@@ -731,6 +743,9 @@ class AgentLoopTest extends WP_UnitTestCase {
 	 * Test deserialize_history round-trips through serialize_history.
 	 */
 	public function test_deserialize_history_round_trip(): void {
+		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
+			$this->markTestSkipped( 'wp_ai_client_prompt() is not available — requires WordPress 7.0+.' );
+		}
 		if ( ! class_exists( 'WordPress\AiClient\Messages\DTO\UserMessage' ) ) {
 			$this->markTestSkipped( 'AI Client SDK not available.' );
 		}

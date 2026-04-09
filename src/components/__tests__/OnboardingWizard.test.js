@@ -544,7 +544,7 @@ describe( 'OnboardingWizard interactions', () => {
 		expect( providerSelector ).toBeNull();
 	} );
 
-	test( 'step 2 renders Configure Abilities title', async () => {
+	test( 'step 2 renders Abilities title', async () => {
 		setupMocks();
 		const onComplete = jest.fn();
 		await renderWizard( { onComplete } );
@@ -559,12 +559,14 @@ describe( 'OnboardingWizard interactions', () => {
 			} );
 		}
 
+		// Step 2 title changed from "Configure Abilities" to "Abilities"
+		// when the step was updated to show auto-discovery messaging.
 		expect( container.querySelector( 'h2' ).textContent ).toBe(
-			'Configure Abilities'
+			'Abilities'
 		);
 	} );
 
-	test( 'step 2 shows "no abilities" message when abilities list is empty', async () => {
+	test( 'step 2 shows auto-discovery message', async () => {
 		setupMocks();
 		const onComplete = jest.fn();
 		await renderWizard( { onComplete } );
@@ -579,8 +581,9 @@ describe( 'OnboardingWizard interactions', () => {
 			} );
 		}
 
+		// "No abilities registered yet" was replaced with auto-discovery messaging.
 		expect( container.innerHTML ).toContain(
-			'No abilities registered yet'
+			'automatically discover and use any ability'
 		);
 	} );
 

@@ -57,6 +57,7 @@ jest.mock( '@wordpress/components', () => {
 				icon || null,
 				children
 			),
+		Tooltip: ( { children } ) => children,
 	};
 } );
 
@@ -264,13 +265,13 @@ describe( 'ChatPanel rendering', () => {
 		setupMocks( { yoloMode: true } );
 		const html = renderToStaticMarkup( createElement( ChatPanel, {} ) );
 		expect( html ).toContain( 'YOLO' );
-		expect( html ).toContain( 'ai-agent-yolo-badge' );
+		expect( html ).toContain( 'gratis-ai-agent-yolo-badge' );
 	} );
 
 	test( 'does not render YOLO badge when yoloMode is false', () => {
 		setupMocks( { yoloMode: false } );
 		const html = renderToStaticMarkup( createElement( ChatPanel, {} ) );
-		expect( html ).not.toContain( 'ai-agent-yolo-badge' );
+		expect( html ).not.toContain( 'gratis-ai-agent-yolo-badge' );
 	} );
 
 	test( 'renders ToolConfirmationDialog when pendingConfirmation and not yoloMode', () => {
@@ -301,29 +302,29 @@ describe( 'ChatPanel rendering', () => {
 		mockIsTTSSupported = true;
 		setupMocks();
 		const html = renderToStaticMarkup( createElement( ChatPanel, {} ) );
-		expect( html ).toContain( 'ai-agent-tts-btn' );
+		expect( html ).toContain( 'gratis-ai-agent-tts-btn' );
 	} );
 
 	test( 'does not render TTS button when isTTSSupported is false', () => {
 		mockIsTTSSupported = false;
 		setupMocks();
 		const html = renderToStaticMarkup( createElement( ChatPanel, {} ) );
-		expect( html ).not.toContain( 'ai-agent-tts-btn' );
+		expect( html ).not.toContain( 'gratis-ai-agent-tts-btn' );
 	} );
 
 	test( 'TTS button has is-active class when ttsEnabled is true', () => {
 		mockIsTTSSupported = true;
 		setupMocks( { ttsEnabled: true } );
 		const html = renderToStaticMarkup( createElement( ChatPanel, {} ) );
-		expect( html ).toContain( 'ai-agent-tts-btn is-active' );
+		expect( html ).toContain( 'gratis-ai-agent-tts-btn is-active' );
 	} );
 
 	test( 'TTS button does not have is-active class when ttsEnabled is false', () => {
 		mockIsTTSSupported = true;
 		setupMocks( { ttsEnabled: false } );
 		const html = renderToStaticMarkup( createElement( ChatPanel, {} ) );
-		expect( html ).toContain( 'ai-agent-tts-btn' );
-		expect( html ).not.toContain( 'ai-agent-tts-btn is-active' );
+		expect( html ).toContain( 'gratis-ai-agent-tts-btn' );
+		expect( html ).not.toContain( 'gratis-ai-agent-tts-btn is-active' );
 	} );
 
 	test( 'renders gratis-ai-agent-header wrapper', () => {
@@ -361,7 +362,7 @@ describe( 'ChatPanel interactions', () => {
 			root.render( createElement( ChatPanel, {} ) );
 		} );
 
-		const ttsBtn = container.querySelector( '.ai-agent-tts-btn' );
+		const ttsBtn = container.querySelector( '.gratis-ai-agent-tts-btn' );
 		expect( ttsBtn ).not.toBeNull();
 		act( () => {
 			ttsBtn.click();
@@ -377,7 +378,7 @@ describe( 'ChatPanel interactions', () => {
 			root.render( createElement( ChatPanel, {} ) );
 		} );
 
-		const ttsBtn = container.querySelector( '.ai-agent-tts-btn' );
+		const ttsBtn = container.querySelector( '.gratis-ai-agent-tts-btn' );
 		expect( ttsBtn ).not.toBeNull();
 		act( () => {
 			ttsBtn.click();
