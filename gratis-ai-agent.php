@@ -44,6 +44,7 @@ use GratisAiAgent\Abilities\AiImageAbilities;
 use GratisAiAgent\Abilities\BlockAbilities;
 use GratisAiAgent\Abilities\ContentAbilities;
 use GratisAiAgent\Abilities\DatabaseAbilities;
+use GratisAiAgent\Abilities\DesignSystemAbilities;
 use GratisAiAgent\Abilities\EditorialAbilities;
 use GratisAiAgent\Abilities\FileAbilities;
 use GratisAiAgent\Abilities\ImageAbilities;
@@ -373,6 +374,9 @@ ImageAbilities::register();
 
 // Site builder abilities (detect fresh install, manage site builder mode).
 SiteBuilderAbilities::register();
+
+// Design system abilities (custom CSS injection, block patterns, site logo, theme.json presets).
+DesignSystemAbilities::register();
 
 // Custom tool abilities (registered as WordPress Abilities).
 CustomToolExecutor::register();
