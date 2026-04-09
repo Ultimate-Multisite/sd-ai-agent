@@ -438,7 +438,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 		$result = $loop->run();
 
 		$this->assertInstanceOf( \WP_Error::class, $result );
-		$this->assertSame( 'gratis_ai_agent_proxy_error', $result->get_error_code() );
+		$this->assertSame( 'gratis_ai_agent_provider_unavailable', $result->get_error_code() );
 		$this->assertStringContainsString( 'Internal server error', $result->get_error_message() );
 	}
 
@@ -465,7 +465,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 		$result = $loop->run();
 
 		$this->assertInstanceOf( \WP_Error::class, $result );
-		$this->assertSame( 'gratis_ai_agent_proxy_error', $result->get_error_code() );
+		$this->assertSame( 'gratis_ai_agent_provider_unavailable', $result->get_error_code() );
 	}
 
 	// -------------------------------------------------------------------------
@@ -1098,14 +1098,16 @@ class AgentLoopTest extends WP_UnitTestCase {
 
 		// Create a mock ability with readonly=true.
 		// WP_Ability requires a 'category' string (added in WP 7.0 Abilities API).
+		// WP trunk now enforces a required 'permission_callback' in the properties array.
 		$ability = new \WP_Ability(
 			'test/read-ability',
 			[
-				'label'            => 'Test Read',
-				'description'      => 'A read-only test ability.',
-				'category'         => 'gratis-ai-agent',
-				'execute_callback' => '__return_true',
-				'meta'             => [
+				'label'               => 'Test Read',
+				'description'         => 'A read-only test ability.',
+				'category'            => 'gratis-ai-agent',
+				'execute_callback'    => '__return_true',
+				'permission_callback' => '__return_true',
+				'meta'                => [
 					'annotations' => [
 						'readonly'    => true,
 						'destructive' => false,
@@ -1129,11 +1131,12 @@ class AgentLoopTest extends WP_UnitTestCase {
 		$ability = new \WP_Ability(
 			'test/write-ability',
 			[
-				'label'            => 'Test Write',
-				'description'      => 'A write test ability.',
-				'category'         => 'gratis-ai-agent',
-				'execute_callback' => '__return_true',
-				'meta'             => [
+				'label'               => 'Test Write',
+				'description'         => 'A write test ability.',
+				'category'            => 'gratis-ai-agent',
+				'execute_callback'    => '__return_true',
+				'permission_callback' => '__return_true',
+				'meta'                => [
 					'annotations' => [
 						'readonly'    => false,
 						'destructive' => false,
@@ -1157,11 +1160,12 @@ class AgentLoopTest extends WP_UnitTestCase {
 		$ability = new \WP_Ability(
 			'test/unknown-ability',
 			[
-				'label'            => 'Test Unknown',
-				'description'      => 'An ability with no readonly annotation.',
-				'category'         => 'gratis-ai-agent',
-				'execute_callback' => '__return_true',
-				'meta'             => [
+				'label'               => 'Test Unknown',
+				'description'         => 'An ability with no readonly annotation.',
+				'category'            => 'gratis-ai-agent',
+				'execute_callback'    => '__return_true',
+				'permission_callback' => '__return_true',
+				'meta'                => [
 					'annotations' => [
 						'readonly'    => null,
 						'destructive' => null,
