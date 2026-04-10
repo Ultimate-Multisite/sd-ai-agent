@@ -332,7 +332,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
 
 ### Complete Site Building Abilities (P0)
 
-- [ ] t177 Smart plugin discovery: search-plugin-directory ability #feature #auto-dispatch ~3h logged:2026-04-09 ref:GH#840
+- [x] t177 Smart plugin discovery: search-plugin-directory ability #feature #auto-dispatch ~3h logged:2026-04-09 ref:GH#840 pr:#788 completed:2026-04-06
   - Search WordPress.org by keyword, return results with active installs, rating, block support
   - Completes the discover-then-install flow (install_plugin already exists)
   - EDIT: includes/Abilities/WordPressAbilities.php — add search_plugin_directory ability
@@ -345,7 +345,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - EDIT: includes/Abilities/WordPressAbilities.php — add recommend_plugin ability
   - NEW: includes/Core/AbilityPluginRegistry.php — curated registry as PHP array constant
   - Verify: `composer phpcs && composer phpstan`
-- [ ] t172 Register custom post type ability with persistence #feature #auto-dispatch ~4h logged:2026-04-09 ref:GH#850
+- [x] t172 Register custom post type ability with persistence #feature #auto-dispatch ~4h logged:2026-04-09 ref:GH#850 pr:#858 completed:2026-04-09
   - register-custom-post-type: labels, supports, menu icon, REST API, rewrite rules
   - Persist via gratis_ai_agent_custom_post_types option, register on init
   - NEW: includes/Abilities/CustomPostTypeAbilities.php — model on PostAbilities.php
@@ -373,7 +373,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - NEW: includes/Abilities/GlobalStylesAbilities.php — model on BlockAbilities.php
   - EDIT: gratis-ai-agent.php — register the new abilities class
   - Verify: `composer phpcs && composer phpstan`
-- [ ] t175 Site builder orchestration v2: system prompt + multi-step builds #feature ~8h logged:2026-04-09 ref:GH#854
+- [x] t175 Site builder orchestration v2: system prompt + multi-step builds #feature ~8h logged:2026-04-09 ref:GH#854 pr:#862 completed:2026-04-09
   - Rewrite site builder prompt to use new abilities + plugin discovery
   - Plan generation, progress tracking, error recovery
   - Blocked by: t171-t174, t177-t179 (needs all abilities available first)
