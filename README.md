@@ -56,6 +56,28 @@ Most WordPress AI plugins route calls through a proprietary proxy that marks up 
 - **Transparent pricing** — You see exactly what you spend in your provider's dashboard. The plugin tracks token counts and estimated costs locally.
 - **Privacy** — Conversations go directly to your chosen provider. Nothing routes through a third-party relay.
 
+## AI Provider Connectors
+
+AI Agent works with any connector plugin registered through the WordPress Connectors API. Install the ones that match your setup:
+
+### Official WP.org connectors
+
+| Connector | Models | Auth |
+|-----------|--------|------|
+| [AI Provider for OpenAI](https://wordpress.org/plugins/ai-provider-for-openai/) | GPT-4o, GPT-4.1, o3, o4-mini, and more | API key |
+| [AI Provider for Anthropic](https://wordpress.org/plugins/ai-provider-for-anthropic/) | Claude Opus 4, Sonnet 4, Haiku | API key |
+| [AI Provider for Google](https://wordpress.org/plugins/ai-provider-for-google/) | Gemini 2.5 Flash, Gemini 2.5 Pro | API key |
+
+### Community connectors
+
+| Connector | What it does |
+|-----------|-------------|
+| [AI Provider for Anthropic Max](https://github.com/Ultimate-Multisite/ai-provider-for-anthropic-max) | Use your Claude Max subscription instead of per-token API billing. Authenticates via OAuth tokens with automatic account pool rotation — ideal for teams or heavy usage where a flat-rate Max plan is cheaper than API credits. |
+| [Compatible Endpoints](https://github.com/Ultimate-Multisite/ultimate-ai-connector-compatible-endpoints) | Connect to anything that speaks the OpenAI API format: Ollama (local models, zero cost), Azure OpenAI, Groq, Together AI, OpenRouter, and more. |
+| [WebLLM](https://github.com/Ultimate-Multisite/ultimate-ai-connector-webllm) | Run models entirely in the browser using WebGPU. No API key, no server, no data leaves the machine. Good for demos and privacy-sensitive environments. |
+
+All connectors are included in the [WordPress Playground demo](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/Ultimate-Multisite/gratis-ai-agent/refs/heads/main/.wordpress-org/blueprints/blueprint.json).
+
 ## Features
 
 ### Agentic chat
@@ -177,8 +199,8 @@ The AI automatically receives relevant context about the current page:
 
 - WordPress 7.0+
 - PHP 8.2+
-- An AI provider connector plugin (e.g., WordPress AI: OpenAI, or any OpenAI-compatible connector)
-- An API key from your chosen provider
+- An AI provider connector plugin (see [AI Provider Connectors](#ai-provider-connectors) above)
+- An API key from your chosen provider (or a Claude Max subscription, or a local Ollama instance)
 
 ## Installation
 
