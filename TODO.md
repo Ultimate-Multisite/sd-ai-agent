@@ -377,7 +377,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - Rewrite site builder prompt to use new abilities + plugin discovery
   - Plan generation, progress tracking, error recovery
   - Blocked by: t171-t174, t177-t179 (needs all abilities available first)
-- [ ] t176 Design system: custom CSS injection, block patterns, site logo, theme presets #feature #auto-dispatch ~6h logged:2026-04-09 ref:GH#853
+- [x] t176 Design system: custom CSS injection, block patterns, site logo, theme presets #feature #auto-dispatch ~6h logged:2026-04-09 ref:GH#853 pr:#857 completed:2026-04-10
   - inject-custom-css, curated block patterns, set-site-logo, theme.json presets
   - NEW: includes/Abilities/DesignAbilities.php — model on BlockAbilities.php
   - EDIT: gratis-ai-agent.php — register the new abilities class
