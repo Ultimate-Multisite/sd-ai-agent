@@ -31,14 +31,18 @@ class AbilityPluginRegistry {
 	 * Registry of plugins known to register abilities.
 	 *
 	 * Each entry contains:
-	 *   - slug           (string)   WordPress.org plugin slug.
-	 *   - name           (string)   Human-readable plugin name.
-	 *   - ability_count  (int)      Approximate number of abilities registered.
-	 *   - has_abilities  (bool)     Whether the plugin registers WP Abilities.
-	 *   - has_blocks     (bool)     Whether the plugin registers Gutenberg blocks.
-	 *   - categories     (string[]) Need categories this plugin addresses.
-	 *   - active_installs (int)     Approximate active installs (from wp.org).
-	 *   - description    (string)   Short description of what the plugin does.
+	 *   - slug             (string)            Plugin directory slug.
+	 *   - name             (string)            Human-readable plugin name.
+	 *   - ability_count    (int)               Approximate number of abilities registered.
+	 *   - has_abilities    (bool)              Whether the plugin registers WP Abilities.
+	 *   - has_blocks       (bool)              Whether the plugin registers Gutenberg blocks.
+	 *   - categories       (string[])          Need categories this plugin addresses.
+	 *   - active_installs  (int)               Approximate active installs (0 for GitHub-only).
+	 *   - description      (string)            Short description of what the plugin does.
+	 *   - install_url      (string, optional)  Direct ZIP URL for install-plugin-from-url (GitHub-only plugins).
+	 *   - install_requires (array, optional)   Map of slug => ZIP URL for prerequisite plugins.
+	 *   - source           (string, optional)  'github' for GitHub-only plugins (not on WP.org).
+	 *   - github_repo      (string, optional)  'owner/repo' for GitHub-sourced plugins.
 	 *
 	 * @var array<int, array<string, mixed>>
 	 */
@@ -361,6 +365,184 @@ class AbilityPluginRegistry {
 			'categories'      => [ 'payments', 'stripe', 'ecommerce', 'checkout' ],
 			'active_installs' => 1000000,
 			'description'     => 'Accept credit card payments via Stripe directly on your WooCommerce store.',
+		],
+
+		// ── MCP / AI Agent ecosystem (bjornfix — GitHub only) ─────────────────
+		// These plugins are not on WordPress.org. Install via install-plugin-from-url
+		// using the install_url field. The core plugin (mcp-expose-abilities) requires
+		// the Abilities API and MCP Adapter plugins first (see install_requires).
+		[
+			'slug'             => 'mcp-expose-abilities',
+			'name'             => 'MCP Expose Abilities',
+			'ability_count'    => 66,
+			'has_abilities'    => true,
+			'has_blocks'       => false,
+			'categories'       => [ 'mcp', 'ai-agent', 'automation', 'content', 'plugins', 'menus', 'users', 'media', 'comments', 'options', 'system' ],
+			'active_installs'  => 0,
+			'description'      => '66 core WordPress abilities via MCP: content, menus, users, media, widgets, plugins, options, comments, taxonomy, and system. Requires Abilities API and MCP Adapter.',
+			'install_url'      => 'https://github.com/bjornfix/mcp-expose-abilities/releases/latest/download/mcp-expose-abilities.zip',
+			'install_requires' => [
+				'abilities-api' => 'https://github.com/WordPress/abilities-api/releases/latest/download/abilities-api.zip',
+				'mcp-adapter'   => 'https://github.com/WordPress/mcp-adapter/releases/latest/download/mcp-adapter.zip',
+			],
+			'source'           => 'github',
+			'github_repo'      => 'bjornfix/mcp-expose-abilities',
+		],
+		[
+			'slug'            => 'mcp-abilities-filesystem',
+			'name'            => 'MCP Abilities - Filesystem',
+			'ability_count'   => 11,
+			'has_abilities'   => true,
+			'has_blocks'      => false,
+			'categories'      => [ 'mcp', 'ai-agent', 'filesystem', 'files' ],
+			'active_installs' => 0,
+			'description'     => '11 filesystem abilities: read, write, append, list, delete, copy, move files and directories. PHP code writes are blocked for security.',
+			'install_url'     => 'https://github.com/bjornfix/mcp-abilities-filesystem/releases/latest/download/mcp-abilities-filesystem.zip',
+			'source'          => 'github',
+			'github_repo'     => 'bjornfix/mcp-abilities-filesystem',
+		],
+		[
+			'slug'            => 'mcp-abilities-elementor',
+			'name'            => 'MCP Abilities - Elementor',
+			'ability_count'   => 40,
+			'has_abilities'   => true,
+			'has_blocks'      => false,
+			'categories'      => [ 'mcp', 'ai-agent', 'page-builder', 'elementor', 'design' ],
+			'active_installs' => 0,
+			'description'     => '40 Elementor abilities: get/update/patch page data, update elements, manage templates, clear CSS cache.',
+			'install_url'     => 'https://github.com/bjornfix/mcp-abilities-elementor/releases/latest/download/mcp-abilities-elementor.zip',
+			'source'          => 'github',
+			'github_repo'     => 'bjornfix/mcp-abilities-elementor',
+		],
+		[
+			'slug'            => 'mcp-abilities-generatepress',
+			'name'            => 'MCP Abilities - GeneratePress',
+			'ability_count'   => 26,
+			'has_abilities'   => true,
+			'has_blocks'      => false,
+			'categories'      => [ 'mcp', 'ai-agent', 'generatepress', 'generateblocks', 'theme', 'design' ],
+			'active_installs' => 0,
+			'description'     => '26 GeneratePress + GenerateBlocks abilities: theme settings, typography, elements, modules, global styles, CSS cache.',
+			'install_url'     => 'https://github.com/bjornfix/mcp-abilities-generatepress/releases/latest/download/mcp-abilities-generatepress.zip',
+			'source'          => 'github',
+			'github_repo'     => 'bjornfix/mcp-abilities-generatepress',
+		],
+		[
+			'slug'            => 'mcp-abilities-cloudflare',
+			'name'            => 'MCP Abilities - Cloudflare',
+			'ability_count'   => 4,
+			'has_abilities'   => true,
+			'has_blocks'      => false,
+			'categories'      => [ 'mcp', 'ai-agent', 'cloudflare', 'cdn', 'cache', 'performance' ],
+			'active_installs' => 0,
+			'description'     => '4 Cloudflare abilities: clear cache (site or URLs), get zone info, get/set development mode.',
+			'install_url'     => 'https://github.com/bjornfix/mcp-abilities-cloudflare/releases/latest/download/mcp-abilities-cloudflare.zip',
+			'source'          => 'github',
+			'github_repo'     => 'bjornfix/mcp-abilities-cloudflare',
+		],
+		[
+			'slug'            => 'mcp-abilities-workspace',
+			'name'            => 'MCP Abilities - Google Workspace',
+			'ability_count'   => 16,
+			'has_abilities'   => true,
+			'has_blocks'      => false,
+			'categories'      => [ 'mcp', 'ai-agent', 'gmail', 'google', 'email', 'workspace' ],
+			'active_installs' => 0,
+			'description'     => '16 Gmail/Workspace abilities: labels, list/get/send/reply emails, threads, attachments, wp_mail fallback.',
+			'install_url'     => 'https://github.com/bjornfix/mcp-abilities-workspace/releases/latest/download/mcp-abilities-workspace.zip',
+			'source'          => 'github',
+			'github_repo'     => 'bjornfix/mcp-abilities-workspace',
+		],
+		[
+			'slug'            => 'mcp-abilities-rankmath',
+			'name'            => 'MCP Abilities - Rank Math',
+			'ability_count'   => 23,
+			'has_abilities'   => true,
+			'has_blocks'      => false,
+			'categories'      => [ 'mcp', 'ai-agent', 'seo', 'rank-math', 'meta', 'schema' ],
+			'active_installs' => 0,
+			'description'     => '23 Rank Math SEO abilities: read and write SEO metadata, schema, focus keywords, and sitemap settings.',
+			'install_url'     => 'https://github.com/bjornfix/mcp-abilities-rankmath/releases/latest/download/mcp-abilities-rankmath.zip',
+			'source'          => 'github',
+			'github_repo'     => 'bjornfix/mcp-abilities-rankmath',
+		],
+		[
+			'slug'            => 'mcp-abilities-wordfence',
+			'name'            => 'MCP Abilities - Wordfence',
+			'ability_count'   => 11,
+			'has_abilities'   => true,
+			'has_blocks'      => false,
+			'categories'      => [ 'mcp', 'ai-agent', 'security', 'wordfence', 'firewall', 'malware' ],
+			'active_installs' => 0,
+			'description'     => '11 Wordfence abilities: security status, blocked IPs, scan results, firewall rules.',
+			'install_url'     => 'https://github.com/bjornfix/mcp-abilities-wordfence/releases/latest/download/mcp-abilities-wordfence.zip',
+			'source'          => 'github',
+			'github_repo'     => 'bjornfix/mcp-abilities-wordfence',
+		],
+		[
+			'slug'            => 'mcp-abilities-brevo',
+			'name'            => 'MCP Abilities - Brevo',
+			'ability_count'   => 22,
+			'has_abilities'   => true,
+			'has_blocks'      => false,
+			'categories'      => [ 'mcp', 'ai-agent', 'email', 'newsletter', 'marketing', 'brevo', 'crm' ],
+			'active_installs' => 0,
+			'description'     => '22 Brevo abilities: contacts, lists, campaigns — full email marketing management via MCP.',
+			'install_url'     => 'https://github.com/bjornfix/mcp-abilities-brevo/releases/latest/download/mcp-abilities-brevo.zip',
+			'source'          => 'github',
+			'github_repo'     => 'bjornfix/mcp-abilities-brevo',
+		],
+		[
+			'slug'            => 'mcp-abilities-advads',
+			'name'            => 'MCP Abilities - Advanced Ads',
+			'ability_count'   => 17,
+			'has_abilities'   => true,
+			'has_blocks'      => false,
+			'categories'      => [ 'mcp', 'ai-agent', 'ads', 'advertising', 'advanced-ads' ],
+			'active_installs' => 0,
+			'description'     => '17 Advanced Ads abilities: manage ad units, groups, placements, and display conditions.',
+			'install_url'     => 'https://github.com/bjornfix/mcp-abilities-advads/releases/latest/download/mcp-abilities-advads.zip',
+			'source'          => 'github',
+			'github_repo'     => 'bjornfix/mcp-abilities-advads',
+		],
+		[
+			'slug'            => 'mcp-abilities-toolset',
+			'name'            => 'MCP Abilities - Toolset',
+			'ability_count'   => 38,
+			'has_abilities'   => true,
+			'has_blocks'      => false,
+			'categories'      => [ 'mcp', 'ai-agent', 'toolset', 'custom-post-types', 'custom-fields', 'relationships' ],
+			'active_installs' => 0,
+			'description'     => '38 Toolset abilities: post types, custom fields, taxonomies, and relationships.',
+			'install_url'     => 'https://github.com/bjornfix/mcp-abilities-toolset/releases/latest/download/mcp-abilities-toolset.zip',
+			'source'          => 'github',
+			'github_repo'     => 'bjornfix/mcp-abilities-toolset',
+		],
+		[
+			'slug'            => 'mcp-abilities-sitepress',
+			'name'            => 'MCP Abilities - SitePress (WPML)',
+			'ability_count'   => 10,
+			'has_abilities'   => true,
+			'has_blocks'      => false,
+			'categories'      => [ 'mcp', 'ai-agent', 'wpml', 'multilingual', 'translation', 'languages' ],
+			'active_installs' => 0,
+			'description'     => '10 WPML abilities: translation mapping, language-switcher recovery, and QA checks.',
+			'install_url'     => 'https://github.com/bjornfix/mcp-abilities-sitepress/releases/latest/download/mcp-abilities-sitepress.zip',
+			'source'          => 'github',
+			'github_repo'     => 'bjornfix/mcp-abilities-sitepress',
+		],
+		[
+			'slug'            => 'mcp-abilities-formidable',
+			'name'            => 'MCP Abilities - Formidable Forms',
+			'ability_count'   => 6,
+			'has_abilities'   => true,
+			'has_blocks'      => false,
+			'categories'      => [ 'mcp', 'ai-agent', 'forms', 'formidable', 'lead-capture' ],
+			'active_installs' => 0,
+			'description'     => '6 Formidable Forms abilities: settings, usage tracing, styles, and CSS cache controls.',
+			'install_url'     => 'https://github.com/bjornfix/mcp-abilities-formidable/releases/latest/download/mcp-abilities-formidable.zip',
+			'source'          => 'github',
+			'github_repo'     => 'bjornfix/mcp-abilities-formidable',
 		],
 	];
 
