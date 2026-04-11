@@ -185,6 +185,67 @@ function extractText( message ) {
 }
 
 /**
+ * Live tool call progress shown inside the "Thinking" bubble while the
+ * background job is processing. Displays each tool call as it happens
+ * so the user can see the agent is making progress.
+ *
+ * @param {Object}     props           - Component props.
+ * @param {ToolCall[]} props.toolCalls - Live tool call log from the job.
+ * @return {JSX.Element} Progress indicator.
+ */
+function LiveToolProgress( { toolCalls } ) {
+	// Extract only the "call" entries and deduplicate by name for a clean summary.
+	const calls = toolCalls.filter( ( t ) => t.type === 'call' );
+	const responses = toolCalls.filter( ( t ) => t.type === 'response' );
+
+	// Show the most recent call prominently, with a count of completed ones.
+	const lastCall = calls[ calls.length - 1 ];
+
+	// Format ability name for display: strip wpab__ prefix and replace
+	// double-underscore namespace separator with /.
+	const formatName = ( name ) => {
+		let display = name || '';
+		if ( display.startsWith( 'wpab__' ) ) {
+			display = display.substring( 6 );
+		}
+		display = display.replace( /__/g, '/' );
+		return display;
+	};
+
+	return (
+		<div className="gratis-ai-agent-live-progress">
+			{ responses.length > 0 && (
+				<div className="gratis-ai-agent-live-progress-completed">
+					{ responses.length }{ ' ' }
+					{ responses.length === 1
+						? __( 'tool completed', 'gratis-ai-agent' )
+						: __( 'tools completed', 'gratis-ai-agent' ) }
+				</div>
+			) }
+			{ lastCall && (
+				<div className="gratis-ai-agent-live-progress-current">
+					{ responses.length < calls.length
+						? __( 'Running', 'gratis-ai-agent' )
+						: __( 'Composing reply…', 'gratis-ai-agent' ) }
+					{ responses.length < calls.length && (
+						<>
+							{ ' ' }
+							<code>{ formatName( lastCall.name ) }</code>
+							{ calls.length > 1 && (
+								<span className="gratis-ai-agent-live-progress-count">
+									{ ' ' }
+									({ calls.length })
+								</span>
+							) }
+						</>
+					) }
+				</div>
+			) }
+		</div>
+	);
+}
+
+/**
  * Scrollable list of chat messages for the current session.
  *
  * Renders user/model/system bubbles, tool call details, message actions,
@@ -211,6 +272,9 @@ export default function MessageList() {
 		ttsPitch,
 		streamError,
 		messageTokens,
+		liveToolCalls,
+		currentSessionId,
+		sessionJobs,
 	} = useSelect( ( select ) => {
 		const store = select( STORE_NAME );
 		return {
@@ -227,6 +291,9 @@ export default function MessageList() {
 			ttsPitch: store.getTtsPitch(),
 			streamError: store.hasStreamError(),
 			messageTokens: store.getMessageTokens(),
+			liveToolCalls: store.getLiveToolCalls(),
+			currentSessionId: store.getCurrentSessionId(),
+			sessionJobs: store.getSessionJobs(),
 		};
 	}, [] );
 
@@ -419,7 +486,22 @@ export default function MessageList() {
 			{ sending && ! isStreaming && ! pendingActionCard && (
 				<div className="gratis-ai-agent-bubble gratis-ai-agent-assistant gratis-ai-agent-thinking">
 					<Spinner />
-					{ __( 'Thinking…', 'gratis-ai-agent' ) }
+					{ ( () => {
+						// Use per-session job tool calls if available,
+						// fall back to global liveToolCalls.
+						const sessionJob = currentSessionId
+							? sessionJobs[ currentSessionId ]
+							: null;
+						const tc =
+							sessionJob?.toolCalls?.length > 0
+								? sessionJob.toolCalls
+								: liveToolCalls;
+						return tc?.length > 0 ? (
+							<LiveToolProgress toolCalls={ tc } />
+						) : (
+							__( 'Thinking…', 'gratis-ai-agent' )
+						);
+					} )() }
 				</div>
 			) }
 		</div>

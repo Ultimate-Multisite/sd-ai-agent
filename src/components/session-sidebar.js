@@ -60,13 +60,19 @@ function relativeTime( dateStr ) {
  * Clicking the row opens the session. The ⋯ button opens a context menu
  * with rename, pin, folder, export, archive, trash, and share actions.
  *
- * @param {Object}  props          - Component props.
- * @param {Session} props.session  - Session data.
- * @param {boolean} props.isActive - Whether this session is currently open.
- * @param {boolean} props.isOwner  - Whether the current user owns this session.
+ * @param {Object}  props              - Component props.
+ * @param {Session} props.session      - Session data.
+ * @param {boolean} props.isActive     - Whether this session is currently open.
+ * @param {boolean} props.isOwner      - Whether the current user owns this session.
+ * @param           props.hasActiveJob
  * @return {JSX.Element} The session item element.
  */
-function SessionItem( { session, isActive, isOwner = true } ) {
+function SessionItem( {
+	session,
+	isActive,
+	isOwner = true,
+	hasActiveJob = false,
+} ) {
 	const [ showMenu, setShowMenu ] = useState( false );
 	const { openSession } = useDispatch( STORE_NAME );
 
@@ -111,6 +117,18 @@ function SessionItem( { session, isActive, isOwner = true } ) {
 					</span>
 				) }
 				{ session.title || __( 'Untitled', 'gratis-ai-agent' ) }
+				{ hasActiveJob && ! isActive && (
+					<span
+						className="gratis-ai-agent-session-job-badge"
+						title={ __( 'Agent is working', 'gratis-ai-agent' ) }
+						aria-label={ __(
+							'Agent is working',
+							'gratis-ai-agent'
+						) }
+					>
+						{ '\u2022' }
+					</span>
+				) }
 			</div>
 			<div className="gratis-ai-agent-session-meta">
 				{ session.folder && (
@@ -182,6 +200,7 @@ export default function SessionSidebar( { onClose } ) {
 		sessionSearch,
 		folders,
 		currentUserId,
+		sessionJobs,
 	} = useSelect( ( select ) => {
 		const store = select( STORE_NAME );
 		return {
@@ -194,6 +213,7 @@ export default function SessionSidebar( { onClose } ) {
 			folders: store.getFolders(),
 			// WordPress exposes the current user ID via wpApiSettings or similar.
 			currentUserId: window.gratisAiAgentData?.currentUserId || 0,
+			sessionJobs: store.getSessionJobs(),
 		};
 	}, [] );
 
@@ -401,6 +421,9 @@ export default function SessionSidebar( { onClose } ) {
 						isOwner={
 							! isSharedTab ||
 							parseInt( session.user_id, 10 ) === currentUserId
+						}
+						hasActiveJob={
+							!! sessionJobs[ parseInt( session.id, 10 ) ]
 						}
 					/>
 				) ) }

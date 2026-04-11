@@ -25,6 +25,14 @@ export const initialState = {
 	sending: false,
 	currentJobId: null,
 
+	// Live tool call progress from the background job (shown while processing).
+	liveToolCalls: [],
+
+	// Per-session background job tracking.
+	// Map of sessionId → { jobId, toolCalls, status }
+	// Allows multiple sessions to have active jobs simultaneously.
+	sessionJobs: {},
+
 	// Token usage (current session)
 	tokenUsage: { prompt: 0, completion: 0 },
 
@@ -136,6 +144,28 @@ export const actions = {
 	 */
 	setCurrentJobId( jobId ) {
 		return { type: 'SET_CURRENT_JOB_ID', jobId };
+	},
+
+	/**
+	 * Set live tool call progress from the background job.
+	 * Shown in the UI while the job is still processing.
+	 *
+	 * @param {Array} toolCalls - Tool call log entries from the job.
+	 * @return {Object} Redux action.
+	 */
+	setLiveToolCalls( toolCalls ) {
+		return { type: 'SET_LIVE_TOOL_CALLS', toolCalls };
+	},
+
+	/**
+	 * Set a background job for a specific session.
+	 *
+	 * @param {number}      sessionId - Session identifier.
+	 * @param {Object|null} job       - Job data { jobId, toolCalls, status } or null to clear.
+	 * @return {Object} Redux action.
+	 */
+	setSessionJob( sessionId, job ) {
+		return { type: 'SET_SESSION_JOB', sessionId, job };
 	},
 
 	/**
@@ -792,14 +822,13 @@ export const actions = {
 
 			dispatch.setSendTimestamp( Date.now() );
 
-			// Streaming was removed when all chat routing was delegated to the
-			// WP AI Client SDK, which does not expose a streaming interface.
-			// Fire a single synchronous POST to /chat and append the full reply
-			// once the agent loop completes.
-			let result;
+			// POST to /run — returns a job_id immediately, processes
+			// the agent loop in a background PHP worker. The browser
+			// polls /job/{id} for progress and the final result.
+			let runResult;
 			try {
-				result = await apiFetch( {
-					path: '/gratis-ai-agent/v1/chat',
+				runResult = await apiFetch( {
+					path: '/gratis-ai-agent/v1/run',
 					method: 'POST',
 					data: body,
 				} );
@@ -810,10 +839,7 @@ export const actions = {
 						{
 							text: `${ __( 'Error:', 'gratis-ai-agent' ) } ${
 								err.message ||
-								__(
-									'Failed to reach chat endpoint',
-									'gratis-ai-agent'
-								)
+								__( 'Failed to start agent', 'gratis-ai-agent' )
 							}`,
 						},
 					],
@@ -823,224 +849,31 @@ export const actions = {
 				return;
 			}
 
-			// Handle tool confirmation pause.
-			if ( result?.awaiting_confirmation ) {
-				dispatch.setCurrentJobId( result.job_id );
-				dispatch.setPendingConfirmation( {
-					jobId: result.job_id,
-					tools: result.pending_tools || [],
-				} );
-				// Keep sending=true — we're still waiting for user input.
-				return;
-			}
-
-			// Handle client-side tool call pause — the server needs the browser
-			// to execute these abilities and POST the results back.
-			if ( result?.pending_client_tool_calls?.length ) {
-				const pendingCalls = result.pending_client_tool_calls;
-				const currentSessionId = result.session_id || sessionId;
-
-				// Execute each pending client tool call via the core/abilities store.
-				const toolResults = [];
-				for ( const call of pendingCalls ) {
-					try {
-						let callResult;
-						if (
-							typeof wp !== 'undefined' &&
-							wp.data &&
-							wp.data.dispatch( 'core/abilities' ) &&
-							typeof wp.data.dispatch( 'core/abilities' )
-								.executeAbility === 'function'
-						) {
-							callResult = await wp.data
-								.dispatch( 'core/abilities' )
-								.executeAbility( call.name, call.args || {} );
-						} else {
-							// Fallback: look up and call the ability directly.
-							const abilityStore =
-								wp?.data?.select( 'core/abilities' );
-							const abilities =
-								abilityStore?.getAbilities?.() || [];
-							const ability = abilities.find(
-								( a ) => a.name === call.name
-							);
-							if ( ability?.callback ) {
-								callResult = ability.callback(
-									call.args || {}
-								);
-							} else {
-								throw new Error(
-									`Ability ${ call.name } not found`
-								);
-							}
-						}
-						toolResults.push( {
-							id: call.id,
-							name: call.name,
-							result: callResult,
-							ran_in_browser: true,
-						} );
-					} catch ( err ) {
-						toolResults.push( {
-							id: call.id,
-							name: call.name,
-							error:
-								err?.message ||
-								'Client ability execution failed',
-							ran_in_browser: true,
-						} );
-					}
-				}
-
-				// POST results back to resume the agent loop.
-				let resumeResult;
-				try {
-					resumeResult = await apiFetch( {
-						path: '/gratis-ai-agent/v1/chat/tool-result',
-						method: 'POST',
-						data: {
-							session_id: currentSessionId,
-							tool_results: toolResults,
-						},
+			if ( runResult?.job_id ) {
+				dispatch.setCurrentJobId( runResult.job_id );
+				// Track job per-session so other sessions aren't affected.
+				if ( sessionId ) {
+					dispatch.setSessionJob( sessionId, {
+						jobId: runResult.job_id,
+						toolCalls: [],
+						status: 'processing',
 					} );
-				} catch ( err ) {
-					dispatch.appendMessage( {
-						role: 'system',
-						parts: [
-							{
-								text: `${ __( 'Error:', 'gratis-ai-agent' ) } ${
-									err.message ||
-									__(
-										'Failed to resume after client tool execution',
-										'gratis-ai-agent'
-									)
-								}`,
-							},
-						],
-					} );
-					dispatch.setStreamError( true );
-					dispatch.setSending( false );
-					return;
 				}
-
-				// Replace result with the resumed response for downstream processing.
-				result = resumeResult;
-
-				// Log client tool calls in the tool-call-details UI.
-				if ( toolResults.length > 0 ) {
-					const clientToolCallLog = toolResults.flatMap( ( tr ) => [
+				dispatch.pollJob( runResult.job_id );
+			} else {
+				dispatch.appendMessage( {
+					role: 'system',
+					parts: [
 						{
-							type: 'call',
-							id: tr.id,
-							name: tr.name,
-							args:
-								pendingCalls.find( ( c ) => c.id === tr.id )
-									?.args || {},
-							ran_in_browser: true,
+							text: __(
+								'Error: No job ID returned.',
+								'gratis-ai-agent'
+							),
 						},
-						{
-							type: 'response',
-							id: tr.id,
-							name: tr.name,
-							response: tr.result ?? tr.error,
-							ran_in_browser: true,
-						},
-					] );
-					// Merge into the result's tool_calls for display.
-					if ( result ) {
-						result = {
-							...result,
-							tool_calls: [
-								...( result.tool_calls || [] ),
-								...clientToolCallLog,
-							],
-						};
-					}
-				}
-			}
-
-			// Append the assistant reply.
-			if ( result?.reply ) {
-				const msg = {
-					role: 'model',
-					parts: [ { text: result.reply } ],
-					toolCalls: result.tool_calls || [],
-				};
-
-				if ( select.isDebugMode() ) {
-					const sendTs = select.getSendTimestamp();
-					const elapsed = sendTs ? Date.now() - sendTs : 0;
-					const tu = result.token_usage || {};
-					const completionTokens = tu.completion || 0;
-					const promptTokens = tu.prompt || 0;
-					const tokPerSec =
-						elapsed > 0 ? completionTokens / ( elapsed / 1000 ) : 0;
-					const tc = result.tool_calls || [];
-					const toolCalls = tc.filter( ( t ) => t.type === 'call' );
-					const toolNames = [
-						...new Set( toolCalls.map( ( t ) => t.name ) ),
-					];
-
-					msg.debug = {
-						responseTimeMs: elapsed,
-						tokenUsage: {
-							prompt: promptTokens,
-							completion: completionTokens,
-						},
-						tokensPerSecond: Math.round( tokPerSec * 10 ) / 10,
-						modelId: result.model_id || '',
-						costEstimate: result.cost_estimate || 0,
-						iterationsUsed: result.iterations_used || 0,
-						toolCallCount: toolCalls.length,
-						toolNames,
-					};
-				}
-
-				dispatch.appendMessage( msg );
-			}
-
-			if ( result?.session_id ) {
-				dispatch.setCurrentSession(
-					result.session_id,
-					select.getCurrentSessionMessages(),
-					select.getCurrentSessionToolCalls()
-				);
-			}
-
-			if ( result?.token_usage ) {
-				const current = select.getTokenUsage();
-				dispatch.setTokenUsage( {
-					prompt: current.prompt + ( result.token_usage.prompt || 0 ),
-					completion:
-						current.completion +
-						( result.token_usage.completion || 0 ),
+					],
 				} );
-
-				const tu = result.token_usage;
-				const totalTokens = ( tu.prompt || 0 ) + ( tu.completion || 0 );
-				const cost = result.cost_estimate || 0;
-				dispatch.accumulateSessionTokens( totalTokens, cost );
-
-				const msgs = select.getCurrentSessionMessages();
-				const msgIndex = msgs.length - 1;
-				if ( msgIndex >= 0 ) {
-					dispatch.setMessageTokens( msgIndex, {
-						prompt: tu.prompt || 0,
-						completion: tu.completion || 0,
-						cost,
-					} );
-				}
+				dispatch.setSending( false );
 			}
-
-			if ( result?.generated_title && result?.session_id ) {
-				dispatch.updateSessionTitle(
-					result.session_id,
-					result.generated_title
-				);
-			}
-
-			dispatch.fetchSessions();
-			dispatch.setSending( false );
 		};
 	},
 
@@ -1140,6 +973,9 @@ export const actions = {
 		return async ( { dispatch, select } ) => {
 			let attempts = 0;
 			const maxAttempts = 200;
+			// Capture the session this job belongs to so we can update
+			// per-session state even if the user switches tabs.
+			const jobSessionId = select.getCurrentSessionId();
 
 			const poll = async () => {
 				attempts++;
@@ -1150,6 +986,9 @@ export const actions = {
 					} );
 					dispatch.setSending( false );
 					dispatch.setCurrentJobId( null );
+					if ( jobSessionId ) {
+						dispatch.setSessionJob( jobSessionId, null );
+					}
 					return;
 				}
 
@@ -1164,11 +1003,29 @@ export const actions = {
 					} );
 
 					if ( result.status === 'processing' ) {
+						// Update live tool call progress.
+						if ( result.tool_calls?.length ) {
+							dispatch.setLiveToolCalls( result.tool_calls );
+							if ( jobSessionId ) {
+								dispatch.setSessionJob( jobSessionId, {
+									jobId,
+									toolCalls: result.tool_calls,
+									status: 'processing',
+								} );
+							}
+						}
 						setTimeout( poll, 3000 );
 						return;
 					}
 
 					if ( result.status === 'awaiting_confirmation' ) {
+						if ( jobSessionId ) {
+							dispatch.setSessionJob( jobSessionId, {
+								jobId,
+								toolCalls: result.tool_calls || [],
+								status: 'awaiting_confirmation',
+							} );
+						}
 						const cardData = {
 							jobId,
 							tools: result.pending_tools || [],
@@ -1193,64 +1050,43 @@ export const actions = {
 					}
 
 					if ( result.status === 'complete' ) {
-						// Add assistant reply.
-						if ( result.reply ) {
-							const msg = {
+						// Reload the session from the DB — the server already
+						// persisted the reply. This is the single source of
+						// truth and avoids duplicate messages from local append
+						// + DB reload races.
+						if ( result.session_id ) {
+							try {
+								const session = await apiFetch( {
+									path: `/gratis-ai-agent/v1/sessions/${ result.session_id }`,
+								} );
+								// Only update if this is still the active session.
+								if (
+									select.getCurrentSessionId() ===
+									result.session_id
+								) {
+									dispatch.setCurrentSession(
+										session.id,
+										session.messages || [],
+										session.tool_calls || []
+									);
+								}
+							} catch {
+								// Fallback: append locally if DB reload fails.
+								if ( result.reply ) {
+									dispatch.appendMessage( {
+										role: 'model',
+										parts: [ { text: result.reply } ],
+										toolCalls: result.tool_calls,
+									} );
+								}
+							}
+						} else if ( result.reply ) {
+							// No session_id — append locally.
+							dispatch.appendMessage( {
 								role: 'model',
 								parts: [ { text: result.reply } ],
 								toolCalls: result.tool_calls,
-							};
-
-							// Attach debug metadata when debug mode is active.
-							if ( select.isDebugMode() ) {
-								const sendTs = select.getSendTimestamp();
-								const elapsed = sendTs
-									? Date.now() - sendTs
-									: 0;
-								const tu = result.token_usage || {};
-								const completionTokens = tu.completion || 0;
-								const promptTokens = tu.prompt || 0;
-								const tokPerSec =
-									elapsed > 0
-										? completionTokens / ( elapsed / 1000 )
-										: 0;
-
-								// Derive tool call count and names.
-								const tc = result.tool_calls || [];
-								const toolCalls = tc.filter(
-									( t ) => t.type === 'call'
-								);
-								const toolNames = [
-									...new Set(
-										toolCalls.map( ( t ) => t.name )
-									),
-								];
-
-								msg.debug = {
-									responseTimeMs: elapsed,
-									tokenUsage: {
-										prompt: promptTokens,
-										completion: completionTokens,
-									},
-									tokensPerSecond:
-										Math.round( tokPerSec * 10 ) / 10,
-									modelId: result.model_id || '',
-									costEstimate: result.cost_estimate || 0,
-									iterationsUsed: result.iterations_used || 0,
-									toolCallCount: toolCalls.length,
-									toolNames,
-								};
-							}
-
-							dispatch.appendMessage( msg );
-						}
-
-						if ( result.session_id ) {
-							dispatch.setCurrentSession(
-								result.session_id,
-								select.getCurrentSessionMessages(),
-								select.getCurrentSessionToolCalls()
-							);
+							} );
 						}
 
 						// Update token usage.
@@ -1265,7 +1101,6 @@ export const actions = {
 									( result.token_usage.completion || 0 ),
 							} );
 
-							// Live token counter (t111).
 							const tu = result.token_usage;
 							const totalTokens =
 								( tu.prompt || 0 ) + ( tu.completion || 0 );
@@ -1274,20 +1109,9 @@ export const actions = {
 								totalTokens,
 								cost
 							);
-
-							const msgs = select.getCurrentSessionMessages();
-							const msgIndex = msgs.length - 1;
-							if ( msgIndex >= 0 ) {
-								dispatch.setMessageTokens( msgIndex, {
-									prompt: tu.prompt || 0,
-									completion: tu.completion || 0,
-									cost,
-								} );
-							}
 						}
 
-						// Optimistically update the session title in the sidebar
-						// when the server generated one (first message only).
+						// Update session title in sidebar.
 						if ( result.generated_title && result.session_id ) {
 							dispatch.updateSessionTitle(
 								result.session_id,
@@ -1305,6 +1129,10 @@ export const actions = {
 
 				dispatch.setSending( false );
 				dispatch.setCurrentJobId( null );
+				dispatch.setLiveToolCalls( [] );
+				if ( jobSessionId ) {
+					dispatch.setSessionJob( jobSessionId, null );
+				}
 			};
 
 			setTimeout( poll, 2000 );
@@ -1477,6 +1305,35 @@ export const selectors = {
 
 	/**
 	 * @param {import('../../types').StoreState} state
+	 * @return {Array} Live tool call progress from the background job.
+	 */
+	getLiveToolCalls( state ) {
+		return state.liveToolCalls;
+	},
+
+	/**
+	 * Get the full sessionJobs map.
+	 *
+	 * @param {import('../../types').StoreState} state
+	 * @return {Object} Map of sessionId → job data.
+	 */
+	getSessionJobs( state ) {
+		return state.sessionJobs;
+	},
+
+	/**
+	 * Get the job for a specific session.
+	 *
+	 * @param {import('../../types').StoreState} state
+	 * @param {number}                           sessionId - Session identifier.
+	 * @return {Object|null} Job data or null.
+	 */
+	getSessionJob( state, sessionId ) {
+		return state.sessionJobs[ sessionId ] || null;
+	},
+
+	/**
+	 * @param {import('../../types').StoreState} state
 	 * @return {import('../../types').TokenUsage} Cumulative token usage for the current session.
 	 */
 	getTokenUsage( state ) {
@@ -1625,7 +1482,23 @@ export function reducer( state, action ) {
 		case 'SET_SENDING':
 			return { ...state, sending: action.sending };
 		case 'SET_CURRENT_JOB_ID':
-			return { ...state, currentJobId: action.jobId };
+			return {
+				...state,
+				currentJobId: action.jobId,
+				// Clear live tool calls when job changes.
+				liveToolCalls: action.jobId ? state.liveToolCalls : [],
+			};
+		case 'SET_LIVE_TOOL_CALLS':
+			return { ...state, liveToolCalls: action.toolCalls };
+		case 'SET_SESSION_JOB': {
+			const newJobs = { ...state.sessionJobs };
+			if ( action.job ) {
+				newJobs[ action.sessionId ] = action.job;
+			} else {
+				delete newJobs[ action.sessionId ];
+			}
+			return { ...state, sessionJobs: newJobs };
+		}
 		case 'APPEND_MESSAGE':
 			return {
 				...state,
