@@ -84,95 +84,6 @@ class RestController {
 
 		$instance = new self();
 
-		// Synchronous chat endpoint — runs the agent loop and returns JSON.
-		register_rest_route(
-			self::NAMESPACE,
-			'/chat',
-			array(
-				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => array( __CLASS__, 'handle_chat' ),
-				'permission_callback' => array( $instance, 'check_chat_permission' ),
-				'args'                => array(
-					'message'            => array(
-						'required'          => true,
-						'type'              => 'string',
-						'sanitize_callback' => 'sanitize_text_field',
-					),
-					'session_id'         => array(
-						'required'          => false,
-						'type'              => 'integer',
-						'sanitize_callback' => 'absint',
-					),
-					'abilities'          => array(
-						'required' => false,
-						'type'     => 'array',
-						'default'  => array(),
-					),
-					'system_instruction' => array(
-						'required'          => false,
-						'type'              => 'string',
-						'sanitize_callback' => 'sanitize_textarea_field',
-					),
-					'max_iterations'     => array(
-						'required'          => false,
-						'type'              => 'integer',
-						'default'           => 10,
-						'sanitize_callback' => 'absint',
-					),
-					'provider_id'        => array(
-						'required'          => false,
-						'type'              => 'string',
-						'sanitize_callback' => 'sanitize_text_field',
-					),
-					'model_id'           => array(
-						'required'          => false,
-						'type'              => 'string',
-						'sanitize_callback' => 'sanitize_text_field',
-					),
-					'page_context'       => array(
-						'required'          => false,
-						'type'              => array( 'object', 'string' ),
-						'default'           => array(),
-						'sanitize_callback' => array( __CLASS__, 'sanitize_page_context' ),
-					),
-					'agent_id'           => array(
-						'required'          => false,
-						'type'              => 'integer',
-						'sanitize_callback' => 'absint',
-					),
-					'attachments'        => array(
-						'required' => false,
-						'type'     => 'array',
-						'default'  => array(),
-						'items'    => array(
-							'type'       => 'object',
-							'properties' => array(
-								'name'     => array( 'type' => 'string' ),
-								'type'     => array( 'type' => 'string' ),
-								'data_url' => array( 'type' => 'string' ),
-								'is_image' => array( 'type' => 'boolean' ),
-							),
-						),
-					),
-					'client_abilities'   => array(
-						'required' => false,
-						'type'     => 'array',
-						'default'  => array(),
-						'items'    => array(
-							'type'       => 'object',
-							'properties' => array(
-								'name'         => array( 'type' => 'string' ),
-								'label'        => array( 'type' => 'string' ),
-								'description'  => array( 'type' => 'string' ),
-								'input_schema' => array( 'type' => 'object' ),
-								'annotations'  => array( 'type' => 'object' ),
-							),
-						),
-					),
-				),
-			)
-		);
-
 		// Client tool result endpoint — resumes the agent loop after the browser
 		// has executed client-side tool calls and POSTs the results back.
 		register_rest_route(
@@ -234,7 +145,7 @@ class RestController {
 	 * @param array<int, array{name: string, type: string, data_url: string, is_image: bool}> $attachments Raw attachment objects from the REST request.
 	 * @return array<int, array{name: string, type: string, data_url: string, is_image: bool, attachment_id?: int, url?: string}> Enriched attachment objects.
 	 */
-	private static function upload_attachments_to_media_library( array $attachments ): array {
+	public static function upload_attachments_to_media_library( array $attachments ): array {
 		if ( empty( $attachments ) ) {
 			return array();
 		}
@@ -324,12 +235,30 @@ class RestController {
 	}
 
 	/**
-	 * Handle POST /chat — run the agent loop and return the result as JSON.
+	 * Handle POST /chat — REMOVED.
+	 *
+	 * All chat messages now go through /run (async job + poll).
+	 * This stub exists only to return a helpful error if anything
+	 * still calls the old endpoint.
 	 *
 	 * @param WP_REST_Request $request The request object.
-	 * @return WP_REST_Response|WP_Error
+	 * @return WP_Error
 	 */
 	public static function handle_chat( WP_REST_Request $request ) {
+		return new WP_Error(
+			'gratis_ai_agent_endpoint_removed',
+			__( 'The /chat endpoint has been removed. Use /run instead.', 'gratis-ai-agent' ),
+			array( 'status' => 410 )
+		);
+	}
+
+	/**
+	 * Legacy — removed. Kept as stub to prevent fatal if referenced.
+	 *
+	 * @deprecated Use /run + /job polling.
+	 * @return WP_Error
+	 */
+	private static function _handle_chat_legacy( WP_REST_Request $request ) {
 		$session_id      = self::get_int_param( $request, 'session_id' );
 		$raw_attachments = $request->get_param( 'attachments' ) ?? array();
 		/** @var array<int, array{name: string, type: string, data_url: string, is_image: bool}> $raw_attachments_typed */

@@ -129,6 +129,17 @@ class AgentLoop {
 	 */
 	private array $client_abilities = array();
 
+	/**
+	 * Optional callback invoked after each tool call/response pair.
+	 *
+	 * Signature: function( list<array<string, mixed>> $tool_call_log ): void
+	 * Used by the job system to write live progress to the transient so the
+	 * polling frontend can show tool activity before the loop completes.
+	 *
+	 * @var callable|null
+	 */
+	private $progress_callback = null;
+
 	// ── Spin Detection State ─────────────────────────────────────────────
 
 	/** @var int Consecutive rounds with identical tool signatures. */
@@ -209,6 +220,11 @@ class AgentLoop {
 			'prompt'     => 0,
 			'completion' => 0,
 		);
+
+		// Progress callback for live tool-call reporting (used by job system).
+		if ( isset( $options['progress_callback'] ) && is_callable( $options['progress_callback'] ) ) {
+			$this->progress_callback = $options['progress_callback'];
+		}
 
 		// Validate and store client-side ability descriptors.
 		// Only accept names that exist in JsAbilityCatalog to prevent the
@@ -1199,10 +1215,15 @@ class AgentLoop {
 				);
 			}
 		}
+
+		$this->fire_progress();
 	}
 
 	/**
 	 * Log tool responses for transparency.
+	 *
+	 * After logging, fires the progress callback (if set) so the job system
+	 * can write the updated tool_call_log to the transient in real time.
 	 */
 	private function log_tool_responses( Message $message ): void {
 		foreach ( $message->getParts() as $part ) {
@@ -1215,6 +1236,17 @@ class AgentLoop {
 					'response' => $response->getResponse(),
 				);
 			}
+		}
+
+		$this->fire_progress();
+	}
+
+	/**
+	 * Fire the progress callback with the current tool call log.
+	 */
+	private function fire_progress(): void {
+		if ( null !== $this->progress_callback ) {
+			call_user_func( $this->progress_callback, $this->tool_call_log );
 		}
 	}
 

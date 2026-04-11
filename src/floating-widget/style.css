@@ -443,6 +443,11 @@
 	height: 16px;
 }
 
+/* Live tool progress inside floating widget */
+.gratis-ai-agent-floating-panel .gratis-ai-agent-live-progress-current code {
+	font-size: 11px;
+}
+
 /* Tool calls inside floating */
 .gratis-ai-agent-floating-panel .gratis-ai-agent-tool-calls {
 	align-self: flex-start;

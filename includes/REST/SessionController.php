@@ -407,6 +407,16 @@ class SessionController {
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
 					),
+					'attachments'        => array(
+						'required' => false,
+						'type'     => 'array',
+						'default'  => array(),
+					),
+					'client_abilities'   => array(
+						'required' => false,
+						'type'     => 'array',
+						'default'  => array(),
+					),
 				),
 			)
 		);
@@ -886,6 +896,11 @@ class SessionController {
 
 		$response = array( 'status' => $job['status'] );
 
+		// Include live tool call progress for all statuses that have it.
+		if ( ! empty( $job['tool_calls'] ) ) {
+			$response['tool_calls'] = $job['tool_calls'];
+		}
+
 		if ( 'awaiting_confirmation' === $job['status'] && isset( $job['pending_tools'] ) ) {
 			$response['pending_tools'] = $job['pending_tools'];
 			return new WP_REST_Response( $response, 200 );
@@ -1066,11 +1081,19 @@ class SessionController {
 		$job_id = wp_generate_uuid4();
 		$token  = wp_generate_password( 40, false );
 
+		// Upload attachments to the media library NOW (in the browser-facing
+		// request that has auth cookies) so the loopback worker doesn't need to.
+		$raw_attachments = $request->get_param( 'attachments' ) ?? array();
+		/** @var array<int, array{name: string, type: string, data_url: string, is_image: bool}> $raw_attachments_typed */
+		$raw_attachments_typed = is_array( $raw_attachments ) ? $raw_attachments : array();
+		$attachments           = RestController::upload_attachments_to_media_library( $raw_attachments_typed );
+
 		$job = array(
-			'status'  => 'processing',
-			'token'   => $token,
-			'user_id' => get_current_user_id(),
-			'params'  => array(
+			'status'     => 'processing',
+			'token'      => $token,
+			'user_id'    => get_current_user_id(),
+			'tool_calls' => array(),
+			'params'     => array(
 				'message'            => $request->get_param( 'message' ),
 				'history'            => $request->get_param( 'history' ),
 				'abilities'          => $request->get_param( 'abilities' ),
@@ -1081,6 +1104,8 @@ class SessionController {
 				'model_id'           => $request->get_param( 'model_id' ),
 				'page_context'       => $request->get_param( 'page_context' ),
 				'agent_id'           => $request->get_param( 'agent_id' ),
+				'attachments'        => $attachments,
+				'client_abilities'   => $request->get_param( 'client_abilities' ) ?? array(),
 			),
 		);
 
@@ -1132,6 +1157,17 @@ class SessionController {
 
 		if ( ! is_array( $job ) || empty( $job['params'] ) ) {
 			return new WP_REST_Response( array( 'ok' => false ), 200 );
+		}
+
+		// Send the HTTP response immediately so the calling process (the
+		// non-blocking loopback from /run or /confirm) can close its
+		// connection. PHP-FPM continues executing after this call.
+		// Without this, FPM kills the process when the client disconnects.
+		if ( function_exists( 'fastcgi_finish_request' ) ) {
+			// Send a minimal JSON response before detaching.
+			header( 'Content-Type: application/json' );
+			echo '{"ok":true}';
+			fastcgi_finish_request();
 		}
 
 		/** @var array<string, mixed> $job */
@@ -1204,6 +1240,16 @@ class SessionController {
 			$options['session_id'] = (int) $params['session_id'];
 		}
 
+		// Pass client-side abilities through to the loop.
+		$raw_client_abilities = $params['client_abilities'] ?? array();
+		if ( ! empty( $raw_client_abilities ) && is_array( $raw_client_abilities ) ) {
+			$options['client_abilities'] = $raw_client_abilities;
+			if ( ! empty( $params['session_id'] ) ) {
+				// @phpstan-ignore-next-line
+				$options['session_id'] = (int) $params['session_id'];
+			}
+		}
+
 		// Apply agent overrides (agent_id takes precedence over individual params).
 		if ( ! empty( $params['agent_id'] ) ) {
 			// @phpstan-ignore-next-line
@@ -1211,45 +1257,60 @@ class SessionController {
 			$options       = array_merge( $options, $agent_options );
 		}
 
+		// Progress callback: write live tool-call activity to the job
+		// transient so the polling frontend can display it incrementally.
+		$progress_job_id              = $job_id;
+		$options['progress_callback'] = static function ( array $tool_call_log ) use ( $progress_job_id ) {
+			$current = get_transient( RestController::JOB_PREFIX . $progress_job_id );
+			if ( is_array( $current ) && 'processing' === ( $current['status'] ?? '' ) ) {
+				$current['tool_calls'] = $tool_call_log;
+				set_transient( RestController::JOB_PREFIX . $progress_job_id, $current, RestController::JOB_TTL );
+			}
+		};
+
 		// Record start time for webhook duration tracking.
 		$start_ms = (int) round( microtime( true ) * 1000 );
 
 		// Check if this is a resume from a tool confirmation/rejection.
 		$is_resume = ! empty( $job['resume'] );
 
-		if ( $is_resume ) {
-			$confirmed = 'confirm' === $job['resume'];
-			$state     = $job['confirmation_state'] ?? array();
+		// Wrap the entire loop execution in a try/catch so that uncaught
+		// exceptions (e.g. from ability schema validation) are captured
+		// and written to the job transient instead of silently killing
+		// the background worker.
+		try {
+			if ( $is_resume ) {
+				$confirmed = 'confirm' === $job['resume'];
+				$state     = $job['confirmation_state'] ?? array();
 
-			/** @var list<array<string, mixed>> $state_history */
-			$state_history = $state['history'] ?? array();
-			try {
+				/** @var list<array<string, mixed>> $state_history */
+				$state_history  = $state['history'] ?? array();
 				$resume_history = AgentLoop::deserialize_history( array_values( $state_history ) );
-			} catch ( \Exception $e ) {
-				$job['status'] = 'error';
-				$job['error']  = __( 'Failed to resume conversation.', 'gratis-ai-agent' );
-				unset( $job['token'] );
-				set_transient( RestController::JOB_PREFIX . $job_id, $job, RestController::JOB_TTL );
-				return new WP_REST_Response( array( 'ok' => false ), 200 );
+
+				$resume_options = $options;
+				// @phpstan-ignore-next-line
+				$resume_options['tool_call_log'] = $state['tool_call_log'] ?? array();
+				// @phpstan-ignore-next-line
+				$resume_options['token_usage'] = $state['token_usage'] ?? array(
+					'prompt'     => 0,
+					'completion' => 0,
+				);
+
+				$loop = new AgentLoop( '', array(), $resume_history, $resume_options );
+				// @phpstan-ignore-next-line
+				$result = $loop->resume_after_confirmation( $confirmed, $state['iterations_remaining'] ?? 5 );
+			} else {
+				$abilities = $params['abilities'] ?? array();
+				// @phpstan-ignore-next-line
+				$loop   = new AgentLoop( (string) $params['message'], is_array( $abilities ) ? $abilities : array(), $history, $options );
+				$result = $loop->run();
 			}
-
-			$resume_options = $options;
-			// @phpstan-ignore-next-line
-			$resume_options['tool_call_log'] = $state['tool_call_log'] ?? array();
-			// @phpstan-ignore-next-line
-			$resume_options['token_usage'] = $state['token_usage'] ?? array(
-				'prompt'     => 0,
-				'completion' => 0,
-			);
-
-			$loop = new AgentLoop( '', array(), $resume_history, $resume_options );
-			// @phpstan-ignore-next-line
-			$result = $loop->resume_after_confirmation( $confirmed, $state['iterations_remaining'] ?? 5 );
-		} else {
-			$abilities = $params['abilities'] ?? array();
-			// @phpstan-ignore-next-line
-			$loop   = new AgentLoop( (string) $params['message'], is_array( $abilities ) ? $abilities : array(), $history, $options );
-			$result = $loop->run();
+		} catch ( \Throwable $e ) {
+			$job['status'] = 'error';
+			$job['error']  = $e->getMessage();
+			unset( $job['token'] );
+			set_transient( RestController::JOB_PREFIX . $job_id, $job, RestController::JOB_TTL );
+			return new WP_REST_Response( array( 'ok' => false ), 200 );
 		}
 
 		if ( is_wp_error( $result ) ) {

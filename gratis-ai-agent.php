@@ -73,6 +73,7 @@ use GratisAiAgent\Abilities\StockImageAbilities;
 use GratisAiAgent\Abilities\ToolCapabilities;
 use GratisAiAgent\Abilities\WooCommerceAbilities;
 use GratisAiAgent\Abilities\WordPressAbilities;
+use GratisAiAgent\Abilities\WpCliAbilities;
 use GratisAiAgent\Admin\FloatingWidget;
 use GratisAiAgent\Admin\ModelBenchmarkPage;
 use GratisAiAgent\Admin\ScreenMetaPanel;
@@ -357,6 +358,9 @@ DatabaseAbilities::register();
 
 // WordPress management abilities (plugins, themes, install, run PHP).
 WordPressAbilities::register();
+
+// WP-CLI command execution ability (wp-cli/execute).
+WpCliAbilities::register();
 
 // Options management abilities (get, update, delete, list options with safety blocklist).
 OptionsAbilities::register();

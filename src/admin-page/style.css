@@ -231,6 +231,22 @@ body.toplevel_page_gratis-ai-agent #wpbody-content > .updated {
 	line-height: 1.4;
 }
 
+/* Pulsing dot badge for sessions with active background jobs */
+.gratis-ai-agent-session-job-badge {
+	display: inline-block;
+	color: #2271b1;
+	font-size: 18px;
+	line-height: 1;
+	margin-left: 4px;
+	vertical-align: middle;
+	animation: gratis-ai-agent-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes gratis-ai-agent-pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.3; }
+}
+
 .gratis-ai-agent-session-meta {
 	font-size: 11px;
 	color: #8c8f94;
@@ -941,6 +957,37 @@ body.toplevel_page_gratis-ai-agent #wpbody-content > .updated {
 
 .gratis-ai-agent-thinking .components-spinner {
 	margin: 0;
+}
+
+/* Live tool progress (shown inside the Thinking bubble) */
+.gratis-ai-agent-live-progress {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.gratis-ai-agent-live-progress-completed {
+	font-size: 12px;
+	color: #50575e;
+	font-style: normal;
+}
+
+.gratis-ai-agent-live-progress-current {
+	font-style: italic;
+}
+
+.gratis-ai-agent-live-progress-current code {
+	font-style: normal;
+	font-size: 12px;
+	background: rgba(0, 0, 0, 0.05);
+	padding: 1px 5px;
+	border-radius: 3px;
+}
+
+.gratis-ai-agent-live-progress-count {
+	font-style: normal;
+	font-size: 12px;
+	color: #50575e;
 }
 
 /* Tool calls */
