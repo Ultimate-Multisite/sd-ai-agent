@@ -96,6 +96,132 @@ class WordPressAbilities {
 	}
 
 	/**
+	 * Install a plugin from any URL (GitHub releases, direct ZIPs, etc.).
+	 *
+	 * @param array<string,mixed> $input Input args.
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	public static function handle_install_plugin_from_url( array $input = [] ) {
+		$ability = new InstallPluginFromUrlAbility(
+			'gratis-ai-agent/install-plugin-from-url',
+			[
+				'label'       => __( 'Install Plugin from URL', 'gratis-ai-agent' ),
+				'description' => __( 'Install a plugin from any direct ZIP URL, including GitHub release assets. Optionally activate after installation.', 'gratis-ai-agent' ),
+			]
+		);
+		// @phpstan-ignore-next-line
+		return $ability->run( $input );
+	}
+
+	/**
+	 * Activate an installed plugin.
+	 *
+	 * @param array<string,mixed> $input Input args.
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	public static function handle_activate_plugin( array $input = [] ) {
+		$ability = new ActivatePluginAbility(
+			'gratis-ai-agent/activate-plugin',
+			[
+				'label'       => __( 'Activate Plugin', 'gratis-ai-agent' ),
+				'description' => __( 'Activate an installed WordPress plugin by slug or plugin file.', 'gratis-ai-agent' ),
+			]
+		);
+		// @phpstan-ignore-next-line
+		return $ability->run( $input );
+	}
+
+	/**
+	 * Deactivate an active plugin.
+	 *
+	 * @param array<string,mixed> $input Input args.
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	public static function handle_deactivate_plugin( array $input = [] ) {
+		$ability = new DeactivatePluginAbility(
+			'gratis-ai-agent/deactivate-plugin',
+			[
+				'label'       => __( 'Deactivate Plugin', 'gratis-ai-agent' ),
+				'description' => __( 'Deactivate an active WordPress plugin by slug or plugin file.', 'gratis-ai-agent' ),
+			]
+		);
+		// @phpstan-ignore-next-line
+		return $ability->run( $input );
+	}
+
+	/**
+	 * Delete an inactive plugin.
+	 *
+	 * @param array<string,mixed> $input Input args.
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	public static function handle_delete_plugin( array $input = [] ) {
+		$ability = new DeletePluginAbility(
+			'gratis-ai-agent/delete-plugin',
+			[
+				'label'       => __( 'Delete Plugin', 'gratis-ai-agent' ),
+				'description' => __( 'Permanently delete an inactive WordPress plugin. The plugin must be deactivated first.', 'gratis-ai-agent' ),
+			]
+		);
+		// @phpstan-ignore-next-line
+		return $ability->run( $input );
+	}
+
+	/**
+	 * List available plugin updates.
+	 *
+	 * @param array<string,mixed> $input Input args.
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	public static function handle_list_plugin_updates( array $input = [] ) {
+		$ability = new ListPluginUpdatesAbility(
+			'gratis-ai-agent/list-plugin-updates',
+			[
+				'label'       => __( 'List Plugin Updates', 'gratis-ai-agent' ),
+				'description' => __( 'List all installed plugins that have updates available.', 'gratis-ai-agent' ),
+			]
+		);
+		// @phpstan-ignore-next-line
+		return $ability->run( $input );
+	}
+
+	/**
+	 * Search the WordPress.org plugin directory.
+	 *
+	 * @param array<string,mixed> $input Input args.
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	public static function handle_search_plugin_directory( array $input = [] ) {
+		$ability = new SearchPluginDirectoryAbility(
+			'gratis-ai-agent/search-plugin-directory',
+			[
+				'label'       => __( 'Search Plugin Directory', 'gratis-ai-agent' ),
+				'description' => __( 'Search the official WordPress.org plugin directory by keyword.', 'gratis-ai-agent' ),
+			]
+		);
+		// @phpstan-ignore-next-line
+		return $ability->run( $input );
+	}
+
+	/**
+	 * Switch plugins: activate one, deactivate others, with rollback on failure.
+	 *
+	 * @param array<string,mixed> $input Input args.
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	public static function handle_switch_plugin( array $input = [] ) {
+		$ability = new SwitchPluginAbility(
+			'gratis-ai-agent/switch-plugin',
+			[
+				'label'       => __( 'Switch Plugin', 'gratis-ai-agent' ),
+				'description' => __( 'Activate one plugin and optionally deactivate one or more others. Rolls back if activation fails.', 'gratis-ai-agent' ),
+			]
+		);
+		// @phpstan-ignore-next-line
+		return $ability->run( $input );
+	}
+
+	/**
 	 * Recommend plugins for a given need category.
 	 *
 	 * @param array<string,mixed> $input Input args.
@@ -188,6 +314,69 @@ class WordPressAbilities {
 				'label'         => __( 'Recommend Plugin', 'gratis-ai-agent' ),
 				'description'   => __( 'Given a need category, return ranked plugin recommendations from the curated abilities registry. Preference order: has abilities > has blocks > popular.', 'gratis-ai-agent' ),
 				'ability_class' => RecommendPluginAbility::class,
+			]
+		);
+
+		wp_register_ability(
+			'gratis-ai-agent/install-plugin-from-url',
+			[
+				'label'         => __( 'Install Plugin from URL', 'gratis-ai-agent' ),
+				'description'   => __( 'Install a plugin from any direct ZIP URL, including GitHub release assets. Optionally activate after installation.', 'gratis-ai-agent' ),
+				'ability_class' => InstallPluginFromUrlAbility::class,
+			]
+		);
+
+		wp_register_ability(
+			'gratis-ai-agent/activate-plugin',
+			[
+				'label'         => __( 'Activate Plugin', 'gratis-ai-agent' ),
+				'description'   => __( 'Activate an installed WordPress plugin by slug or plugin file.', 'gratis-ai-agent' ),
+				'ability_class' => ActivatePluginAbility::class,
+			]
+		);
+
+		wp_register_ability(
+			'gratis-ai-agent/deactivate-plugin',
+			[
+				'label'         => __( 'Deactivate Plugin', 'gratis-ai-agent' ),
+				'description'   => __( 'Deactivate an active WordPress plugin by slug or plugin file.', 'gratis-ai-agent' ),
+				'ability_class' => DeactivatePluginAbility::class,
+			]
+		);
+
+		wp_register_ability(
+			'gratis-ai-agent/delete-plugin',
+			[
+				'label'         => __( 'Delete Plugin', 'gratis-ai-agent' ),
+				'description'   => __( 'Permanently delete an inactive WordPress plugin. The plugin must be deactivated first.', 'gratis-ai-agent' ),
+				'ability_class' => DeletePluginAbility::class,
+			]
+		);
+
+		wp_register_ability(
+			'gratis-ai-agent/list-plugin-updates',
+			[
+				'label'         => __( 'List Plugin Updates', 'gratis-ai-agent' ),
+				'description'   => __( 'List all installed plugins that have updates available.', 'gratis-ai-agent' ),
+				'ability_class' => ListPluginUpdatesAbility::class,
+			]
+		);
+
+		wp_register_ability(
+			'gratis-ai-agent/search-plugin-directory',
+			[
+				'label'         => __( 'Search Plugin Directory', 'gratis-ai-agent' ),
+				'description'   => __( 'Search the official WordPress.org plugin directory by keyword.', 'gratis-ai-agent' ),
+				'ability_class' => SearchPluginDirectoryAbility::class,
+			]
+		);
+
+		wp_register_ability(
+			'gratis-ai-agent/switch-plugin',
+			[
+				'label'         => __( 'Switch Plugin', 'gratis-ai-agent' ),
+				'description'   => __( 'Activate one plugin and optionally deactivate one or more others. Rolls back if activation fails.', 'gratis-ai-agent' ),
+				'ability_class' => SwitchPluginAbility::class,
 			]
 		);
 
@@ -1034,6 +1223,945 @@ class RecommendPluginAbility extends AbstractAbility {
 				'readonly'    => true,
 				'destructive' => false,
 				'idempotent'  => true,
+			],
+			'show_in_rest' => true,
+		];
+	}
+}
+
+/**
+ * Install Plugin from URL ability.
+ *
+ * Installs a plugin from any direct ZIP URL — GitHub release assets,
+ * self-hosted ZIPs, or any other publicly accessible download link.
+ * Uses the same Plugin_Upgrader path as core WordPress, so it handles
+ * unzip, directory placement, and activation identically to the admin UI.
+ *
+ * @since 1.3.0
+ */
+class InstallPluginFromUrlAbility extends AbstractAbility {
+
+	protected function label(): string {
+		return __( 'Install Plugin from URL', 'gratis-ai-agent' );
+	}
+
+	protected function description(): string {
+		return __( 'Install a plugin from any direct ZIP URL, including GitHub release assets (e.g. https://github.com/owner/repo/releases/latest/download/plugin.zip). Optionally activate after installation.', 'gratis-ai-agent' );
+	}
+
+	protected function input_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'url'      => [
+					'type'        => 'string',
+					'description' => 'Direct URL to the plugin ZIP file. GitHub example: https://github.com/bjornfix/mcp-expose-abilities/releases/latest/download/mcp-expose-abilities.zip',
+				],
+				'activate' => [
+					'type'        => 'boolean',
+					'description' => 'Whether to activate the plugin after installation (default: false).',
+				],
+			],
+			'required'   => [ 'url' ],
+		];
+	}
+
+	protected function output_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'status'      => [ 'type' => 'string' ],
+				'message'     => [ 'type' => 'string' ],
+				'plugin_file' => [ 'type' => 'string' ],
+				'active'      => [ 'type' => 'boolean' ],
+			],
+		];
+	}
+
+	protected function execute_callback( $input ) {
+		/** @var array<string, mixed> $input */
+		$url      = isset( $input['url'] ) ? (string) $input['url'] : '';
+		$activate = (bool) ( $input['activate'] ?? false );
+
+		if ( '' === $url ) {
+			return new WP_Error( 'gratis_ai_agent_empty_url', __( 'A plugin ZIP URL is required.', 'gratis-ai-agent' ) );
+		}
+
+		// Basic URL validation — must be http(s).
+		if ( ! preg_match( '#^https?://#i', $url ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_invalid_url',
+				__( 'URL must begin with http:// or https://.', 'gratis-ai-agent' )
+			);
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/misc.php';
+
+		$skin     = new \WP_Ajax_Upgrader_Skin();
+		$upgrader = new \Plugin_Upgrader( $skin );
+		$result   = $upgrader->install( $url );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		if ( false === $result ) {
+			$errors = $skin->get_errors();
+			if ( is_wp_error( $errors ) && $errors->has_errors() ) {
+				return $errors;
+			}
+			return new WP_Error( 'gratis_ai_agent_install_failed', __( 'Installation failed for unknown reason.', 'gratis-ai-agent' ) );
+		}
+
+		$plugin_file = $upgrader->plugin_info();
+
+		if ( $activate && $plugin_file ) {
+			$activate_result = activate_plugin( $plugin_file );
+			if ( is_wp_error( $activate_result ) ) {
+				return [
+					'status'      => 'installed',
+					'message'     => sprintf(
+						/* translators: 1: plugin file, 2: error message */
+						__( 'Plugin "%1$s" installed from URL but activation failed: %2$s', 'gratis-ai-agent' ),
+						$plugin_file,
+						$activate_result->get_error_message()
+					),
+					'plugin_file' => (string) $plugin_file,
+					'active'      => false,
+				];
+			}
+			return [
+				'status'      => 'installed_and_activated',
+				'message'     => sprintf(
+					/* translators: %s: plugin file */
+					__( 'Plugin "%s" installed from URL and activated successfully.', 'gratis-ai-agent' ),
+					$plugin_file
+				),
+				'plugin_file' => (string) $plugin_file,
+				'active'      => true,
+			];
+		}
+
+		return [
+			'status'      => 'installed',
+			'message'     => sprintf(
+				/* translators: %s: plugin file */
+				__( 'Plugin "%s" installed from URL successfully.', 'gratis-ai-agent' ),
+				$plugin_file ?? ''
+			),
+			'plugin_file' => (string) ( $plugin_file ?? '' ),
+			'active'      => false,
+		];
+	}
+
+	protected function permission_callback( $input ): bool {
+		return ToolCapabilities::current_user_can( $this->name );
+	}
+
+	protected function meta(): array {
+		return [
+			'annotations'  => [
+				'readonly'    => false,
+				'destructive' => false,
+				'idempotent'  => false,
+			],
+			'show_in_rest' => true,
+		];
+	}
+}
+
+/**
+ * Activate Plugin ability.
+ *
+ * Activates an installed plugin identified by slug or plugin file path.
+ *
+ * @since 1.3.0
+ */
+class ActivatePluginAbility extends AbstractAbility {
+
+	protected function label(): string {
+		return __( 'Activate Plugin', 'gratis-ai-agent' );
+	}
+
+	protected function description(): string {
+		return __( 'Activate an installed WordPress plugin by slug (directory name) or plugin file (e.g. "akismet/akismet.php").', 'gratis-ai-agent' );
+	}
+
+	protected function input_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'slug'        => [
+					'type'        => 'string',
+					'description' => 'The plugin directory slug (e.g. "akismet"). Either slug or plugin_file is required.',
+				],
+				'plugin_file' => [
+					'type'        => 'string',
+					'description' => 'The plugin file relative to the plugins directory (e.g. "akismet/akismet.php"). Either slug or plugin_file is required.',
+				],
+			],
+		];
+	}
+
+	protected function output_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'status'      => [ 'type' => 'string' ],
+				'message'     => [ 'type' => 'string' ],
+				'plugin_file' => [ 'type' => 'string' ],
+				'active'      => [ 'type' => 'boolean' ],
+			],
+		];
+	}
+
+	protected function execute_callback( $input ) {
+		/** @var array<string, mixed> $input */
+		$slug        = isset( $input['slug'] ) ? (string) $input['slug'] : '';
+		$plugin_file = isset( $input['plugin_file'] ) ? (string) $input['plugin_file'] : '';
+
+		if ( '' === $slug && '' === $plugin_file ) {
+			return new WP_Error( 'gratis_ai_agent_missing_plugin', __( 'Either "slug" or "plugin_file" is required.', 'gratis-ai-agent' ) );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+		$installed = get_plugins();
+
+		if ( '' === $plugin_file ) {
+			foreach ( $installed as $file => $_data ) {
+				if ( strpos( $file, $slug . '/' ) === 0 || $file === $slug . '.php' ) {
+					$plugin_file = $file;
+					break;
+				}
+			}
+		}
+
+		if ( '' === $plugin_file || ! isset( $installed[ $plugin_file ] ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_plugin_not_installed',
+				sprintf(
+					/* translators: %s: plugin identifier */
+					__( 'Plugin not installed: %s', 'gratis-ai-agent' ),
+					'' !== $slug ? $slug : $plugin_file
+				)
+			);
+		}
+
+		if ( is_plugin_active( $plugin_file ) ) {
+			return [
+				'status'      => 'already_active',
+				'message'     => sprintf(
+					/* translators: %s: plugin file */
+					__( 'Plugin "%s" is already active.', 'gratis-ai-agent' ),
+					$plugin_file
+				),
+				'plugin_file' => $plugin_file,
+				'active'      => true,
+			];
+		}
+
+		$result = activate_plugin( $plugin_file );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return [
+			'status'      => 'activated',
+			'message'     => sprintf(
+				/* translators: %s: plugin file */
+				__( 'Plugin "%s" activated successfully.', 'gratis-ai-agent' ),
+				$plugin_file
+			),
+			'plugin_file' => $plugin_file,
+			'active'      => true,
+		];
+	}
+
+	protected function permission_callback( $input ): bool {
+		return ToolCapabilities::current_user_can( $this->name );
+	}
+
+	protected function meta(): array {
+		return [
+			'annotations'  => [
+				'readonly'    => false,
+				'destructive' => false,
+				'idempotent'  => true,
+			],
+			'show_in_rest' => true,
+		];
+	}
+}
+
+/**
+ * Deactivate Plugin ability.
+ *
+ * Deactivates an active plugin identified by slug or plugin file path.
+ *
+ * @since 1.3.0
+ */
+class DeactivatePluginAbility extends AbstractAbility {
+
+	protected function label(): string {
+		return __( 'Deactivate Plugin', 'gratis-ai-agent' );
+	}
+
+	protected function description(): string {
+		return __( 'Deactivate an active WordPress plugin by slug (directory name) or plugin file (e.g. "akismet/akismet.php").', 'gratis-ai-agent' );
+	}
+
+	protected function input_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'slug'        => [
+					'type'        => 'string',
+					'description' => 'The plugin directory slug (e.g. "akismet"). Either slug or plugin_file is required.',
+				],
+				'plugin_file' => [
+					'type'        => 'string',
+					'description' => 'The plugin file relative to the plugins directory (e.g. "akismet/akismet.php"). Either slug or plugin_file is required.',
+				],
+			],
+		];
+	}
+
+	protected function output_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'status'      => [ 'type' => 'string' ],
+				'message'     => [ 'type' => 'string' ],
+				'plugin_file' => [ 'type' => 'string' ],
+				'active'      => [ 'type' => 'boolean' ],
+			],
+		];
+	}
+
+	protected function execute_callback( $input ) {
+		/** @var array<string, mixed> $input */
+		$slug        = isset( $input['slug'] ) ? (string) $input['slug'] : '';
+		$plugin_file = isset( $input['plugin_file'] ) ? (string) $input['plugin_file'] : '';
+
+		if ( '' === $slug && '' === $plugin_file ) {
+			return new WP_Error( 'gratis_ai_agent_missing_plugin', __( 'Either "slug" or "plugin_file" is required.', 'gratis-ai-agent' ) );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+		$installed = get_plugins();
+
+		if ( '' === $plugin_file ) {
+			foreach ( $installed as $file => $_data ) {
+				if ( strpos( $file, $slug . '/' ) === 0 || $file === $slug . '.php' ) {
+					$plugin_file = $file;
+					break;
+				}
+			}
+		}
+
+		if ( '' === $plugin_file || ! isset( $installed[ $plugin_file ] ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_plugin_not_installed',
+				sprintf(
+					/* translators: %s: plugin identifier */
+					__( 'Plugin not installed: %s', 'gratis-ai-agent' ),
+					'' !== $slug ? $slug : $plugin_file
+				)
+			);
+		}
+
+		if ( ! is_plugin_active( $plugin_file ) ) {
+			return [
+				'status'      => 'already_inactive',
+				'message'     => sprintf(
+					/* translators: %s: plugin file */
+					__( 'Plugin "%s" is already inactive.', 'gratis-ai-agent' ),
+					$plugin_file
+				),
+				'plugin_file' => $plugin_file,
+				'active'      => false,
+			];
+		}
+
+		deactivate_plugins( $plugin_file );
+
+		return [
+			'status'      => 'deactivated',
+			'message'     => sprintf(
+				/* translators: %s: plugin file */
+				__( 'Plugin "%s" deactivated successfully.', 'gratis-ai-agent' ),
+				$plugin_file
+			),
+			'plugin_file' => $plugin_file,
+			'active'      => false,
+		];
+	}
+
+	protected function permission_callback( $input ): bool {
+		return ToolCapabilities::current_user_can( $this->name );
+	}
+
+	protected function meta(): array {
+		return [
+			'annotations'  => [
+				'readonly'    => false,
+				'destructive' => false,
+				'idempotent'  => true,
+			],
+			'show_in_rest' => true,
+		];
+	}
+}
+
+/**
+ * Delete Plugin ability.
+ *
+ * Permanently removes an inactive plugin from the filesystem.
+ * The plugin must be deactivated before deletion.
+ *
+ * @since 1.3.0
+ */
+class DeletePluginAbility extends AbstractAbility {
+
+	protected function label(): string {
+		return __( 'Delete Plugin', 'gratis-ai-agent' );
+	}
+
+	protected function description(): string {
+		return __( 'Permanently delete an inactive WordPress plugin. Deactivate it first with deactivate-plugin if needed.', 'gratis-ai-agent' );
+	}
+
+	protected function input_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'slug'        => [
+					'type'        => 'string',
+					'description' => 'The plugin directory slug (e.g. "akismet"). Either slug or plugin_file is required.',
+				],
+				'plugin_file' => [
+					'type'        => 'string',
+					'description' => 'The plugin file relative to the plugins directory (e.g. "akismet/akismet.php"). Either slug or plugin_file is required.',
+				],
+			],
+		];
+	}
+
+	protected function output_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'status'      => [ 'type' => 'string' ],
+				'message'     => [ 'type' => 'string' ],
+				'plugin_file' => [ 'type' => 'string' ],
+			],
+		];
+	}
+
+	protected function execute_callback( $input ) {
+		/** @var array<string, mixed> $input */
+		$slug        = isset( $input['slug'] ) ? (string) $input['slug'] : '';
+		$plugin_file = isset( $input['plugin_file'] ) ? (string) $input['plugin_file'] : '';
+
+		if ( '' === $slug && '' === $plugin_file ) {
+			return new WP_Error( 'gratis_ai_agent_missing_plugin', __( 'Either "slug" or "plugin_file" is required.', 'gratis-ai-agent' ) );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+
+		$installed = get_plugins();
+
+		if ( '' === $plugin_file ) {
+			foreach ( $installed as $file => $_data ) {
+				if ( strpos( $file, $slug . '/' ) === 0 || $file === $slug . '.php' ) {
+					$plugin_file = $file;
+					break;
+				}
+			}
+		}
+
+		if ( '' === $plugin_file || ! isset( $installed[ $plugin_file ] ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_plugin_not_installed',
+				sprintf(
+					/* translators: %s: plugin identifier */
+					__( 'Plugin not installed: %s', 'gratis-ai-agent' ),
+					'' !== $slug ? $slug : $plugin_file
+				)
+			);
+		}
+
+		if ( is_plugin_active( $plugin_file ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_plugin_active',
+				sprintf(
+					/* translators: %s: plugin file */
+					__( 'Plugin "%s" is currently active. Deactivate it first before deleting.', 'gratis-ai-agent' ),
+					$plugin_file
+				)
+			);
+		}
+
+		if ( ! function_exists( 'delete_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		$result = delete_plugins( [ $plugin_file ] );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		if ( false === $result ) {
+			return new WP_Error( 'gratis_ai_agent_delete_failed', __( 'Plugin deletion failed for unknown reason.', 'gratis-ai-agent' ) );
+		}
+
+		return [
+			'status'      => 'deleted',
+			'message'     => sprintf(
+				/* translators: %s: plugin file */
+				__( 'Plugin "%s" deleted successfully.', 'gratis-ai-agent' ),
+				$plugin_file
+			),
+			'plugin_file' => $plugin_file,
+		];
+	}
+
+	protected function permission_callback( $input ): bool {
+		return ToolCapabilities::current_user_can( $this->name );
+	}
+
+	protected function meta(): array {
+		return [
+			'annotations'  => [
+				'readonly'    => false,
+				'destructive' => true,
+				'idempotent'  => false,
+			],
+			'show_in_rest' => true,
+		];
+	}
+}
+
+/**
+ * List Plugin Updates ability.
+ *
+ * Returns all installed plugins that have updates available, forcing a
+ * fresh check against the WordPress.org update API before returning.
+ *
+ * @since 1.3.0
+ */
+class ListPluginUpdatesAbility extends AbstractAbility {
+
+	protected function label(): string {
+		return __( 'List Plugin Updates', 'gratis-ai-agent' );
+	}
+
+	protected function description(): string {
+		return __( 'List all installed plugins that have updates available. Forces a fresh check against the update API.', 'gratis-ai-agent' );
+	}
+
+	protected function input_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => (object) [],
+		];
+	}
+
+	protected function output_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'updates' => [
+					'type'  => 'array',
+					'items' => [
+						'type'       => 'object',
+						'properties' => [
+							'plugin_file'     => [ 'type' => 'string' ],
+							'name'            => [ 'type' => 'string' ],
+							'current_version' => [ 'type' => 'string' ],
+							'new_version'     => [ 'type' => 'string' ],
+							'update_url'      => [ 'type' => 'string' ],
+						],
+					],
+				],
+				'count'   => [ 'type' => 'integer' ],
+			],
+		];
+	}
+
+	protected function execute_callback( $input = null ) {
+		/** @var array<string, mixed>|null $input */
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		require_once ABSPATH . 'wp-admin/includes/update.php';
+
+		// Force a fresh update check.
+		wp_clean_plugins_cache( false );
+		wp_update_plugins();
+
+		$installed = get_plugins();
+		$updates   = get_site_transient( 'update_plugins' );
+		$response  = is_object( $updates ) && isset( $updates->response ) ? (array) $updates->response : [];
+
+		$result = [];
+		foreach ( $response as $plugin_file => $update_data ) {
+			$plugin_file = (string) $plugin_file;
+			$name        = isset( $installed[ $plugin_file ]['Name'] ) ? (string) $installed[ $plugin_file ]['Name'] : $plugin_file;
+			$current     = isset( $installed[ $plugin_file ]['Version'] ) ? (string) $installed[ $plugin_file ]['Version'] : '';
+			$new_version = is_object( $update_data ) && isset( $update_data->new_version ) ? (string) $update_data->new_version : '';
+			$update_url  = is_object( $update_data ) && isset( $update_data->package ) ? (string) $update_data->package : '';
+
+			$result[] = [
+				'plugin_file'     => $plugin_file,
+				'name'            => $name,
+				'current_version' => $current,
+				'new_version'     => $new_version,
+				'update_url'      => $update_url,
+			];
+		}
+
+		return [
+			'updates' => $result,
+			'count'   => count( $result ),
+		];
+	}
+
+	protected function permission_callback( $input = null ): bool {
+		return ToolCapabilities::current_user_can( $this->name );
+	}
+
+	protected function meta(): array {
+		return [
+			'annotations'  => [
+				'readonly'    => true,
+				'destructive' => false,
+				'idempotent'  => true,
+			],
+			'show_in_rest' => true,
+		];
+	}
+}
+
+/**
+ * Search Plugin Directory ability.
+ *
+ * Queries the WordPress.org plugin API for plugins matching a keyword.
+ * Returns name, slug, short description, active installs, and rating.
+ *
+ * @since 1.3.0
+ */
+class SearchPluginDirectoryAbility extends AbstractAbility {
+
+	protected function label(): string {
+		return __( 'Search Plugin Directory', 'gratis-ai-agent' );
+	}
+
+	protected function description(): string {
+		return __( 'Search the official WordPress.org plugin directory by keyword. Returns matching plugins with slug, description, active installs, and rating.', 'gratis-ai-agent' );
+	}
+
+	protected function input_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'search'   => [
+					'type'        => 'string',
+					'description' => 'Search keyword(s) to query the WordPress.org plugin directory.',
+				],
+				'per_page' => [
+					'type'        => 'integer',
+					'description' => 'Number of results to return (default: 10, max: 25).',
+					'minimum'     => 1,
+					'maximum'     => 25,
+				],
+			],
+			'required'   => [ 'search' ],
+		];
+	}
+
+	protected function output_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'plugins' => [
+					'type'  => 'array',
+					'items' => [
+						'type'       => 'object',
+						'properties' => [
+							'slug'              => [ 'type' => 'string' ],
+							'name'              => [ 'type' => 'string' ],
+							'short_description' => [ 'type' => 'string' ],
+							'version'           => [ 'type' => 'string' ],
+							'active_installs'   => [ 'type' => 'integer' ],
+							'rating'            => [ 'type' => 'number' ],
+							'author'            => [ 'type' => 'string' ],
+						],
+					],
+				],
+				'total'   => [ 'type' => 'integer' ],
+				'query'   => [ 'type' => 'string' ],
+			],
+		];
+	}
+
+	protected function execute_callback( $input ) {
+		/** @var array<string, mixed> $input */
+		$search   = isset( $input['search'] ) ? (string) $input['search'] : '';
+		$per_page = isset( $input['per_page'] ) ? min( 25, max( 1, (int) $input['per_page'] ) ) : 10;
+
+		if ( '' === $search ) {
+			return new WP_Error( 'gratis_ai_agent_empty_search', __( 'A search keyword is required.', 'gratis-ai-agent' ) );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
+
+		$api = plugins_api(
+			'query_plugins',
+			// @phpstan-ignore-next-line
+			[
+				'search'   => $search,
+				'per_page' => $per_page,
+				'fields'   => [
+					'short_description' => true,
+					'sections'          => false,
+					'tags'              => false,
+					'icons'             => false,
+					'banners'           => false,
+				],
+			]
+		);
+
+		if ( is_wp_error( $api ) ) {
+			return $api;
+		}
+
+		$plugins = [];
+		$raw     = is_object( $api ) && isset( $api->plugins ) ? (array) $api->plugins : [];
+
+		foreach ( $raw as $plugin ) {
+			// The API can return either objects or arrays depending on the response shape.
+			if ( is_object( $plugin ) ) {
+				$plugins[] = [
+					'slug'              => (string) ( $plugin->slug ?? '' ),
+					'name'              => (string) ( $plugin->name ?? '' ),
+					'short_description' => (string) ( $plugin->short_description ?? '' ),
+					'version'           => (string) ( $plugin->version ?? '' ),
+					'active_installs'   => (int) ( $plugin->active_installs ?? 0 ),
+					'rating'            => (float) ( $plugin->rating ?? 0 ),
+					'author'            => (string) ( $plugin->author ?? '' ),
+				];
+			} elseif ( is_array( $plugin ) ) {
+				$plugins[] = [
+					'slug'              => (string) ( $plugin['slug'] ?? '' ),
+					'name'              => (string) ( $plugin['name'] ?? '' ),
+					'short_description' => (string) ( $plugin['short_description'] ?? '' ),
+					'version'           => (string) ( $plugin['version'] ?? '' ),
+					'active_installs'   => (int) ( $plugin['active_installs'] ?? 0 ),
+					'rating'            => (float) ( $plugin['rating'] ?? 0 ),
+					'author'            => (string) ( $plugin['author'] ?? '' ),
+				];
+			}
+		}
+
+		$total = is_object( $api ) && isset( $api->info['results'] ) ? (int) $api->info['results'] : count( $plugins );
+
+		return [
+			'plugins' => $plugins,
+			'total'   => $total,
+			'query'   => $search,
+		];
+	}
+
+	protected function permission_callback( $input ): bool {
+		return ToolCapabilities::current_user_can( $this->name );
+	}
+
+	protected function meta(): array {
+		return [
+			'annotations'  => [
+				'readonly'    => true,
+				'destructive' => false,
+				'idempotent'  => true,
+			],
+			'show_in_rest' => true,
+		];
+	}
+}
+
+/**
+ * Switch Plugin ability.
+ *
+ * Activates one plugin and optionally deactivates one or more others in a
+ * single atomic operation. If activation fails, any plugins that were
+ * deactivated in this call are re-activated (rollback).
+ *
+ * @since 1.3.0
+ */
+class SwitchPluginAbility extends AbstractAbility {
+
+	protected function label(): string {
+		return __( 'Switch Plugin', 'gratis-ai-agent' );
+	}
+
+	protected function description(): string {
+		return __( 'Activate one plugin and optionally deactivate one or more others atomically. Rolls back deactivations if activation fails. Useful for switching between competing plugins (e.g. SEO plugins, caching plugins).', 'gratis-ai-agent' );
+	}
+
+	protected function input_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'activate'   => [
+					'type'        => 'string',
+					'description' => 'Slug or plugin file of the plugin to activate.',
+				],
+				'deactivate' => [
+					'type'        => 'array',
+					'description' => 'Array of slugs or plugin files to deactivate before activating the target.',
+					'items'       => [ 'type' => 'string' ],
+				],
+			],
+			'required'   => [ 'activate' ],
+		];
+	}
+
+	protected function output_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'status'      => [ 'type' => 'string' ],
+				'message'     => [ 'type' => 'string' ],
+				'activated'   => [ 'type' => 'string' ],
+				'deactivated' => [ 'type' => 'array' ],
+				'rolled_back' => [ 'type' => 'array' ],
+			],
+		];
+	}
+
+	protected function execute_callback( $input ) {
+		/** @var array<string, mixed> $input */
+		$activate_target = isset( $input['activate'] ) ? (string) $input['activate'] : '';
+		$deactivate_list = isset( $input['deactivate'] ) && is_array( $input['deactivate'] ) ? $input['deactivate'] : [];
+
+		if ( '' === $activate_target ) {
+			return new WP_Error( 'gratis_ai_agent_missing_activate', __( '"activate" is required.', 'gratis-ai-agent' ) );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+		$installed = get_plugins();
+
+		// Resolve activate target to plugin_file.
+		$activate_file = $this->resolve_plugin_file( $activate_target, $installed );
+		if ( null === $activate_file ) {
+			return new WP_Error(
+				'gratis_ai_agent_plugin_not_installed',
+				sprintf(
+					/* translators: %s: plugin identifier */
+					__( 'Plugin to activate not found: %s', 'gratis-ai-agent' ),
+					$activate_target
+				)
+			);
+		}
+
+		// Resolve deactivate targets.
+		$deactivate_files = [];
+		foreach ( $deactivate_list as $target ) {
+			$file = $this->resolve_plugin_file( (string) $target, $installed );
+			if ( null !== $file ) {
+				$deactivate_files[] = $file;
+			}
+		}
+
+		// Deactivate the requested plugins.
+		$actually_deactivated = [];
+		foreach ( $deactivate_files as $file ) {
+			if ( is_plugin_active( $file ) ) {
+				deactivate_plugins( $file );
+				$actually_deactivated[] = $file;
+			}
+		}
+
+		// Activate the target.
+		$result = activate_plugin( $activate_file );
+
+		if ( is_wp_error( $result ) ) {
+			// Rollback: re-activate anything we deactivated.
+			$rolled_back = [];
+			foreach ( $actually_deactivated as $file ) {
+				$rb = activate_plugin( $file );
+				if ( ! is_wp_error( $rb ) ) {
+					$rolled_back[] = $file;
+				}
+			}
+
+			return [
+				'status'      => 'failed',
+				'message'     => sprintf(
+					/* translators: 1: plugin file, 2: error message, 3: rollback count */
+					__( 'Failed to activate "%1$s": %2$s. Rolled back %3$d deactivation(s).', 'gratis-ai-agent' ),
+					$activate_file,
+					$result->get_error_message(),
+					count( $rolled_back )
+				),
+				'activated'   => '',
+				'deactivated' => [],
+				'rolled_back' => $rolled_back,
+			];
+		}
+
+		return [
+			'status'      => 'switched',
+			'message'     => sprintf(
+				/* translators: 1: activated plugin, 2: count of deactivated plugins */
+				__( 'Activated "%1$s" and deactivated %2$d plugin(s).', 'gratis-ai-agent' ),
+				$activate_file,
+				count( $actually_deactivated )
+			),
+			'activated'   => $activate_file,
+			'deactivated' => $actually_deactivated,
+			'rolled_back' => [],
+		];
+	}
+
+	/**
+	 * Resolve a slug or plugin_file string to the installed plugin file key.
+	 *
+	 * @param string                              $target    Slug or plugin file.
+	 * @param array<string, array<string, mixed>> $installed Installed plugins map.
+	 * @return string|null
+	 */
+	private function resolve_plugin_file( string $target, array $installed ): ?string {
+		// Exact match (already a plugin file).
+		if ( isset( $installed[ $target ] ) ) {
+			return $target;
+		}
+		// Slug match.
+		foreach ( $installed as $file => $_data ) {
+			if ( strpos( $file, $target . '/' ) === 0 || $file === $target . '.php' ) {
+				return $file;
+			}
+		}
+		return null;
+	}
+
+	protected function permission_callback( $input ): bool {
+		return ToolCapabilities::current_user_can( $this->name );
+	}
+
+	protected function meta(): array {
+		return [
+			'annotations'  => [
+				'readonly'    => false,
+				'destructive' => false,
+				'idempotent'  => false,
 			],
 			'show_in_rest' => true,
 		];
