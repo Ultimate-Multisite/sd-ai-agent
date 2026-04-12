@@ -16,7 +16,7 @@
 - **Test PHP**: `npm run test:php` (PHPUnit via `@wordpress/env`)
 - **Test E2E**: `npm run test:e2e:playwright` (Playwright)
 - **Pre-commit**: Husky + lint-staged runs lint fixes on staged files
-- **Dev environment**: `npx wp-env start` (WordPress 7.0 via `.wp-env.json`)
+- **Dev environment**: `npx wp-env start` (WordPress 7.0 via `.wp-env.json`) — dev site at http://localhost:8890, test site at http://localhost:8893
 
 ## Code Style & Architecture
 
