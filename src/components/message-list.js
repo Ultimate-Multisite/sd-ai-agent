@@ -185,12 +185,21 @@ function extractText( message ) {
 }
 
 /**
+ * @typedef  {Object}  ToolCall
+ * @property {string}  type       - Entry kind: 'call' when invoked, 'response' when complete.
+ * @property {string}  [id]       - Optional unique identifier for the call.
+ * @property {string}  [name]     - Tool name.
+ * @property {Object}  [args]     - Arguments passed to the tool.
+ * @property {unknown} [response] - Value returned by the tool.
+ */
+
+/**
  * Live tool call progress shown inside the "Thinking" bubble while the
  * background job is processing. Displays each tool call as it happens
  * so the user can see the agent is making progress.
  *
- * @param {Object} props           - Component props.
- * @param {Array}  props.toolCalls - Live tool call log from the job.
+ * @param {Object}     props           - Component props.
+ * @param {ToolCall[]} props.toolCalls - Live tool call log from the job.
  * @return {JSX.Element} Progress indicator.
  */
 function LiveToolProgress( { toolCalls } ) {
