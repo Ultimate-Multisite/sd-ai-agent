@@ -17,6 +17,17 @@ use WP_UnitTestCase;
  */
 class SeoAbilitiesTest extends WP_UnitTestCase {
 
+	/**
+	 * Tear down after each test.
+	 *
+	 * Remove any pre_http_request filters added by individual tests so they
+	 * do not bleed into the next test in the suite.
+	 */
+	public function tear_down(): void {
+		remove_all_filters( 'pre_http_request' );
+		parent::tear_down();
+	}
+
 	// ─── seo-audit-url ────────────────────────────────────────────
 
 	/**
@@ -40,25 +51,51 @@ class SeoAbilitiesTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test handle_audit_url with valid URL returns array or WP_Error.
+	 * Test handle_audit_url with valid URL returns expected array shape.
 	 *
-	 * In test environment, the HTTP request may fail, but the handler
-	 * should return an array or WP_Error (not throw an exception).
+	 * Uses a pre_http_request filter to intercept the outbound wp_safe_remote_get()
+	 * call so the test is deterministic in environments without outbound HTTP
+	 * (e.g. wp-env Docker containers).
 	 */
 	public function test_handle_audit_url_valid_url_returns_array() {
+		$mock_html = '<!DOCTYPE html><html lang="en"><head>'
+			. '<title>SEO Mock Page Title Exactly Right Length</title>'
+			. '<meta name="description" content="This is a sufficiently long meta description for the SEO audit test page to avoid false positive length warnings.">'
+			. '<link rel="canonical" href="' . home_url( '/' ) . '">'
+			. '<meta property="og:title" content="SEO Mock Page">'
+			. '<meta property="og:type" content="website">'
+			. '</head><body>'
+			. '<h1>Main Heading</h1>'
+			. '<h2>Sub Heading</h2>'
+			. '<p>Page content for SEO analysis.</p>'
+			. '<img src="image.jpg" alt="A descriptive alt text">'
+			. '</body></html>';
+
+		add_filter(
+			'pre_http_request',
+			static function ( $preempt, $args, $url ) use ( $mock_html ) {
+				return [
+					'headers'  => [ 'content-type' => 'text/html; charset=UTF-8' ],
+					'body'     => $mock_html,
+					'response' => [ 'code' => 200, 'message' => 'OK' ],
+					'cookies'  => [],
+					'filename' => '',
+				];
+			},
+			10,
+			3
+		);
+
 		$result = SeoAbilities::handle_audit_url( [
 			'url' => home_url( '/' ),
 		] );
 
-		// Should return either audit data (array) or a WP_Error on HTTP failure.
-		$this->assertTrue(
-			is_array( $result ) || is_wp_error( $result ),
-			'Result should be an array or WP_Error.'
-		);
-
-		if ( is_array( $result ) ) {
-			$this->assertArrayHasKey( 'url', $result );
-		}
+		$this->assertIsArray( $result );
+		$this->assertArrayHasKey( 'url', $result );
+		$this->assertArrayHasKey( 'status_code', $result );
+		$this->assertSame( 200, $result['status_code'] );
+		$this->assertArrayHasKey( 'title', $result );
+		$this->assertArrayHasKey( 'issues', $result );
 	}
 
 	// ─── seo-analyze-content ──────────────────────────────────────
