@@ -1846,9 +1846,16 @@ export default function SettingsApp() {
 										</h4>
 										<p className="description">
 											{ __(
-												'Enable richer internet search results by connecting a Brave Search API key. Without a key, the agent uses DuckDuckGo instant answers (free, no setup required). Get a free Brave Search API key at brave.com/search/api/',
+												'Enable richer internet search results by connecting a Brave Search API key. Without a key, the agent uses DuckDuckGo instant answers (free, no setup required). Get a free Brave Search API key at',
 												'gratis-ai-agent'
-											) }
+											) }{ ' ' }
+											<a
+												href="https://brave.com/search/api/"
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												brave.com/search/api/
+											</a>
 										</p>
 										{ braveConfigured && (
 											<Notice
