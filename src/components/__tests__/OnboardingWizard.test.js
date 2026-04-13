@@ -652,7 +652,11 @@ describe( 'OnboardingProviderRow rendering', () => {
 		} );
 
 		// Step 1 now directs users to the Connectors page instead of showing
-		// inline provider rows with Configured badges. Assert the link renders.
+		// inline provider rows with Configured badges. Assert the notice
+		// wrapper and the link inside it both render.
+		const notice = localContainer.querySelector( '[data-testid="notice"]' );
+		expect( notice ).not.toBeNull();
+
 		const connectorsLink = localContainer.querySelector(
 			'.gratis-ai-agent-wizard-connectors-link'
 		);
