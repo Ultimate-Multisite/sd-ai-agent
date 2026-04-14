@@ -107,6 +107,7 @@ class PluginInstaller {
 				);
 			}
 
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Writing AI-generated plugin files; WP_Filesystem requires initialization context not available in all callers.
 			$result = file_put_contents( $abs_path, $content );
 			if ( false === $result ) {
 				return new WP_Error(

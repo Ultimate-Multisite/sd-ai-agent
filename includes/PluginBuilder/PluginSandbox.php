@@ -99,6 +99,7 @@ class PluginSandbox {
 		foreach ( $php_files as $file ) {
 			$output    = [];
 			$exit_code = 0;
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec -- PHP syntax checking requires exec(); no WP alternative exists for subprocess execution.
 			exec( 'php -l ' . escapeshellarg( $file ) . ' 2>&1', $output, $exit_code );
 			if ( 0 !== $exit_code ) {
 				return new WP_Error(
@@ -139,8 +140,10 @@ class PluginSandbox {
 		}
 
 		// Build a tiny PHP script that attempts to include the plugin file.
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- var_export() here generates a PHP string literal for code, not a debug dump.
 		$test_php = '<?php @include_once ' . var_export( $main_file, true ) . '; echo "OK";';
 		$tmp_file = wp_tempnam( 'gratis_sandbox_' );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Writing temporary sandbox test file to a system temp path; WP_Filesystem is not suitable here.
 		file_put_contents( $tmp_file, $test_php );
 
 		$wp_path   = ABSPATH;
@@ -153,14 +156,16 @@ class PluginSandbox {
 			$cmd = $wp_cli . ' eval-file ' . escapeshellarg( $tmp_file )
 				. ' --skip-plugins --path=' . escapeshellarg( $wp_path )
 				. ' 2>&1';
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec -- Subprocess execution required for isolated plugin activation test; no WP alternative exists.
 			exec( $cmd, $output, $exit_code );
 		} else {
 			// WP-CLI not available — attempt a bare php subprocess instead.
 			$cmd = 'php ' . escapeshellarg( $tmp_file ) . ' 2>&1';
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec -- Fallback subprocess execution when WP-CLI is unavailable; no WP alternative exists.
 			exec( $cmd, $output, $exit_code );
 		}
 
-		@unlink( $tmp_file );
+		wp_delete_file( $tmp_file );
 
 		$output_str = implode( "\n", $output );
 
@@ -272,8 +277,8 @@ class PluginSandbox {
 			if ( get_transient( $transient_key ) ) {
 				deactivate_plugins( $plugin_file, true );
 				delete_transient( $transient_key );
-				// Log the auto-deactivation.
-				error_log( 'GratisAiAgent: Auto-deactivated plugin after fatal: ' . $plugin_file );
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional server-side logging of auto-deactivation events for admin diagnostics; not debug code.
+			error_log( 'GratisAiAgent: Auto-deactivated plugin after fatal: ' . $plugin_file );
 			}
 		}
 	}
@@ -321,6 +326,7 @@ class PluginSandbox {
 		foreach ( $candidates as $candidate ) {
 			$output    = [];
 			$exit_code = 0;
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec -- Detecting wp-cli binary location requires exec('which ...'); no WP alternative exists.
 			exec( 'which ' . escapeshellarg( $candidate ) . ' 2>/dev/null', $output, $exit_code );
 			if ( 0 === $exit_code && ! empty( $output[0] ) ) {
 				return trim( $output[0] );
