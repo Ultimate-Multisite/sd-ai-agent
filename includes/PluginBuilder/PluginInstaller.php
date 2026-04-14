@@ -163,10 +163,10 @@ class PluginInstaller {
 	/**
 	 * Update the status and sandbox result for a generated plugin record.
 	 *
-	 * @param int                  $id             Record ID.
-	 * @param string               $status         New status (installed, sandbox_passed, active, error).
-	 * @param array<string,mixed>  $sandbox_result Sandbox test result array.
-	 * @param string               $activation_error Error message if activation failed.
+	 * @param int                 $id             Record ID.
+	 * @param string              $status         New status (installed, sandbox_passed, active, error).
+	 * @param array<string,mixed> $sandbox_result Sandbox test result array.
+	 * @param string              $activation_error Error message if activation failed.
 	 * @return bool
 	 */
 	public static function update_status(
@@ -204,9 +204,11 @@ class PluginInstaller {
 		global $wpdb;
 		/** @var \wpdb $wpdb */
 
+		$table = self::table_name();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin lookup.
 		$row = $wpdb->get_row(
-			$wpdb->prepare( 'SELECT * FROM ' . self::table_name() . ' WHERE id = %d', $id ),
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table name is an internal constant, never user input.
+			$wpdb->prepare( "SELECT * FROM `{$table}` WHERE id = %d", $id ),
 			ARRAY_A
 		);
 
@@ -223,12 +225,11 @@ class PluginInstaller {
 		global $wpdb;
 		/** @var \wpdb $wpdb */
 
+		$table = self::table_name();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin listing.
 		$rows = $wpdb->get_results(
-			$wpdb->prepare(
-				'SELECT * FROM ' . self::table_name() . ' ORDER BY created_at DESC LIMIT %d',
-				$limit
-			),
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table name is an internal constant, never user input.
+			$wpdb->prepare( "SELECT * FROM `{$table}` ORDER BY created_at DESC LIMIT %d", $limit ),
 			ARRAY_A
 		);
 
