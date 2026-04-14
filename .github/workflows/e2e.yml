@@ -31,13 +31,13 @@ jobs:
         shard: [1, 2, 3]
         include:
           - wp: '6.9'
-            wp_env_port: '8888'
+            wp_env_port: '8890'
             wp_env_override: ''
             # 2 workers on WP 6.9: 3 workers cause resource contention that
             # manifests as login and SPA-render timeouts on CI runners.
             playwright_workers: '2'
           - wp: 'trunk'
-            wp_env_port: '8888'
+            wp_env_port: '8890'
             wp_env_override: '{"core":"WordPress/WordPress#master"}'
             # 2 workers on WP trunk: same resource contention as WP 6.9 —
             # 3 workers cause login and SPA-render timeouts on CI runners.
@@ -107,8 +107,8 @@ jobs:
         run: |
           ready=0
           for i in $(seq 1 30); do
-            if curl -s -o /dev/null -w "%{http_code}" http://localhost:8888/wp-login.php | grep -q "200"; then
-              echo "wp-env is ready"
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:${{ matrix.wp_env_port }}/wp-login.php | grep -q "200"; then
+              echo "wp-env is ready on port ${{ matrix.wp_env_port }}"
               ready=1
               break
             fi
@@ -116,7 +116,7 @@ jobs:
             sleep 5
           done
           if [ "$ready" -ne 1 ]; then
-            echo "wp-env did not become ready in time" >&2
+            echo "wp-env did not become ready in time on port ${{ matrix.wp_env_port }}" >&2
             exit 1
           fi
 
@@ -152,7 +152,7 @@ jobs:
       - name: Run Playwright E2E tests (shard ${{ matrix.shard }}/3)
         run: npx playwright test --shard=${{ matrix.shard }}/3
         env:
-          WP_BASE_URL: http://localhost:8888
+          WP_BASE_URL: http://localhost:${{ matrix.wp_env_port }}
           WP_ADMIN_USER: admin
           WP_ADMIN_PASSWORD: password
           CI: true

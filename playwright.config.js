@@ -47,8 +47,8 @@ module.exports = defineConfig( {
 		: [ [ 'list' ], [ 'html', { open: 'on-failure' } ] ],
 
 	use: {
-		/* wp-env default URL. */
-		baseURL: process.env.WP_BASE_URL || 'http://localhost:8888',
+		/* wp-env default URL — must match .wp-env.json "port" (8890). */
+		baseURL: process.env.WP_BASE_URL || 'http://localhost:8890',
 
 		/* Collect trace when retrying the failed test. */
 		trace: 'on-first-retry',

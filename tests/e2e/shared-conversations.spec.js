@@ -603,7 +603,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 			// Create an isolated context for the second admin.
 			// Pass baseURL so relative URLs in loginToWordPress/goToAgentPage work.
 			const secondContext = await browser.newContext( {
-				baseURL: process.env.WP_BASE_URL || 'http://localhost:8888',
+				baseURL: process.env.WP_BASE_URL || 'http://localhost:8890',
 			} );
 			const secondPage = await secondContext.newPage();
 
@@ -654,7 +654,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 			browser,
 		} ) => {
 			const secondContext = await browser.newContext( {
-				baseURL: process.env.WP_BASE_URL || 'http://localhost:8888',
+				baseURL: process.env.WP_BASE_URL || 'http://localhost:8890',
 			} );
 			const secondPage = await secondContext.newPage();
 
@@ -721,7 +721,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 			browser,
 		} ) => {
 			const secondContext = await browser.newContext( {
-				baseURL: process.env.WP_BASE_URL || 'http://localhost:8888',
+				baseURL: process.env.WP_BASE_URL || 'http://localhost:8890',
 			} );
 			const secondPage = await secondContext.newPage();
 
@@ -819,7 +819,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 			browser,
 		} ) => {
 			const secondContext = await browser.newContext( {
-				baseURL: process.env.WP_BASE_URL || 'http://localhost:8888',
+				baseURL: process.env.WP_BASE_URL || 'http://localhost:8890',
 			} );
 			const secondPage = await secondContext.newPage();
 
@@ -878,7 +878,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 			browser,
 		} ) => {
 			const secondContext = await browser.newContext( {
-				baseURL: process.env.WP_BASE_URL || 'http://localhost:8888',
+				baseURL: process.env.WP_BASE_URL || 'http://localhost:8890',
 			} );
 			const secondPage = await secondContext.newPage();
 

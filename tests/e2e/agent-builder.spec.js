@@ -139,7 +139,7 @@ const AGENT_FIXTURE_UPDATED = {
  *
  * wp-env uses the index.php?rest_route= format (pretty permalinks disabled),
  * so REST API paths appear URL-encoded in the URL string:
- *   http://localhost:8888/index.php?rest_route=%2Fgratis-ai-agent%2Fv1%2Fagents
+ *   http://localhost:8890/index.php?rest_route=%2Fgratis-ai-agent%2Fv1%2Fagents
  *
  * Playwright's page.route() regex matches against the raw (encoded) URL, so
  * literal-slash regexes like /gratis-ai-agent\/v1\/agents/ never match. Using
