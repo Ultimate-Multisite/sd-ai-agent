@@ -26,12 +26,354 @@ if ( ! defined( 'ABSPATH' ) ) {
 class PluginInstaller {
 
 	/**
+	 * Valid slug pattern: lowercase letters, digits, and hyphens only.
+	 */
+	private const SLUG_PATTERN = '/^[a-z0-9-]+$/';
+
+	/**
 	 * Get the generated plugins table name.
 	 *
 	 * @return string
 	 */
 	public static function table_name(): string {
 		return Database::generated_plugins_table_name();
+	}
+
+	/**
+	 * Validate that a relative file path is safe and resides inside the plugin directory.
+	 *
+	 * Checks:
+	 *  - Path is not empty.
+	 *  - Path contains no null bytes.
+	 *  - Path does not contain traversal sequences (../).
+	 *  - Resolved absolute path starts with WP_CONTENT_DIR/plugins/{slug}/.
+	 *
+	 * @param string $slug          Validated plugin slug.
+	 * @param string $relative_path Relative file path (relative to the plugin directory).
+	 * @return string|\WP_Error Normalised relative path on success, WP_Error on failure.
+	 */
+	public static function validate_plugin_path( string $slug, string $relative_path ): string|\WP_Error {
+		if ( '' === $relative_path ) {
+			return new WP_Error(
+				'gratis_ai_agent_empty_path',
+				__( 'File path must not be empty.', 'gratis-ai-agent' )
+			);
+		}
+
+		// Reject null bytes.
+		if ( str_contains( $relative_path, "\0" ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_invalid_path',
+				__( 'File path contains invalid characters.', 'gratis-ai-agent' )
+			);
+		}
+
+		// Reject explicit traversal sequences.
+		if ( str_contains( $relative_path, '../' ) || str_contains( $relative_path, '..' . DIRECTORY_SEPARATOR ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_path_traversal',
+				__( 'File path contains directory traversal sequences.', 'gratis-ai-agent' )
+			);
+		}
+
+		// Normalise: strip leading slashes and backslashes.
+		$normalised = ltrim( $relative_path, '/\\' );
+
+		// Strip redundant "{slug}/" prefix so callers need not be consistent about it.
+		if ( str_starts_with( $normalised, $slug . '/' ) ) {
+			$normalised = substr( $normalised, strlen( $slug ) + 1 );
+		}
+
+		if ( '' === $normalised ) {
+			return new WP_Error(
+				'gratis_ai_agent_empty_path',
+				__( 'File path resolves to an empty path after normalisation.', 'gratis-ai-agent' )
+			);
+		}
+
+		// Build the expected plugin directory path for boundary validation.
+		$plugin_dir = WP_CONTENT_DIR . '/plugins/' . $slug . '/';
+
+		// Ensure the plugin directory exists before using realpath.
+		if ( is_dir( $plugin_dir ) ) {
+			$real_plugin_dir = realpath( $plugin_dir );
+			if ( false !== $real_plugin_dir ) {
+				// Resolve what the final path would be (without the file existing yet).
+				$candidate     = $real_plugin_dir . '/' . $normalised;
+				$dir_candidate = dirname( $candidate );
+
+				// The parent directory must be inside the plugin directory.
+				if ( is_dir( $dir_candidate ) ) {
+					$real_dir = realpath( $dir_candidate );
+					if ( false !== $real_dir && ! str_starts_with( $real_dir . '/', $real_plugin_dir . '/' ) ) {
+						return new WP_Error(
+							'gratis_ai_agent_path_traversal',
+							__( 'File path escapes the plugin directory.', 'gratis-ai-agent' )
+						);
+					}
+				}
+			}
+		}
+
+		return $normalised;
+	}
+
+	/**
+	 * Install a single-file AI-generated plugin.
+	 *
+	 * Creates wp-content/plugins/{slug}/{slug}.php and records the plugin in the
+	 * generated_plugins table with status='installed'.
+	 *
+	 * @param string              $slug              Plugin slug (must match [a-z0-9-]).
+	 * @param string              $main_file_content Full PHP source of the main plugin file.
+	 * @param string              $description       Human-readable plugin description.
+	 * @param array<string,mixed> $plan              Implementation plan (stored as JSON).
+	 * @return array{id: int, plugin_dir: string, plugin_file: string}|\WP_Error
+	 */
+	public static function install_plugin(
+		string $slug,
+		string $main_file_content,
+		string $description,
+		array $plan
+	): array|\WP_Error {
+		if ( ! preg_match( self::SLUG_PATTERN, $slug ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_invalid_slug',
+				__( 'Plugin slug must contain only lowercase letters, digits, and hyphens.', 'gratis-ai-agent' )
+			);
+		}
+
+		$main_file = $slug . '.php';
+		$files     = [ $main_file => $main_file_content ];
+
+		return self::install(
+			$slug,
+			$files,
+			$description,
+			wp_json_encode( $plan ) ?: '',
+			$slug . '/' . $main_file
+		);
+	}
+
+	/**
+	 * Install a multi-file AI-generated plugin.
+	 *
+	 * Creates the full directory structure under wp-content/plugins/{slug}/ and
+	 * records the plugin in the generated_plugins table with status='installed'.
+	 * Path traversal protection is applied to every file path.
+	 * Redundant "{slug}/" prefixes in file paths are normalised automatically.
+	 *
+	 * @param string               $slug        Plugin slug (must match [a-z0-9-]).
+	 * @param array<string,string> $files       Map of relative path → PHP source.
+	 * @param string               $description Human-readable plugin description.
+	 * @param array<string,mixed>  $plan        Implementation plan (stored as JSON).
+	 * @return array{id: int, plugin_dir: string, plugin_file: string}|\WP_Error
+	 */
+	public static function install_complex_plugin(
+		string $slug,
+		array $files,
+		string $description,
+		array $plan
+	): array|\WP_Error {
+		if ( ! preg_match( self::SLUG_PATTERN, $slug ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_invalid_slug',
+				__( 'Plugin slug must contain only lowercase letters, digits, and hyphens.', 'gratis-ai-agent' )
+			);
+		}
+
+		if ( empty( $files ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_no_files',
+				__( 'No plugin files provided for installation.', 'gratis-ai-agent' )
+			);
+		}
+
+		// Validate all paths before touching the filesystem.
+		$normalised_files = [];
+		foreach ( $files as $relative_path => $content ) {
+			$validated = self::validate_plugin_path( $slug, $relative_path );
+			if ( is_wp_error( $validated ) ) {
+				return $validated;
+			}
+			$normalised_files[ $validated ] = $content;
+		}
+
+		// Derive the main plugin file: prefer "{slug}.php", otherwise first file.
+		$plugin_file_relative = $slug . '.php';
+		if ( ! isset( $normalised_files[ $plugin_file_relative ] ) ) {
+			$plugin_file_relative = array_key_first( $normalised_files );
+		}
+
+		return self::install(
+			$slug,
+			$normalised_files,
+			$description,
+			wp_json_encode( $plan ) ?: '',
+			$slug . '/' . $plugin_file_relative
+		);
+	}
+
+	/**
+	 * Update specific files in an existing AI-generated plugin.
+	 *
+	 * Writes new content for the given files and updates the 'files' column and
+	 * updated_at timestamp in the database record. Path traversal protection is
+	 * applied to every file path.
+	 *
+	 * @param string               $slug  Plugin slug.
+	 * @param array<string,string> $files Map of relative path → new PHP source.
+	 * @return array{updated: string[]}|\WP_Error
+	 */
+	public static function update_plugin_files( string $slug, array $files ): array|\WP_Error {
+		global $wpdb;
+		/** @var \wpdb $wpdb */
+
+		$slug = sanitize_title( $slug );
+		if ( empty( $slug ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_invalid_slug',
+				__( 'Plugin slug must not be empty.', 'gratis-ai-agent' )
+			);
+		}
+
+		if ( empty( $files ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_no_files',
+				__( 'No files provided for update.', 'gratis-ai-agent' )
+			);
+		}
+
+		$plugin_dir = WP_CONTENT_DIR . '/plugins/' . $slug . '/';
+		if ( ! is_dir( $plugin_dir ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_plugin_not_found',
+				/* translators: %s: plugin slug */
+				sprintf( __( 'Plugin directory not found for slug: %s', 'gratis-ai-agent' ), $slug )
+			);
+		}
+
+		// Validate all paths before touching the filesystem.
+		$normalised_files = [];
+		foreach ( $files as $relative_path => $content ) {
+			$validated = self::validate_plugin_path( $slug, $relative_path );
+			if ( is_wp_error( $validated ) ) {
+				return $validated;
+			}
+			$normalised_files[ $validated ] = $content;
+		}
+
+		// Write files using WP_Filesystem.
+		global $wp_filesystem;
+		/** @var \WP_Filesystem_Base $wp_filesystem */
+		if ( empty( $wp_filesystem ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+			WP_Filesystem();
+		}
+
+		$updated = [];
+		foreach ( $normalised_files as $relative_path => $content ) {
+			$abs_path = $plugin_dir . $relative_path;
+			wp_mkdir_p( dirname( $abs_path ) );
+
+			if ( ! $wp_filesystem->put_contents( $abs_path, $content, FS_CHMOD_FILE ) ) {
+				return new WP_Error(
+					'gratis_ai_agent_write_failed',
+					/* translators: %s: file path */
+					sprintf( __( 'Could not write file: %s', 'gratis-ai-agent' ), $relative_path )
+				);
+			}
+
+			$updated[] = $relative_path;
+		}
+
+		// Refresh the files list and updated_at in the DB record.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Update generated plugin record.
+		$wpdb->update(
+			self::table_name(),
+			[
+				'files'      => wp_json_encode( $updated ),
+				'updated_at' => current_time( 'mysql' ),
+			],
+			[ 'slug' => $slug ],
+			[ '%s', '%s' ],
+			[ '%s' ]
+		);
+
+		return [ 'updated' => $updated ];
+	}
+
+	/**
+	 * Delete an AI-generated plugin by slug.
+	 *
+	 * Deactivates the plugin if it is currently active, removes its directory
+	 * from disk, and deletes the database record. Only works on plugins that
+	 * have a record in gratis_ai_agent_generated_plugins (i.e. AI-generated).
+	 *
+	 * @param string $slug Plugin slug.
+	 * @return array{deleted: bool, deactivated: bool}|\WP_Error
+	 */
+	public static function delete_generated_plugin( string $slug ): array|\WP_Error {
+		global $wpdb;
+		/** @var \wpdb $wpdb */
+
+		$slug = sanitize_title( $slug );
+		if ( empty( $slug ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_invalid_slug',
+				__( 'Plugin slug must not be empty.', 'gratis-ai-agent' )
+			);
+		}
+
+		// Only delete plugins that are tracked in our database.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Table from trusted internal method.
+		$record = $wpdb->get_row(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name comes from internal method, not user input.
+			$wpdb->prepare( 'SELECT * FROM ' . self::table_name() . ' WHERE slug = %s LIMIT 1', $slug ),
+			ARRAY_A
+		);
+
+		if ( null === $record ) {
+			return new WP_Error(
+				'gratis_ai_agent_plugin_not_found',
+				/* translators: %s: plugin slug */
+				sprintf( __( 'No generated plugin record found for slug: %s', 'gratis-ai-agent' ), $slug )
+			);
+		}
+
+		// Deactivate if currently active.
+		$deactivated = false;
+		if ( ! empty( $record['plugin_file'] ) ) {
+			if ( ! function_exists( 'is_plugin_active' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+			$plugin_file_str = (string) $record['plugin_file'];
+			if ( is_plugin_active( $plugin_file_str ) ) {
+				deactivate_plugins( $plugin_file_str, true );
+				$deactivated = true;
+			}
+		}
+
+		// Remove directory from disk.
+		$plugin_dir = WP_CONTENT_DIR . '/plugins/' . $slug . '/';
+		if ( is_dir( $plugin_dir ) ) {
+			require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-base.php';
+			require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php';
+			$fs = new \WP_Filesystem_Direct( [] );
+			$fs->rmdir( $plugin_dir, true );
+		}
+
+		// Remove DB record.
+		$wpdb->delete(
+			self::table_name(),
+			[ 'slug' => $slug ],
+			[ '%s' ]
+		);
+
+		return [
+			'deleted'     => true,
+			'deactivated' => $deactivated,
+		];
 	}
 
 	/**
