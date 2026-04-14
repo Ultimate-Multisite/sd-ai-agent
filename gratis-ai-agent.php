@@ -57,6 +57,7 @@ use GratisAiAgent\Abilities\GoogleAnalyticsAbilities;
 use GratisAiAgent\Abilities\GscAbilities;
 use GratisAiAgent\Abilities\InternetSearchAbilities;
 use GratisAiAgent\Abilities\KnowledgeAbilities;
+use GratisAiAgent\Abilities\HookScannerAbilities;
 use GratisAiAgent\Abilities\PluginBuilderAbilities;
 use GratisAiAgent\Abilities\PluginDownloadAbilities;
 use GratisAiAgent\Abilities\MarketingAbilities;
@@ -359,8 +360,11 @@ GitAbilities::register();
 // Plugin download abilities (list modified plugins, get download URL).
 PluginDownloadAbilities::register();
 
-// Plugin builder abilities (AI-powered generation, sandboxing, activation, hook scanning).
+// Plugin builder abilities (AI-powered generation, sandboxing, activation).
 PluginBuilderAbilities::register();
+
+// Hook scanner abilities (scan-plugin-hooks, scan-theme-hooks).
+HookScannerAbilities::register();
 
 // Database query abilities (SELECT only).
 DatabaseAbilities::register();
