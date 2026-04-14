@@ -285,7 +285,10 @@ class SandboxTestPluginAbility extends AbstractAbility {
 				'layer1_passed' => [ 'type' => 'boolean' ],
 				'layer2_passed' => [ 'type' => 'boolean' ],
 				'layer3_passed' => [ 'type' => 'boolean' ],
-				'errors'        => [ 'type' => 'array', 'items' => [ 'type' => 'string' ] ],
+				'errors'        => [
+					'type'  => 'array',
+					'items' => [ 'type' => 'string' ],
+				],
 				'passed'        => [ 'type' => 'boolean' ],
 			],
 		];

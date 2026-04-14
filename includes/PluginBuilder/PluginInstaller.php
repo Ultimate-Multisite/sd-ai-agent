@@ -107,6 +107,7 @@ class PluginInstaller {
 				);
 			}
 
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Plugin installer writes generated PHP files; WP_Filesystem::put_contents is not available before the filesystem is initialised.
 			$result = file_put_contents( $abs_path, $content );
 			if ( false === $result ) {
 				return new WP_Error(
@@ -163,10 +164,10 @@ class PluginInstaller {
 	/**
 	 * Update the status and sandbox result for a generated plugin record.
 	 *
-	 * @param int                  $id             Record ID.
-	 * @param string               $status         New status (installed, sandbox_passed, active, error).
-	 * @param array<string,mixed>  $sandbox_result Sandbox test result array.
-	 * @param string               $activation_error Error message if activation failed.
+	 * @param int                 $id             Record ID.
+	 * @param string              $status         New status (installed, sandbox_passed, active, error).
+	 * @param array<string,mixed> $sandbox_result Sandbox test result array.
+	 * @param string              $activation_error Error message if activation failed.
 	 * @return bool
 	 */
 	public static function update_status(
@@ -206,10 +207,11 @@ class PluginInstaller {
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin lookup.
 		$row = $wpdb->get_row(
-			$wpdb->prepare( 'SELECT * FROM ' . self::table_name() . ' WHERE id = %d', $id ),
+			$wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', self::table_name(), $id ),
 			ARRAY_A
 		);
 
+		/** @var array<string, mixed>|null $row */
 		return $row ?? null;
 	}
 
@@ -226,12 +228,14 @@ class PluginInstaller {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin listing.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				'SELECT * FROM ' . self::table_name() . ' ORDER BY created_at DESC LIMIT %d',
+				'SELECT * FROM %i ORDER BY created_at DESC LIMIT %d',
+				self::table_name(),
 				$limit
 			),
 			ARRAY_A
 		);
 
+		/** @var array<int, array<string, mixed>> $rows */
 		return $rows ?: [];
 	}
 

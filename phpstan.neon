@@ -270,5 +270,11 @@ parameters:
 		# SimpleAiResult: str_replace subject is mixed from parsed JSON — always a string at runtime.
 		- message: '#\$subject of function str_replace expects array<string>\|string, mixed given#'
 		  identifier: argument.type
+		# PluginBuilderAbilities: $files is cast from request input (array<mixed, mixed>) but
+		# PluginUpdater::update() expects array<string, string>. Keys and values are always strings
+		# at runtime (JSON object with relative-path → PHP-source entries).
+		# Note: cannot use #2 in pattern (# is the PCRE delimiter); match on the variable name.
+		- message: '#\$new_files of static method GratisAiAgent\\PluginBuilder\\PluginUpdater::update\(\) expects array<string, string>, array<mixed, mixed> given#'
+		  identifier: argument.type
 
 
