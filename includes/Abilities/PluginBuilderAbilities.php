@@ -285,7 +285,10 @@ class SandboxTestPluginAbility extends AbstractAbility {
 				'layer1_passed' => [ 'type' => 'boolean' ],
 				'layer2_passed' => [ 'type' => 'boolean' ],
 				'layer3_passed' => [ 'type' => 'boolean' ],
-				'errors'        => [ 'type' => 'array', 'items' => [ 'type' => 'string' ] ],
+				'errors'        => [
+					'type'  => 'array',
+					'items' => [ 'type' => 'string' ],
+				],
 				'passed'        => [ 'type' => 'boolean' ],
 			],
 		];
@@ -412,20 +415,16 @@ class UpdatePluginSandboxedAbility extends AbstractAbility {
 		return [
 			'type'       => 'object',
 			'properties' => [
-				'slug'        => [
+				'slug'  => [
 					'type'        => 'string',
 					'description' => 'Plugin slug (directory name under wp-content/plugins/).',
 				],
-				'files'       => [
+				'files' => [
 					'type'        => 'object',
 					'description' => 'Map of relative file paths to new PHP source code.',
 				],
-				'plugin_file' => [
-					'type'        => 'string',
-					'description' => 'Main plugin file path relative to the plugins directory.',
-				],
 			],
-			'required'   => [ 'slug', 'files', 'plugin_file' ],
+			'required'   => [ 'slug', 'files' ],
 		];
 	}
 
@@ -441,9 +440,8 @@ class UpdatePluginSandboxedAbility extends AbstractAbility {
 	}
 
 	protected function execute_callback( $input ): array|\WP_Error {
-		$slug        = (string) ( $input['slug'] ?? '' );
-		$files       = (array) ( $input['files'] ?? [] );
-		$plugin_file = (string) ( $input['plugin_file'] ?? '' );
+		$slug  = (string) ( $input['slug'] ?? '' );
+		$files = (array) ( $input['files'] ?? [] );
 
 		if ( empty( $slug ) ) {
 			return new WP_Error( 'gratis_ai_agent_invalid_slug', __( 'slug is required.', 'gratis-ai-agent' ) );
@@ -451,11 +449,9 @@ class UpdatePluginSandboxedAbility extends AbstractAbility {
 		if ( empty( $files ) ) {
 			return new WP_Error( 'gratis_ai_agent_no_files', __( 'files must not be empty.', 'gratis-ai-agent' ) );
 		}
-		if ( empty( $plugin_file ) ) {
-			return new WP_Error( 'gratis_ai_agent_invalid_plugin_file', __( 'plugin_file is required.', 'gratis-ai-agent' ) );
-		}
 
-		return PluginUpdater::update( $slug, $files, $plugin_file );
+		/** @var array<string, string> $files */
+		return ( new PluginUpdater() )->update( $slug, $files );
 	}
 
 	protected function permission_callback( $input ): bool {
