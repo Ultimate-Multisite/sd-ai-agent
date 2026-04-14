@@ -86,6 +86,7 @@ class PluginUpdater {
 			$relative_path = ltrim( $relative_path, '/\\' );
 			$abs_path      = $stage_dir . $relative_path;
 			wp_mkdir_p( dirname( $abs_path ) );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Plugin updater writes generated PHP staging files; WP_Filesystem is not applicable here.
 			if ( false === file_put_contents( $abs_path, $content ) ) {
 				self::remove_directory( $stage_dir );
 				return new WP_Error(
@@ -115,6 +116,7 @@ class PluginUpdater {
 
 		// Step 4: Swap staged dir into original location.
 		self::remove_directory( $plugin_dir );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- Plugin updater atomically swaps a staging directory; WP_Filesystem::move() does not support directory renames.
 		$renamed = rename( $stage_dir, $plugin_dir );
 		if ( ! $renamed ) {
 			// Restore backup.

@@ -74,10 +74,11 @@ class HookScanner {
 	 * @return array{hooks: list<array{type: string, name: string, file: string, line: int}>}
 	 */
 	private static function scan_directory( string $dir ): array {
-		$hooks    = [];
+		$hooks     = [];
 		$php_files = self::find_php_files( $dir );
 
 		foreach ( $php_files as $file ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Scanning local plugin files on disk, not a remote URL.
 			$contents = file_get_contents( $file );
 			if ( false === $contents ) {
 				continue;
@@ -119,18 +120,18 @@ class HookScanner {
 	 * @return list<array{type: string, name: string, file: string, line: int}>
 	 */
 	private static function extract_hooks_from_source( string $source, string $file, string $base_dir ): array {
-		$hooks          = [];
-		$relative_file  = str_replace( $base_dir, '', $file );
-		$lines          = explode( "\n", $source );
+		$hooks         = [];
+		$relative_file = str_replace( $base_dir, '', $file );
+		$lines         = explode( "\n", $source );
 
 		// Map function names to hook types.
 		$function_map = [
-			'do_action'                => 'action',
-			'do_action_ref_array'      => 'action',
-			'apply_filters'            => 'filter',
-			'apply_filters_ref_array'  => 'filter',
-			'add_action'               => 'add_action',
-			'add_filter'               => 'add_filter',
+			'do_action'               => 'action',
+			'do_action_ref_array'     => 'action',
+			'apply_filters'           => 'filter',
+			'apply_filters_ref_array' => 'filter',
+			'add_action'              => 'add_action',
+			'add_filter'              => 'add_filter',
 		];
 
 		$function_list = implode( '|', array_keys( $function_map ) );
@@ -139,9 +140,9 @@ class HookScanner {
 		foreach ( $lines as $line_index => $line_content ) {
 			preg_match_all( $pattern, $line_content, $matches, PREG_SET_ORDER );
 			foreach ( $matches as $match ) {
-				$func        = $match['func'];
-				$hook_name   = $match['name'];
-				$hook_type   = $function_map[ $func ] ?? 'unknown';
+				$func      = $match['func'];
+				$hook_name = $match['name'];
+				$hook_type = $function_map[ $func ];
 
 				$hooks[] = [
 					'type' => $hook_type,
@@ -159,7 +160,7 @@ class HookScanner {
 	 * Find all PHP files in a directory recursively.
 	 *
 	 * @param string $dir Directory path.
-	 * @return string[]
+	 * @return list<string>
 	 */
 	private static function find_php_files( string $dir ): array {
 		$files    = [];
@@ -167,8 +168,12 @@ class HookScanner {
 			new \RecursiveDirectoryIterator( $dir, \RecursiveDirectoryIterator::SKIP_DOTS )
 		);
 		foreach ( $iterator as $file ) {
+			/** @var \SplFileInfo $file */
 			if ( $file->isFile() && 'php' === strtolower( $file->getExtension() ) ) {
-				$files[] = $file->getRealPath();
+				$real = $file->getRealPath();
+				if ( false !== $real ) {
+					$files[] = $real;
+				}
 			}
 		}
 		return $files;
