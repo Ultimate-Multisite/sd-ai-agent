@@ -8,14 +8,14 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Feedback consent modal.
  *
- * Shown when the user invokes /report-issue or other feedback triggers.
- * Lets the user review and optionally edit a description before sending a
- * report to the configured feedback endpoint via the server-side proxy.
+ * Shown when the user invokes /report-issue, clicks the thumbs-down button on
+ * an assistant message, or other feedback triggers. Lets the user review and
+ * optionally edit a description before sending a report to the configured
+ * feedback endpoint via the server-side proxy.
  *
- * Extensibility note: this component is intentionally minimal for the
- * initial implementation. The payload preview, environment summary, and
- * "Strip tool results" checkbox described in t182 can be added as additional
- * sections in the modal body without changing the props interface.
+ * When `messageIndex` and `sessionId` are provided (thumbs_down reports), the
+ * server extracts the surrounding 2 messages as context so the report captures
+ * the specific exchange the user flagged rather than the full conversation.
  *
  * @param {Object}   props                      - Component props.
  * @param {string}   props.reportType           - Type of report sent in the
@@ -23,12 +23,22 @@ import apiFetch from '@wordpress/api-fetch';
  *                                              'thumbs_down', 'self_reported', etc.
  * @param {string}   [props.userDescription=''] - Pre-filled description text.
  *                                              Editable by the user before sending.
+ * @param {number}   [props.messageIndex=-1]    - Index of the flagged message in
+ *                                              the session message array. Pass -1
+ *                                              (default) when not anchored to a
+ *                                              specific message.
+ * @param {number}   [props.sessionId=0]        - ID of the current session, used
+ *                                              together with messageIndex to fetch
+ *                                              surrounding context server-side.
+ *                                              Pass 0 (default) when not available.
  * @param {Function} props.onClose              - Called when the modal should close.
  * @return {JSX.Element} The feedback consent modal element.
  */
 export default function FeedbackConsentModal( {
 	reportType,
 	userDescription = '',
+	messageIndex = -1,
+	sessionId = 0,
 	onClose,
 } ) {
 	const [ description, setDescription ] = useState( userDescription );
@@ -72,6 +82,12 @@ export default function FeedbackConsentModal( {
 				data: {
 					report_type: reportType,
 					user_description: description,
+					// Included when the report is anchored to a specific message
+					// (e.g. thumbs_down). The server uses these to extract the
+					// surrounding context window from the session store.
+					...( sessionId > 0 && messageIndex >= 0
+						? { session_id: sessionId, message_index: messageIndex }
+						: {} ),
 				},
 			} );
 			setIsSent( true );
@@ -86,7 +102,7 @@ export default function FeedbackConsentModal( {
 			);
 			setIsSending( false );
 		}
-	}, [ reportType, description, onClose ] );
+	}, [ reportType, description, sessionId, messageIndex, onClose ] );
 
 	return (
 		<div className="gratis-ai-agent-shortcuts-overlay">

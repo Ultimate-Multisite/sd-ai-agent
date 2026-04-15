@@ -5,12 +5,13 @@ import { useState, useCallback, useRef, useEffect } from '@wordpress/element';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
-import { Icon, copy, pencil, redo, check } from '@wordpress/icons';
+import { Icon, copy, pencil, redo, check, thumbsDown } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import STORE_NAME from '../store';
+import FeedbackConsentModal from './feedback-consent-modal';
 
 /**
  * Per-message action buttons (Copy, Edit, Regenerate).
@@ -28,6 +29,7 @@ export default function MessageActions( { message, index } ) {
 	const [ copied, setCopied ] = useState( false );
 	const [ editing, setEditing ] = useState( false );
 	const [ editText, setEditText ] = useState( '' );
+	const [ thumbsDownOpen, setThumbsDownOpen ] = useState( false );
 	const editInputRef = useRef( null );
 
 	useEffect( () => {
@@ -37,10 +39,13 @@ export default function MessageActions( { message, index } ) {
 	}, [ editing ] );
 
 	const { regenerateMessage, editAndResend } = useDispatch( STORE_NAME );
-	const sending = useSelect(
-		( select ) => select( STORE_NAME ).isSending(),
-		[]
-	);
+	const { sending, currentSessionId } = useSelect( ( select ) => {
+		const store = select( STORE_NAME );
+		return {
+			sending: store.isSending(),
+			currentSessionId: store.getCurrentSessionId(),
+		};
+	}, [] );
 
 	const text = message.parts
 		?.filter( ( p ) => p.text )
@@ -110,41 +115,64 @@ export default function MessageActions( { message, index } ) {
 	const isModel = message.role === 'model';
 
 	return (
-		<div className="gratis-ai-agent-message-actions">
-			<Button
-				className="gratis-ai-agent-action-btn"
-				onClick={ handleCopy }
-				label={
-					copied
-						? __( 'Copied!', 'gratis-ai-agent' )
-						: __( 'Copy', 'gratis-ai-agent' )
-				}
-				showTooltip
-				icon={ <Icon icon={ copied ? check : copy } size={ 14 } /> }
-				size="small"
-			/>
-			{ isUser && (
+		<>
+			<div className="gratis-ai-agent-message-actions">
 				<Button
 					className="gratis-ai-agent-action-btn"
-					onClick={ handleEdit }
-					disabled={ sending }
-					label={ __( 'Edit message', 'gratis-ai-agent' ) }
+					onClick={ handleCopy }
+					label={
+						copied
+							? __( 'Copied!', 'gratis-ai-agent' )
+							: __( 'Copy', 'gratis-ai-agent' )
+					}
 					showTooltip
-					icon={ <Icon icon={ pencil } size={ 14 } /> }
+					icon={ <Icon icon={ copied ? check : copy } size={ 14 } /> }
 					size="small"
 				/>
-			) }
-			{ isModel && (
-				<Button
-					className="gratis-ai-agent-action-btn"
-					onClick={ () => regenerateMessage( index ) }
-					disabled={ sending }
-					label={ __( 'Regenerate', 'gratis-ai-agent' ) }
-					showTooltip
-					icon={ <Icon icon={ redo } size={ 14 } /> }
-					size="small"
+				{ isUser && (
+					<Button
+						className="gratis-ai-agent-action-btn"
+						onClick={ handleEdit }
+						disabled={ sending }
+						label={ __( 'Edit message', 'gratis-ai-agent' ) }
+						showTooltip
+						icon={ <Icon icon={ pencil } size={ 14 } /> }
+						size="small"
+					/>
+				) }
+				{ isModel && (
+					<>
+						<Button
+							className="gratis-ai-agent-action-btn"
+							onClick={ () => regenerateMessage( index ) }
+							disabled={ sending }
+							label={ __( 'Regenerate', 'gratis-ai-agent' ) }
+							showTooltip
+							icon={ <Icon icon={ redo } size={ 14 } /> }
+							size="small"
+						/>
+						<Button
+							className="gratis-ai-agent-action-btn gratis-ai-agent-action-btn--thumbs-down"
+							onClick={ () => setThumbsDownOpen( true ) }
+							label={ __(
+								'Report issue with this response',
+								'gratis-ai-agent'
+							) }
+							showTooltip
+							icon={ <Icon icon={ thumbsDown } size={ 14 } /> }
+							size="small"
+						/>
+					</>
+				) }
+			</div>
+			{ thumbsDownOpen && (
+				<FeedbackConsentModal
+					reportType="thumbs_down"
+					messageIndex={ index }
+					sessionId={ currentSessionId }
+					onClose={ () => setThumbsDownOpen( false ) }
 				/>
 			) }
-		</div>
+		</>
 	);
 }

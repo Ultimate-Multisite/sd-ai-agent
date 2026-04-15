@@ -81,6 +81,7 @@ class RestController {
 		ToolController::register_routes();
 		ChangesController::register_routes();
 		AgentController::register_routes();
+		FeedbackController::register_routes();
 
 		$instance = new self();
 
