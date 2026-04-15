@@ -370,7 +370,7 @@ Phase 1 (receiving plugin) complete — shipped to Ultimate-Multisite/gratis-ai-
   - Model on existing `/remember` and `/forget` slash command handling in the same file
   - Verify: type `/report-issue something broke` in chat input, verify modal opens with description pre-filled
 
-- [ ] t185 report-inability ability: agent self-flags when it cannot complete a task #feature #auto-dispatch ~2h logged:2026-04-14 blocked-by:t181
+- [x] t185 report-inability ability: agent self-flags when it cannot complete a task #feature #auto-dispatch ~2h logged:2026-04-14 blocked-by:t181 pr:#948 completed:2026-04-15
   - NEW: includes/Abilities/FeedbackAbilities.php — single ability `report-inability` with schema: { reason: string, attempted_steps: string[] }
   - Ability handler: sets a session-level flag (transient or session meta) that the frontend reads on next poll
   - EDIT: gratis-ai-agent.php — register the new abilities class
