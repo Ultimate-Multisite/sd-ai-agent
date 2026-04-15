@@ -52,9 +52,9 @@ class FeedbackController {
 						'sanitize_callback' => 'absint',
 					),
 					'strip_tool_results' => array(
-						'required'          => false,
-						'type'              => 'boolean',
-						'default'           => false,
+						'required' => false,
+						'type'     => 'boolean',
+						'default'  => false,
 					),
 					'message_index'      => array(
 						'required'          => false,
@@ -91,9 +91,9 @@ class FeedbackController {
 						'sanitize_callback' => 'absint',
 					),
 					'strip_tool_results' => array(
-						'required'          => false,
-						'type'              => 'boolean',
-						'default'           => false,
+						'required' => false,
+						'type'     => 'boolean',
+						'default'  => false,
 					),
 					'message_index'      => array(
 						'required'          => false,

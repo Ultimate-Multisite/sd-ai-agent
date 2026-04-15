@@ -64,7 +64,9 @@ class ReportBuilder {
 			return null;
 		}
 
-		$messages   = json_decode( $session->messages ?? '[]', true ) ?: [];
+		/** @var array<int, array<string, mixed>> $messages */
+		$messages = json_decode( $session->messages ?? '[]', true ) ?: [];
+		/** @var array<int, array<string, mixed>> $tool_calls */
 		$tool_calls = json_decode( $session->tool_calls ?? '[]', true ) ?: [];
 
 		// Scope to a context window around the target message when requested (t186).
@@ -81,16 +83,16 @@ class ReportBuilder {
 			'report_type'      => $report_type,
 			'user_description' => $user_description,
 			'session'          => array(
-				'id'               => $session_id,
-				'title'            => $session->title ?? '',
-				'provider_id'      => $session->provider_id ?? '',
-				'model_id'         => $session->model_id ?? '',
-				'prompt_tokens'    => (int) ( $session->prompt_tokens ?? 0 ),
+				'id'                => $session_id,
+				'title'             => $session->title ?? '',
+				'provider_id'       => $session->provider_id ?? '',
+				'model_id'          => $session->model_id ?? '',
+				'prompt_tokens'     => (int) ( $session->prompt_tokens ?? 0 ),
 				'completion_tokens' => (int) ( $session->completion_tokens ?? 0 ),
-				'messages'         => $messages,
-				'tool_calls'       => $tool_calls,
-				'message_count'    => count( $messages ),
-				'tool_call_count'  => count( $tool_calls ),
+				'messages'          => $messages,
+				'tool_calls'        => $tool_calls,
+				'message_count'     => count( $messages ),
+				'tool_call_count'   => count( $tool_calls ),
 			),
 			'environment'      => self::collect_environment(),
 			'generated_at'     => gmdate( 'c' ),
@@ -113,7 +115,9 @@ class ReportBuilder {
 			return null;
 		}
 
-		$messages   = json_decode( $session->messages ?? '[]', true ) ?: [];
+		/** @var array<int, array<string, mixed>> $messages */
+		$messages = json_decode( $session->messages ?? '[]', true ) ?: [];
+		/** @var array<int, array<string, mixed>> $tool_calls */
 		$tool_calls = json_decode( $session->tool_calls ?? '[]', true ) ?: [];
 
 		// Scope message count to the context window when a specific message is targeted.
@@ -151,9 +155,9 @@ class ReportBuilder {
 		);
 
 		// Site URL: scheme + host only, no path.
-		$site_url     = get_site_url();
-		$parsed       = wp_parse_url( $site_url );
-		$site_host    = ( $parsed['scheme'] ?? 'https' ) . '://' . ( $parsed['host'] ?? '' );
+		$site_url  = get_site_url();
+		$parsed    = wp_parse_url( $site_url );
+		$site_host = ( $parsed['scheme'] ?? 'https' ) . '://' . ( $parsed['host'] ?? '' );
 
 		return array(
 			'wp_version'     => get_bloginfo( 'version' ),
