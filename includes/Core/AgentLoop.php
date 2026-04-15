@@ -921,23 +921,22 @@ class AgentLoop {
 			}
 
 			// 2. No explicit permission — use annotation-based classification.
-			// Look up the ability's readonly annotation.
 			$ability = $all_abilities[ $ability_name ] ?? null;
 
 			if ( null !== $ability ) {
 				$classification = self::classify_ability( $ability );
 
-				if ( 'write' === $classification ) {
+				if ( 'destructive' === $classification ) {
 					$confirm[] = array(
 						'id'   => $call->getId(),
 						'name' => $fn_name,
 						'args' => $call->getArgs(),
 					);
 				}
-				// 'read' → auto-execute.
-			} elseif ( null === $ability ) {
-				// If ability not found in registry (e.g. custom tool), default to
-				// requiring confirmation for safety.
+				// 'read' and 'write' → auto-execute.
+			} else {
+				// Ability not found in registry (e.g. custom tool) — default
+				// to requiring confirmation for safety.
 				$confirm[] = array(
 					'id'   => $call->getId(),
 					'name' => $fn_name,
@@ -1312,28 +1311,45 @@ class AgentLoop {
 	}
 
 	/**
-	 * Classify an ability as 'read' or 'write' based on its meta annotations.
+	 * Classify an ability as 'read', 'write', or 'destructive' based on its
+	 * meta annotations.
 	 *
-	 * Uses the WordPress Abilities API `readonly` annotation:
-	 * - readonly=true  → 'read' (auto-execute, no confirmation needed)
-	 * - readonly=false → 'write' (needs confirmation unless always-allowed)
-	 * - readonly=null  → 'write' (default to safe — require confirmation)
+	 * Uses the WordPress Abilities API annotations:
+	 * - readonly=true                → 'read'        (auto-execute)
+	 * - destructive=false            → 'write'       (safe write, auto-execute)
+	 * - destructive=true             → 'destructive' (needs confirmation)
+	 * - destructive=null & !readonly → 'destructive' (unknown risk, confirm)
+	 *
+	 * The confirmation dialog in get_tools_needing_confirmation() only fires
+	 * for 'destructive'. Both 'read' and 'write' auto-execute. This means
+	 * non-destructive writes (saving a memory, creating a post, installing a
+	 * plugin) proceed immediately while destructive operations (deletions,
+	 * resets) still require user approval.
 	 *
 	 * @param \WP_Ability $ability The ability to classify.
-	 * @return string 'read' or 'write'.
+	 * @return string 'read', 'write', or 'destructive'.
 	 */
 	public static function classify_ability( \WP_Ability $ability ): string {
-		$meta = $ability->get_meta();
+		$meta        = $ability->get_meta();
+		$annotations = ( isset( $meta['annotations'] ) && is_array( $meta['annotations'] ) )
+			? $meta['annotations']
+			: array();
 
-		// Check the annotations.readonly field.
-		if ( isset( $meta['annotations'] ) && is_array( $meta['annotations'] ) ) {
-			if ( true === ( $meta['annotations']['readonly'] ?? null ) ) {
-				return 'read';
-			}
+		$readonly    = $annotations['readonly'] ?? null;
+		$destructive = $annotations['destructive'] ?? null;
+
+		// Explicitly read-only → always auto-execute.
+		if ( true === $readonly ) {
+			return 'read';
 		}
 
-		// Default to 'write' — safe by default.
-		return 'write';
+		// Explicitly non-destructive → safe write, auto-execute.
+		if ( false === $destructive ) {
+			return 'write';
+		}
+
+		// Destructive or unknown → require confirmation.
+		return 'destructive';
 	}
 
 	/**

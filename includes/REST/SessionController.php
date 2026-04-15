@@ -1323,6 +1323,11 @@ class SessionController {
 				$result = $loop->run();
 			}
 		} catch ( \Throwable $e ) {
+			// Log the full exception so stdClass and similar runtime errors
+			// are visible in debug.log instead of silently swallowed.
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( '[Gratis AI Agent] AgentLoop error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString() );
+
 			$job['status'] = 'error';
 			$job['error']  = $e->getMessage();
 			unset( $job['token'] );

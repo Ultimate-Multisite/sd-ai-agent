@@ -111,6 +111,11 @@ class AbilityFunctionResolver extends \WP_AI_Client_Ability_Function_Resolver {
 			$args = array();
 		}
 
+		// Recursively convert stdClass objects to associative arrays.
+		// The AI client library may decode JSON function-call arguments
+		// as stdClass objects, but abilities expect plain PHP arrays.
+		$args = self::normalize_args( $args );
+
 		// @phpstan-ignore-next-line — execute() exists at runtime in WP 7.0.
 		$result = $ability->execute( $args );
 
@@ -166,5 +171,25 @@ class AbilityFunctionResolver extends \WP_AI_Client_Ability_Function_Resolver {
 		ModelHealthTracker::record_success();
 
 		return new FunctionResponse( $function_id, $function_name, $result );
+	}
+
+	/**
+	 * Recursively convert stdClass objects to associative arrays.
+	 *
+	 * AI provider JSON decoders may return nested stdClass objects for
+	 * function-call arguments. WordPress abilities expect plain arrays.
+	 *
+	 * @param array<string, mixed> $args Function call arguments.
+	 * @return array<string, mixed> Normalized arguments with all stdClass converted.
+	 */
+	private static function normalize_args( array $args ): array {
+		foreach ( $args as $key => $value ) {
+			if ( $value instanceof \stdClass ) {
+				$args[ $key ] = self::normalize_args( (array) $value );
+			} elseif ( is_array( $value ) ) {
+				$args[ $key ] = self::normalize_args( $value );
+			}
+		}
+		return $args;
 	}
 }
