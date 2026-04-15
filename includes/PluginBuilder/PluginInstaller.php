@@ -107,7 +107,7 @@ class PluginInstaller {
 				);
 			}
 
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Writing AI-generated plugin files; WP_Filesystem requires initialization context not available in all callers.
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Plugin installer writes generated PHP files; WP_Filesystem::put_contents is not available before the filesystem is initialised.
 			$result = file_put_contents( $abs_path, $content );
 			if ( false === $result ) {
 				return new WP_Error(
@@ -205,14 +205,13 @@ class PluginInstaller {
 		global $wpdb;
 		/** @var \wpdb $wpdb */
 
-		$table = self::table_name();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin lookup.
 		$row = $wpdb->get_row(
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table name is an internal constant, never user input.
-			$wpdb->prepare( "SELECT * FROM `{$table}` WHERE id = %d", $id ),
+			$wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', self::table_name(), $id ),
 			ARRAY_A
 		);
 
+		/** @var array<string, mixed>|null $row */
 		return $row ?? null;
 	}
 
@@ -226,14 +225,17 @@ class PluginInstaller {
 		global $wpdb;
 		/** @var \wpdb $wpdb */
 
-		$table = self::table_name();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin listing.
 		$rows = $wpdb->get_results(
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table name is an internal constant, never user input.
-			$wpdb->prepare( "SELECT * FROM `{$table}` ORDER BY created_at DESC LIMIT %d", $limit ),
+			$wpdb->prepare(
+				'SELECT * FROM %i ORDER BY created_at DESC LIMIT %d',
+				self::table_name(),
+				$limit
+			),
 			ARRAY_A
 		);
 
+		/** @var array<int, array<string, mixed>> $rows */
 		return $rows ?: [];
 	}
 

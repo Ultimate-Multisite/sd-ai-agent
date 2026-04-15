@@ -78,7 +78,7 @@ class HookScanner {
 		$php_files = self::find_php_files( $dir );
 
 		foreach ( $php_files as $file ) {
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading a local PHP file, not a remote URL. wp_remote_get() is for HTTP requests only.
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading a local PHP file on disk, not a remote URL. wp_remote_get() is for HTTP requests only.
 			$contents = file_get_contents( $file );
 			if ( false === $contents ) {
 				continue;

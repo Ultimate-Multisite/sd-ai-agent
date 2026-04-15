@@ -278,8 +278,10 @@ parameters:
 		# keys are always strings and rows are always arrays at runtime.
 		- message: '#Method GratisAiAgent\\PluginBuilder\\PluginInstaller::list\(\) should return array<int, array<string, mixed>> but returns list<array<mixed>>#'
 		  identifier: return.type
-		# PluginUpdater::update() called from ability execute_callback with $files cast from mixed;
-		# keys and values are always strings at runtime (JSON file map from AI response).
-		- message: '#expects array<string, string>, array<mixed, mixed> given#'
+		# PluginBuilderAbilities: $files is cast from request input (array<mixed, mixed>) but
+		# PluginUpdater::update() expects array<string, string>. Keys and values are always strings
+		# at runtime (JSON object with relative-path → PHP-source entries).
+		# Note: cannot use #2 in pattern (# is the PCRE delimiter); match on the variable name.
+		- message: '#\$new_files of static method GratisAiAgent\\PluginBuilder\\PluginUpdater::update\(\) expects array<string, string>, array<mixed, mixed> given#'
 		  identifier: argument.type
 

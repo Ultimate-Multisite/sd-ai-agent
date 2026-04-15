@@ -167,9 +167,8 @@ class GeneratePluginAbility extends AbstractAbility {
 
 	protected function execute_callback( $input ): array|\WP_Error {
 		$description = (string) ( $input['description'] ?? '' );
-		$slug        = (string) ( $input['slug'] ?? '' );
+		$slug_input  = (string) ( $input['slug'] ?? '' );
 		$install     = isset( $input['install'] ) ? (bool) $input['install'] : true;
-		$model_id    = $this->get_configured_model();
 
 		if ( empty( $description ) ) {
 			return new WP_Error(
@@ -178,27 +177,28 @@ class GeneratePluginAbility extends AbstractAbility {
 			);
 		}
 
-		// Generate slug from description if not provided.
-		if ( empty( $slug ) ) {
-			$slug = sanitize_title( wp_trim_words( $description, 5, '' ) );
+		// Step 1: Generate structured plan (returns an array, not text).
+		$plan = PluginGenerator::generate_plan( $description );
+		if ( is_wp_error( $plan ) ) {
+			return $plan;
 		}
 
-		// Step 1: Generate plan.
-		$plan_result = PluginGenerator::generate_plan( $description, $model_id );
-		if ( is_wp_error( $plan_result ) ) {
-			return $plan_result;
+		// Override slug if the caller provided an explicit one.
+		if ( ! empty( $slug_input ) ) {
+			$plan['slug'] = sanitize_title( $slug_input );
 		}
-		$plan = $plan_result['plan'];
 
-		// Step 2: Generate code.
-		$code_result = PluginGenerator::generate_code( $description, $plan, $slug, $model_id );
+		// Step 2: Generate code file-by-file respecting dependency order.
+		$code_result = PluginGenerator::generate_code( $plan );
 		if ( is_wp_error( $code_result ) ) {
 			return $code_result;
 		}
 
-		$files       = $code_result['files'];
-		$plugin_file = $code_result['plugin_file'];
-		$slug        = $code_result['slug'];
+		$files = $code_result['files'];
+		$plan  = $code_result['plan'];
+		$slug  = $plan['slug'];
+
+		$plugin_file = PluginGenerator::detect_main_file( $files, $slug );
 
 		$result = [
 			'plan'        => $plan,
@@ -215,7 +215,7 @@ class GeneratePluginAbility extends AbstractAbility {
 				$slug,
 				$files,
 				$description,
-				$plan,
+				(string) wp_json_encode( $plan ),
 				$plugin_file
 			);
 			if ( is_wp_error( $install_result ) ) {
