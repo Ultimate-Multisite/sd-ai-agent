@@ -90,7 +90,9 @@ export default function SettingsApp() {
 	const [ hasScrollRight, setHasScrollRight ] = useState( false );
 
 	// Tabs that manage their own save actions — hide the global Save Settings button.
-	const SELF_SAVING_TABS = [ 'access-branding', 'provider-trace' ];
+	// Note: 'access-branding' was removed from this list because BrandingManager
+	// does not have its own save button — it uses the global Save Settings button.
+	const selfSavingTabs = [ 'provider-trace' ];
 
 	// Google Analytics integration state.
 	const [ gaPropertyId, setGaPropertyId ] = useState( '' );
@@ -1114,6 +1116,10 @@ export default function SettingsApp() {
 													<td>
 														<RangeControl
 															id="gratis-budget-warning-threshold"
+															label={ __(
+																'Warning Threshold (%)',
+																'gratis-ai-agent'
+															) }
 															value={
 																local.budget_warning_threshold ??
 																80
@@ -2202,7 +2208,7 @@ export default function SettingsApp() {
 					} }
 				</TabPanel>
 			</div>
-			{ ! SELF_SAVING_TABS.includes( activeTab ) && (
+			{ ! selfSavingTabs.includes( activeTab ) && (
 				<div className="gratis-ai-agent-settings-actions">
 					<Button
 						variant="primary"

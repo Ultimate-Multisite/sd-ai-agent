@@ -117,42 +117,99 @@ async function injectTtsMock( page ) {
 }
 
 /**
- * Intercept the stream endpoint and return a minimal SSE response with a
- * single AI token so the store completes the message and TTS can fire.
+ * Intercept the agent job endpoints so the store completes the message and
+ * TTS can fire.
+ *
+ * The store uses POST /run (returns a job_id) + GET /job/:id polling.
+ * We intercept both, plus GET /sessions/:id so the session reload delivers
+ * the AI reply to the store and TTS fires once the response is in messages.
+ *
+ * Approach mirrors chat-interactions.spec.js:
+ *   1. Capture session_id from the POST /run body.
+ *   2. Return session_id in the GET /job/:id completion payload so the store
+ *      follows the session-reload code path (not local-append).
+ *   3. Intercept GET /sessions/:id to return a synthetic session that already
+ *      contains the AI reply — since the real PHP worker never ran, the DB
+ *      only has the user message and the reload would otherwise overwrite
+ *      messages with an empty assistant turn.
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  */
 async function interceptStream( page ) {
-	await page.route( /gratis-ai-agent\/v1\/stream/, async ( route ) => {
-		let sessionId = 1;
+	// Track the session_id created by the store before POST /run fires.
+	let capturedSessionId = null;
+
+	// Intercept POST /run — capture session_id from the request body and
+	// return a synthetic job_id.
+	// Use a predicate function instead of a regex because wp-env uses plain
+	// permalinks (?rest_route=%2F...) where slashes are URL-encoded.
+	await page.route(
+		( url ) => decodeURIComponent( url.toString() ).includes( 'gratis-ai-agent/v1/run' ),
+		async ( route ) => {
 		try {
 			const postBody = route.request().postDataJSON();
 			if ( postBody?.session_id ) {
-				sessionId = postBody.session_id;
+				capturedSessionId = postBody.session_id;
 			}
 		} catch {
-			// Fall back to 1 if body is not JSON.
+			// Ignore parse failures — capturedSessionId stays null, triggering
+			// the local-append fallback path in pollJob.
 		}
-
-		const sseBody = [
-			'event: token',
-			`data: ${ JSON.stringify( { token: 'Hello from the AI!' } ) }`,
-			'',
-			'event: done',
-			`data: ${ JSON.stringify( { session_id: sessionId } ) }`,
-			'',
-			'',
-		].join( '\n' );
-
 		await route.fulfill( {
 			status: 200,
-			headers: {
-				'Content-Type': 'text/event-stream',
-				'Cache-Control': 'no-cache',
-			},
-			body: sseBody,
+			contentType: 'application/json',
+			body: JSON.stringify( { job_id: 'e2e-tts-job-1' } ),
 		} );
 	} );
+
+	// Intercept GET /job/:id — return complete with session_id so the store
+	// attempts a session reload (intercepted below to include the AI reply).
+	await page.route(
+		( url ) => decodeURIComponent( url.toString() ).includes( 'gratis-ai-agent/v1/job/' ),
+		async ( route ) => {
+		await route.fulfill( {
+			status: 200,
+			contentType: 'application/json',
+			body: JSON.stringify( {
+				status: 'complete',
+				session_id: capturedSessionId,
+				reply: 'Hello from the AI!',
+			} ),
+		} );
+	} );
+
+	// Intercept GET /sessions/:id — return a synthetic session that already
+	// contains both the user message and the AI reply. Without this, the store
+	// would load the real DB session (which has no AI reply since /run was
+	// mocked) and overwrite messages, leaving the last message as 'user' so
+	// the TTS effect's role check (`lastMsg.role !== 'model'`) returns early.
+	await page.route(
+		( url ) => {
+			const decoded = decodeURIComponent( url.toString() );
+			// Match /sessions/:id but not sub-paths like /sessions/:id/export.
+			// Use [?&#] instead of $ because apiFetch appends query params
+			// (e.g. &_locale=user) after the ID — a bare $ never matches in
+			// wp-env's plain-permalink URLs (?rest_route=...&_locale=user).
+			return /gratis-ai-agent\/v1\/sessions\/\d+(?:[?&#]|$)/.test( decoded );
+		},
+		async ( route ) => {
+			await route.fulfill( {
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify( {
+					id: capturedSessionId,
+					messages: [
+						{ role: 'user', parts: [ { text: 'Hello' } ] },
+						{
+							role: 'model',
+							parts: [ { text: 'Hello from the AI!' } ],
+						},
+					],
+					tool_calls: [],
+				} ),
+			} );
+		}
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -240,49 +297,49 @@ test.describe( 'TTS Settings Tab', () => {
 	test.beforeEach( async ( { page } ) => {
 		await injectTtsMock( page );
 		await loginToWordPress( page );
-		await goToSettingsPage( page );
+		// TTS settings live inside the General tab of the Settings page.
+		// There is no separate "Text-to-Speech" tab — the section is rendered
+		// as part of the General tab content under a "Text-to-Speech" heading.
+		await goToSettingsPage( page, 'general' );
+		// Wait for settings to finish loading so the TTS section is rendered.
+		await page
+			.locator( '.gratis-ai-agent-settings-loading' )
+			.waitFor( { state: 'hidden', timeout: 15_000 } );
 	} );
 
-	test( 'Text-to-Speech tab is present in settings', async ( { page } ) => {
-		const ttsTab = page.getByRole( 'tab', {
-			name: /text-to-speech/i,
-		} );
-		await expect( ttsTab ).toBeVisible();
-	} );
-
-	test( 'TTS enable toggle is visible in the Text-to-Speech settings tab', async ( {
+	test( 'Text-to-Speech settings are present in the General tab', async ( {
 		page,
 	} ) => {
-		// Click the TTS tab.
-		const ttsTab = page.getByRole( 'tab', {
+		// TTS settings are rendered under a "Text-to-Speech" section heading
+		// inside the General tab — there is no dedicated TTS tab.
+		const ttsHeading = page.getByRole( 'heading', {
 			name: /text-to-speech/i,
 		} );
-		await ttsTab.click();
-		await page.waitForLoadState( 'networkidle' );
+		await expect( ttsHeading ).toBeVisible();
+	} );
 
-		// The ToggleControl for "Enable Text-to-Speech" should be visible.
+	test( 'TTS enable toggle is visible in the Text-to-Speech settings section', async ( {
+		page,
+	} ) => {
+		// The ToggleControl for TTS auto-speak should be visible.
 		// WordPress ToggleControl renders a <label> containing the label text.
-		const ttsToggleLabel = page.getByText( 'Enable Text-to-Speech', {
-			exact: false,
-		} );
+		// The actual label is "Read AI responses aloud automatically".
+		const ttsToggleLabel = page.getByText(
+			'Read AI responses aloud automatically',
+			{ exact: false }
+		);
 		await expect( ttsToggleLabel ).toBeVisible();
 	} );
 
 	test( 'enabling TTS in settings persists the toggle state', async ( {
 		page,
 	} ) => {
-		// Click the TTS tab.
-		const ttsTab = page.getByRole( 'tab', {
-			name: /text-to-speech/i,
-		} );
-		await ttsTab.click();
-		await page.waitForLoadState( 'networkidle' );
-
-		// Find the toggle input for "Enable Text-to-Speech".
+		// Find the toggle input for the TTS auto-speak setting.
 		// WordPress ToggleControl renders a checkbox input inside a label.
+		// The actual label is "Read AI responses aloud automatically".
 		const ttsToggle = page
 			.locator( '.components-toggle-control' )
-			.filter( { hasText: 'Enable Text-to-Speech' } )
+			.filter( { hasText: 'Read AI responses aloud automatically' } )
 			.locator( 'input[type="checkbox"]' );
 
 		const wasChecked = await ttsToggle.isChecked();
