@@ -186,7 +186,11 @@ async function interceptStream( page ) {
 	await page.route(
 		( url ) => {
 			const decoded = decodeURIComponent( url.toString() );
-			return /gratis-ai-agent\/v1\/sessions\/\d+$/.test( decoded );
+			// Match /sessions/:id but not sub-paths like /sessions/:id/export.
+			// Use [?&#] instead of $ because apiFetch appends query params
+			// (e.g. &_locale=user) after the ID — a bare $ never matches in
+			// wp-env's plain-permalink URLs (?rest_route=...&_locale=user).
+			return /gratis-ai-agent\/v1\/sessions\/\d+(?:[?&#]|$)/.test( decoded );
 		},
 		async ( route ) => {
 			await route.fulfill( {
