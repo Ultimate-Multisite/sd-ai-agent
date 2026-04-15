@@ -8,6 +8,8 @@ declare(strict_types=1);
  *   - scan_plugin(): non-existent plugin → WP_Error
  *   - scan_plugin(): valid plugin → extracts do_action/apply_filters/add_action/add_filter
  *   - scan_plugin(): dynamic (variable) hook names are not matched
+ *   - scan_plugin(): vendor/ subdirectory is skipped
+ *   - scan_plugin(): node_modules/ subdirectory is skipped
  *   - scan_theme(): non-existent theme → WP_Error
  *   - scan_theme(): valid theme → extracts hooks
  *   - Multiple hooks per file and multi-file plugins
@@ -363,5 +365,67 @@ class HookScannerTest extends WP_UnitTestCase {
 
 		$names = array_column( $result['hooks'], 'name' );
 		$this->assertContains( 'theme_custom_hook', $names );
+	}
+
+	// ─── Directory exclusion ─────────────────────────────────────────
+
+	/**
+	 * Files inside a vendor/ subdirectory are skipped during scan.
+	 *
+	 * Prevents third-party library hooks from polluting the results.
+	 */
+	public function test_scan_plugin_skips_vendor_directory(): void {
+		$slug = 'test-hook-scanner-vendor-' . uniqid( '', true );
+		$dir  = $this->make_temp_plugin( $slug );
+
+		// Plugin-level hook — must appear.
+		$this->write_php_file(
+			$dir,
+			$slug . '.php',
+			"<?php\n/* Plugin Name: Vendor Skip */\nadd_action( 'plugin_hook', 'cb' );\n"
+		);
+
+		// Vendor-level hook — must NOT appear.
+		$vendor_dir = $dir . 'vendor/some-lib/';
+		mkdir( $vendor_dir, 0755, true );
+		$this->write_php_file(
+			$vendor_dir,
+			'library.php',
+			"<?php\nadd_action( 'vendor_hook', 'vendor_cb' );\n"
+		);
+
+		$result = HookScanner::scan_plugin( $slug );
+		$names  = array_column( $result['hooks'], 'name' );
+
+		$this->assertContains( 'plugin_hook', $names, 'Plugin-level hook must be found.' );
+		$this->assertNotContains( 'vendor_hook', $names, 'vendor/ hook must not appear.' );
+	}
+
+	/**
+	 * Files inside a node_modules/ subdirectory are skipped during scan.
+	 */
+	public function test_scan_plugin_skips_node_modules_directory(): void {
+		$slug = 'test-hook-scanner-nm-' . uniqid( '', true );
+		$dir  = $this->make_temp_plugin( $slug );
+
+		$this->write_php_file(
+			$dir,
+			$slug . '.php',
+			"<?php\n/* Plugin Name: NM Skip */\nadd_filter( 'plugin_filter', 'cb' );\n"
+		);
+
+		$nm_dir = $dir . 'node_modules/some-package/';
+		mkdir( $nm_dir, 0755, true );
+		$this->write_php_file(
+			$nm_dir,
+			'index.php',
+			"<?php\nadd_filter( 'node_hook', 'cb' );\n"
+		);
+
+		$result = HookScanner::scan_plugin( $slug );
+		$names  = array_column( $result['hooks'], 'name' );
+
+		$this->assertContains( 'plugin_filter', $names, 'Plugin-level hook must be found.' );
+		$this->assertNotContains( 'node_hook', $names, 'node_modules/ hook must not appear.' );
 	}
 }
