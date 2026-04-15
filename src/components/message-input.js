@@ -13,6 +13,7 @@ import apiFetch from '@wordpress/api-fetch';
  */
 import STORE_NAME from '../store';
 import SlashCommandMenu from './slash-command-menu';
+import FeedbackConsentModal from './feedback-consent-modal';
 import useSpeechRecognition from './use-speech-recognition';
 
 /** Maximum file size in bytes (10 MB). */
@@ -160,6 +161,11 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 	const [ showSlash, setShowSlash ] = useState( false );
 	const [ attachments, setAttachments ] = useState( [] );
 	const [ isDragOver, setIsDragOver ] = useState( false );
+	const [ feedbackModal, setFeedbackModal ] = useState( {
+		isOpen: false,
+		reportType: 'user_reported',
+		userDescription: '',
+	} );
 	const textareaRef = useRef( null );
 	const fileInputRef = useRef( null );
 	const sending = useSelect(
@@ -420,6 +426,23 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 			return;
 		}
 
+		// Handle /report-issue [optional description] command.
+		if (
+			trimmed === '/report-issue' ||
+			trimmed.startsWith( '/report-issue ' )
+		) {
+			const description = trimmed.startsWith( '/report-issue ' )
+				? trimmed.slice( 14 ).trim()
+				: '';
+			setFeedbackModal( {
+				isOpen: true,
+				reportType: 'user_reported',
+				userDescription: description,
+			} );
+			setText( '' );
+			return;
+		}
+
 		sendMessage( trimmed, attachments );
 		setText( '' );
 		setAttachments( [] );
@@ -490,6 +513,18 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 						0
 					);
 					return;
+				case 'report-issue':
+					// Focus back on input for optional description typing.
+					// Pressing Enter will open the FeedbackConsentModal.
+					setText( '/report-issue ' );
+					setTimeout(
+						() =>
+							textareaRef.current?.focus( {
+								preventScroll: true,
+							} ),
+						0
+					);
+					return;
 			}
 
 			setTimeout(
@@ -539,6 +574,18 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 					filter={ text }
 					onSelect={ handleSlashSelect }
 					onClose={ () => setShowSlash( false ) }
+				/>
+			) }
+			{ feedbackModal.isOpen && (
+				<FeedbackConsentModal
+					reportType={ feedbackModal.reportType }
+					userDescription={ feedbackModal.userDescription }
+					onClose={ () =>
+						setFeedbackModal( ( prev ) => ( {
+							...prev,
+							isOpen: false,
+						} ) )
+					}
 				/>
 			) }
 			<AttachmentPreviews

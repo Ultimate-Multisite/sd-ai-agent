@@ -154,6 +154,20 @@ jest.mock( '../use-speech-recognition', () =>
 	} ) )
 );
 
+jest.mock( '../feedback-consent-modal', () => {
+	const React = require( 'react' );
+	return ( { reportType, userDescription, onClose } ) =>
+		React.createElement(
+			'div',
+			{
+				'data-testid': 'feedback-consent-modal',
+				'data-report-type': reportType,
+				'data-user-description': userDescription,
+			},
+			React.createElement( 'button', { onClick: onClose }, 'close-modal' )
+		);
+} );
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
@@ -600,6 +614,176 @@ describe( 'MessageInput interactions', () => {
 			debugBtn.click();
 		} );
 		expect( setDebugMode ).toHaveBeenCalledWith( true );
+	} );
+
+	test( '/report-issue with description opens FeedbackConsentModal with pre-filled description', () => {
+		setupMocks();
+
+		act( () => {
+			root.render( createElement( MessageInput, {} ) );
+		} );
+
+		const textarea = container.querySelector(
+			'textarea.gratis-ai-agent-input'
+		);
+
+		// Simulate typing /report-issue something broke
+		act( () => {
+			const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+				window.HTMLTextAreaElement.prototype,
+				'value'
+			).set;
+			nativeInputValueSetter.call(
+				textarea,
+				'/report-issue something broke'
+			);
+			textarea.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+		} );
+
+		// Press Enter to trigger handleSend.
+		act( () => {
+			const enterEvent = new KeyboardEvent( 'keydown', {
+				key: 'Enter',
+				bubbles: true,
+				cancelable: true,
+			} );
+			textarea.dispatchEvent( enterEvent );
+		} );
+
+		const modal = container.querySelector(
+			'[data-testid="feedback-consent-modal"]'
+		);
+		expect( modal ).not.toBeNull();
+		expect( modal.getAttribute( 'data-report-type' ) ).toBe(
+			'user_reported'
+		);
+		expect( modal.getAttribute( 'data-user-description' ) ).toBe(
+			'something broke'
+		);
+	} );
+
+	test( '/report-issue with trailing space (no description) opens FeedbackConsentModal with empty description', () => {
+		setupMocks();
+
+		act( () => {
+			root.render( createElement( MessageInput, {} ) );
+		} );
+
+		const textarea = container.querySelector(
+			'textarea.gratis-ai-agent-input'
+		);
+
+		// A trailing space hides the slash menu so Enter reaches handleSend.
+		// This matches the flow after selecting /report-issue from the menu
+		// (which sets the text to '/report-issue ') and pressing Enter immediately.
+		act( () => {
+			const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+				window.HTMLTextAreaElement.prototype,
+				'value'
+			).set;
+			nativeInputValueSetter.call( textarea, '/report-issue ' );
+			textarea.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+		} );
+
+		act( () => {
+			const enterEvent = new KeyboardEvent( 'keydown', {
+				key: 'Enter',
+				bubbles: true,
+				cancelable: true,
+			} );
+			textarea.dispatchEvent( enterEvent );
+		} );
+
+		const modal = container.querySelector(
+			'[data-testid="feedback-consent-modal"]'
+		);
+		expect( modal ).not.toBeNull();
+		expect( modal.getAttribute( 'data-report-type' ) ).toBe(
+			'user_reported'
+		);
+		expect( modal.getAttribute( 'data-user-description' ) ).toBe( '' );
+	} );
+
+	test( '/report-issue clears the input text after opening modal', () => {
+		setupMocks();
+
+		act( () => {
+			root.render( createElement( MessageInput, {} ) );
+		} );
+
+		const textarea = container.querySelector(
+			'textarea.gratis-ai-agent-input'
+		);
+
+		act( () => {
+			const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+				window.HTMLTextAreaElement.prototype,
+				'value'
+			).set;
+			nativeInputValueSetter.call(
+				textarea,
+				'/report-issue test description'
+			);
+			textarea.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+		} );
+
+		act( () => {
+			const enterEvent = new KeyboardEvent( 'keydown', {
+				key: 'Enter',
+				bubbles: true,
+				cancelable: true,
+			} );
+			textarea.dispatchEvent( enterEvent );
+		} );
+
+		expect( textarea.value ).toBe( '' );
+	} );
+
+	test( 'closing FeedbackConsentModal hides the modal', () => {
+		setupMocks();
+
+		act( () => {
+			root.render( createElement( MessageInput, {} ) );
+		} );
+
+		const textarea = container.querySelector(
+			'textarea.gratis-ai-agent-input'
+		);
+
+		act( () => {
+			const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+				window.HTMLTextAreaElement.prototype,
+				'value'
+			).set;
+			nativeInputValueSetter.call( textarea, '/report-issue test' );
+			textarea.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+		} );
+
+		act( () => {
+			const enterEvent = new KeyboardEvent( 'keydown', {
+				key: 'Enter',
+				bubbles: true,
+				cancelable: true,
+			} );
+			textarea.dispatchEvent( enterEvent );
+		} );
+
+		// Modal should be visible.
+		expect(
+			container.querySelector( '[data-testid="feedback-consent-modal"]' )
+		).not.toBeNull();
+
+		// Click the close button inside the modal mock.
+		const closeBtn = container.querySelector(
+			'[data-testid="feedback-consent-modal"] button'
+		);
+		act( () => {
+			closeBtn.click();
+		} );
+
+		expect(
+			container.querySelector( '[data-testid="feedback-consent-modal"]' )
+		).toBeNull();
 	} );
 } );
 

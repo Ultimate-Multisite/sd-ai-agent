@@ -74,6 +74,14 @@ const COMMANDS = [
 		),
 		action: 'debug',
 	},
+	{
+		name: '/report-issue',
+		description: __(
+			'Send a bug report or feedback (type description after)',
+			'gratis-ai-agent'
+		),
+		action: 'report-issue',
+	},
 ];
 
 /**
