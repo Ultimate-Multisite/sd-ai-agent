@@ -375,7 +375,7 @@ class HookScannerTest extends WP_UnitTestCase {
 	 * Prevents third-party library hooks from polluting the results.
 	 */
 	public function test_scan_plugin_skips_vendor_directory(): void {
-		$slug = 'test-hook-scanner-vendor-' . uniqid( '', true );
+		$slug = 'test-hook-scanner-vendor-' . str_replace( '.', '', uniqid( '', true ) );
 		$dir  = $this->make_temp_plugin( $slug );
 
 		// Plugin-level hook — must appear.
@@ -405,7 +405,7 @@ class HookScannerTest extends WP_UnitTestCase {
 	 * Files inside a node_modules/ subdirectory are skipped during scan.
 	 */
 	public function test_scan_plugin_skips_node_modules_directory(): void {
-		$slug = 'test-hook-scanner-nm-' . uniqid( '', true );
+		$slug = 'test-hook-scanner-nm-' . str_replace( '.', '', uniqid( '', true ) );
 		$dir  = $this->make_temp_plugin( $slug );
 
 		$this->write_php_file(
