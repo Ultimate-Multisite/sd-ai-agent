@@ -51,6 +51,7 @@ const { loginToWordPress, goToAgentPage } = require( './utils/wp-admin' );
 
 const SECOND_ADMIN_USER = 'admin2';
 const SECOND_ADMIN_PASS = 'password2';
+const WP_BASE_URL = process.env.WP_BASE_URL || 'http://localhost:8890';
 
 /** Fake session returned by the intercepted sessions endpoint. */
 const MOCK_SESSION = {
@@ -603,7 +604,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 			// Create an isolated context for the second admin.
 			// Pass baseURL so relative URLs in loginToWordPress/goToAgentPage work.
 			const secondContext = await browser.newContext( {
-				baseURL: process.env.WP_BASE_URL || 'http://localhost:8890',
+				baseURL: WP_BASE_URL,
 			} );
 			const secondPage = await secondContext.newPage();
 
@@ -654,7 +655,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 			browser,
 		} ) => {
 			const secondContext = await browser.newContext( {
-				baseURL: process.env.WP_BASE_URL || 'http://localhost:8890',
+				baseURL: WP_BASE_URL,
 			} );
 			const secondPage = await secondContext.newPage();
 
@@ -721,7 +722,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 			browser,
 		} ) => {
 			const secondContext = await browser.newContext( {
-				baseURL: process.env.WP_BASE_URL || 'http://localhost:8890',
+				baseURL: WP_BASE_URL,
 			} );
 			const secondPage = await secondContext.newPage();
 
@@ -819,7 +820,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 			browser,
 		} ) => {
 			const secondContext = await browser.newContext( {
-				baseURL: process.env.WP_BASE_URL || 'http://localhost:8890',
+				baseURL: WP_BASE_URL,
 			} );
 			const secondPage = await secondContext.newPage();
 
@@ -878,7 +879,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 			browser,
 		} ) => {
 			const secondContext = await browser.newContext( {
-				baseURL: process.env.WP_BASE_URL || 'http://localhost:8890',
+				baseURL: WP_BASE_URL,
 			} );
 			const secondPage = await secondContext.newPage();
 
