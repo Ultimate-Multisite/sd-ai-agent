@@ -429,7 +429,10 @@ export default function AgentBuilder() {
 						value={ form.tool_profile }
 						options={ [
 							{
-								label: __( '(global default)', 'gratis-ai-agent' ),
+								label: __(
+									'(global default)',
+									'gratis-ai-agent'
+								),
 								value: '',
 							},
 							...toolProfiles.map( ( p ) => ( {
