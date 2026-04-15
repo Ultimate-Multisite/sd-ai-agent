@@ -4,7 +4,7 @@ Tags: ai, chatbot, assistant, automation, tools
 Requires at least: 7.0
 Tested up to: 7.0
 Requires PHP: 8.2
-Stable tag: 1.4.0
+Stable tag: 1.5.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -158,6 +158,28 @@ Yes, the plugin works on both single-site and multisite WordPress installations.
 
 == Changelog ==
 
+= 1.5.0 - Released on 2026-04-15 =
+* New: Customer feedback & issue reporting system — thumbs-down button, feedback consent UI, auto-prompt banner on conversation end, /report-issue command, and AI-assisted triage
+* New: Report-inability ability — agent self-flags when it cannot complete a task
+* New: Plugin Builder & Sandbox System — AI-powered plugin generation with safe activation, structured codegen, and sandboxed live updates
+* New: Plugin installer with path validation, multi-file install, update, and delete by slug
+* New: HookScanner for automated plugin and theme hook analysis
+* New: 7 plugin management abilities and ecosystem registry
+* New: Async job architecture with live tool progress tracking
+* New: Internet search ability via Brave Search API
+* Improved: GitHub Actions upgraded from Node.js 20 to Node.js 24
+* Improved: AI Client SDK timeout raised to 120s for agentic workloads
+* Improved: HookScanner skips vendor and node_modules directories
+* Fix: E2E test selector mismatches for settings tabs
+* Fix: Vendor autoloader manifests regenerated without dev dependencies
+* Fix: Dialog styles included in floating-widget bundle
+* Fix: Brave Search API URL now a clickable link in settings
+* Fix: Transient TTL refresh prevents mid-execution expiry
+* Fix: wp-env port conflict resolved (ports 8890/8893)
+* Fix: Tool confirmation dialog portal fixes for compact and floating modes
+* Fix: HookScanner empty-slug guard and slug sanitization
+* Fix: Missing AgentLoop import in feedback handler
+
 = 1.4.0 - Released on 2026-04-09 =
 * New: Agent Capabilities v1 benchmark suite for complex model evaluation
 * New: WP-CLI benchmark command for running benchmarks from the command line
@@ -291,6 +313,9 @@ Yes, the plugin works on both single-site and multisite WordPress installations.
 * WordPress 7.0 AI Client SDK integration (native core API)
 
 == Upgrade Notice ==
+
+= 1.5.0 =
+Major feature release: adds customer feedback & issue reporting system (thumbs-down, consent UI, AI triage), Plugin Builder with sandbox activation, async job architecture, internet search ability, and 7 plugin management abilities. Database will upgrade automatically.
 
 = 1.4.0 =
 Major feature release: adds 8 new ability classes (custom post types, taxonomies, design system, global styles, navigation menus, options management, plugin recommendations), site builder orchestration v2, and Agent Capabilities benchmark suite. Database will upgrade automatically.
