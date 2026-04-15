@@ -128,19 +128,8 @@ async function injectTtsMock( page ) {
  * @param {import('@playwright/test').Page} page - Playwright page object.
  */
 async function interceptStream( page ) {
-	let capturedSessionId = null;
-
 	// Intercept POST /run — returns a synthetic job_id.
 	await page.route( /gratis-ai-agent\/v1\/run/, async ( route ) => {
-		try {
-			const postBody = route.request().postDataJSON();
-			if ( postBody?.session_id ) {
-				capturedSessionId = postBody.session_id;
-			}
-		} catch {
-			// Fall back to null — job response will use null session_id.
-		}
-
 		await route.fulfill( {
 			status: 200,
 			contentType: 'application/json',
@@ -149,14 +138,17 @@ async function interceptStream( page ) {
 	} );
 
 	// Intercept GET /job/:id — returns complete immediately with AI reply.
-	// The reply text triggers the TTS hook to call speechSynthesis.speak().
+	// Omit session_id so the store takes the local-append path
+	// (dispatch.appendMessage) rather than fetching the real session from the
+	// server. The real session has no AI reply (the run was mocked), so
+	// including session_id would cause the store to reload from the DB and
+	// replace messages with only the user message — preventing TTS from firing.
 	await page.route( /gratis-ai-agent\/v1\/job\//, async ( route ) => {
 		await route.fulfill( {
 			status: 200,
 			contentType: 'application/json',
 			body: JSON.stringify( {
 				status: 'complete',
-				session_id: capturedSessionId,
 				reply: 'Hello from the AI!',
 			} ),
 		} );
