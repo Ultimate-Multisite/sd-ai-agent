@@ -364,7 +364,7 @@ Phase 1 (receiving plugin) complete — shipped to Ultimate-Multisite/gratis-ai-
   - Also handle WP_Error responses (max_iterations) — these come as error responses, not exit_reason in the JSON
   - Verify: E2E test or manual test — trigger a spin_detected response, verify banner appears, clicking Send opens the consent modal
 
-- [ ] t184 /report-issue slash command in chat input #feature #auto-dispatch ~2h logged:2026-04-14 blocked-by:t182
+- [x] t184 /report-issue slash command in chat input #feature #auto-dispatch ~2h logged:2026-04-14 blocked-by:t182 pr:#947 completed:2026-04-15
   - EDIT: src/components/MessageInput.js — add `/report-issue` to the slash command list (pattern: `/report-issue [optional description]`)
   - When invoked: open FeedbackConsentModal with report_type='user_reported', pre-fill user_description from the command argument
   - Model on existing `/remember` and `/forget` slash command handling in the same file
