@@ -117,40 +117,48 @@ async function injectTtsMock( page ) {
 }
 
 /**
- * Intercept the stream endpoint and return a minimal SSE response with a
- * single AI token so the store completes the message and TTS can fire.
+ * Intercept the agent job endpoints so the store completes the message and
+ * TTS can fire.
+ *
+ * The store now uses POST /run (returns a job_id) + GET /job/:id polling
+ * instead of a direct POST /stream SSE endpoint. We intercept both so that
+ * the job completes immediately and the store dispatches the reply that
+ * triggers TTS.
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  */
 async function interceptStream( page ) {
-	await page.route( /gratis-ai-agent\/v1\/stream/, async ( route ) => {
-		let sessionId = 1;
+	let capturedSessionId = null;
+
+	// Intercept POST /run — returns a synthetic job_id.
+	await page.route( /gratis-ai-agent\/v1\/run/, async ( route ) => {
 		try {
 			const postBody = route.request().postDataJSON();
 			if ( postBody?.session_id ) {
-				sessionId = postBody.session_id;
+				capturedSessionId = postBody.session_id;
 			}
 		} catch {
-			// Fall back to 1 if body is not JSON.
+			// Fall back to null — job response will use null session_id.
 		}
-
-		const sseBody = [
-			'event: token',
-			`data: ${ JSON.stringify( { token: 'Hello from the AI!' } ) }`,
-			'',
-			'event: done',
-			`data: ${ JSON.stringify( { session_id: sessionId } ) }`,
-			'',
-			'',
-		].join( '\n' );
 
 		await route.fulfill( {
 			status: 200,
-			headers: {
-				'Content-Type': 'text/event-stream',
-				'Cache-Control': 'no-cache',
-			},
-			body: sseBody,
+			contentType: 'application/json',
+			body: JSON.stringify( { job_id: 'e2e-tts-job-1' } ),
+		} );
+	} );
+
+	// Intercept GET /job/:id — returns complete immediately with AI reply.
+	// The reply text triggers the TTS hook to call speechSynthesis.speak().
+	await page.route( /gratis-ai-agent\/v1\/job\//, async ( route ) => {
+		await route.fulfill( {
+			status: 200,
+			contentType: 'application/json',
+			body: JSON.stringify( {
+				status: 'complete',
+				session_id: capturedSessionId,
+				reply: 'Hello from the AI!',
+			} ),
 		} );
 	} );
 }
