@@ -157,7 +157,16 @@ class HookScanner {
 	}
 
 	/**
-	 * Find all PHP files in a directory recursively.
+	 * Directories to skip during recursive file traversal.
+	 *
+	 * Prevents scanning third-party code (vendor, node_modules) and
+	 * non-PHP artefacts (.git, tests).
+	 */
+	private const SKIP_DIRS = [ 'vendor', 'node_modules', '.git', 'tests' ];
+
+	/**
+	 * Find all PHP files in a directory recursively, skipping common
+	 * third-party and non-source directories.
 	 *
 	 * @param string $dir Directory path.
 	 * @return list<string>
@@ -165,7 +174,16 @@ class HookScanner {
 	private static function find_php_files( string $dir ): array {
 		$files    = [];
 		$iterator = new \RecursiveIteratorIterator(
-			new \RecursiveDirectoryIterator( $dir, \RecursiveDirectoryIterator::SKIP_DOTS )
+			new \RecursiveCallbackFilterIterator(
+				new \RecursiveDirectoryIterator( $dir, \RecursiveDirectoryIterator::SKIP_DOTS ),
+				static function ( \SplFileInfo $entry ): bool {
+					// Exclude named subdirectories (vendor, node_modules, .git, tests).
+					if ( $entry->isDir() ) {
+						return ! in_array( $entry->getBasename(), self::SKIP_DIRS, true );
+					}
+					return true;
+				}
+			)
 		);
 		foreach ( $iterator as $file ) {
 			/** @var \SplFileInfo $file */
