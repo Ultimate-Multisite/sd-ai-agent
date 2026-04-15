@@ -8,9 +8,12 @@
 # Jetpack autoloader manifests are tracked. If someone runs `composer install`
 # or `composer dump-autoload` (without --no-dev) and stages the result,
 # WordPress Playground and any git-clone-based install will crash.
-VENDOR_MANIFESTS=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^vendor/composer/(jetpack_autoload_|autoload_|installed\.)' || true)
+VENDOR_MANIFESTS=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^vendor/composer/(jetpack_autoload_|autoload_(classmap|files|namespaces|psr4|static)\.php|installed\.php)' || true)
 if [ -n "$VENDOR_MANIFESTS" ]; then
-	# Gitignored dev vendor dirs — must not appear in committed manifests
+	# Gitignored dev vendor dirs — must not appear in committed autoloader manifests.
+	# Note: installed.json is excluded because upstream packages legitimately list
+	# dev dependencies in their own require-dev metadata (e.g., jetpack-autoloader
+	# lists yoast/phpunit-polyfills). Those are just metadata, not installed paths.
 	DEV_PATHS="myclabs/\|phpunit/\|phpstan/\|phpcsstandards/\|squizlabs/\|sebastian/\|nikic/\|phar-io/\|doctrine/\|dealerdirect/\|phpcompatibility/\|php-stubs/\|szepeviktor/\|theseer/\|wp-coding-standards/\|yoast/"
 	for manifest in $VENDOR_MANIFESTS; do
 		if git show ":$manifest" 2>/dev/null | grep -q "$DEV_PATHS"; then
