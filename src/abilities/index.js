@@ -45,6 +45,14 @@ let registrationPromise = null;
  * because the underlying registry helpers in registry.js dedupe at the
  * `@wordpress/abilities` API level.
  *
+ * If the abilities API was not available when the attempt ran (e.g. the
+ * `@wordpress/core-abilities` script module hadn't loaded yet),
+ * registerCategory() silently no-ops and the promise resolves without
+ * registering anything. In that case registrationPromise is reset to null
+ * AFTER the attempt completes so a future call can retry. Concurrent
+ * callers during the in-flight attempt all receive the same promise —
+ * the reset only happens once the promise has settled.
+ *
  * @return {Promise<void>}
  */
 export function ensureRegistered() {
@@ -59,6 +67,19 @@ export function ensureRegistered() {
 		// Now safe to register abilities — the category exists in the store.
 		await registerNavigationAbility();
 		await registerEditorAbility();
+
+		// If the abilities API was not available (e.g. script module not
+		// yet loaded), the registration calls above silently no-oped.
+		// Reset the promise so a future call can retry after the API loads.
+		// This MUST happen after the await chain settles — resetting during
+		// the in-flight attempt would break concurrent callers' dedup.
+		const apiAvailable =
+			typeof wp !== 'undefined' &&
+			!! wp.abilities &&
+			typeof wp.abilities.getAbilities === 'function';
+		if ( ! apiAvailable ) {
+			registrationPromise = null;
+		}
 	} )();
 
 	return registrationPromise;

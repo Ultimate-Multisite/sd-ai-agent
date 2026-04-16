@@ -113,6 +113,26 @@ async function injectTtsMock( page ) {
 				this.onerror = null;
 			}
 		};
+
+		// Stub the WP 7.0 abilities API so ensureClientAbilitiesRegistered()
+		// (called by the store's streamMessage thunk before POST /run) resolves
+		// immediately instead of polling for up to 30 s via
+		// waitForAbilitiesApi(). In wp-env CI, the @wordpress/core-abilities
+		// script module may not load in time, causing the send-message pipeline
+		// to hang for 30 s with sending=true — which blocks the TTS effect
+		// from firing. The stub resolves all registration calls as no-ops.
+		if ( typeof window.wp === 'undefined' ) {
+			window.wp = {};
+		}
+		if ( ! window.wp.abilities ) {
+			window.wp.abilities = {
+				registerAbility: async () => {},
+				registerAbilityCategory: async () => {},
+				getAbilities: async () => [],
+				getAbilityCategory: async () => null,
+				executeAbility: async () => null,
+			};
+		}
 	} );
 }
 
@@ -121,26 +141,35 @@ async function injectTtsMock( page ) {
  * TTS can fire.
  *
  * The store uses POST /run (returns a job_id) + GET /job/:id polling.
- * We intercept both, plus GET /sessions/:id so the session reload delivers
- * the AI reply to the store and TTS fires once the response is in messages.
+ * We intercept all four endpoints involved in the flow:
+ *   1. POST /run — capture session_id, return synthetic job_id.
+ *   2. GET /job/:id — return 'processing' for processingPolls rounds, then
+ *      'complete' with session_id so the store reloads the session.
+ *   3. GET /sessions/:id — return a synthetic session containing the AI reply
+ *      (the real DB has no reply since /run was mocked).
+ *   4. GET /sessions (list) — intercept the fetchSessions() call that fires
+ *      after job completion. Without this, the real REST round-trip can take
+ *      1-3 s on loaded CI runners, delaying state transitions and causing
+ *      TTS effect timing races.
  *
- * Approach mirrors chat-interactions.spec.js:
- *   1. Capture session_id from the POST /run body.
- *   2. Return session_id in the GET /job/:id completion payload so the store
- *      follows the session-reload code path (not local-append).
- *   3. Intercept GET /sessions/:id to return a synthetic session that already
- *      contains the AI reply — since the real PHP worker never ran, the DB
- *      only has the user message and the reload would otherwise overwrite
- *      messages with an empty assistant turn.
+ * Pattern mirrors chat-interactions.spec.js interceptStream() exactly.
  *
- * @param {import('@playwright/test').Page} page - Playwright page object.
+ * @param {import('@playwright/test').Page} page    - Playwright page object.
+ * @param {Object}                          options - Configuration.
+ * @param {number} [options.processingPolls=0] - Number of polls returning
+ *   'processing' before switching to 'complete'. Use 1+ if tests need to
+ *   observe transient sending/stop-button state.
  */
-async function interceptStream( page ) {
+async function interceptStream( page, options = {} ) {
+	const { processingPolls = 0 } = options;
+	let jobPollCount = 0;
+
 	// Track the session_id created by the store before POST /run fires.
 	let capturedSessionId = null;
 
 	// Intercept POST /run — capture session_id from the request body and
-	// return a synthetic job_id.
+	// return a synthetic job_id. Use 202 to match the real server response
+	// code (job enqueued, not yet complete).
 	// Use a predicate function instead of a regex because wp-env uses plain
 	// permalinks (?rest_route=%2F...) where slashes are URL-encoded.
 	await page.route(
@@ -156,17 +185,30 @@ async function interceptStream( page ) {
 			// the local-append fallback path in pollJob.
 		}
 		await route.fulfill( {
-			status: 200,
+			status: 202,
 			contentType: 'application/json',
-			body: JSON.stringify( { job_id: 'e2e-tts-job-1' } ),
+			body: JSON.stringify( {
+				job_id: 'e2e-tts-job-1',
+				status: 'processing',
+			} ),
 		} );
 	} );
 
-	// Intercept GET /job/:id — return complete with session_id so the store
-	// attempts a session reload (intercepted below to include the AI reply).
+	// Intercept GET /job/:id — return 'processing' for the first
+	// `processingPolls` polls, then 'complete' with session_id so the store
+	// reloads the session (intercepted below to include the AI reply).
 	await page.route(
 		( url ) => decodeURIComponent( url.toString() ).includes( 'gratis-ai-agent/v1/job/' ),
 		async ( route ) => {
+		jobPollCount += 1;
+		if ( jobPollCount <= processingPolls ) {
+			await route.fulfill( {
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify( { status: 'processing' } ),
+			} );
+			return;
+		}
 		await route.fulfill( {
 			status: 200,
 			contentType: 'application/json',
@@ -186,13 +228,18 @@ async function interceptStream( page ) {
 	await page.route(
 		( url ) => {
 			const decoded = decodeURIComponent( url.toString() );
-			// Match /sessions/:id but not sub-paths like /sessions/:id/export.
-			// Use [?&#] instead of $ because apiFetch appends query params
-			// (e.g. &_locale=user) after the ID — a bare $ never matches in
-			// wp-env's plain-permalink URLs (?rest_route=...&_locale=user).
-			return /gratis-ai-agent\/v1\/sessions\/\d+(?:[?&#]|$)/.test( decoded );
+			// Match /sessions/:id but not the list endpoint or sub-paths.
+			return (
+				decoded.includes( 'gratis-ai-agent/v1/sessions/' ) &&
+				! decoded.includes( '/sessions/shared' ) &&
+				/\/sessions\/\d+/.test( decoded )
+			);
 		},
 		async ( route ) => {
+			if ( capturedSessionId === null ) {
+				await route.continue();
+				return;
+			}
 			await route.fulfill( {
 				status: 200,
 				contentType: 'application/json',
@@ -207,6 +254,42 @@ async function interceptStream( page ) {
 					],
 					tool_calls: [],
 				} ),
+			} );
+		}
+	);
+
+	// Intercept GET /sessions (list) — the store calls fetchSessions() after
+	// the job completes to refresh the sidebar. Without this intercept the
+	// sidebar update depends on a real REST round-trip which can exceed
+	// assertion timeouts on loaded CI runners and delay the setSending(false)
+	// dispatch that the TTS effect depends on.
+	await page.route(
+		( url ) => {
+			const decoded = decodeURIComponent( url.toString() );
+			return (
+				decoded.includes( 'gratis-ai-agent/v1/sessions' ) &&
+				! decoded.includes( '/sessions/shared' ) &&
+				! /\/sessions\/\d+/.test( decoded )
+			);
+		},
+		async ( route ) => {
+			if ( capturedSessionId === null ) {
+				await route.continue();
+				return;
+			}
+			await route.fulfill( {
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify( [
+					{
+						id: capturedSessionId,
+						title: 'Untitled',
+						status: 'active',
+						user_id: 1,
+						messages: [],
+						tool_calls: [],
+					},
+				] ),
 			} );
 		}
 	);
@@ -230,12 +313,14 @@ test.describe( 'TTS Toggle Button', () => {
 		// Our mock defines window.speechSynthesis, so the button should appear.
 		// Scope to the non-compact (admin page) chat panel to avoid matching
 		// the floating widget's hidden TTS button.
+		// Use 15 s timeout — the chat panel can be slow to render on CI runners
+		// under load, especially on WP trunk where the SPA mount is heavier.
 		const ttsBtn = page
 			.locator(
 				'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-tts-btn'
 			)
 			.first();
-		await expect( ttsBtn ).toBeVisible();
+		await expect( ttsBtn ).toBeVisible( { timeout: 15_000 } );
 	} );
 
 	test( 'clicking TTS toggle button enables TTS and adds is-active class', async ( {
@@ -247,7 +332,7 @@ test.describe( 'TTS Toggle Button', () => {
 				'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-tts-btn'
 			)
 			.first();
-		await expect( ttsBtn ).toBeVisible();
+		await expect( ttsBtn ).toBeVisible( { timeout: 15_000 } );
 
 		// Ensure TTS starts disabled (default state).
 		// If it is already active, click once to disable first.
@@ -272,7 +357,7 @@ test.describe( 'TTS Toggle Button', () => {
 				'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-tts-btn'
 			)
 			.first();
-		await expect( ttsBtn ).toBeVisible();
+		await expect( ttsBtn ).toBeVisible( { timeout: 15_000 } );
 
 		// Enable TTS.
 		const isActive = await ttsBtn.evaluate( ( el ) =>
@@ -377,7 +462,7 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 				'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-tts-btn'
 			)
 			.first();
-		await expect( ttsBtn ).toBeVisible();
+		await expect( ttsBtn ).toBeVisible( { timeout: 15_000 } );
 
 		const isActive = await ttsBtn.evaluate( ( el ) =>
 			el.classList.contains( 'is-active' )
@@ -388,7 +473,10 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 		await expect( ttsBtn ).toHaveClass( /is-active/ );
 
 		// Intercept the stream so the AI response completes quickly.
-		await interceptStream( page );
+		// Use processingPolls: 1 so the store's job polling settles its
+		// internal state (currentJobId, sessionJob) before transitioning
+		// to complete — this matches real-world timing more closely.
+		await interceptStream( page, { processingPolls: 1 } );
 
 		// Count existing assistant bubbles BEFORE sending so we can detect
 		// the NEW bubble that appears from THIS response. If a previous test
@@ -420,12 +508,17 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 					'.gratis-ai-agent-bubble.gratis-ai-agent-assistant'
 				).length > count,
 			initialBubbleCount,
-			{ timeout: 20_000 }
+			{ timeout: 30_000 }
 		);
 
 		// Verify that speak() was called on the mock.
-		// TTS fires asynchronously after the stream completes, so poll until
-		// the speak call appears rather than checking synchronously.
+		// TTS fires asynchronously after the stream completes (the useEffect
+		// in MessageList waits for sending=false + last message role=model),
+		// so poll until the speak call appears rather than checking synchronously.
+		// The wp.abilities stub injected by injectTtsMock() ensures that
+		// ensureClientAbilitiesRegistered() resolves immediately, so the full
+		// send-message pipeline (POST /run → pollJob → session fetch →
+		// setSending(false)) completes in ~5 s with processingPolls: 1.
 		await expect
 			.poll(
 				async () => {
@@ -434,7 +527,7 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 					);
 					return calls.filter( ( c ) => c.type === 'speak' ).length;
 				},
-				{ timeout: 15_000 }
+				{ timeout: 20_000 }
 			)
 			.toBeGreaterThanOrEqual( 1 );
 	} );
@@ -448,7 +541,7 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 				'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-tts-btn'
 			)
 			.first();
-		await expect( ttsBtn ).toBeVisible();
+		await expect( ttsBtn ).toBeVisible( { timeout: 15_000 } );
 
 		const isActive = await ttsBtn.evaluate( ( el ) =>
 			el.classList.contains( 'is-active' )
@@ -461,6 +554,13 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 		// Intercept the stream.
 		await interceptStream( page );
 
+		// Capture the current assistant-bubble count so we can wait for a
+		// genuinely NEW response (avoids matching a pre-existing bubble).
+		const assistantBubbleLocator = page.locator(
+			'.gratis-ai-agent-bubble.gratis-ai-agent-assistant'
+		);
+		const initialBubbleCount = await assistantBubbleLocator.count();
+
 		// Send a message. Scope to the non-compact chat panel.
 		const input = page
 			.locator(
@@ -470,11 +570,20 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 		await input.fill( 'Hello' );
 		await input.press( 'Enter' );
 
-		// Wait for the AI message to appear.
-		await page
-			.locator( '.gratis-ai-agent-bubble.gratis-ai-agent-assistant' )
-			.first()
-			.waitFor( { state: 'visible', timeout: 15_000 } );
+		// Wait for a NEW assistant bubble (count must exceed the initial).
+		await page.waitForFunction(
+			( count ) =>
+				document.querySelectorAll(
+					'.gratis-ai-agent-bubble.gratis-ai-agent-assistant'
+				).length > count,
+			initialBubbleCount,
+			{ timeout: 30_000 }
+		);
+
+		// Wait a short period for any async TTS effects to fire —
+		// we want to confirm speak was NOT called even after settling.
+		// eslint-disable-next-line playwright/no-wait-for-timeout
+		await page.waitForTimeout( 1_000 );
 
 		// Verify that speak() was NOT called.
 		const calls = await page.evaluate( () => window.__ttsMockCalls );
@@ -491,7 +600,7 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 				'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-tts-btn'
 			)
 			.first();
-		await expect( ttsBtn ).toBeVisible();
+		await expect( ttsBtn ).toBeVisible( { timeout: 15_000 } );
 
 		const isActive = await ttsBtn.evaluate( ( el ) =>
 			el.classList.contains( 'is-active' )

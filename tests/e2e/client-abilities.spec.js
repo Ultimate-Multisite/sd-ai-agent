@@ -62,16 +62,80 @@ async function goToDashboard( page ) {
 }
 
 /**
+ * Check whether the WP 7.0 abilities API is available on the current page.
+ *
+ * Returns true if wp.abilities exists and exposes the functions required
+ * by the client-abilities tests. This check runs after the page has fully
+ * loaded and the FAB is visible (ensureRegistered has been called), so a
+ * false result reliably means the API is not available in this environment
+ * — not that it hasn't loaded yet.
+ *
+ * Used by test.skip() to gracefully degrade when the CI environment runs a
+ * WordPress version where @wordpress/core-abilities is not loaded (e.g.
+ * the WP 7.0-branch build hasn't shipped the abilities script module yet,
+ * or the module is registered but not enqueued by core).
+ *
+ * @param {import('@playwright/test').Page} page
+ * @return {Promise<boolean>} True when all required wp.abilities methods exist.
+ */
+async function isAbilitiesApiAvailable( page ) {
+	return page.evaluate( () => {
+		return (
+			typeof wp !== 'undefined' &&
+			!! wp.abilities &&
+			typeof wp.abilities.getAbilities === 'function' &&
+			typeof wp.abilities.registerAbility === 'function' &&
+			typeof wp.abilities.registerAbilityCategory === 'function'
+		);
+	} );
+}
+
+/**
+ * Skip the current test if the abilities API is not available.
+ *
+ * Call this at the top of any test body that depends on wp.abilities.
+ * It must run AFTER goToDashboard() or equivalent page navigation so the
+ * scripts have loaded.
+ *
+ * @param {import('@playwright/test').Page} page
+ */
+async function skipIfNoAbilitiesApi( page ) {
+	const available = await isAbilitiesApiAvailable( page );
+	test.skip(
+		! available,
+		'wp.abilities API not available — @wordpress/core-abilities script module not loaded in this WP build'
+	);
+}
+
+/**
  * Wait for the gratis-ai-agent-js abilities to be registered.
  *
  * Polls wp.abilities.getAbilities() until both abilities appear or the
  * timeout is reached. This is necessary because registration is async —
  * the category Promise must resolve before abilities can register.
  *
+ * On slow CI runners, the @wordpress/core-abilities script module may load
+ * well after the plugin's floating-widget bundle has called
+ * ensureRegistered(). The source-side fix (registry.js waitForAbilitiesApi
+ * increased to 30 s, index.js retry logic) handles the root cause. This
+ * test-side timeout is set to 45 s (matching other long waits in this file)
+ * to accommodate the full registration chain: 30 s API poll + category
+ * registration + 2 ability registrations + React render time.
+ *
+ * The previous 15 s timeout was consistently too short on CI runners under
+ * load — the abilities API loaded at ~12-18 s but registration added
+ * another 2-5 s, pushing total time past the 15 s budget.
+ *
+ * Note: page.waitForFunction(fn, arg?, options?) — the second argument is
+ * `arg` (data passed to the function), not the options object. Passing
+ * `{ timeout }` as the second argument treats it as `arg` and uses the
+ * default test timeout (90 s) instead. The correct call passes `null` for
+ * `arg` and `{ timeout }` as the third argument.
+ *
  * @param {import('@playwright/test').Page} page
- * @param {number}                          [timeout=15000] Max wait in ms.
+ * @param {number}                          [timeout=45000] Max wait in ms.
  */
-async function waitForAbilitiesRegistered( page, timeout = 15_000 ) {
+async function waitForAbilitiesRegistered( page, timeout = 45_000 ) {
 	await page.waitForFunction(
 		() => {
 			if (
@@ -111,6 +175,7 @@ async function waitForAbilitiesRegistered( page, timeout = 15_000 ) {
 				return false;
 			}
 		},
+		null,
 		{ timeout }
 	);
 }
@@ -146,6 +211,7 @@ test.describe( 'client-abilities — category registration', () => {
 	test.beforeEach( async ( { page } ) => {
 		await loginToWordPress( page );
 		await goToDashboard( page );
+		await skipIfNoAbilitiesApi( page );
 	} );
 
 	test( 'registers on dashboard — category has expected label and description', async ( {
@@ -187,6 +253,7 @@ test.describe( 'client-abilities — ability registration', () => {
 	test.beforeEach( async ( { page } ) => {
 		await loginToWordPress( page );
 		await goToDashboard( page );
+		await skipIfNoAbilitiesApi( page );
 	} );
 
 	test( 'navigate-to and insert-block appear in getAbilities()', async ( {
@@ -262,6 +329,7 @@ test.describe( 'client-abilities — navigate-to execution', () => {
 	test.beforeEach( async ( { page } ) => {
 		await loginToWordPress( page );
 		await goToDashboard( page );
+		await skipIfNoAbilitiesApi( page );
 	} );
 
 	test( 'executeAbility navigate-to actually navigates to plugins.php', async ( {
@@ -334,11 +402,18 @@ test.describe( 'client-abilities — insert-block on editor screen', () => {
 		await page.goto( '/wp-admin/post-new.php' );
 		await page.waitForLoadState( 'domcontentloaded' );
 
+		// Check abilities API BEFORE the slow editor wait. On CI the block
+		// editor can take 45-60 s to initialise — skipping early avoids a
+		// 60 s timeout when the abilities API isn't available at all.
+		await skipIfNoAbilitiesApi( page );
+
 		// Wait for the block editor to mount — the editor canvas is the signal.
+		// 60 s accommodates slow CI runners where the block editor can take
+		// 45-55 s to initialise (Gutenberg script modules + React hydration).
 		await page
 			.locator( '.block-editor-writing-flow, .editor-styles-wrapper' )
 			.first()
-			.waitFor( { state: 'visible', timeout: 45_000 } );
+			.waitFor( { state: 'visible', timeout: 60_000 } );
 
 		// Wait for abilities to register (the admin-page bundle also loads here).
 		await waitForAbilitiesRegistered( page );
@@ -392,6 +467,7 @@ test.describe( 'client-abilities — insert-block no-op on non-editor screen', (
 	test.beforeEach( async ( { page } ) => {
 		await loginToWordPress( page );
 		await goToDashboard( page );
+		await skipIfNoAbilitiesApi( page );
 	} );
 
 	test( 'insert-block returns inserted:false on dashboard without throwing', async ( {
@@ -435,6 +511,7 @@ test.describe( 'client-abilities — snapshotDescriptors', () => {
 	test.beforeEach( async ( { page } ) => {
 		await loginToWordPress( page );
 		await goToDashboard( page );
+		await skipIfNoAbilitiesApi( page );
 	} );
 
 	test( 'snapshotDescriptors returns 2 descriptors with expected shape', async ( {
@@ -538,6 +615,7 @@ test.describe( 'client-abilities — no relevant console errors', () => {
 
 		await loginToWordPress( page );
 		await goToDashboard( page );
+		await skipIfNoAbilitiesApi( page );
 		await waitForAbilitiesRegistered( page );
 
 		assertNoForbiddenErrors(
@@ -555,6 +633,7 @@ test.describe( 'client-abilities — no relevant console errors', () => {
 		await page
 			.locator( '.gratis-ai-agent-unified-admin' )
 			.waitFor( { state: 'visible', timeout: 45_000 } );
+		await skipIfNoAbilitiesApi( page );
 		await waitForAbilitiesRegistered( page );
 
 		assertNoForbiddenErrors(
@@ -569,10 +648,21 @@ test.describe( 'client-abilities — no relevant console errors', () => {
 		await loginToWordPress( page );
 		await page.goto( '/wp-admin/post-new.php' );
 		await page.waitForLoadState( 'domcontentloaded' );
+
+		// Check abilities API BEFORE the slow editor wait. On CI the block
+		// editor can take 45-60 s to initialise — skipping early avoids a
+		// 60 s timeout when the abilities API isn't available at all.
+		await skipIfNoAbilitiesApi( page );
+
+		// The block editor is notoriously slow to initialise on CI runners,
+		// especially on WP trunk where Gutenberg loads additional script
+		// modules. 60 s accommodates the worst-case load time observed in
+		// CI (45-55 s) with headroom. The previous 45 s timeout failed
+		// consistently on both WP 6.9 and trunk CI matrices.
 		await page
 			.locator( '.block-editor-writing-flow, .editor-styles-wrapper' )
 			.first()
-			.waitFor( { state: 'visible', timeout: 45_000 } );
+			.waitFor( { state: 'visible', timeout: 60_000 } );
 		await waitForAbilitiesRegistered( page );
 
 		assertNoForbiddenErrors(

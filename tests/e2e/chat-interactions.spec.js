@@ -116,6 +116,82 @@ async function interceptStream( page, options = {} ) {
 			body: JSON.stringify( result ),
 		} );
 	} );
+
+	// Intercept GET /sessions/:id — the store reloads the session from the DB
+	// after the job completes. Without this intercept the test depends on a real
+	// REST round-trip which can take 1-3 s on loaded CI runners, pushing total
+	// wait time past the 10 s assertion timeout. When capturedSessionId is null
+	// (before the job runs), pass through to the real server.
+	await page.route(
+		( url ) => {
+			const decoded = decodeURIComponent( url.toString() );
+			return (
+				decoded.includes( 'gratis-ai-agent/v1/sessions/' ) &&
+				! decoded.includes( '/sessions/shared' ) &&
+				/\/sessions\/\d+/.test( decoded )
+			);
+		},
+		async ( route ) => {
+			if ( capturedSessionId === null ) {
+				await route.continue();
+				return;
+			}
+			await route.fulfill( {
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify( {
+					id: capturedSessionId,
+					title: 'Untitled',
+					status: 'active',
+					user_id: 1,
+					messages: [],
+					tool_calls: [],
+				} ),
+			} );
+		}
+	);
+
+	// Intercept GET /sessions (list) — the store calls fetchSessions() after the
+	// job completes to refresh the sidebar. Without this intercept the sidebar
+	// update depends on a real REST round-trip, which can exceed the assertion
+	// timeout on loaded CI runners. When capturedSessionId is null (the initial
+	// fetchSessions on mount fires before the job), pass through to the real
+	// server so the sidebar populates with any pre-existing sessions.
+	//
+	// The mock response carries generatedTitle (or 'Untitled') as the session
+	// title. The store's SET_SESSIONS reducer also merges pendingTitles into the
+	// list — so even if generatedTitle is undefined, the optimistic title from
+	// updateSessionTitle() takes precedence.
+	await page.route(
+		( url ) => {
+			const decoded = decodeURIComponent( url.toString() );
+			return (
+				decoded.includes( 'gratis-ai-agent/v1/sessions' ) &&
+				! decoded.includes( '/sessions/shared' ) &&
+				! /\/sessions\/\d+/.test( decoded )
+			);
+		},
+		async ( route ) => {
+			if ( capturedSessionId === null ) {
+				await route.continue();
+				return;
+			}
+			await route.fulfill( {
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify( [
+					{
+						id: capturedSessionId,
+						title: generatedTitle || 'Untitled',
+						status: 'active',
+						user_id: 1,
+						messages: [],
+						tool_calls: [],
+					},
+				] ),
+			} );
+		}
+	);
 }
 
 test.describe( 'Chat Input Interactions', () => {
@@ -318,6 +394,28 @@ test.describe( 'Provider Selector', () => {
  */
 test.describe( 'Auto-Title Sessions (t099)', () => {
 	test.beforeEach( async ( { page } ) => {
+		// Stub the WP 7.0 abilities API so ensureClientAbilitiesRegistered()
+		// (called by the store's streamMessage thunk before POST /run) resolves
+		// immediately instead of polling for up to 30 s via
+		// waitForAbilitiesApi(). Without this stub, the send-message pipeline
+		// hangs for 30 s when the @wordpress/core-abilities script module
+		// hasn't loaded in wp-env CI — exceeding the 20 s sidebar assertion
+		// timeout. Pattern mirrors text-to-speech.spec.js beforeAll.
+		await page.addInitScript( () => {
+			if ( typeof window.wp === 'undefined' ) {
+				window.wp = {};
+			}
+			if ( ! window.wp.abilities ) {
+				window.wp.abilities = {
+					registerAbility: async () => {},
+					registerAbilityCategory: async () => {},
+					getAbilities: async () => [],
+					getAbilityCategory: async () => null,
+					executeAbility: async () => null,
+				};
+			}
+		} );
+
 		await loginToWordPress( page );
 		await goToAgentPage( page );
 	} );
@@ -341,15 +439,21 @@ test.describe( 'Auto-Title Sessions (t099)', () => {
 		// item has the is-active class and is the current session. Using
 		// .first() is unreliable when previous tests have left sessions in the
 		// sidebar — the current session may not be the first item.
+		//
+		// 20 s timeout: the full chain (POST /sessions → POST /run → job poll
+		// at 3 s interval → fetchSessions → React re-render) takes 8-15 s on
+		// CI runners under load. The previous 10 s timeout was borderline —
+		// the third auto-title test (which uses 15 s) passed while these two
+		// (at 10 s) failed consistently.
 		const activeItem = page.locator( '.gratis-ai-agent-session-item.is-active' );
-		await expect( activeItem ).toBeVisible( { timeout: 10_000 } );
+		await expect( activeItem ).toBeVisible( { timeout: 20_000 } );
 
 		// The active sidebar item should now display the generated title.
 		// The title arrives via the SSE done event (generated_title field),
 		// not via a direct store dispatch, so this assertion validates the
 		// full stream-event handling path.
 		await expect( activeItem ).toContainText( expectedTitle, {
-			timeout: 5_000,
+			timeout: 10_000,
 		} );
 	} );
 
@@ -366,18 +470,18 @@ test.describe( 'Auto-Title Sessions (t099)', () => {
 		await input.fill( 'How do I build a WordPress plugin?' );
 		await input.press( 'Enter' );
 
-		// Wait for the active session item.
+		// Wait for the active session item (see timeout rationale in first test).
 		const activeItem = page.locator( '.gratis-ai-agent-session-item.is-active' );
-		await expect( activeItem ).toBeVisible( { timeout: 10_000 } );
+		await expect( activeItem ).toBeVisible( { timeout: 20_000 } );
 
 		// The title element inside the active session item should not say "Untitled".
 		// The title arrives via the SSE done event, not a direct store dispatch.
 		const titleEl = activeItem.locator( '.gratis-ai-agent-session-title' );
 		await expect( titleEl ).not.toContainText( 'Untitled', {
-			timeout: 5_000,
+			timeout: 10_000,
 		} );
 		await expect( titleEl ).toContainText( expectedTitle, {
-			timeout: 5_000,
+			timeout: 10_000,
 		} );
 	} );
 
