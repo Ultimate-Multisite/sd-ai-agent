@@ -113,6 +113,26 @@ async function injectTtsMock( page ) {
 				this.onerror = null;
 			}
 		};
+
+		// Stub the WP 7.0 abilities API so ensureClientAbilitiesRegistered()
+		// (called by the store's streamMessage thunk before POST /run) resolves
+		// immediately instead of polling for up to 30 s via
+		// waitForAbilitiesApi(). In wp-env CI, the @wordpress/core-abilities
+		// script module may not load in time, causing the send-message pipeline
+		// to hang for 30 s with sending=true — which blocks the TTS effect
+		// from firing. The stub resolves all registration calls as no-ops.
+		if ( typeof window.wp === 'undefined' ) {
+			window.wp = {};
+		}
+		if ( ! window.wp.abilities ) {
+			window.wp.abilities = {
+				registerAbility: async () => {},
+				registerAbilityCategory: async () => {},
+				getAbilities: async () => [],
+				getAbilityCategory: async () => null,
+				executeAbility: async () => null,
+			};
+		}
 	} );
 }
 
@@ -491,66 +511,14 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 			{ timeout: 30_000 }
 		);
 
-		// Wait for the store to finish sending (sending=false). The TTS
-		// effect only fires when sending is false, so we need to ensure the
-		// full job-completion state transition (setCurrentSession →
-		// setSending(false)) has been processed by React before polling for
-		// speak calls. Poll the Redux store directly for sending=false —
-		// this is more reliable than checking DOM state.
-		await expect
-			.poll(
-				async () => {
-					return page.evaluate( () => {
-						const store =
-							window.wp?.data?.select?.( 'gratis-ai-agent' );
-						return store ? store.isSending() : true;
-					} );
-				},
-				{ timeout: 20_000 }
-			)
-			.toBe( false );
-
-		// Diagnostic: capture store state and mock calls to pinpoint the
-		// exact failure point if speak() was never called.
-		const storeState = await page.evaluate( () => {
-			const store = window.wp?.data?.select?.( 'gratis-ai-agent' );
-			const messages = store?.getCurrentSessionMessages() || [];
-			return {
-				ttsEnabled: store?.isTtsEnabled(),
-				sending: store?.isSending(),
-				isStreaming: store?.isStreamingActive(),
-				messageCount: messages.length,
-				lastMessageRole:
-					messages.length > 0
-						? messages[ messages.length - 1 ].role
-						: null,
-				lastMessageText:
-					messages.length > 0
-						? messages[ messages.length - 1 ].parts?.[ 0 ]?.text
-						: null,
-				mockCalls: window.__ttsMockCalls?.length ?? -1,
-				mockSpeakCalls: (
-					window.__ttsMockCalls?.filter(
-						( c ) => c.type === 'speak'
-					) || []
-				).length,
-				isTTSSupported: 'speechSynthesis' in window,
-			};
-		} );
-
-		// If speak() was never called, log the diagnostic state as a test
-		// annotation so CI artifacts capture the exact failure reason.
-		if ( storeState.mockSpeakCalls === 0 ) {
-			// eslint-disable-next-line no-console
-			console.log(
-				'TTS DIAGNOSTIC:',
-				JSON.stringify( storeState, null, 2 )
-			);
-		}
-
 		// Verify that speak() was called on the mock.
-		// TTS fires asynchronously after the stream completes, so poll until
-		// the speak call appears rather than checking synchronously.
+		// TTS fires asynchronously after the stream completes (the useEffect
+		// in MessageList waits for sending=false + last message role=model),
+		// so poll until the speak call appears rather than checking synchronously.
+		// The wp.abilities stub injected by injectTtsMock() ensures that
+		// ensureClientAbilitiesRegistered() resolves immediately, so the full
+		// send-message pipeline (POST /run → pollJob → session fetch →
+		// setSending(false)) completes in ~5 s with processingPolls: 1.
 		await expect
 			.poll(
 				async () => {
