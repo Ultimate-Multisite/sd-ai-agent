@@ -6,8 +6,44 @@ $vendorDir = dirname(__DIR__);
 $baseDir   = dirname($vendorDir);
 
 return array(
+	'b33e3d135e5d9e47d845c576147bda89' => array(
+		'version' => '7.1.1.0',
+		'path'    => $vendorDir . '/php-di/php-di/src/functions.php'
+	),
 	'0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => array(
 		'version' => '1.33.0.0',
 		'path'    => $vendorDir . '/symfony/polyfill-mbstring/bootstrap.php'
+	),
+	'23c18046f52bef3eea034657bafda50f' => array(
+		'version' => '1.36.0.0',
+		'path'    => $vendorDir . '/symfony/polyfill-php81/bootstrap.php'
+	),
+	'e7e6bab1ed2be1042591496e1ad3e230' => array(
+		'version' => '1.21.1.0',
+		'path'    => $vendorDir . '/x-wp/helper-functions/xwp-helper-fns-arr.php'
+	),
+	'018bb25b45a3a6fff39933b8cc078e84' => array(
+		'version' => '1.21.1.0',
+		'path'    => $vendorDir . '/x-wp/helper-functions/xwp-helper-fns-meta.php'
+	),
+	'6f4d42339b919aad008d719d6274512f' => array(
+		'version' => '1.21.1.0',
+		'path'    => $vendorDir . '/x-wp/helper-functions/xwp-helper-fns-num.php'
+	),
+	'eac005e7ae06387970897430e20a14f8' => array(
+		'version' => '1.21.1.0',
+		'path'    => $vendorDir . '/x-wp/helper-functions/xwp-helper-fns-req.php'
+	),
+	'6c427d7d289e1cfc9c7756e71133bee6' => array(
+		'version' => '1.21.1.0',
+		'path'    => $vendorDir . '/x-wp/helper-functions/xwp-helper-fns.php'
+	),
+	'89887658aecc79fae17e75f8e6949680' => array(
+		'version' => '1.9.2.0',
+		'path'    => $vendorDir . '/x-wp/di/src/Functions/xwp-di-container-fns.php'
+	),
+	'289d5db207f260edee5d940f2b0874b1' => array(
+		'version' => '1.9.2.0',
+		'path'    => $vendorDir . '/x-wp/di/src/Functions/xwp-di-helper-fns.php'
 	),
 );

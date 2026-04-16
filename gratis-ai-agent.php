@@ -41,6 +41,8 @@ if ( file_exists( GRATIS_AI_AGENT_DIR . '/vendor/autoload_packages.php' ) ) {
 	require_once GRATIS_AI_AGENT_DIR . '/vendor/autoload.php';
 }
 
+use GratisAiAgent\Bootstrap\LifecycleHandler;
+use GratisAiAgent\Plugin;
 use GratisAiAgent\Abilities\AiImageAbilities;
 use GratisAiAgent\Abilities\BlockAbilities;
 use GratisAiAgent\Abilities\FeedbackAbilities;
@@ -103,18 +105,35 @@ use GratisAiAgent\REST\RestController;
 use GratisAiAgent\Tools\CustomToolExecutor;
 use GratisAiAgent\Tools\ToolDiscovery;
 
-register_activation_hook( __FILE__, [ Database::class, 'install' ] );
-register_activation_hook( __FILE__, [ AutomationRunner::class, 'reschedule_all' ] );
-register_activation_hook( __FILE__, [ OnboardingManager::class, 'on_activation' ] );
-register_activation_hook(
-	__FILE__,
-	function () {
-		ToolCapabilities::register_capabilities( ToolCapabilities::all_ability_ids() );
-	}
+// Activation / deactivation hooks fire *before* `plugins_loaded`, so they
+// cannot be wired through the DI container. `LifecycleHandler` consolidates
+// the handful of static calls that used to live inline here.
+register_activation_hook( __FILE__, [ LifecycleHandler::class, 'activate' ] );
+register_deactivation_hook( __FILE__, [ LifecycleHandler::class, 'deactivate' ] );
+
+// Bootstrap the DI container on `plugins_loaded:1`. PR 1 intentionally leaves
+// every legacy `XxxAbilities::register()` / `add_action()` / `add_filter()`
+// call below untouched — subsequent PRs migrate them into `#[Handler]`
+// classes imported by `GratisAiAgent\Plugin`.
+xwp_load_app(
+	[
+		'id'            => 'gratis-ai-agent',
+		'module'        => Plugin::class,
+		'autowiring'    => true,
+		'compile'       => 'production' === wp_get_environment_type(),
+		// The default `compile_class` is `CompiledContainer` + uppercased ID,
+		// which produces invalid PHP class names when the ID contains hyphens.
+		'compile_class' => 'CompiledContainerGratisAiAgent',
+		'compile_dir'   => GRATIS_AI_AGENT_DIR . '/build/di-cache/' . GRATIS_AI_AGENT_VERSION,
+	],
+	hook: 'plugins_loaded',
+	priority: 1,
 );
-register_deactivation_hook( __FILE__, [ KnowledgeHooks::class, 'deactivate' ] );
-register_deactivation_hook( __FILE__, [ AutomationRunner::class, 'unschedule_all' ] );
-register_deactivation_hook( __FILE__, [ SiteScanner::class, 'unschedule' ] );
+
+// Idempotent safety-net for older installs where the activation hook never
+// fired (e.g. reactivation via `wp plugin activate` before this file was
+// updated). Runs on every admin page load — cheap because `dbDelta` is a
+// no-op when the schema is already up to date.
 add_action( 'admin_init', [ Database::class, 'install' ] );
 
 // Translations are automatically loaded by WordPress since 4.6 for plugins hosted on WordPress.org.

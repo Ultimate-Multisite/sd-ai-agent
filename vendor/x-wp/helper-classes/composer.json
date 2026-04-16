@@ -1,0 +1,38 @@
+{
+  "name": "x-wp/helper-classes",
+  "description": "Generic abstraction related to xWP packages",
+  "license": "GPL-2.0-only",
+  "type": "library",
+  "keywords": [
+    "abstractions",
+    "contracts",
+    "decoupling",
+    "interfaces",
+    "interoperability",
+    "standards",
+    "extended-wp"
+  ],
+  "authors": [
+    {
+      "name": "Sibin Grasic",
+      "email": "sibin.grasic@oblak.studio"
+    }
+  ],
+  "require": {
+    "php": ">=8.0",
+    "x-wp/helper-traits": "^1"
+  },
+  "suggest": {
+    "automattic/jetpack-autoloader": "Allow for better interoperability with other plugins that use this package."
+  },
+  "minimum-stability": "alpha",
+  "prefer-stable": true,
+  "autoload": {
+    "psr-4": {
+      "XWP\\Helper\\Classes\\": ""
+    },
+    "classmap": [
+      "WP/"
+    ]
+  }
+}

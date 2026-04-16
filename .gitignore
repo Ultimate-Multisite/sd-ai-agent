@@ -28,6 +28,8 @@ skills-lock.json
 
 # Build artifacts
 *.zip
+# Compiled PHP-DI container (x-wp/di) — generated per plugin version in prod only
+build/di-cache/
 # Dev-only composer packages (not needed in production)
 vendor/bin/
 vendor/dealerdirect/

@@ -7,5 +7,12 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Automattic\\Jetpack\\Autoloader\\AutoloadGenerator' => $vendorDir . '/automattic/jetpack-autoloader/src/AutoloadGenerator.php',
+    'Automattic\\Jetpack\\Constants' => $vendorDir . '/automattic/jetpack-constants/src/class-constants.php',
+    'CURLStringFile' => $vendorDir . '/symfony/polyfill-php81/Resources/stubs/CURLStringFile.php',
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
+    'ReturnTypeWillChange' => $vendorDir . '/symfony/polyfill-php81/Resources/stubs/ReturnTypeWillChange.php',
+    'WP_Filesystem_Streaming' => $vendorDir . '/x-wp/helper-classes/WP/Filesystem_Streaming.php',
+    'XWP_CLI_Namespace' => $vendorDir . '/x-wp/di/src/Core/CLI_Namespace.php',
+    'XWP_Context' => $vendorDir . '/x-wp/di/src/Core/Context.php',
+    'XWP_REST_Controller' => $vendorDir . '/x-wp/di/src/Core/REST_Controller.php',
 );

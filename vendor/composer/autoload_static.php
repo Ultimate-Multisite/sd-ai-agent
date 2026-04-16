@@ -7,22 +7,52 @@ namespace Composer\Autoload;
 class ComposerStaticIniteb927c2f25a36a25249b82cbf7d86ba8
 {
     public static $files = array (
+        'b33e3d135e5d9e47d845c576147bda89' => __DIR__ . '/..' . '/php-di/php-di/src/functions.php',
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
+        '23c18046f52bef3eea034657bafda50f' => __DIR__ . '/..' . '/symfony/polyfill-php81/bootstrap.php',
+        'e7e6bab1ed2be1042591496e1ad3e230' => __DIR__ . '/..' . '/x-wp/helper-functions/xwp-helper-fns-arr.php',
+        '018bb25b45a3a6fff39933b8cc078e84' => __DIR__ . '/..' . '/x-wp/helper-functions/xwp-helper-fns-meta.php',
+        '6f4d42339b919aad008d719d6274512f' => __DIR__ . '/..' . '/x-wp/helper-functions/xwp-helper-fns-num.php',
+        'eac005e7ae06387970897430e20a14f8' => __DIR__ . '/..' . '/x-wp/helper-functions/xwp-helper-fns-req.php',
+        '6c427d7d289e1cfc9c7756e71133bee6' => __DIR__ . '/..' . '/x-wp/helper-functions/xwp-helper-fns.php',
+        '89887658aecc79fae17e75f8e6949680' => __DIR__ . '/..' . '/x-wp/di/src/Functions/xwp-di-container-fns.php',
+        '289d5db207f260edee5d940f2b0874b1' => __DIR__ . '/..' . '/x-wp/di/src/Functions/xwp-di-helper-fns.php',
     );
 
     public static $prefixLengthsPsr4 = array (
+        'X' =>
+        array (
+            'XWP\\Helper\\Traits\\' => 18,
+            'XWP\\Helper\\Functions\\' => 21,
+            'XWP\\Helper\\Classes\\' => 19,
+            'XWP\\DI\\' => 7,
+        ),
         'S' =>
         array (
+            'Symfony\\Polyfill\\Php81\\' => 23,
             'Symfony\\Polyfill\\Mbstring\\' => 26,
         ),
         'P' =>
         array (
             'Psr\\SimpleCache\\' => 16,
+            'Psr\\Container\\' => 14,
             'Pondermatic\\ComposerArchiveProject\\' => 35,
+        ),
+        'L' =>
+        array (
+            'Laravel\\SerializableClosure\\' => 28,
+        ),
+        'I' =>
+        array (
+            'Invoker\\' => 8,
         ),
         'G' =>
         array (
             'GratisAiAgent\\' => 14,
+        ),
+        'D' =>
+        array (
+            'DI\\' => 3,
         ),
         'A' =>
         array (
@@ -31,6 +61,26 @@ class ComposerStaticIniteb927c2f25a36a25249b82cbf7d86ba8
     );
 
     public static $prefixDirsPsr4 = array (
+        'XWP\\Helper\\Traits\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/x-wp/helper-traits',
+        ),
+        'XWP\\Helper\\Functions\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/x-wp/helper-functions',
+        ),
+        'XWP\\Helper\\Classes\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/x-wp/helper-classes',
+        ),
+        'XWP\\DI\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/x-wp/di/src',
+        ),
+        'Symfony\\Polyfill\\Php81\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php81',
+        ),
         'Symfony\\Polyfill\\Mbstring\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
@@ -39,13 +89,29 @@ class ComposerStaticIniteb927c2f25a36a25249b82cbf7d86ba8
         array (
             0 => __DIR__ . '/..' . '/psr/simple-cache/src',
         ),
+        'Psr\\Container\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/psr/container/src',
+        ),
         'Pondermatic\\ComposerArchiveProject\\' =>
         array (
             0 => __DIR__ . '/..' . '/pondermatic/composer-archive-project/src',
         ),
+        'Laravel\\SerializableClosure\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/laravel/serializable-closure/src',
+        ),
+        'Invoker\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/php-di/invoker/src',
+        ),
         'GratisAiAgent\\' =>
         array (
             0 => __DIR__ . '/../..' . '/includes',
+        ),
+        'DI\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/php-di/php-di/src',
         ),
         'Automattic\\Jetpack\\Autoloader\\' =>
         array (
@@ -65,7 +131,14 @@ class ComposerStaticIniteb927c2f25a36a25249b82cbf7d86ba8
 
     public static $classMap = array (
         'Automattic\\Jetpack\\Autoloader\\AutoloadGenerator' => __DIR__ . '/..' . '/automattic/jetpack-autoloader/src/AutoloadGenerator.php',
+        'Automattic\\Jetpack\\Constants' => __DIR__ . '/..' . '/automattic/jetpack-constants/src/class-constants.php',
+        'CURLStringFile' => __DIR__ . '/..' . '/symfony/polyfill-php81/Resources/stubs/CURLStringFile.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'ReturnTypeWillChange' => __DIR__ . '/..' . '/symfony/polyfill-php81/Resources/stubs/ReturnTypeWillChange.php',
+        'WP_Filesystem_Streaming' => __DIR__ . '/..' . '/x-wp/helper-classes/WP/Filesystem_Streaming.php',
+        'XWP_CLI_Namespace' => __DIR__ . '/..' . '/x-wp/di/src/Core/CLI_Namespace.php',
+        'XWP_Context' => __DIR__ . '/..' . '/x-wp/di/src/Core/Context.php',
+        'XWP_REST_Controller' => __DIR__ . '/..' . '/x-wp/di/src/Core/REST_Controller.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

@@ -14,7 +14,8 @@
 		"automattic/jetpack-autoloader": "^3.0 || ^4.0 || ^5.0",
 		"pondermatic/composer-archive-project": "^1.1",
 		"psr/simple-cache": "^1.0 || ^2.0 || ^3.0",
-		"smalot/pdfparser": "^2.0"
+		"smalot/pdfparser": "^2.0",
+		"x-wp/di": "^1.9"
 	},
 	"require-dev": {
 		"dealerdirect/phpcodesniffer-composer-installer": "^1.0",
@@ -72,6 +73,7 @@
 			".distignore",
 			".vscode",
 			"playground",
+			"build/di-cache",
 			".aidevops.json",
 			".beads",
 			".clinerules",
