@@ -402,6 +402,11 @@ test.describe( 'client-abilities — insert-block on editor screen', () => {
 		await page.goto( '/wp-admin/post-new.php' );
 		await page.waitForLoadState( 'domcontentloaded' );
 
+		// Check abilities API BEFORE the slow editor wait. On CI the block
+		// editor can take 45-60 s to initialise — skipping early avoids a
+		// 60 s timeout when the abilities API isn't available at all.
+		await skipIfNoAbilitiesApi( page );
+
 		// Wait for the block editor to mount — the editor canvas is the signal.
 		// 60 s accommodates slow CI runners where the block editor can take
 		// 45-55 s to initialise (Gutenberg script modules + React hydration).
@@ -409,8 +414,6 @@ test.describe( 'client-abilities — insert-block on editor screen', () => {
 			.locator( '.block-editor-writing-flow, .editor-styles-wrapper' )
 			.first()
 			.waitFor( { state: 'visible', timeout: 60_000 } );
-
-		await skipIfNoAbilitiesApi( page );
 
 		// Wait for abilities to register (the admin-page bundle also loads here).
 		await waitForAbilitiesRegistered( page );
@@ -645,6 +648,12 @@ test.describe( 'client-abilities — no relevant console errors', () => {
 		await loginToWordPress( page );
 		await page.goto( '/wp-admin/post-new.php' );
 		await page.waitForLoadState( 'domcontentloaded' );
+
+		// Check abilities API BEFORE the slow editor wait. On CI the block
+		// editor can take 45-60 s to initialise — skipping early avoids a
+		// 60 s timeout when the abilities API isn't available at all.
+		await skipIfNoAbilitiesApi( page );
+
 		// The block editor is notoriously slow to initialise on CI runners,
 		// especially on WP trunk where Gutenberg loads additional script
 		// modules. 60 s accommodates the worst-case load time observed in
@@ -654,7 +663,6 @@ test.describe( 'client-abilities — no relevant console errors', () => {
 			.locator( '.block-editor-writing-flow, .editor-styles-wrapper' )
 			.first()
 			.waitFor( { state: 'visible', timeout: 60_000 } );
-		await skipIfNoAbilitiesApi( page );
 		await waitForAbilitiesRegistered( page );
 
 		assertNoForbiddenErrors(
