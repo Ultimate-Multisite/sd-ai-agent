@@ -68,6 +68,12 @@ async function goToDashboard( page ) {
  * timeout is reached. This is necessary because registration is async —
  * the category Promise must resolve before abilities can register.
  *
+ * Note: page.waitForFunction(fn, arg?, options?) — the second argument is
+ * `arg` (data passed to the function), not the options object. Passing
+ * `{ timeout }` as the second argument treats it as `arg` and uses the
+ * default test timeout (90 s) instead. The correct call passes `null` for
+ * `arg` and `{ timeout }` as the third argument.
+ *
  * @param {import('@playwright/test').Page} page
  * @param {number}                          [timeout=15000] Max wait in ms.
  */
@@ -111,6 +117,7 @@ async function waitForAbilitiesRegistered( page, timeout = 15_000 ) {
 				return false;
 			}
 		},
+		null,
 		{ timeout }
 	);
 }
