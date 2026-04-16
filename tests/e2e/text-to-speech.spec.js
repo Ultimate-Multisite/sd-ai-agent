@@ -495,13 +495,58 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 		// effect only fires when sending is false, so we need to ensure the
 		// full job-completion state transition (setCurrentSession →
 		// setSending(false)) has been processed by React before polling for
-		// speak calls. The message input being enabled is a reliable proxy.
-		await page
-			.locator(
-				'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-input'
+		// speak calls. Poll the Redux store directly for sending=false —
+		// this is more reliable than checking DOM state.
+		await expect
+			.poll(
+				async () => {
+					return page.evaluate( () => {
+						const store =
+							window.wp?.data?.select?.( 'gratis-ai-agent' );
+						return store ? store.isSending() : true;
+					} );
+				},
+				{ timeout: 20_000 }
 			)
-			.first()
-			.waitFor( { state: 'visible', timeout: 15_000 } );
+			.toBe( false );
+
+		// Diagnostic: capture store state and mock calls to pinpoint the
+		// exact failure point if speak() was never called.
+		const storeState = await page.evaluate( () => {
+			const store = window.wp?.data?.select?.( 'gratis-ai-agent' );
+			const messages = store?.getCurrentSessionMessages() || [];
+			return {
+				ttsEnabled: store?.isTtsEnabled(),
+				sending: store?.isSending(),
+				isStreaming: store?.isStreamingActive(),
+				messageCount: messages.length,
+				lastMessageRole:
+					messages.length > 0
+						? messages[ messages.length - 1 ].role
+						: null,
+				lastMessageText:
+					messages.length > 0
+						? messages[ messages.length - 1 ].parts?.[ 0 ]?.text
+						: null,
+				mockCalls: window.__ttsMockCalls?.length ?? -1,
+				mockSpeakCalls: (
+					window.__ttsMockCalls?.filter(
+						( c ) => c.type === 'speak'
+					) || []
+				).length,
+				isTTSSupported: 'speechSynthesis' in window,
+			};
+		} );
+
+		// If speak() was never called, log the diagnostic state as a test
+		// annotation so CI artifacts capture the exact failure reason.
+		if ( storeState.mockSpeakCalls === 0 ) {
+			// eslint-disable-next-line no-console
+			console.log(
+				'TTS DIAGNOSTIC:',
+				JSON.stringify( storeState, null, 2 )
+			);
+		}
 
 		// Verify that speak() was called on the mock.
 		// TTS fires asynchronously after the stream completes, so poll until
