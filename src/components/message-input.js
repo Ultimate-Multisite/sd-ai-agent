@@ -683,15 +683,15 @@ export default function MessageInput( { compact = false, onSlashCommand } ) {
 						}
 					/>
 				) }
-			{ sending && (
-				<Button
-					onClick={ stopGeneration }
-					className="gratis-ai-agent-stop-btn"
-					label={ __( 'Stop generation', 'gratis-ai-agent' ) }
-					showTooltip
-					icon={ <Icon icon={ closeSmall } size={ 18 } /> }
-				/>
-			) }
+				{ sending && (
+					<Button
+						onClick={ stopGeneration }
+						className="gratis-ai-agent-stop-btn"
+						label={ __( 'Stop generation', 'gratis-ai-agent' ) }
+						showTooltip
+						icon={ <Icon icon={ closeSmall } size={ 18 } /> }
+					/>
+				) }
 				<Button
 					variant="primary"
 					onClick={ handleSend }

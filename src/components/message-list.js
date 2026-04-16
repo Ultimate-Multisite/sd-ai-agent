@@ -90,10 +90,11 @@ function MessageAttachments( { attachments } ) {
 /**
  * Renders a single message bubble with role-appropriate styling.
  *
- * @param {Object} props             - Component props.
- * @param {string} props.role        - Message role: 'user', 'model', or 'system'.
- * @param {string} props.text        - Rendered text content (markdown for model messages).
- * @param {Array}  props.attachments - Optional image attachments for user messages.
+ * @param {Object}  props             - Component props.
+ * @param {string}  props.role        - Message role: 'user', 'model', or 'system'.
+ * @param {string}  props.text        - Rendered text content (markdown for model messages).
+ * @param {Array}   props.attachments - Optional image attachments for user messages.
+ * @param {boolean} props.queued      - Whether the message is queued (pending send).
  * @return {JSX.Element} The message bubble element.
  */
 function MessageBubble( { role, text, attachments, queued } ) {
@@ -455,12 +456,12 @@ export default function MessageList() {
 						{ msg.toolCalls?.length > 0 && (
 							<ToolCallDetails toolCalls={ msg.toolCalls } />
 						) }
-					<MessageBubble
-						role={ msg.role }
-						text={ cleanText }
-						attachments={ msg.attachments }
-						queued={ msg.queued }
-					/>
+						<MessageBubble
+							role={ msg.role }
+							text={ cleanText }
+							attachments={ msg.attachments }
+							queued={ msg.queued }
+						/>
 						<MessageActions
 							message={ msg }
 							index={ originalIndex }
