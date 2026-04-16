@@ -1161,9 +1161,12 @@ class AgentLoopTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test classify_ability returns 'write' for abilities with readonly=null (safe default).
+	 * Test classify_ability returns 'destructive' for abilities with null annotations (safe default).
+	 *
+	 * When both readonly and destructive annotations are null/unset, the ability is treated
+	 * as destructive by default — requiring user confirmation before execution.
 	 */
-	public function test_classify_ability_readonly_null_defaults_to_write(): void {
+	public function test_classify_ability_null_annotations_defaults_to_destructive(): void {
 		if ( ! class_exists( 'WP_Ability' ) ) {
 			$this->markTestSkipped( 'WP_Ability not available.' );
 		}
@@ -1172,7 +1175,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 			'test/unknown-ability',
 			[
 				'label'               => 'Test Unknown',
-				'description'         => 'An ability with no readonly annotation.',
+				'description'         => 'An ability with no annotations set.',
 				'category'            => 'gratis-ai-agent',
 				'execute_callback'    => '__return_true',
 				'permission_callback' => '__return_true',
@@ -1186,7 +1189,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 			]
 		);
 
-		$this->assertSame( 'write', AgentLoop::classify_ability( $ability ) );
+		$this->assertSame( 'destructive', AgentLoop::classify_ability( $ability ) );
 	}
 
 	// -------------------------------------------------------------------------

@@ -1078,12 +1078,13 @@ class SessionController {
 		}
 
 		// Append the interrupt message to the job's pending interrupts.
-		$interrupts   = $job['interrupts'] ?? array();
-		$interrupts[] = array(
+		$current_interrupts = $job['interrupts'] ?? array();
+		$interrupts         = is_array( $current_interrupts ) ? $current_interrupts : array();
+		$interrupts[]       = array(
 			'message'   => $message,
 			'timestamp' => time(),
 		);
-		$job['interrupts'] = $interrupts;
+		$job['interrupts']  = $interrupts;
 
 		set_transient( RestController::JOB_PREFIX . $job_id, $job, RestController::JOB_TTL );
 
