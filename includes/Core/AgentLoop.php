@@ -141,6 +141,18 @@ class AgentLoop {
 	 */
 	private $progress_callback = null;
 
+	/**
+	 * Optional callback that checks for interrupt messages from the user.
+	 *
+	 * Signature: function(): ?array{ message: string, timestamp: int }
+	 * Returns the next unprocessed interrupt, or null if none pending.
+	 * Used by the job system to read interrupts from the job transient
+	 * so the agent loop can incorporate new user context mid-execution.
+	 *
+	 * @var callable|null
+	 */
+	private $interrupt_checker = null;
+
 	// ── Spin Detection State ─────────────────────────────────────────────
 
 	/** @var int Consecutive rounds with identical tool signatures. */
@@ -225,6 +237,11 @@ class AgentLoop {
 		// Progress callback for live tool-call reporting (used by job system).
 		if ( isset( $options['progress_callback'] ) && is_callable( $options['progress_callback'] ) ) {
 			$this->progress_callback = $options['progress_callback'];
+		}
+
+		// Interrupt checker for mid-loop user message injection (used by job system).
+		if ( isset( $options['interrupt_checker'] ) && is_callable( $options['interrupt_checker'] ) ) {
+			$this->interrupt_checker = $options['interrupt_checker'];
 		}
 
 		// Validate and store client-side ability descriptors.
@@ -427,6 +444,11 @@ class AgentLoop {
 					'exit_reason'     => 'timeout',
 				);
 			}
+
+			// Check for user interrupts — messages sent while the loop runs.
+			// Inject them into the conversation history so the model is
+			// aware of the new context on this iteration.
+			$this->check_and_inject_interrupts();
 
 			// Smart conversation trimming before each LLM call.
 			// @phpstan-ignore-next-line
@@ -1264,6 +1286,54 @@ class AgentLoop {
 			call_user_func( $this->progress_callback, $this->tool_call_log );
 		} catch ( \Throwable $e ) {
 			// Progress reporting is best-effort and must not interrupt the agent loop.
+		}
+	}
+
+	/**
+	 * Check for user interrupt messages and inject them into the conversation.
+	 *
+	 * Called at the start of each loop iteration. If the interrupt_checker
+	 * callback returns an interrupt, it's appended to the history as a
+	 * UserMessage prefixed with "[User interrupt]" so the model knows
+	 * the user has provided new context mid-execution.
+	 */
+	private function check_and_inject_interrupts(): void {
+		if ( null === $this->interrupt_checker ) {
+			return;
+		}
+
+		try {
+			$interrupt = call_user_func( $this->interrupt_checker );
+			if ( null === $interrupt || ! is_array( $interrupt ) ) {
+				return;
+			}
+
+			$message_text = (string) ( $interrupt['message'] ?? '' );
+			if ( '' === $message_text ) {
+				return;
+			}
+
+			// Inject the interrupt as a user message so the model sees it.
+			$this->history[] = new UserMessage(
+				array(
+					new MessagePart(
+						'[User interrupt — the user has sent a new message while you were working. '
+						. 'Read it carefully. If it changes the task, adapt accordingly. '
+						. "If it's additional context, incorporate it and continue.]\n\n"
+						. $message_text
+					),
+				)
+			);
+
+			// Log the interrupt for transparency.
+			$this->tool_call_log[] = array(
+				'type'    => 'interrupt',
+				'message' => $message_text,
+			);
+
+			$this->fire_progress();
+		} catch ( \Throwable $e ) {
+			// Interrupt checking is best-effort and must not crash the loop.
 		}
 	}
 
