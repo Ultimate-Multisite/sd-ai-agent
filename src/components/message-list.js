@@ -90,13 +90,14 @@ function MessageAttachments( { attachments } ) {
 /**
  * Renders a single message bubble with role-appropriate styling.
  *
- * @param {Object} props             - Component props.
- * @param {string} props.role        - Message role: 'user', 'model', or 'system'.
- * @param {string} props.text        - Rendered text content (markdown for model messages).
- * @param {Array}  props.attachments - Optional image attachments for user messages.
+ * @param {Object}  props             - Component props.
+ * @param {string}  props.role        - Message role: 'user', 'model', or 'system'.
+ * @param {string}  props.text        - Rendered text content (markdown for model messages).
+ * @param {Array}   props.attachments - Optional image attachments for user messages.
+ * @param {boolean} props.queued      - Whether the message is queued (pending send).
  * @return {JSX.Element} The message bubble element.
  */
-function MessageBubble( { role, text, attachments } ) {
+function MessageBubble( { role, text, attachments, queued } ) {
 	const classMap = {
 		user: 'gratis-ai-agent-bubble gratis-ai-agent-user',
 		model: 'gratis-ai-agent-bubble gratis-ai-agent-assistant',
@@ -113,9 +114,18 @@ function MessageBubble( { role, text, attachments } ) {
 
 	if ( role === 'user' ) {
 		return (
-			<div className={ classMap.user }>
+			<div
+				className={ `${ classMap.user }${
+					queued ? ' is-queued' : ''
+				}` }
+			>
 				<MessageAttachments attachments={ attachments } />
 				{ text }
+				{ queued && (
+					<span className="gratis-ai-agent-queued-badge">
+						{ __( 'Queued', 'gratis-ai-agent' ) }
+					</span>
+				) }
 			</div>
 		);
 	}
@@ -450,6 +460,7 @@ export default function MessageList() {
 							role={ msg.role }
 							text={ cleanText }
 							attachments={ msg.attachments }
+							queued={ msg.queued }
 						/>
 						<MessageActions
 							message={ msg }

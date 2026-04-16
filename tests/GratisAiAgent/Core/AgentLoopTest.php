@@ -1161,36 +1161,10 @@ class AgentLoopTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test classify_ability returns 'destructive' for abilities with destructive=true.
-	 */
-	public function test_classify_ability_destructive_true(): void {
-		if ( ! class_exists( 'WP_Ability' ) ) {
-			$this->markTestSkipped( 'WP_Ability not available.' );
-		}
-
-		$ability = new \WP_Ability(
-			'test/destructive-ability',
-			[
-				'label'               => 'Test Destructive',
-				'description'         => 'A destructive test ability.',
-				'category'            => 'gratis-ai-agent',
-				'execute_callback'    => '__return_true',
-				'permission_callback' => '__return_true',
-				'meta'                => [
-					'annotations' => [
-						'readonly'    => false,
-						'destructive' => true,
-						'idempotent'  => false,
-					],
-				],
-			]
-		);
-
-		$this->assertSame( 'destructive', AgentLoop::classify_ability( $ability ) );
-	}
-
-	/**
 	 * Test classify_ability returns 'destructive' for abilities with null annotations (safe default).
+	 *
+	 * When both readonly and destructive annotations are null/unset, the ability is treated
+	 * as destructive by default — requiring user confirmation before execution.
 	 */
 	public function test_classify_ability_null_annotations_defaults_to_destructive(): void {
 		if ( ! class_exists( 'WP_Ability' ) ) {

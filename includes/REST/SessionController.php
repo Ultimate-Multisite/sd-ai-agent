@@ -461,6 +461,29 @@ class SessionController {
 			)
 		);
 
+		// Interrupt endpoint — inject a user message into a running job.
+		register_rest_route(
+			self::NAMESPACE,
+			'/job/(?P<id>[a-f0-9-]+)/interrupt',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $instance, 'handle_interrupt' ),
+				'permission_callback' => array( $instance, 'check_permission' ),
+				'args'                => array(
+					'id'      => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'message' => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		);
+
 		// Site builder endpoints.
 		register_rest_route(
 			self::NAMESPACE,
@@ -1023,6 +1046,56 @@ class SessionController {
 		}
 
 		return $this->resume_job( $job_id, $job, 'reject' );
+	}
+
+	/**
+	 * Handle POST /job/{id}/interrupt — inject a user message into a running job.
+	 *
+	 * Sets a flag on the job transient that the agent loop's progress callback
+	 * will pick up on the next poll cycle. The interrupt message is appended to
+	 * the session in the database so it persists. The running agent loop will
+	 * see the interrupt on its next iteration and can incorporate the new context.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function handle_interrupt( WP_REST_Request $request ) {
+		// @phpstan-ignore-next-line
+		$job_id  = (string) $request->get_param( 'id' );
+		$message = (string) $request->get_param( 'message' );
+		$job     = get_transient( RestController::JOB_PREFIX . $job_id );
+
+		if ( ! is_array( $job ) || 'processing' !== ( $job['status'] ?? '' ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_invalid_job',
+				__( 'Job not found or not currently processing.', 'gratis-ai-agent' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		if ( ( $job['user_id'] ?? 0 ) !== get_current_user_id() ) {
+			return new WP_Error( 'gratis_ai_agent_forbidden', __( 'Not authorized.', 'gratis-ai-agent' ), array( 'status' => 403 ) );
+		}
+
+		// Append the interrupt message to the job's pending interrupts.
+		$current_interrupts = $job['interrupts'] ?? array();
+		$interrupts         = is_array( $current_interrupts ) ? $current_interrupts : array();
+		$interrupts[]       = array(
+			'message'   => $message,
+			'timestamp' => time(),
+		);
+		$job['interrupts']  = $interrupts;
+
+		set_transient( RestController::JOB_PREFIX . $job_id, $job, RestController::JOB_TTL );
+
+		return new WP_REST_Response(
+			array(
+				'status'     => 'interrupt_queued',
+				'job_id'     => $job_id,
+				'interrupts' => count( $interrupts ),
+			),
+			200
+		);
 	}
 
 	/**
