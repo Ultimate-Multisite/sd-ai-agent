@@ -39,14 +39,26 @@ const { loginToWordPress } = require( './utils/wp-admin' );
  * Navigate to the WP admin dashboard and wait for the page to be ready.
  * The floating widget mounts here, which triggers ability registration.
  *
+ * Uses a FAB element wait rather than networkidle. On loaded CI runners,
+ * waitForLoadState('networkidle') consumed 60-70 s because the floating
+ * widget makes several async API calls (providers, sessions, settings,
+ * alerts) that keep network connections open. This exhausted most of the
+ * 90 s test budget before waitForAbilitiesRegistered could run, causing
+ * the outer test timeout to fire instead of the 15 s waitForFunction
+ * timeout. Waiting for the FAB element is faster (~2-5 s) and more
+ * meaningful: it guarantees the floating-widget React app has mounted
+ * and ensureRegistered() has been called.
+ *
  * @param {import('@playwright/test').Page} page
  */
 async function goToDashboard( page ) {
 	await page.goto( '/wp-admin/index.php' );
 	await page.waitForLoadState( 'domcontentloaded' );
-	// Give the floating widget bundle time to load and trigger ensureRegistered().
-	// We wait for networkidle so all script modules have had a chance to execute.
-	await page.waitForLoadState( 'networkidle' );
+	// Wait for the FAB button — it renders once React has mounted and the
+	// floating-widget bundle has executed (triggering ensureRegistered()).
+	await page
+		.locator( '.gratis-ai-agent-fab' )
+		.waitFor( { state: 'visible', timeout: 30_000 } );
 }
 
 /**
@@ -55,6 +67,12 @@ async function goToDashboard( page ) {
  * Polls wp.abilities.getAbilities() until both abilities appear or the
  * timeout is reached. This is necessary because registration is async —
  * the category Promise must resolve before abilities can register.
+ *
+ * Note: page.waitForFunction(fn, arg?, options?) — the second argument is
+ * `arg` (data passed to the function), not the options object. Passing
+ * `{ timeout }` as the second argument treats it as `arg` and uses the
+ * default test timeout (90 s) instead. The correct call passes `null` for
+ * `arg` and `{ timeout }` as the third argument.
  *
  * @param {import('@playwright/test').Page} page
  * @param {number}                          [timeout=15000] Max wait in ms.
@@ -99,6 +117,7 @@ async function waitForAbilitiesRegistered( page, timeout = 15_000 ) {
 				return false;
 			}
 		},
+		null,
 		{ timeout }
 	);
 }

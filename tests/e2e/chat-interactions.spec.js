@@ -99,6 +99,82 @@ async function interceptStream( page, options = {} ) {
 			body: JSON.stringify( result ),
 		} );
 	} );
+
+	// Intercept GET /sessions/:id — the store reloads the session from the DB
+	// after the job completes. Without this intercept the test depends on a real
+	// REST round-trip which can take 1-3 s on loaded CI runners, pushing total
+	// wait time past the 10 s assertion timeout. When capturedSessionId is null
+	// (before the job runs), pass through to the real server.
+	await page.route(
+		( url ) => {
+			const decoded = decodeURIComponent( url.toString() );
+			return (
+				decoded.includes( 'gratis-ai-agent/v1/sessions/' ) &&
+				! decoded.includes( '/sessions/shared' ) &&
+				/\/sessions\/\d+/.test( decoded )
+			);
+		},
+		async ( route ) => {
+			if ( capturedSessionId === null ) {
+				await route.continue();
+				return;
+			}
+			await route.fulfill( {
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify( {
+					id: capturedSessionId,
+					title: 'Untitled',
+					status: 'active',
+					user_id: 1,
+					messages: [],
+					tool_calls: [],
+				} ),
+			} );
+		}
+	);
+
+	// Intercept GET /sessions (list) — the store calls fetchSessions() after the
+	// job completes to refresh the sidebar. Without this intercept the sidebar
+	// update depends on a real REST round-trip, which can exceed the assertion
+	// timeout on loaded CI runners. When capturedSessionId is null (the initial
+	// fetchSessions on mount fires before the job), pass through to the real
+	// server so the sidebar populates with any pre-existing sessions.
+	//
+	// The mock response carries generatedTitle (or 'Untitled') as the session
+	// title. The store's SET_SESSIONS reducer also merges pendingTitles into the
+	// list — so even if generatedTitle is undefined, the optimistic title from
+	// updateSessionTitle() takes precedence.
+	await page.route(
+		( url ) => {
+			const decoded = decodeURIComponent( url.toString() );
+			return (
+				decoded.includes( 'gratis-ai-agent/v1/sessions' ) &&
+				! decoded.includes( '/sessions/shared' ) &&
+				! /\/sessions\/\d+/.test( decoded )
+			);
+		},
+		async ( route ) => {
+			if ( capturedSessionId === null ) {
+				await route.continue();
+				return;
+			}
+			await route.fulfill( {
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify( [
+					{
+						id: capturedSessionId,
+						title: generatedTitle || 'Untitled',
+						status: 'active',
+						user_id: 1,
+						messages: [],
+						tool_calls: [],
+					},
+				] ),
+			} );
+		}
+	);
 }
 
 test.describe( 'Chat Input Interactions', () => {
