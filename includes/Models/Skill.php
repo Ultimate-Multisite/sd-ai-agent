@@ -402,9 +402,8 @@ class Skill {
 			return '';
 		}
 
-		$content = file_get_contents( $path );
+		$content = file_get_contents( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- reading local bundled plugin file
 
 		return false !== $content ? trim( $content ) : '';
 	}
-
 }
