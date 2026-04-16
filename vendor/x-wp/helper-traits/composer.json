@@ -1,0 +1,34 @@
+{
+  "name": "x-wp/helper-traits",
+  "description": "Various traits related to xWP packages",
+  "license": "GPL-2.0-only",
+  "type": "library",
+  "keywords": [
+    "traits",
+    "contracts",
+    "decoupling",
+    "interfaces",
+    "interoperability",
+    "standards",
+    "extended-wp"
+  ],
+  "authors": [
+    {
+      "name": "Sibin Grasic",
+      "email": "sibin.grasic@oblak.studio"
+    }
+  ],
+  "require": {
+    "php": ">=8.0"
+  },
+  "suggest": {
+    "automattic/jetpack-autoloader": "Allow for better interoperability with other plugins that use this package."
+  },
+  "minimum-stability": "alpha",
+  "prefer-stable": true,
+  "autoload": {
+    "psr-4": {
+      "XWP\\Helper\\Traits\\": ""
+    }
+  }
+}

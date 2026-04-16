@@ -10,6 +10,18 @@ return array(
 		'version' => '5.0.16',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/AutoloadGenerator.php'
 	),
+	'Automattic\\Jetpack\\Constants' => array(
+		'version' => '3.0.8.0',
+		'path'    => $vendorDir . '/automattic/jetpack-constants/src/class-constants.php'
+	),
+	'CURLStringFile' => array(
+		'version' => '1.36.0.0',
+		'path'    => $vendorDir . '/symfony/polyfill-php81/Resources/stubs/CURLStringFile.php'
+	),
+	'ReturnTypeWillChange' => array(
+		'version' => '1.36.0.0',
+		'path'    => $vendorDir . '/symfony/polyfill-php81/Resources/stubs/ReturnTypeWillChange.php'
+	),
 	'Smalot\\PdfParser\\Config' => array(
 		'version' => '2.12.4.0',
 		'path'    => $vendorDir . '/smalot/pdfparser/src/Smalot/PdfParser/Config.php'
@@ -193,5 +205,21 @@ return array(
 	'Smalot\\PdfParser\\XObject\\Image' => array(
 		'version' => '2.12.4.0',
 		'path'    => $vendorDir . '/smalot/pdfparser/src/Smalot/PdfParser/XObject/Image.php'
+	),
+	'WP_Filesystem_Streaming' => array(
+		'version' => '1.21.1.0',
+		'path'    => $vendorDir . '/x-wp/helper-classes/WP/Filesystem_Streaming.php'
+	),
+	'XWP_CLI_Namespace' => array(
+		'version' => '1.9.2.0',
+		'path'    => $vendorDir . '/x-wp/di/src/Core/CLI_Namespace.php'
+	),
+	'XWP_Context' => array(
+		'version' => '1.9.2.0',
+		'path'    => $vendorDir . '/x-wp/di/src/Core/Context.php'
+	),
+	'XWP_REST_Controller' => array(
+		'version' => '1.9.2.0',
+		'path'    => $vendorDir . '/x-wp/di/src/Core/REST_Controller.php'
 	),
 );
