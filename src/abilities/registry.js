@@ -76,6 +76,36 @@ function abilitiesApiAvailable() {
 }
 
 /**
+ * Wait up to maxWaitMs for the WP 7.0 abilities API to become available.
+ *
+ * Addresses the race condition where floating-widget.js (a regular deferred
+ * script) may execute before @wordpress/core-abilities (a script module with
+ * implicit defer) has had a chance to populate wp.abilities. Previously the
+ * code returned early with `undefined`, leaving abilities unregistered with
+ * no retry path. Now we poll every 100 ms until the API appears or the
+ * deadline passes.
+ *
+ * @param {number} maxWaitMs Maximum milliseconds to wait (default 10 000).
+ * @return {Promise<void>} Resolves when the API is available or the deadline passes.
+ */
+async function waitForAbilitiesApi( maxWaitMs = 10_000 ) {
+	if ( abilitiesApiAvailable() ) {
+		return;
+	}
+	await new Promise( ( resolve ) => {
+		const deadline = Date.now() + maxWaitMs;
+		const check = () => {
+			if ( abilitiesApiAvailable() || Date.now() >= deadline ) {
+				resolve();
+			} else {
+				setTimeout( check, 100 );
+			}
+		};
+		setTimeout( check, 50 );
+	} );
+}
+
+/**
  * Register the gratis-ai-agent-js category (idempotent, async).
  *
  * Must be awaited before any registerClientAbility() call — the WP 7.0
@@ -92,11 +122,24 @@ export async function registerCategory() {
 	if ( categoryRegistrationPromise ) {
 		return categoryRegistrationPromise;
 	}
-	if ( ! abilitiesApiAvailable() ) {
-		return undefined;
-	}
 
+	// Set the promise immediately — before any awaits — to prevent concurrent
+	// callers from racing into this function and launching duplicate registrations.
+	// The async body inside will wait for wp.abilities to become available.
 	categoryRegistrationPromise = ( async () => {
+		// Wait for @wordpress/core-abilities to populate wp.abilities. This
+		// handles the race condition where floating-widget.js (regular deferred
+		// script) runs before the @wordpress/core-abilities script module has
+		// executed. Previously we returned early with `undefined`, which left
+		// categoryRegistrationPromise null and silently skipped all ability
+		// registration with no retry path.
+		await waitForAbilitiesApi();
+
+		if ( ! abilitiesApiAvailable() ) {
+			// API never became available (e.g. not a WP 7.0+ site). Skip silently.
+			return;
+		}
+
 		try {
 			await wp.abilities.registerAbilityCategory( CATEGORY_SLUG, {
 				label: CATEGORY_LABEL,

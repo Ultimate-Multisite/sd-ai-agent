@@ -203,6 +203,52 @@ abstract class AbstractAbility extends \WP_Ability {
 	}
 
 	/**
+	 * Executes the ability callback after normalizing stdClass input to arrays.
+	 *
+	 * AI providers may decode JSON function-call arguments as stdClass objects,
+	 * but all execute_callback() implementations expect associative arrays.
+	 * This override intercepts the input before it reaches the callback and
+	 * recursively casts any stdClass values to arrays.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param mixed $input Optional. The input data for the ability.
+	 * @return mixed|\WP_Error The result of the ability execution.
+	 */
+	protected function do_execute( $input = null ) {
+		if ( $input instanceof \stdClass ) {
+			$input = self::stdclass_to_array( $input );
+		} elseif ( is_array( $input ) ) {
+			$input = self::stdclass_to_array( $input );
+		}
+
+		// @phpstan-ignore-next-line — do_execute() exists at runtime in WP 7.0.
+		return parent::do_execute( $input );
+	}
+
+	/**
+	 * Recursively convert stdClass objects to associative arrays.
+	 *
+	 * @param mixed $data The data to normalize.
+	 * @return mixed The normalized data.
+	 */
+	private static function stdclass_to_array( $data ) {
+		if ( $data instanceof \stdClass ) {
+			$data = (array) $data;
+		}
+
+		if ( is_array( $data ) ) {
+			foreach ( $data as $key => $value ) {
+				if ( $value instanceof \stdClass || is_array( $value ) ) {
+					$data[ $key ] = self::stdclass_to_array( $value );
+				}
+			}
+		}
+
+		return $data;
+	}
+
+	/**
 	 * Returns the configured model ID from plugin settings, or empty string if none.
 	 *
 	 * Used by AI-powered abilities to pass a model preference to wp_ai_client_prompt().

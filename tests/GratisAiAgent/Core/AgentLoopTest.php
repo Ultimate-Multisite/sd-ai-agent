@@ -1132,9 +1132,9 @@ class AgentLoopTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test classify_ability returns 'write' for abilities with readonly=false.
+	 * Test classify_ability returns 'write' for non-destructive write abilities.
 	 */
-	public function test_classify_ability_readonly_false(): void {
+	public function test_classify_ability_non_destructive_write(): void {
 		if ( ! class_exists( 'WP_Ability' ) ) {
 			$this->markTestSkipped( 'WP_Ability not available.' );
 		}
@@ -1161,9 +1161,38 @@ class AgentLoopTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test classify_ability returns 'write' for abilities with readonly=null (safe default).
+	 * Test classify_ability returns 'destructive' for abilities with destructive=true.
 	 */
-	public function test_classify_ability_readonly_null_defaults_to_write(): void {
+	public function test_classify_ability_destructive_true(): void {
+		if ( ! class_exists( 'WP_Ability' ) ) {
+			$this->markTestSkipped( 'WP_Ability not available.' );
+		}
+
+		$ability = new \WP_Ability(
+			'test/destructive-ability',
+			[
+				'label'               => 'Test Destructive',
+				'description'         => 'A destructive test ability.',
+				'category'            => 'gratis-ai-agent',
+				'execute_callback'    => '__return_true',
+				'permission_callback' => '__return_true',
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => false,
+						'destructive' => true,
+						'idempotent'  => false,
+					],
+				],
+			]
+		);
+
+		$this->assertSame( 'destructive', AgentLoop::classify_ability( $ability ) );
+	}
+
+	/**
+	 * Test classify_ability returns 'destructive' for abilities with null annotations (safe default).
+	 */
+	public function test_classify_ability_null_annotations_defaults_to_destructive(): void {
 		if ( ! class_exists( 'WP_Ability' ) ) {
 			$this->markTestSkipped( 'WP_Ability not available.' );
 		}
@@ -1172,7 +1201,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 			'test/unknown-ability',
 			[
 				'label'               => 'Test Unknown',
-				'description'         => 'An ability with no readonly annotation.',
+				'description'         => 'An ability with no annotations set.',
 				'category'            => 'gratis-ai-agent',
 				'execute_callback'    => '__return_true',
 				'permission_callback' => '__return_true',
@@ -1186,7 +1215,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 			]
 		);
 
-		$this->assertSame( 'write', AgentLoop::classify_ability( $ability ) );
+		$this->assertSame( 'destructive', AgentLoop::classify_ability( $ability ) );
 	}
 
 	// -------------------------------------------------------------------------
@@ -1249,10 +1278,10 @@ class AgentLoopTest extends WP_UnitTestCase {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Test that a write tool (readonly=false) triggers confirmation when no
-	 * explicit tool_permissions are set (the new default behavior).
+	 * Test that a destructive tool triggers confirmation when no explicit
+	 * tool_permissions are set.
 	 */
-	public function test_write_tool_requires_confirmation_by_default(): void {
+	public function test_destructive_tool_requires_confirmation_by_default(): void {
 		$this->skip_if_sdk_unavailable();
 		if ( ! class_exists( 'WP_AI_Client_Ability_Function_Resolver' ) ) {
 			$this->markTestSkipped( 'WP_AI_Client_Ability_Function_Resolver not available.' );
@@ -1261,18 +1290,18 @@ class AgentLoopTest extends WP_UnitTestCase {
 		// Ensure NO tool_permissions are set — rely on annotation-based classification.
 		delete_option( Settings::OPTION_NAME );
 
-		// Register a test ability with readonly=false.
+		// Register a test ability with destructive=true.
 		if ( function_exists( 'wp_register_ability' ) ) {
 			wp_register_ability(
-				'gratis-ai-agent/test-write-tool',
+				'gratis-ai-agent/test-destructive-tool',
 				[
-					'label'            => 'Test Write Tool',
-					'description'      => 'A write tool for testing.',
+					'label'            => 'Test Destructive Tool',
+					'description'      => 'A destructive tool for testing.',
 					'execute_callback' => '__return_true',
 					'meta'             => [
 						'annotations' => [
 							'readonly'    => false,
-							'destructive' => false,
+							'destructive' => true,
 							'idempotent'  => false,
 						],
 					],
@@ -1282,25 +1311,25 @@ class AgentLoopTest extends WP_UnitTestCase {
 			$this->markTestSkipped( 'wp_register_ability() not available.' );
 		}
 
-		// Mock a response that calls the write tool.
+		// Mock a response that calls the destructive tool.
 		$this->mock_ai_response(
 			'',
 			[
 				[
-					'id'       => 'call_write_test',
+					'id'       => 'call_destructive_test',
 					'type'     => 'function',
 					'function' => [
-						'name'      => 'wpab__gratis-ai-agent__test-write-tool',
+						'name'      => 'wpab__gratis-ai-agent__test-destructive-tool',
 						'arguments' => '{}',
 					],
 				],
 			]
 		);
 
-		$loop   = new AgentLoop( 'Do a write operation' );
+		$loop   = new AgentLoop( 'Do a destructive operation' );
 		$result = $loop->run();
 
-		// Should pause for confirmation since it's a write tool.
+		// Should pause for confirmation since it's a destructive tool.
 		$this->assertIsArray( $result );
 		$this->assertArrayHasKey( 'awaiting_confirmation', $result );
 		$this->assertTrue( $result['awaiting_confirmation'] );

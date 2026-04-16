@@ -108,6 +108,20 @@ class FloatingWidget {
 			$asset['version']
 		);
 
+		// Enqueue the JS-extracted CSS (shared.css and other CSS imported
+		// from JS files). wp-scripts splits CSS into style-{entry}.css
+		// (from style.css imports) and {entry}.css (from JS imports).
+		// Without this, the tool confirmation dialog overlay and other
+		// shared component styles are missing.
+		wp_enqueue_style(
+			'gratis-ai-agent-floating-widget-components',
+			GRATIS_AI_AGENT_URL . 'build/floating-widget.css',
+			[ 'gratis-ai-agent-floating-widget' ],
+			$asset['version']
+		);
+
+		wp_style_add_data( 'gratis-ai-agent-floating-widget-components', 'rtl', 'replace' );
+
 		wp_enqueue_script(
 			'gratis-ai-agent-floating-widget',
 			GRATIS_AI_AGENT_URL . 'build/floating-widget.js',

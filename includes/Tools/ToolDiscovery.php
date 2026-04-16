@@ -602,6 +602,13 @@ class ToolDiscovery {
 			);
 		}
 
+		// Normalize stdClass to array (recursively) — AI client JSON decoders
+		// may return nested stdClass objects for tool arguments. Use
+		// json round-trip which handles arbitrary nesting depth.
+		if ( $args instanceof \stdClass || is_array( $args ) ) {
+			$args = json_decode( (string) wp_json_encode( $args ), true );
+		}
+
 		// Pass an empty assoc array (not null) so parameterless abilities
 		// with `type: object` schemas pass input validation.
 		$input_data = is_array( $args ) ? $args : array();
