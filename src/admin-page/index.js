@@ -21,6 +21,7 @@ import STORE_NAME from '../store';
 import '../abilities';
 import SessionSidebar from '../components/session-sidebar';
 import ChatPanel from '../components/ChatPanel';
+import BootError from '../components/boot-error';
 import OnboardingWizard from '../components/onboarding-wizard';
 import OnboardingInterview from '../components/onboarding-interview';
 import ShortcutsHelp from '../components/shortcuts-help';
@@ -44,10 +45,11 @@ function AdminPageApp() {
 		fetchSettings,
 		clearCurrentSession,
 	} = useDispatch( STORE_NAME );
-	const { settings, settingsLoaded } = useSelect(
+	const { settings, settingsLoaded, bootError } = useSelect(
 		( select ) => ( {
 			settings: select( STORE_NAME ).getSettings(),
 			settingsLoaded: select( STORE_NAME ).getSettingsLoaded(),
+			bootError: select( STORE_NAME ).getBootError(),
 		} ),
 		[]
 	);
@@ -134,6 +136,11 @@ function AdminPageApp() {
 	);
 
 	useKeyboardShortcuts( shortcuts );
+
+	// Show a friendly error instead of spinning forever when API calls fail.
+	if ( bootError ) {
+		return <BootError />;
+	}
 
 	if ( ! settingsLoaded ) {
 		return null;

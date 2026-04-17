@@ -689,3 +689,50 @@
 	color: #646970 !important;
 	text-decoration: none !important;
 }
+
+/* ── Boot error screen ─────────────────────────────────────────────────────── */
+
+.gratis-ai-agent-boot-error {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 300px;
+	padding: 32px;
+	flex: 1;
+}
+
+.gratis-ai-agent-boot-error__card {
+	max-width: 420px;
+	text-align: center;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	padding: 32px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.gratis-ai-agent-boot-error__card h2 {
+	margin: 0 0 12px;
+	font-size: 18px;
+	color: #1e1e1e;
+}
+
+.gratis-ai-agent-boot-error__card p {
+	margin: 0 0 16px;
+	color: #646970;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.gratis-ai-agent-boot-error__actions {
+	display: flex;
+	gap: 8px;
+	justify-content: center;
+	margin-bottom: 16px;
+}
+
+.gratis-ai-agent-boot-error__hint {
+	font-size: 12px !important;
+	color: #a7aaad !important;
+	margin-bottom: 0 !important;
+}

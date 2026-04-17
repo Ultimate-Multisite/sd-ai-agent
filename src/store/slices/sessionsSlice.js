@@ -533,6 +533,11 @@ export const actions = {
 	 */
 	fetchSessions() {
 		return async ( { dispatch, select } ) => {
+			// Skip if a boot error was already raised — prevents looping
+			// on persistent auth failures (e.g. expired nonce / 403).
+			if ( select.getBootError() ) {
+				return;
+			}
 			try {
 				const params = new URLSearchParams();
 				const filter = select.getSessionFilter();
@@ -555,8 +560,20 @@ export const actions = {
 
 				const sessions = await apiFetch( { path } );
 				dispatch.setSessions( sessions );
-			} catch {
+			} catch ( err ) {
 				dispatch.setSessions( [] );
+				const status = err?.data?.status ?? err?.code;
+				if ( status === 403 || status === 401 ) {
+					dispatch.setBootError( {
+						message:
+							err?.message ||
+							__(
+								'Unable to connect to the AI Agent API.',
+								'gratis-ai-agent'
+							),
+						status,
+					} );
+				}
 			}
 		};
 	},

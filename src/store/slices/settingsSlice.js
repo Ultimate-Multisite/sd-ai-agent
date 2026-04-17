@@ -7,6 +7,7 @@
  */
 
 import apiFetch from '@wordpress/api-fetch';
+import { __ } from '@wordpress/i18n';
 
 export const initialState = {
 	settings: null,
@@ -38,8 +39,8 @@ export const actions = {
 	 */
 	fetchSettings() {
 		return async ( { dispatch, select } ) => {
-			// Skip if a fetch is already in-flight.
-			if ( select.getSettingsLoading() ) {
+			// Skip if a fetch is already in-flight or a boot error was raised.
+			if ( select.getSettingsLoading() || select.getBootError() ) {
 				return;
 			}
 			dispatch( { type: 'SET_SETTINGS_LOADING', loading: true } );
@@ -48,8 +49,22 @@ export const actions = {
 					path: '/gratis-ai-agent/v1/settings',
 				} );
 				dispatch.setSettings( settings );
-			} catch {
+			} catch ( err ) {
 				dispatch.setSettings( {} );
+				// Surface persistent auth/permission failures as a boot error
+				// so the UI can show a friendly message instead of looping.
+				const status = err?.data?.status ?? err?.code;
+				if ( status === 403 || status === 401 ) {
+					dispatch.setBootError( {
+						message:
+							err?.message ||
+							__(
+								'Unable to connect to the AI Agent API.',
+								'gratis-ai-agent'
+							),
+						status,
+					} );
+				}
 			} finally {
 				dispatch( { type: 'SET_SETTINGS_LOADING', loading: false } );
 			}
