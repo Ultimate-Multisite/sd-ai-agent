@@ -331,6 +331,84 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
 ## Backlog
 
 - [ ] t188 Replace provider dropdown with connectors link when no providers defined #enhancement #auto-dispatch ~1h logged:2026-04-16
+
+### Post-DI Code Quality & Structure Improvements
+
+Full plan: [todo/PLANS.md#post-di-code-quality](todo/PLANS.md#2026-04-16-post-di-code-quality--structure-improvements)
+
+- [ ] t189 Split Database God Class (1,490 lines) into domain repositories #refactor #auto-dispatch ~6h logged:2026-04-16
+  - Database handles 7 unrelated domains: schema, sessions, usage, generated plugins, modified files, shared sessions, paused state
+  - Split into: SchemaManager, SessionRepository, UsageRepository, GeneratedPluginRepository, ModifiedFileRepository, SharedSessionRepository
+  - EDIT: includes/Core/Database.php — extract methods into new repository classes
+  - NEW: includes/Infrastructure/Database/SchemaManager.php — install(), migrate, table creation
+  - NEW: includes/Models/SessionRepository.php — create/get/update/delete/list sessions + paused state
+  - NEW: includes/Models/UsageRepository.php — log_usage(), get_usage_summary()
+  - NEW: includes/PluginBuilder/GeneratedPluginRepository.php — generated plugin CRUD
+  - NEW: includes/Models/ModifiedFileRepository.php — record/get modified files
+  - NEW: includes/Models/SharedSessionRepository.php — share/unshare/list shared sessions
+  - Update all callers (REST controllers, AgentLoop, Bootstrap handlers)
+  - Verify: `composer phpstan && composer phpcs`
+
+- [ ] t190 Remove dead register() methods from ~35 ability classes #refactor #auto-dispatch ~1h logged:2026-04-16
+  - DI AbilitiesHandler calls register_abilities() directly — the register() methods that add_action('wp_abilities_api_init') are dead code
+  - Remove register() from: MemoryAbilities, FeedbackAbilities, SkillAbilities, KnowledgeAbilities, and ~30 more
+  - Verify: `git grep '::register()' includes/Abilities/` returns zero hits, `composer phpstan`
+
+- [ ] t191 Introduce typed DTOs for database rows to eliminate phpstan mixed-type ignores #refactor #auto-dispatch ~4h logged:2026-04-16 blocked-by:t189
+  - wpdb::get_row() returns stdClass — every caller does $row->field with @phpstan-ignore-next-line
+  - NEW: includes/Models/DTO/SessionRow.php — readonly class with from_row(object) factory
+  - NEW: includes/Models/DTO/UsageRow.php, MemoryRow.php, AutomationRow.php, etc.
+  - Update repository methods to return typed DTOs instead of object|null
+  - Remove corresponding phpstan.neon ignoreErrors (target: 30-50% reduction)
+  - Verify: `composer phpstan` with reduced ignoreErrors
+
+- [ ] t192 Convert Settings to injectable DI service #refactor #auto-dispatch ~3h logged:2026-04-16
+  - Settings is entirely static — hard to test, hidden global state
+  - Add instance methods mirroring static ones, register as singleton in Plugin::configure()
+  - Inject into AgentLoop (already accepts ?Settings), REST controllers, handlers
+  - Keep static methods as deprecated wrappers during transition
+  - Verify: `composer phpstan && composer phpcs && npm run test:php`
+
+- [ ] t193 Extract AgentLoop subresponsibilities into focused classes #refactor #auto-dispatch ~8h logged:2026-04-16 blocked-by:t192
+  - AgentLoop is ~1,500 lines handling 8+ concerns: orchestration, prompts, permissions, spin detection, client abilities, history, tokens, interrupts
+  - NEW: includes/Core/SystemInstructionBuilder.php — build_system_instruction() + memory/skill assembly
+  - NEW: includes/Core/ProviderCredentialLoader.php — ensure_provider_credentials_static()
+  - NEW: includes/Core/ToolPermissionResolver.php — get_tools_needing_confirmation(), classify_ability()
+  - NEW: includes/Core/SpinDetector.php — build_tool_signature(), idle round tracking
+  - NEW: includes/Core/ClientAbilityRouter.php — partition_tool_calls(), client ability stubs
+  - NEW: includes/Core/ConversationSerializer.php — serialize/deserialize history
+  - AgentLoop becomes ~400-line orchestrator composing these services
+  - Verify: `composer phpstan && npm run test:php` (existing AgentLoop tests must still pass)
+
+- [ ] t194 Complete DI migration — convert CoreServicesHandler static calls to real handlers #refactor #auto-dispatch ~4h logged:2026-04-16
+  - CoreServicesHandler::on_initialize() calls 10 static ::register() methods — thin veneer, not real DI
+  - Convert ChangeLogger, ProviderTraceLogger, KnowledgeHooks, ToolDiscovery, CustomToolExecutor, AutomationRunner, EventTriggerHandler, GitTrackerManager, OnboardingManager, FreshInstallDetector into #[Handler] classes with #[Action] decorators
+  - Remove CoreServicesHandler once empty
+  - Register new handlers in Plugin.php handlers array
+  - Verify: `composer phpstan && composer phpcs`
+
+- [ ] t195 Clean up phpstan.neon — deduplicate ignores and write WP 7.0 AI Client stubs #quality #auto-dispatch ~3h logged:2026-04-16 blocked-by:t191
+  - phpstan.neon has 300 lines of ignoreErrors with ~40 duplicates
+  - Deduplicate patterns, add count: annotations where supported
+  - EDIT: stubs/wordpress-7-runtime.php — add WP_AI_Client_Prompt_Builder class with method stubs
+  - Remove ignores made unnecessary by t191 DTOs
+  - Target: <100 lines of ignoreErrors
+  - Verify: `composer phpstan` passes with reduced ignore list
+
+- [ ] t196 Move domain logic out of REST controllers into service classes #refactor #auto-dispatch ~2h logged:2026-04-16
+  - RestController has upload_attachments_to_media_library() (infrastructure) and generate_session_title() (domain logic)
+  - NEW: includes/Infrastructure/WordPress/MediaUploader.php — extracted from RestController
+  - NEW: includes/Core/SessionTitleGenerator.php — extracted from RestController
+  - Fix stale AdminPage::SLUG reference in ScreenMetaPanel (class was deleted in t146)
+  - Verify: `composer phpstan && composer phpcs`
+
+- [ ] t197 Add interfaces for key contracts (repositories, settings, budget) #refactor ~4h logged:2026-04-16 blocked-by:t189,t192
+  - No interfaces exist — direct coupling to concrete classes, hard to mock in tests
+  - NEW: includes/Contracts/SessionRepositoryInterface.php — CRUD contract from t189
+  - NEW: includes/Contracts/SettingsProviderInterface.php — get/update/defaults from t192
+  - NEW: includes/Contracts/BudgetCheckerInterface.php — wraps BudgetManager::check_budget()
+  - Update DI container bindings to use interface → implementation mapping
+  - Verify: `composer phpstan && composer phpcs`
   - `src/components/provider-selector.js:43-48` renders a disabled `(no providers)` SelectControl when `providers` is empty — useless UX that gives no path forward
   - EDIT: src/components/provider-selector.js — when `providers.length === 0`, return early with a `<p>` or `<div>` containing a link: `<a href="/wp-admin/options-connectors.php">{ __( 'Configure a provider', 'gratis-ai-agent' ) }</a>` instead of the two SelectControl dropdowns
   - Update snapshot: `npm run test:js -- --updateSnapshot` (ProviderSelector.test.js snapshot will need regenerating)

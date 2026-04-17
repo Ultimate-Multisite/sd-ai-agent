@@ -420,3 +420,170 @@ Shipped to `Ultimate-Multisite/gratis-ai-feedback`:
 #### Surprises & Discoveries
 
 (To be populated during implementation)
+
+---
+
+### [2026-04-16] Post-DI Code Quality & Structure Improvements
+
+**Status:** Planning
+**Estimate:** ~40h (ai:35h test:3h read:2h)
+**Tasks:** t189–t197
+
+#### Purpose
+
+The x-wp/di container migration (PRs 1–6, merged 2026-04-16) moved all hook wiring
+into `#[Handler]` classes and eliminated the 400-line bootstrap block from
+`gratis-ai-agent.php`. But the DI layer is currently a thin veneer over the original
+static architecture — handlers call `XxxClass::register()` statics, the `Database`
+class is a 1,490-line God class, `AgentLoop` handles 8+ concerns, `Settings` is
+entirely static, and `phpstan.neon` has 300 lines of suppressions largely caused by
+untyped `stdClass` returns from `wpdb`.
+
+This plan systematically addresses the structural debt exposed by the DI migration,
+in dependency order so each improvement compounds the next.
+
+#### Progress
+
+- [ ] (t189) Phase 1: Split Database God Class into domain repositories ~6h
+- [ ] (t190) Phase 2: Remove dead `register()` methods from ability classes ~1h
+- [ ] (t191) Phase 3: Typed DTOs for database rows ~4h
+- [ ] (t192) Phase 4: Convert Settings to injectable DI service ~3h
+- [ ] (t193) Phase 5: Extract AgentLoop subresponsibilities ~8h
+- [ ] (t194) Phase 6: Complete DI migration — CoreServicesHandler → real handlers ~4h
+- [ ] (t195) Phase 7: Clean up phpstan.neon — dedup ignores + WP 7.0 AI Client stubs ~3h
+- [ ] (t196) Phase 8: Move domain logic out of REST controllers ~2h
+- [ ] (t197) Phase 9: Add interfaces for key contracts ~4h
+
+#### Phase 1: Split Database God Class (t189)
+
+**Goal:** Replace the 1,490-line `Database` class with focused repository classes.
+
+Current `Database` handles 7 unrelated domains:
+- Schema install + migration → `Infrastructure/Database/SchemaManager`
+- Session CRUD + listing → `Models/SessionRepository`
+- Usage logging + summaries → `Models/UsageRepository`
+- Generated plugins CRUD → `PluginBuilder/GeneratedPluginRepository`
+- Modified files tracking → `Models/ModifiedFileRepository`
+- Shared sessions → `Models/SharedSessionRepository`
+- Paused state → inline in `SessionRepository`
+
+Each repository owns its table name constant, CRUD methods, and query methods.
+`Database` becomes `SchemaManager` — only invoked on install/upgrade.
+
+All existing callers (`RestController`, `SessionController`, `AgentLoop`, etc.)
+update their references. PHPStan verifies no stale references remain.
+
+#### Phase 2: Remove Dead register() Methods (t190)
+
+**Goal:** Clean up ~35 ability classes that still have `register()` methods.
+
+With the DI `AbilitiesHandler` calling `register_abilities()` directly on the
+`wp_abilities_api_init` hook, the `register()` methods that internally do
+`add_action('wp_abilities_api_init', [__CLASS__, 'register_abilities'])` are
+dead code — never called by anything.
+
+Remove all `register()` stubs. Verify with `git grep '::register()' includes/Abilities/`.
+
+#### Phase 3: Typed DTOs for Database Rows (t191)
+
+**Goal:** Eliminate 30-50% of phpstan.neon ignores by replacing `stdClass` returns.
+
+Currently `wpdb::get_row()` returns `stdClass|null` and every caller accesses
+`$row->field` with `@phpstan-ignore-next-line`. Create typed DTOs:
+
+- `Models/DTO/SessionRow` — id, user_id, title, provider_id, model_id, status, etc.
+- `Models/DTO/UsageRow` — id, user_id, session_id, tokens, cost
+- `Models/DTO/MemoryRow` — id, category, content, timestamps
+- `Models/DTO/AutomationRow` — id, name, schedule, config
+- Additional DTOs as needed per repository
+
+Each DTO has a static `from_row(object $row): self` factory. Repository methods
+return typed DTOs instead of `object|null`.
+
+Benefits from t189 (repositories own the mapping). Eliminates `Cannot access
+property on mixed`, `Cannot cast mixed to int/string`, etc.
+
+#### Phase 4: Injectable Settings Service (t192)
+
+**Goal:** Make `Settings` a DI-injectable service instead of a static utility.
+
+Currently `Settings::get()` is called statically everywhere. `AgentLoop` already
+accepts `?Settings $settings_service` in its constructor — but the class has no
+useful instance methods.
+
+- Add instance methods: `get()`, `update()`, `get_defaults()`, `get_default_model()`
+- Register as a singleton in the DI container via `Plugin::configure()`
+- Inject into `AgentLoop`, `RestController`, `SessionController`, etc.
+- Keep static methods as deprecated wrappers during transition
+
+#### Phase 5: Extract AgentLoop Subresponsibilities (t193)
+
+**Goal:** Reduce `AgentLoop` from ~1,500 lines to ~400 lines.
+
+Extract into focused classes:
+- `Core/SystemInstructionBuilder` — `build_system_instruction()` + memory/skill/context assembly
+- `Core/ProviderCredentialLoader` — `ensure_provider_credentials_static()`
+- `Core/ToolPermissionResolver` — `get_tools_needing_confirmation()`, `classify_ability()`, `set_always_allow()`
+- `Core/SpinDetector` — `build_tool_signature()`, idle round tracking
+- `Core/ClientAbilityRouter` — `partition_tool_calls()`, `build_client_ability_stubs()`, `get_client_ability_names()`
+- `Core/ConversationSerializer` — `serialize_history()`, `deserialize_history()`
+
+`AgentLoop` becomes a thin orchestrator composing these services.
+
+#### Phase 6: Complete DI Migration (t194)
+
+**Goal:** Convert `CoreServicesHandler` static `::register()` calls into real DI handlers.
+
+Currently `CoreServicesHandler::on_initialize()` calls 10 static methods, each
+internally doing `add_action()`. Convert each to a `#[Handler]` class with
+`#[Action]` decorators, then remove `CoreServicesHandler`.
+
+#### Phase 7: phpstan.neon Cleanup (t195)
+
+**Goal:** Reduce 300-line ignoreErrors to <100 lines.
+
+1. Deduplicate ~40 duplicate patterns
+2. Write WP 7.0 AI Client stubs in `stubs/wordpress-7-runtime.php`
+3. Remove ignores fixed by t191 (DTOs)
+
+Benefits from t191 (DTOs) and t193 (AgentLoop typed returns).
+
+#### Phase 8: Move Domain Logic from REST Controllers (t196)
+
+**Goal:** Controllers only validate input → call service → format response.
+
+- `upload_attachments_to_media_library()` → `Infrastructure/WordPress/MediaUploader`
+- `generate_session_title()` → `Core/SessionTitleGenerator`
+- Fix stale `AdminPage::SLUG` reference in `ScreenMetaPanel`
+
+#### Phase 9: Interfaces for Key Contracts (t197)
+
+**Goal:** Formalize dependency contracts for testing with mocks.
+
+- `SessionRepositoryInterface` — from t189
+- `SettingsProviderInterface` — from t192
+- `BudgetCheckerInterface` — wraps `BudgetManager`
+
+Blocked by t189 + t192.
+
+#### Context from Discussion
+
+**Analysis session (2026-04-16) findings:**
+- DI migration successful: 24 handlers, 73-line bootstrap, Infrastructure layer started
+- PHPStan level 10, 127 test files, strict types — good baseline
+- Key debt: Database God class (1,490 lines), AgentLoop (1,500+ lines), static Settings,
+  300-line phpstan.neon, dead register() stubs on all ability classes
+- DI is a thin veneer — handlers call static `::register()` methods instead of using
+  real dependency injection
+
+**Dependency order:**
+t189/t190 (standalone) → t191 (needs t189) → t192 (standalone) → t193 (needs t192) →
+t194 (standalone) → t195 (needs t191) → t196 (standalone) → t197 (needs t189+t192)
+
+#### Decision Log
+
+(To be populated during implementation)
+
+#### Surprises & Discoveries
+
+(To be populated during implementation)
