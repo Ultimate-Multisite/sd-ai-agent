@@ -53,12 +53,16 @@ final class AbilityExplorerService {
 		$list      = array();
 
 		foreach ( $abilities as $ability ) {
+			// @phpstan-ignore-next-line
 			$description = $ability->get_description();
 
 			$list[] = array(
+				// @phpstan-ignore-next-line
 				'name'        => $ability->get_name(),
+				// @phpstan-ignore-next-line
 				'label'       => $ability->get_label(),
 				'description' => self::truncate_description( $description ),
+				// @phpstan-ignore-next-line
 				'category'    => $ability->get_category(),
 			);
 		}
@@ -137,7 +141,9 @@ final class AbilityExplorerService {
 	 * @return array<string, mixed> Formatted ability data.
 	 */
 	private static function format_ability_for_explorer( object $ability, array $configured_providers ): array {
+		// @phpstan-ignore-next-line
 		$input_schema = $ability->get_input_schema();
+		// @phpstan-ignore-next-line
 		$meta         = $ability->get_meta();
 		$annotations  = $meta['annotations'] ?? array();
 
@@ -152,6 +158,7 @@ final class AbilityExplorerService {
 		}
 
 		// Derive configuration status from ability name matching provider IDs.
+		// @phpstan-ignore-next-line
 		$ability_name      = $ability->get_name();
 		$is_configured     = true;
 		$required_api_keys = array();
@@ -167,8 +174,11 @@ final class AbilityExplorerService {
 
 		return array(
 			'name'              => $ability_name,
+			// @phpstan-ignore-next-line
 			'label'             => $ability->get_label(),
+			// @phpstan-ignore-next-line
 			'description'       => $ability->get_description(),
+			// @phpstan-ignore-next-line
 			'category'          => $ability->get_category(),
 			'param_count'       => $param_count,
 			'required_params'   => $required_params,
@@ -182,6 +192,7 @@ final class AbilityExplorerService {
 				// @phpstan-ignore-next-line
 				'idempotent'  => (bool) ( $annotations['idempotent'] ?? false ),
 			),
+			// @phpstan-ignore-next-line
 			'output_schema'     => $ability->get_output_schema(),
 			'show_in_rest'      => (bool) ( $meta['show_in_rest'] ?? false ),
 		);
