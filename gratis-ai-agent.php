@@ -83,8 +83,6 @@ use GratisAiAgent\Admin\FloatingWidget;
 use GratisAiAgent\Admin\ModelBenchmarkPage;
 use GratisAiAgent\Admin\ScreenMetaPanel;
 use GratisAiAgent\Admin\UnifiedAdminMenu;
-use GratisAiAgent\REST\BenchmarkController;
-use GratisAiAgent\REST\TraceController;
 use GratisAiAgent\Automations\AutomationRunner;
 use GratisAiAgent\Models\GitTrackerManager;
 use GratisAiAgent\Automations\EventTriggerHandler;
@@ -94,7 +92,6 @@ use GratisAiAgent\Core\FreshInstallDetector;
 use GratisAiAgent\Core\OnboardingManager;
 use GratisAiAgent\Core\ProviderTraceLogger;
 use GratisAiAgent\Knowledge\KnowledgeHooks;
-use GratisAiAgent\REST\RestController;
 use GratisAiAgent\Tools\CustomToolExecutor;
 use GratisAiAgent\Tools\ToolDiscovery;
 
@@ -146,9 +143,8 @@ add_action(
 	}
 );
 
-add_action( 'rest_api_init', [ RestController::class, 'register_routes' ] );
-add_action( 'rest_api_init', [ BenchmarkController::class, 'register_routes' ] );
-add_action( 'rest_api_init', [ TraceController::class, 'register_routes' ] );
+// All REST controllers are now DI-managed #[Handler] / #[REST_Handler] classes
+// registered in Plugin.php — no manual rest_api_init wiring needed.
 
 // Unified admin menu — single top-level menu with hash-based React routing.
 add_action( 'admin_menu', [ UnifiedAdminMenu::class, 'register' ] );
