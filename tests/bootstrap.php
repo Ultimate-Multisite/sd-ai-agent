@@ -25,6 +25,15 @@ require_once $plugin_dir . '/vendor/autoload.php';
  * WordPress boots. The ??= assignment in get() preserves our value, so the
  * match expression is never reached. This runs at file-scope before the WP
  * test bootstrap is even loaded — no hook ordering issues.
+ *
+ * Trade-off: setting CTX_REST globally means handlers gated on CTX_ADMIN,
+ * CTX_CLI, CTX_CRON, or CTX_FRONTEND will silently not register during the
+ * full test run. In practice, almost all of our tested code paths go through
+ * REST routes, so the risk of masking non-REST regressions is low today.
+ * Future improvement: introduce a WpContextTestTrait that resets $current
+ * per-test, allowing individual test classes to declare their target context
+ * without affecting the global bootstrap. Tracked in t197 test-infrastructure
+ * improvements.
  */
 ( static function (): void {
 	$refl = new ReflectionProperty( XWP_Context::class, 'current' );
