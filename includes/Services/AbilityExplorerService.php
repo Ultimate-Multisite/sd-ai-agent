@@ -144,8 +144,8 @@ final class AbilityExplorerService {
 		// @phpstan-ignore-next-line
 		$input_schema = $ability->get_input_schema();
 		// @phpstan-ignore-next-line
-		$meta         = $ability->get_meta();
-		$annotations  = $meta['annotations'] ?? array();
+		$meta        = $ability->get_meta();
+		$annotations = $meta['annotations'] ?? array();
 
 		$required_params = array();
 		if ( ! empty( $input_schema['required'] ) && is_array( $input_schema['required'] ) ) {
