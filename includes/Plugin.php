@@ -24,6 +24,12 @@ use GratisAiAgent\Bootstrap\AdminHandler;
 use GratisAiAgent\Bootstrap\CliHandler;
 use GratisAiAgent\Bootstrap\CoreServicesHandler;
 use GratisAiAgent\Bootstrap\FrontendAssetsHandler;
+use GratisAiAgent\Contracts\BudgetCheckerInterface;
+use GratisAiAgent\Contracts\SessionRepositoryInterface;
+use GratisAiAgent\Contracts\SettingsProviderInterface;
+use GratisAiAgent\Core\BudgetManager;
+use GratisAiAgent\Infrastructure\Adapters\DatabaseSessionAdapter;
+use GratisAiAgent\Infrastructure\Adapters\StaticSettingsAdapter;
 use GratisAiAgent\Infrastructure\AiClient\RequestTimeoutFilter;
 use GratisAiAgent\Infrastructure\WordPress\Abilities\AbilityCategoryRegistrar;
 use GratisAiAgent\Infrastructure\WordPress\Abilities\AbilitySchemaFilter;
@@ -111,9 +117,18 @@ final class Plugin {
 	 */
 	public static function configure(): array {
 		return array(
-			'plugin.version' => \DI\value( GRATIS_AI_AGENT_VERSION ),
-			'plugin.dir'     => \DI\value( GRATIS_AI_AGENT_DIR ),
-			'plugin.url'     => \DI\value( GRATIS_AI_AGENT_URL ),
+			'plugin.version'                  => \DI\value( GRATIS_AI_AGENT_VERSION ),
+			'plugin.dir'                      => \DI\value( GRATIS_AI_AGENT_DIR ),
+			'plugin.url'                      => \DI\value( GRATIS_AI_AGENT_URL ),
+
+			// Interface → implementation bindings (t197).
+			// These adapters delegate to the existing static classes so all
+			// current static call-sites continue to work unchanged.
+			// Swap to real implementations once t189 (SessionRepository) and
+			// t192 (Settings DI singleton) are complete.
+			SessionRepositoryInterface::class => \DI\autowire( DatabaseSessionAdapter::class ),
+			SettingsProviderInterface::class  => \DI\autowire( StaticSettingsAdapter::class ),
+			BudgetCheckerInterface::class     => \DI\autowire( BudgetManager::class ),
 		);
 	}
 }
