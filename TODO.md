@@ -349,7 +349,7 @@ Full plan: [todo/PLANS.md#post-di-code-quality](todo/PLANS.md#2026-04-16-post-di
   - Update all callers (REST controllers, AgentLoop, Bootstrap handlers)
   - Verify: `composer phpstan && composer phpcs`
 
-- [ ] t190 Remove dead register() methods from ~35 ability classes #refactor #auto-dispatch ~1h logged:2026-04-16
+- [x] t190 Remove dead register() methods from ~35 ability classes #refactor #auto-dispatch ~1h logged:2026-04-16 pr:#1005 completed:2026-04-17
   - DI AbilitiesHandler calls register_abilities() directly — the register() methods that add_action('wp_abilities_api_init') are dead code
   - Remove register() from: MemoryAbilities, FeedbackAbilities, SkillAbilities, KnowledgeAbilities, and ~30 more
   - Verify: `git grep '::register()' includes/Abilities/` returns zero hits, `composer phpstan`
@@ -387,7 +387,7 @@ Full plan: [todo/PLANS.md#post-di-code-quality](todo/PLANS.md#2026-04-16-post-di
   - Register new handlers in Plugin.php handlers array
   - Verify: `composer phpstan && composer phpcs`
 
-- [ ] t195 Clean up phpstan.neon — deduplicate ignores and write WP 7.0 AI Client stubs #quality #auto-dispatch ~3h logged:2026-04-16 blocked-by:t191
+- [x] t195 Clean up phpstan.neon — deduplicate ignores and write WP 7.0 AI Client stubs #quality #auto-dispatch ~3h logged:2026-04-16 blocked-by:t191 pr:#1011 completed:2026-04-17
   - phpstan.neon has 300 lines of ignoreErrors with ~40 duplicates
   - Deduplicate patterns, add count: annotations where supported
   - EDIT: stubs/wordpress-7-runtime.php — add WP_AI_Client_Prompt_Builder class with method stubs
