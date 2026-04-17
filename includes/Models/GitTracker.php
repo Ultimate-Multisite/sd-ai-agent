@@ -19,6 +19,7 @@ declare(strict_types=1);
 namespace GratisAiAgent\Models;
 
 use GratisAiAgent\Core\Database;
+use GratisAiAgent\Models\DTO\GitTrackedFileRow;
 use WP_Error;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -447,7 +448,7 @@ class GitTracker {
 	 * @param string $relative_path Path relative to the package root.
 	 * @return object|null Row object or null if not found.
 	 */
-	private function get_tracked_row( string $relative_path ): ?object {
+	private function get_tracked_row( string $relative_path ): ?GitTrackedFileRow {
 		global $wpdb;
 		/** @var \wpdb $wpdb */
 
@@ -463,7 +464,7 @@ class GitTracker {
 			)
 		);
 
-		return $row ?: null;
+		return $row instanceof \stdClass ? GitTrackedFileRow::from_row( $row ) : null;
 	}
 
 	/**
