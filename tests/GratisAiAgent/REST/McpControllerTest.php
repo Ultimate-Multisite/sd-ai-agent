@@ -91,8 +91,9 @@ class McpControllerTest extends WP_UnitTestCase {
 	 * This satisfies the hook-context check without requiring the hook to fire.
 	 */
 	public function set_up(): void {
-		parent::set_up();
-
+		// REST server + rest_api_init must precede parent::set_up() so that
+		// _backup_hooks() snapshots the DI route callbacks. See BenchmarkControllerTest
+		// for the full explanation of why this ordering is required.
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Standard WordPress test global.
 		global $wp_rest_server;
 		$wp_rest_server = new WP_REST_Server();
@@ -100,6 +101,8 @@ class McpControllerTest extends WP_UnitTestCase {
 
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Standard WordPress core hook.
 		do_action( 'rest_api_init' );
+
+		parent::set_up();
 
 		$this->admin_id      = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		$this->subscriber_id = self::factory()->user->create( [ 'role' => 'subscriber' ] );

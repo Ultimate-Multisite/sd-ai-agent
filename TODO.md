@@ -354,7 +354,7 @@ Full plan: [todo/PLANS.md#post-di-code-quality](todo/PLANS.md#2026-04-16-post-di
   - Remove register() from: MemoryAbilities, FeedbackAbilities, SkillAbilities, KnowledgeAbilities, and ~30 more
   - Verify: `git grep '::register()' includes/Abilities/` returns zero hits, `composer phpstan`
 
-- [ ] t191 Introduce typed DTOs for database rows to eliminate phpstan mixed-type ignores #refactor #auto-dispatch ~4h logged:2026-04-16 blocked-by:t189
+- [x] t191 Introduce typed DTOs for database rows to eliminate phpstan mixed-type ignores #refactor #auto-dispatch ~4h logged:2026-04-16 blocked-by:t189 pr:#1009 completed:2026-04-17
   - wpdb::get_row() returns stdClass — every caller does $row->field with @phpstan-ignore-next-line
   - NEW: includes/Models/DTO/SessionRow.php — readonly class with from_row(object) factory
   - NEW: includes/Models/DTO/UsageRow.php, MemoryRow.php, AutomationRow.php, etc.
@@ -362,7 +362,7 @@ Full plan: [todo/PLANS.md#post-di-code-quality](todo/PLANS.md#2026-04-16-post-di
   - Remove corresponding phpstan.neon ignoreErrors (target: 30-50% reduction)
   - Verify: `composer phpstan` with reduced ignoreErrors
 
-- [ ] t192 Convert Settings to injectable DI service #refactor #auto-dispatch ~3h logged:2026-04-16
+- [x] t192 Convert Settings to injectable DI service #refactor #auto-dispatch ~3h logged:2026-04-16 pr:#1017 completed:2026-04-17
   - Settings is entirely static — hard to test, hidden global state
   - Add instance methods mirroring static ones, register as singleton in Plugin::configure()
   - Inject into AgentLoop (already accepts ?Settings), REST controllers, handlers
