@@ -563,7 +563,7 @@ class AgentLoop {
 			// the browser can dispatch them and POST results back.
 			$client_names = $this->client_router->get_names();
 			if ( ! empty( $client_names ) ) {
-				$partition = $this->client_router->partition( $assistant_message, $client_names );
+				$partition = $this->partition_tool_calls( $assistant_message, $client_names );
 
 				if ( ! empty( $partition['client'] ) ) {
 					// Execute any PHP-side calls inline first.
@@ -1185,5 +1185,23 @@ class AgentLoop {
 			$result['inability_reported'] = $inability;
 		}
 		return $result;
+	}
+
+	// ── Client ability partitioning ───────────────────────────────────────
+
+	/**
+	 * Partition an assistant message's tool calls into PHP-executable and
+	 * client-side (JS) sets.
+	 *
+	 * Delegates to {@see ClientAbilityRouter::partition()} and exists as a
+	 * named method so tests can exercise the partitioning logic in isolation
+	 * via reflection without needing a full loop run.
+	 *
+	 * @param Message  $message      The assistant message containing tool calls.
+	 * @param string[] $client_names Names of client-side abilities.
+	 * @return array{php: list<MessagePart>, client: list<array<string, mixed>>}
+	 */
+	private function partition_tool_calls( Message $message, array $client_names ): array {
+		return $this->client_router->partition( $message, $client_names );
 	}
 }
