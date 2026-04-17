@@ -395,7 +395,7 @@ Full plan: [todo/PLANS.md#post-di-code-quality](todo/PLANS.md#2026-04-16-post-di
   - Target: <100 lines of ignoreErrors
   - Verify: `composer phpstan` passes with reduced ignore list
 
-- [ ] t196 Move domain logic out of REST controllers into service classes #refactor #auto-dispatch ~2h logged:2026-04-16
+- [x] t196 Move domain logic out of REST controllers into service classes #refactor #auto-dispatch ~2h logged:2026-04-16 pr:#1010 completed:2026-04-17
   - RestController has upload_attachments_to_media_library() (infrastructure) and generate_session_title() (domain logic)
   - NEW: includes/Infrastructure/WordPress/MediaUploader.php — extracted from RestController
   - NEW: includes/Core/SessionTitleGenerator.php — extracted from RestController
