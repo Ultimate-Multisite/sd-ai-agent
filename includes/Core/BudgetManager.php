@@ -13,14 +13,13 @@ declare(strict_types=1);
 
 namespace GratisAiAgent\Core;
 
-use GratisAiAgent\Contracts\BudgetCheckerInterface;
 use WP_Error;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class BudgetManager implements BudgetCheckerInterface {
+class BudgetManager {
 
 	/**
 	 * Transient key for cached daily spend.
@@ -38,16 +37,6 @@ class BudgetManager implements BudgetCheckerInterface {
 	const CACHE_TTL = 300;
 
 	/**
-	 * Instance method satisfying BudgetCheckerInterface — delegates to the
-	 * static implementation so existing static call-sites are unaffected.
-	 *
-	 * {@inheritdoc}
-	 */
-	public function check_budget(): true|WP_Error {
-		return self::check_budget_static();
-	}
-
-	/**
 	 * Check whether the current spend is within budget.
 	 *
 	 * Returns true when the request may proceed, or a WP_Error when the budget
@@ -55,7 +44,7 @@ class BudgetManager implements BudgetCheckerInterface {
 	 *
 	 * @return true|WP_Error
 	 */
-	public static function check_budget_static(): true|WP_Error {
+	public static function check_budget(): true|WP_Error {
 		$settings = Settings::get();
 
 		// @phpstan-ignore-next-line
@@ -189,7 +178,7 @@ class BudgetManager implements BudgetCheckerInterface {
 	 * @return bool
 	 */
 	public static function is_exceeded(): bool {
-		$result = self::check_budget_static();
+		$result = self::check_budget();
 		return is_wp_error( $result );
 	}
 

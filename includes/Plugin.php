@@ -27,7 +27,7 @@ use GratisAiAgent\Bootstrap\FrontendAssetsHandler;
 use GratisAiAgent\Contracts\BudgetCheckerInterface;
 use GratisAiAgent\Contracts\SessionRepositoryInterface;
 use GratisAiAgent\Contracts\SettingsProviderInterface;
-use GratisAiAgent\Core\BudgetManager;
+use GratisAiAgent\Infrastructure\Adapters\BudgetManagerAdapter;
 use GratisAiAgent\Infrastructure\Adapters\DatabaseSessionAdapter;
 use GratisAiAgent\Infrastructure\Adapters\StaticSettingsAdapter;
 use GratisAiAgent\Infrastructure\AiClient\RequestTimeoutFilter;
@@ -128,7 +128,7 @@ final class Plugin {
 			// t192 (Settings DI singleton) are complete.
 			SessionRepositoryInterface::class => \DI\autowire( DatabaseSessionAdapter::class ),
 			SettingsProviderInterface::class  => \DI\autowire( StaticSettingsAdapter::class ),
-			BudgetCheckerInterface::class     => \DI\autowire( BudgetManager::class ),
+			BudgetCheckerInterface::class     => \DI\autowire( BudgetManagerAdapter::class ),
 		);
 	}
 }

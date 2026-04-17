@@ -302,7 +302,7 @@ class AgentLoop {
 		}
 
 		// Check spending budget before making any API call.
-		$budget_check = BudgetManager::check_budget_static();
+		$budget_check = BudgetManager::check_budget();
 		if ( is_wp_error( $budget_check ) ) {
 			return $budget_check;
 		}
