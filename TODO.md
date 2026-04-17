@@ -369,7 +369,7 @@ Full plan: [todo/PLANS.md#post-di-code-quality](todo/PLANS.md#2026-04-16-post-di
   - Keep static methods as deprecated wrappers during transition
   - Verify: `composer phpstan && composer phpcs && npm run test:php`
 
-- [ ] t193 Extract AgentLoop subresponsibilities into focused classes #refactor #auto-dispatch ~8h logged:2026-04-16 blocked-by:t192
+- [x] t193 Extract AgentLoop subresponsibilities into focused classes #refactor #auto-dispatch ~8h logged:2026-04-16 blocked-by:t192 pr:#1008 completed:2026-04-17
   - AgentLoop is ~1,500 lines handling 8+ concerns: orchestration, prompts, permissions, spin detection, client abilities, history, tokens, interrupts
   - NEW: includes/Core/SystemInstructionBuilder.php — build_system_instruction() + memory/skill assembly
   - NEW: includes/Core/ProviderCredentialLoader.php — ensure_provider_credentials_static()
@@ -387,7 +387,7 @@ Full plan: [todo/PLANS.md#post-di-code-quality](todo/PLANS.md#2026-04-16-post-di
   - Register new handlers in Plugin.php handlers array
   - Verify: `composer phpstan && composer phpcs`
 
-- [ ] t195 Clean up phpstan.neon — deduplicate ignores and write WP 7.0 AI Client stubs #quality #auto-dispatch ~3h logged:2026-04-16 blocked-by:t191
+- [x] t195 Clean up phpstan.neon — deduplicate ignores and write WP 7.0 AI Client stubs #quality #auto-dispatch ~3h logged:2026-04-16 blocked-by:t191 pr:#1011 completed:2026-04-17
   - phpstan.neon has 300 lines of ignoreErrors with ~40 duplicates
   - Deduplicate patterns, add count: annotations where supported
   - EDIT: stubs/wordpress-7-runtime.php — add WP_AI_Client_Prompt_Builder class with method stubs
@@ -395,7 +395,7 @@ Full plan: [todo/PLANS.md#post-di-code-quality](todo/PLANS.md#2026-04-16-post-di
   - Target: <100 lines of ignoreErrors
   - Verify: `composer phpstan` passes with reduced ignore list
 
-- [ ] t196 Move domain logic out of REST controllers into service classes #refactor #auto-dispatch ~2h logged:2026-04-16
+- [x] t196 Move domain logic out of REST controllers into service classes #refactor #auto-dispatch ~2h logged:2026-04-16 pr:#1010 completed:2026-04-17
   - RestController has upload_attachments_to_media_library() (infrastructure) and generate_session_title() (domain logic)
   - NEW: includes/Infrastructure/WordPress/MediaUploader.php — extracted from RestController
   - NEW: includes/Core/SessionTitleGenerator.php — extracted from RestController
