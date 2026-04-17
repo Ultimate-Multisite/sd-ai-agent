@@ -99,13 +99,6 @@ class SiteBuilderAbilities {
 	}
 
 	/**
-	 * Register site builder abilities on init.
-	 */
-	public static function register(): void {
-		add_action( 'wp_abilities_api_init', [ __CLASS__, 'register_abilities' ] );
-	}
-
-	/**
 	 * Register all site builder abilities.
 	 */
 	public static function register_abilities(): void {
@@ -311,7 +304,7 @@ class SetSiteBuilderModeAbility extends AbstractAbility {
 		/** @var array<string, mixed> $input */
 		$enabled = (bool) ( $input['enabled'] ?? false );
 
-		Settings::update( [ 'site_builder_mode' => $enabled ] );
+		Settings::instance()->update( [ 'site_builder_mode' => $enabled ] );
 
 		return [
 			'success'           => true,
@@ -375,7 +368,7 @@ class GetSiteBuilderStatusAbility extends AbstractAbility {
 
 	protected function execute_callback( $input = null ) {
 		/** @var array<string, mixed> $input */
-		$settings = Settings::get();
+		$settings = Settings::instance()->get();
 
 		return [
 			// @phpstan-ignore-next-line
@@ -438,7 +431,7 @@ class CompleteSiteBuilderAbility extends AbstractAbility {
 
 	protected function execute_callback( $input = null ) {
 		/** @var array<string, mixed> $input */
-		Settings::update(
+		Settings::instance()->update(
 			[
 				'site_builder_mode'   => false,
 				'onboarding_complete' => true,

@@ -349,7 +349,7 @@ Full plan: [todo/PLANS.md#post-di-code-quality](todo/PLANS.md#2026-04-16-post-di
   - Update all callers (REST controllers, AgentLoop, Bootstrap handlers)
   - Verify: `composer phpstan && composer phpcs`
 
-- [ ] t190 Remove dead register() methods from ~35 ability classes #refactor #auto-dispatch ~1h logged:2026-04-16
+- [x] t190 Remove dead register() methods from ~35 ability classes #refactor #auto-dispatch ~1h logged:2026-04-16 pr:#1005 completed:2026-04-17
   - DI AbilitiesHandler calls register_abilities() directly — the register() methods that add_action('wp_abilities_api_init') are dead code
   - Remove register() from: MemoryAbilities, FeedbackAbilities, SkillAbilities, KnowledgeAbilities, and ~30 more
   - Verify: `git grep '::register()' includes/Abilities/` returns zero hits, `composer phpstan`
@@ -362,14 +362,14 @@ Full plan: [todo/PLANS.md#post-di-code-quality](todo/PLANS.md#2026-04-16-post-di
   - Remove corresponding phpstan.neon ignoreErrors (target: 30-50% reduction)
   - Verify: `composer phpstan` with reduced ignoreErrors
 
-- [ ] t192 Convert Settings to injectable DI service #refactor #auto-dispatch ~3h logged:2026-04-16
+- [x] t192 Convert Settings to injectable DI service #refactor #auto-dispatch ~3h logged:2026-04-16 pr:#1017 completed:2026-04-17
   - Settings is entirely static — hard to test, hidden global state
   - Add instance methods mirroring static ones, register as singleton in Plugin::configure()
   - Inject into AgentLoop (already accepts ?Settings), REST controllers, handlers
   - Keep static methods as deprecated wrappers during transition
   - Verify: `composer phpstan && composer phpcs && npm run test:php`
 
-- [ ] t193 Extract AgentLoop subresponsibilities into focused classes #refactor #auto-dispatch ~8h logged:2026-04-16 blocked-by:t192
+- [x] t193 Extract AgentLoop subresponsibilities into focused classes #refactor #auto-dispatch ~8h logged:2026-04-16 blocked-by:t192 pr:#1008 completed:2026-04-17
   - AgentLoop is ~1,500 lines handling 8+ concerns: orchestration, prompts, permissions, spin detection, client abilities, history, tokens, interrupts
   - NEW: includes/Core/SystemInstructionBuilder.php — build_system_instruction() + memory/skill assembly
   - NEW: includes/Core/ProviderCredentialLoader.php — ensure_provider_credentials_static()
@@ -380,14 +380,14 @@ Full plan: [todo/PLANS.md#post-di-code-quality](todo/PLANS.md#2026-04-16-post-di
   - AgentLoop becomes ~400-line orchestrator composing these services
   - Verify: `composer phpstan && npm run test:php` (existing AgentLoop tests must still pass)
 
-- [ ] t194 Complete DI migration — convert CoreServicesHandler static calls to real handlers #refactor #auto-dispatch ~4h logged:2026-04-16
+- [x] t194 Complete DI migration — convert CoreServicesHandler static calls to real handlers #refactor #auto-dispatch ~4h logged:2026-04-16 pr:#1007 completed:2026-04-17
   - CoreServicesHandler::on_initialize() calls 10 static ::register() methods — thin veneer, not real DI
   - Convert ChangeLogger, ProviderTraceLogger, KnowledgeHooks, ToolDiscovery, CustomToolExecutor, AutomationRunner, EventTriggerHandler, GitTrackerManager, OnboardingManager, FreshInstallDetector into #[Handler] classes with #[Action] decorators
   - Remove CoreServicesHandler once empty
   - Register new handlers in Plugin.php handlers array
   - Verify: `composer phpstan && composer phpcs`
 
-- [ ] t195 Clean up phpstan.neon — deduplicate ignores and write WP 7.0 AI Client stubs #quality #auto-dispatch ~3h logged:2026-04-16 blocked-by:t191
+- [x] t195 Clean up phpstan.neon — deduplicate ignores and write WP 7.0 AI Client stubs #quality #auto-dispatch ~3h logged:2026-04-16 blocked-by:t191 pr:#1011 completed:2026-04-17
   - phpstan.neon has 300 lines of ignoreErrors with ~40 duplicates
   - Deduplicate patterns, add count: annotations where supported
   - EDIT: stubs/wordpress-7-runtime.php — add WP_AI_Client_Prompt_Builder class with method stubs
@@ -395,7 +395,7 @@ Full plan: [todo/PLANS.md#post-di-code-quality](todo/PLANS.md#2026-04-16-post-di
   - Target: <100 lines of ignoreErrors
   - Verify: `composer phpstan` passes with reduced ignore list
 
-- [ ] t196 Move domain logic out of REST controllers into service classes #refactor #auto-dispatch ~2h logged:2026-04-16
+- [x] t196 Move domain logic out of REST controllers into service classes #refactor #auto-dispatch ~2h logged:2026-04-16 pr:#1010 completed:2026-04-17
   - RestController has upload_attachments_to_media_library() (infrastructure) and generate_session_title() (domain logic)
   - NEW: includes/Infrastructure/WordPress/MediaUploader.php — extracted from RestController
   - NEW: includes/Core/SessionTitleGenerator.php — extracted from RestController

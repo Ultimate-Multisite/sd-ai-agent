@@ -42,15 +42,6 @@ class ImageAbilities {
 	private const MAX_ALT_TEXT_LENGTH = 125;
 
 	/**
-	 * Register abilities on the wp_abilities_api_init hook.
-	 *
-	 * @since 1.1.0
-	 */
-	public static function register(): void {
-		add_action( 'wp_abilities_api_init', [ __CLASS__, 'register_abilities' ] );
-	}
-
-	/**
 	 * Register all image abilities.
 	 *
 	 * @since 1.1.0
@@ -829,8 +820,8 @@ INSTRUCTION;
 	 * @return string Model ID or empty string.
 	 */
 	private static function get_configured_model(): string {
-		if ( class_exists( \AiAgent\Core\Settings::class ) ) {
-			$model = \AiAgent\Core\Settings::get( 'default_model' );
+		if ( class_exists( \GratisAiAgent\Core\Settings::class ) ) {
+			$model = \GratisAiAgent\Core\Settings::instance()->get( 'default_model' );
 			return is_string( $model ) ? $model : '';
 		}
 		return '';

@@ -286,7 +286,7 @@ Assistant: %s',
 
 			$effective_provider = $provider_id;
 			if ( empty( $effective_provider ) ) {
-				$settings = Settings::get();
+				$settings = Settings::instance()->get();
 				// @phpstan-ignore-next-line
 				$effective_provider = (string) ( $settings['default_provider'] ?? '' );
 			}
@@ -304,7 +304,10 @@ Assistant: %s',
 				$builder->using_max_tokens( 20 );
 			}
 
-			$result    = $builder->generate_text_result();
+			$result = $builder->generate_text_result();
+			if ( is_wp_error( $result ) ) {
+				return $fallback;
+			}
 			$raw_title = $result->toText();
 		} catch ( \Throwable $e ) {
 			return $fallback;
