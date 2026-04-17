@@ -64,10 +64,18 @@ class BenchmarkControllerTest extends WP_UnitTestCase {
 
 	/**
 	 * Set up REST server and test users before each test.
+	 *
+	 * REST server creation and rest_api_init must run BEFORE parent::set_up()
+	 * because parent::set_up() calls _backup_hooks(), which snapshots $wp_filter.
+	 * If rest_api_init fires after the snapshot, the DI framework's per-route
+	 * add_action() callbacks ('gratis-ai-agent/v1/benchmark', etc.) are added
+	 * AFTER the snapshot and are therefore removed by _restore_hooks() at
+	 * tear_down(). Subsequent tests then have no callbacks for those actions,
+	 * so register_rest_route() is never called and every route returns 404.
+	 * Firing rest_api_init first ensures the callbacks are included in the
+	 * snapshot and are correctly restored for every test.
 	 */
 	public function set_up(): void {
-		parent::set_up();
-
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Standard WordPress test global.
 		global $wp_rest_server;
 		$wp_rest_server = new WP_REST_Server();
@@ -75,6 +83,8 @@ class BenchmarkControllerTest extends WP_UnitTestCase {
 
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Standard WordPress core hook.
 		do_action( 'rest_api_init' );
+
+		parent::set_up();
 
 		$this->admin_id      = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		$this->subscriber_id = self::factory()->user->create( [ 'role' => 'subscriber' ] );
