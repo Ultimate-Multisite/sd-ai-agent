@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace GratisAiAgent\REST;
 
 use GratisAiAgent\Models\Skill;
+use GratisAiAgent\Models\DTO\SkillRow;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -53,30 +54,20 @@ final class SkillController extends XWP_REST_Controller {
 		guard: 'check_permission',
 	)]
 	public function handle_list_skills(): WP_REST_Response {
-		$skills = Skill::get_all();
+		$skills = Skill::get_all() ?? [];
 
 		$list = array_map(
-			function ( $s ) {
+			function ( SkillRow $s ) {
 				return array(
-					// @phpstan-ignore-next-line
-					'id'          => (int) $s->id,
-					// @phpstan-ignore-next-line
+					'id'          => $s->id,
 					'slug'        => $s->slug,
-					// @phpstan-ignore-next-line
 					'name'        => $s->name,
-					// @phpstan-ignore-next-line
 					'description' => $s->description,
-					// @phpstan-ignore-next-line
 					'content'     => $s->content,
-					// @phpstan-ignore-next-line
-					'is_builtin'  => (bool) (int) $s->is_builtin,
-					// @phpstan-ignore-next-line
-					'enabled'     => (bool) (int) $s->enabled,
-					// @phpstan-ignore-next-line
+					'is_builtin'  => $s->is_builtin,
+					'enabled'     => $s->enabled,
 					'word_count'  => str_word_count( $s->content ),
-					// @phpstan-ignore-next-line
 					'created_at'  => $s->created_at,
-					// @phpstan-ignore-next-line
 					'updated_at'  => $s->updated_at,
 				);
 			},

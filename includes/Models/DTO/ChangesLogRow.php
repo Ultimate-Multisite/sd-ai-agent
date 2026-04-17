@@ -65,7 +65,7 @@ readonly class ChangesLogRow {
 			before_value: (string) ( $row->before_value ?? '' ),
 			after_value:  (string) ( $row->after_value ?? '' ),
 			reverted:     (bool) (int) ( $row->reverted ?? 0 ),
-			reverted_at:  isset( $row->reverted_at ) && null !== $row->reverted_at ? (string) $row->reverted_at : null,
+			reverted_at:  isset( $row->reverted_at ) ? (string) $row->reverted_at : null,
 			created_at:   (string) ( $row->created_at ?? '' ),
 		);
 	}

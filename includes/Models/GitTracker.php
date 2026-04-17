@@ -446,7 +446,7 @@ class GitTracker {
 	 * Fetch a tracked file row from the database.
 	 *
 	 * @param string $relative_path Path relative to the package root.
-	 * @return object|null Row object or null if not found.
+	 * @return GitTrackedFileRow|null Row object or null if not found.
 	 */
 	private function get_tracked_row( string $relative_path ): ?GitTrackedFileRow {
 		global $wpdb;

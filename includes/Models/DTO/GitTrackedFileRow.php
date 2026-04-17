@@ -57,7 +57,7 @@ readonly class GitTrackedFileRow {
 			current_hash:     (string) ( $row->current_hash ?? '' ),
 			status:           (string) ( $row->status ?? 'unchanged' ),
 			tracked_at:       (string) ( $row->tracked_at ?? '' ),
-			modified_at:      isset( $row->modified_at ) && null !== $row->modified_at ? (string) $row->modified_at : null,
+			modified_at:      isset( $row->modified_at ) ? (string) $row->modified_at : null,
 		);
 	}
 }

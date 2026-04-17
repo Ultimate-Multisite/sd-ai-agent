@@ -16,21 +16,21 @@ namespace GratisAiAgent\Models\DTO;
 readonly class AgentRow {
 
 	/**
-	 * @param int         $id             Row ID (auto-increment PK).
-	 * @param string      $slug           URL-safe unique slug.
-	 * @param string      $name           Human-readable name.
-	 * @param string      $description    Short description.
-	 * @param string      $system_prompt  Custom system instruction override (default '').
-	 * @param string      $provider_id    AI provider slug override (default '').
-	 * @param string      $model_id       Model slug override (default '').
-	 * @param string      $tool_profile   Tool profile slug (default '').
-	 * @param float|null  $temperature    Sampling temperature override, or null to use default.
-	 * @param int|null    $max_iterations Iteration cap override, or null to use default.
-	 * @param string      $greeting       Agent greeting message (default '').
-	 * @param string      $avatar_icon    Dashicons slug or empty string.
-	 * @param bool        $enabled        Whether the agent is active.
-	 * @param string      $created_at     MySQL datetime string (UTC).
-	 * @param string      $updated_at     MySQL datetime string (UTC).
+	 * @param int        $id             Row ID (auto-increment PK).
+	 * @param string     $slug           URL-safe unique slug.
+	 * @param string     $name           Human-readable name.
+	 * @param string     $description    Short description.
+	 * @param string     $system_prompt  Custom system instruction override (default '').
+	 * @param string     $provider_id    AI provider slug override (default '').
+	 * @param string     $model_id       Model slug override (default '').
+	 * @param string     $tool_profile   Tool profile slug (default '').
+	 * @param float|null $temperature    Sampling temperature override, or null to use default.
+	 * @param int|null   $max_iterations Iteration cap override, or null to use default.
+	 * @param string     $greeting       Agent greeting message (default '').
+	 * @param string     $avatar_icon    Dashicons slug or empty string.
+	 * @param bool       $enabled        Whether the agent is active.
+	 * @param string     $created_at     MySQL datetime string (UTC).
+	 * @param string     $updated_at     MySQL datetime string (UTC).
 	 */
 	public function __construct(
 		public int $id,
@@ -57,11 +57,11 @@ readonly class AgentRow {
 	 * @return self
 	 */
 	public static function from_row( object $row ): self {
-		$temp = isset( $row->temperature ) && null !== $row->temperature && '' !== $row->temperature
+		$temp = isset( $row->temperature ) && '' !== $row->temperature
 			? (float) $row->temperature
 			: null;
 
-		$max_iter = isset( $row->max_iterations ) && null !== $row->max_iterations && '' !== $row->max_iterations
+		$max_iter = isset( $row->max_iterations ) && '' !== $row->max_iterations
 			? (int) $row->max_iterations
 			: null;
 
