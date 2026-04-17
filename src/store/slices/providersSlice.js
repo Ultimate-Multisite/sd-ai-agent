@@ -67,9 +67,8 @@ export const actions = {
 	 */
 	fetchProviders() {
 		return async ( { dispatch, select } ) => {
-			// Skip if a fetch is already in-flight. The store is shared across
-			// all bundles on the page, so this guard is cross-bundle.
-			if ( select.getProvidersLoading() ) {
+			// Skip if a fetch is already in-flight or a boot error was raised.
+			if ( select.getProvidersLoading() || select.getBootError() ) {
 				return;
 			}
 			dispatch( { type: 'SET_PROVIDERS_LOADING', loading: true } );
@@ -95,8 +94,17 @@ export const actions = {
 						dispatch.setSelectedModel( '' );
 					}
 				}
-			} catch {
+			} catch ( err ) {
 				dispatch.setProviders( [] );
+				const status = err?.data?.status ?? err?.code;
+				if ( status === 403 || status === 401 ) {
+					dispatch.setBootError( {
+						message:
+							err?.message ||
+							'Unable to connect to the AI Agent API.',
+						status,
+					} );
+				}
 			} finally {
 				dispatch( { type: 'SET_PROVIDERS_LOADING', loading: false } );
 			}

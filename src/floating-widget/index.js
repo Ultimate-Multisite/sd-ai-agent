@@ -42,11 +42,12 @@ function FloatingWidget() {
 		setFloatingOpen,
 	} = useDispatch( STORE_NAME );
 
-	const { isOpen, isSiteBuilderMode, settings } = useSelect(
+	const { isOpen, isSiteBuilderMode, settings, bootError } = useSelect(
 		( select ) => ( {
 			isOpen: select( STORE_NAME ).isFloatingOpen(),
 			isSiteBuilderMode: select( STORE_NAME ).isSiteBuilderMode(),
 			settings: select( STORE_NAME ).getSettings(),
+			bootError: select( STORE_NAME ).getBootError(),
 		} ),
 		[]
 	);
@@ -70,11 +71,15 @@ function FloatingWidget() {
 	}, [ fetchSettings ] );
 
 	// Fetch alerts on mount and refresh every 5 minutes.
+	// Skip if a boot error was raised — no point polling a broken API.
 	useEffect( () => {
+		if ( bootError ) {
+			return;
+		}
 		fetchAlerts();
 		const interval = setInterval( fetchAlerts, 5 * 60 * 1000 );
 		return () => clearInterval( interval );
-	}, [ fetchAlerts ] );
+	}, [ fetchAlerts, bootError ] );
 
 	// Gather page context on mount.
 	useEffect( () => {
@@ -95,6 +100,12 @@ function FloatingWidget() {
 			setSiteBuilderMode( true );
 		}
 	}, [ setSiteBuilderMode ] );
+
+	// If API calls failed, hide the widget entirely — the full error
+	// screen is shown by the admin-page bundle instead.
+	if ( bootError ) {
+		return null;
+	}
 
 	// Site builder full-screen overlay takes priority over normal FAB/panel.
 	// Guard: only render on the main AI Agent page.

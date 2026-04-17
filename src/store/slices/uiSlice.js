@@ -17,6 +17,11 @@ export const initialState = {
 	// Proactive alerts — count of issues surfaced as a badge on the FAB.
 	alertCount: 0,
 
+	// Boot error — set when initial API calls persistently fail (e.g. 403).
+	// Shows a friendly error screen instead of an infinite request loop.
+	// { message: string, status: number } or null.
+	bootError: null,
+
 	// Site builder mode — true when a fresh WordPress install is detected.
 	// Seeded from the PHP-injected global so the widget can open immediately
 	// without waiting for a REST round-trip.
@@ -164,6 +169,30 @@ export const actions = {
 		return { type: 'SET_TTS_PITCH', pitch };
 	},
 
+	/**
+	 * Set or clear the boot error state.
+	 *
+	 * @param {Object|null} error - Error object { message, status } or null to clear.
+	 * @return {Object} Redux action.
+	 */
+	setBootError( error ) {
+		return { type: 'SET_BOOT_ERROR', error };
+	},
+
+	/**
+	 * Clear the boot error and re-attempt initial data fetches.
+	 *
+	 * @return {Function} Redux thunk.
+	 */
+	retryBoot() {
+		return async ( { dispatch } ) => {
+			dispatch.setBootError( null );
+			dispatch.fetchProviders();
+			dispatch.fetchSessions();
+			dispatch.fetchSettings();
+		};
+	},
+
 	fetchAlerts() {
 		return async ( { dispatch } ) => {
 			try {
@@ -256,6 +285,14 @@ export const selectors = {
 		return state.alertCount;
 	},
 
+	/**
+	 * @param {import('../../types').StoreState} state
+	 * @return {Object|null} Boot error { message, status } or null.
+	 */
+	getBootError( state ) {
+		return state.bootError;
+	},
+
 	// Text-to-speech (t084)
 
 	/**
@@ -310,6 +347,8 @@ export function reducer( state, action ) {
 			return { ...state, debugMode: action.enabled };
 		case 'SET_ALERT_COUNT':
 			return { ...state, alertCount: action.count };
+		case 'SET_BOOT_ERROR':
+			return { ...state, bootError: action.error };
 		case 'SET_SITE_BUILDER_STEP':
 			return { ...state, siteBuilderStep: action.step };
 		case 'SET_SITE_BUILDER_TOTAL_STEPS':
