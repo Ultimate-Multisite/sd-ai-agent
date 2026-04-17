@@ -362,7 +362,7 @@ Full plan: [todo/PLANS.md#post-di-code-quality](todo/PLANS.md#2026-04-16-post-di
   - Remove corresponding phpstan.neon ignoreErrors (target: 30-50% reduction)
   - Verify: `composer phpstan` with reduced ignoreErrors
 
-- [ ] t192 Convert Settings to injectable DI service #refactor #auto-dispatch ~3h logged:2026-04-16
+- [x] t192 Convert Settings to injectable DI service #refactor #auto-dispatch ~3h logged:2026-04-16 pr:#1017 completed:2026-04-17
   - Settings is entirely static — hard to test, hidden global state
   - Add instance methods mirroring static ones, register as singleton in Plugin::configure()
   - Inject into AgentLoop (already accepts ?Settings), REST controllers, handlers
