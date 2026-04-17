@@ -11,6 +11,26 @@
 $plugin_dir = dirname( __DIR__ );
 require_once $plugin_dir . '/vendor/autoload.php';
 
+/*
+ * Force XWP_Context to CTX_REST so the x-wp/di container loads REST handlers.
+ *
+ * Problem: the WP test bootstrap defines WP_ADMIN=true before loading
+ * wp-settings.php. XWP_Context::get() uses a match(true) that checks
+ * admin() BEFORE rest(), so the context resolves to Admin (2) — silently
+ * skipping every CTX_REST (16) handler and producing 404 on all REST route
+ * tests. Setting $_SERVER['REQUEST_URI'] to /wp-json/... doesn't help because
+ * the admin() branch short-circuits before rest() is evaluated.
+ *
+ * Fix: pre-set the private static XWP_Context::$current via reflection BEFORE
+ * WordPress boots. The ??= assignment in get() preserves our value, so the
+ * match expression is never reached. This runs at file-scope before the WP
+ * test bootstrap is even loaded — no hook ordering issues.
+ */
+( static function (): void {
+	$refl = new ReflectionProperty( XWP_Context::class, 'current' );
+	$refl->setValue( null, XWP_Context::REST );
+} )();
+
 $_tests_dir = getenv('WP_TESTS_DIR');
 if ( ! $_tests_dir ) {
 	// wp-env places the test suite at /wordpress-phpunit.
@@ -51,31 +71,6 @@ function _manually_load_plugin() {
 }
 
 tests_add_filter('muplugins_loaded', '_manually_load_plugin');
-
-/**
- * Force XWP_Context to CTX_REST so the x-wp/di container loads REST handlers.
- *
- * The WP test bootstrap defines WP_ADMIN = true, making is_admin() return true.
- * XWP_Context::get() checks admin() BEFORE rest() in its match statement, so
- * the context resolves to Admin (2) — silently skipping every CTX_REST (16)
- * handler and producing 404 on all REST route tests.
- *
- * We override the private static $current property via reflection BEFORE the DI
- * container processes handlers on plugins_loaded. The ??= assignment in get()
- * then preserves our value instead of computing it from the environment.
- *
- * Registered on plugins_loaded at PHP_INT_MIN (same as xwp_load_app), but added
- * BEFORE the plugin's add_action call, so it fires first in PHP's FIFO ordering
- * for same-priority callbacks.
- */
-tests_add_filter(
-	'plugins_loaded',
-	static function (): void {
-		$refl = new ReflectionProperty( XWP_Context::class, 'current' );
-		$refl->setValue( null, XWP_Context::REST );
-	},
-	PHP_INT_MIN
-);
 
 // Start up the WP testing environment.
 require "{$_tests_dir}/includes/bootstrap.php";
