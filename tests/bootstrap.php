@@ -79,6 +79,36 @@ tests_add_filter('muplugins_loaded', '_manually_load_plugin');
 // Start up the WP testing environment.
 require "{$_tests_dir}/includes/bootstrap.php";
 
-// Debug: verify context survived WP bootstrap.
+// Debug: verify context survived WP bootstrap and check DI handler state.
 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Temporary debug.
-error_log( 'POST-BOOT: XWP_Context::get() = ' . XWP_Context::get() . ', validate(REST) = ' . ( XWP_Context::validate( XWP_Context::REST ) ? 'true' : 'false' ) . ', is_admin() = ' . ( is_admin() ? 'true' : 'false' ) );
+error_log( 'POST-BOOT: XWP_Context::get() = ' . XWP_Context::get() . ', validate(REST) = ' . ( XWP_Context::validate( XWP_Context::REST ) ? 'true' : 'false' ) );
+
+// Check if the DI container and handlers are set up.
+// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_error_log
+if ( function_exists( 'xwp_has' ) ) {
+	error_log( 'POST-BOOT: xwp_has(gratis-ai-agent) = ' . ( xwp_has( 'gratis-ai-agent' ) ? 'true' : 'false' ) );
+
+	if ( xwp_has( 'gratis-ai-agent' ) ) {
+		$invoker = \XWP\DI\Invoker::instance();
+		$handlers = $invoker->all_handlers();
+		error_log( 'POST-BOOT: Registered handlers = ' . count( $handlers ) );
+		foreach ( $handlers as $classname => $handler ) {
+			$hookable = $handler->is_hookable() ? 'hookable' : 'NOT hookable';
+			$loaded   = $handler->loaded ? 'loaded' : 'NOT loaded';
+			error_log( "  HANDLER: {$classname} ({$hookable}, {$loaded})" );
+		}
+
+		// Fire rest_api_init and check routes.
+		global $wp_rest_server;
+		$wp_rest_server = new WP_REST_Server();
+		do_action( 'rest_api_init' );
+		$routes = $wp_rest_server->get_routes();
+		$our_routes = array_filter(
+			array_keys( $routes ),
+			static fn( $r ) => str_starts_with( $r, '/gratis-ai-agent/' )
+		);
+		error_log( 'POST-BOOT: REST routes = ' . count( $our_routes ) . ' (' . implode( ', ', array_slice( $our_routes, 0, 5 ) ) . '...)' );
+		$wp_rest_server = null;
+	}
+}
+// phpcs:enable
