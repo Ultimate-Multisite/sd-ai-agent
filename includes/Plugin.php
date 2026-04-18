@@ -48,7 +48,6 @@ use GratisAiAgent\REST\FeedbackController;
 use GratisAiAgent\REST\KnowledgeController;
 use GratisAiAgent\REST\McpController;
 use GratisAiAgent\REST\MemoryController;
-use GratisAiAgent\REST\ResaleApiController;
 use GratisAiAgent\REST\RestController;
 use GratisAiAgent\REST\SessionController;
 use GratisAiAgent\REST\SettingsController;
@@ -112,7 +111,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 		SessionController::class,
 		SettingsController::class,
 		WebhookController::class,
-		ResaleApiController::class,
 	),
 	extendable: true,
 )]

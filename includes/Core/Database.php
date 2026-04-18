@@ -29,7 +29,6 @@ use GratisAiAgent\Repositories\GeneratedPluginsRepository;
 use GratisAiAgent\Repositories\ModifiedFilesRepository;
 use GratisAiAgent\Repositories\SessionRepository;
 use GratisAiAgent\Repositories\UsageRepository;
-use GratisAiAgent\REST\ResaleApiDatabase;
 use GratisAiAgent\REST\WebhookDatabase;
 use GratisAiAgent\Tools\CustomTools;
 
@@ -258,9 +257,6 @@ class Database {
 
 		// Webhook tables.
 		$sql .= WebhookDatabase::get_schema( $charset );
-
-		// Resale API tables.
-		$sql .= ResaleApiDatabase::get_schema( $charset );
 
 		$sql .= "\n\nCREATE TABLE {$table} (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
