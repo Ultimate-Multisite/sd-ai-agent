@@ -361,7 +361,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - EDIT: src/components/message-list.js:607-627 — extract the IIFE tool-calls resolution into a `useActiveToolCalls(sessionId)` hook (can live in jobSlice or a new src/hooks/use-active-tool-calls.js)
   - Verify: `npm run lint:js && npm run build && npm run test:js`
 
-- [ ] t204 Session-scoped polling with exponential backoff + visibility throttling (Phase 2) #feature #auto-dispatch ~4h For #t199 blocked-by:t203 logged:2026-04-17
+- [x] t204 Session-scoped polling with exponential backoff + visibility throttling (Phase 2) #feature #auto-dispatch ~4h For #t199 blocked-by:t203 logged:2026-04-17 pr:#1045 completed:2026-04-18
   - EDIT: src/store/slices/jobSlice.js — refactor `pollJob(jobId, sessionId)`: remove check against `currentJobId` so multiple sessions can poll independently. Add exponential backoff: start 1s, after 10 polls → 5s, after 30 polls → 10s cap. Reset to 1s when `tool_calls` array length changes (progress detected). Update `sessionJobs[sessionId]` on every poll regardless of which session is active; only update `liveToolCalls`/`pendingConfirmation` when sessionId matches current.
   - NEW: src/utils/visibility-manager.js — `document.addEventListener('visibilitychange')` singleton. When `document.hidden`: slow all active polls to 15s. When visible: immediately poll once per active session, resume normal intervals. Export `onVisibilityChange(callback)` for notification integration.
   - EDIT: src/store/slices/jobSlice.js — integrate visibility manager: `pollJob` reads visibility state to determine interval.
