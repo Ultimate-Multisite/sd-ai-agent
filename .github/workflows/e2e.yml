@@ -91,7 +91,9 @@ jobs:
         run: |
           node -e "
             const fs = require('fs');
-            const f = require.resolve('@wordpress/env/lib/runtime/docker/docker-config.js');
+            const path = require('path');
+            const f = path.resolve('node_modules/@wordpress/env/lib/runtime/docker/docker-config.js');
+            if (!fs.existsSync(f)) { console.log('File not found, skipping patch'); process.exit(0); }
             let c = fs.readFileSync(f, 'utf8');
             const before = 'RUN composer global require --dev phpunit/phpunit:\"^5.7.21 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0\"';
             const after  = 'RUN COMPOSER_NO_AUDIT=1 composer global require --dev phpunit/phpunit:\"^5.7.21 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0\"';
