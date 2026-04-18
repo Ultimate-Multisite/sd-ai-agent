@@ -1,6 +1,9 @@
 /**
- * Sessions slice — session list, current session, messages, tool calls,
- * sending state, job polling, streaming, and session management thunks.
+ * Sessions slice — session list, current session, messages, sending state,
+ * and session management thunks.
+ *
+ * Job state (currentJobId, liveToolCalls, sessionJobs, pendingConfirmation,
+ * pendingActionCard) and the pollJob thunk are owned by jobSlice (t203/t204).
  */
 
 /**
@@ -126,15 +129,6 @@ export const initialState = {
 	currentSessionMessages: [],
 	currentSessionToolCalls: [],
 	sending: false,
-	currentJobId: null,
-
-	// Live tool call progress from the background job (shown while processing).
-	liveToolCalls: [],
-
-	// Per-session background job tracking.
-	// Map of sessionId → { jobId, toolCalls, status }
-	// Allows multiple sessions to have active jobs simultaneously.
-	sessionJobs: {},
 
 	// Token usage (current session)
 	tokenUsage: { prompt: 0, completion: 0 },
@@ -146,17 +140,12 @@ export const initialState = {
 	// message position. Populated when a done event arrives.
 	messageTokens: [],
 
-	// Pending confirmation (Batch 8)
-	pendingConfirmation: null,
-
-	// Action card — inline confirmation rendered in the message list (t074).
-	pendingActionCard: null,
-
 	// Streaming state — token buffer for the in-progress assistant message.
+	// Kept for potential future SSE use; currently reset at send time.
 	streamingText: '',
 	isStreaming: false,
 
-	// Stream error state — true when the last stream attempt failed.
+	// Stream error state — true when the last send attempt failed.
 	// Used to show a "Try again" button in the message list.
 	streamError: false,
 
@@ -253,38 +242,6 @@ export const actions = {
 	},
 
 	/**
-	 * Set the active polling job ID.
-	 *
-	 * @param {string|null} jobId - Job identifier, or null to clear.
-	 * @return {Object} Redux action.
-	 */
-	setCurrentJobId( jobId ) {
-		return { type: 'SET_CURRENT_JOB_ID', jobId };
-	},
-
-	/**
-	 * Set live tool call progress from the background job.
-	 * Shown in the UI while the job is still processing.
-	 *
-	 * @param {Array} toolCalls - Tool call log entries from the job.
-	 * @return {Object} Redux action.
-	 */
-	setLiveToolCalls( toolCalls ) {
-		return { type: 'SET_LIVE_TOOL_CALLS', toolCalls };
-	},
-
-	/**
-	 * Set a background job for a specific session.
-	 *
-	 * @param {number}      sessionId - Session identifier.
-	 * @param {Object|null} job       - Job data { jobId, toolCalls, status } or null to clear.
-	 * @return {Object} Redux action.
-	 */
-	setSessionJob( sessionId, job ) {
-		return { type: 'SET_SESSION_JOB', sessionId, job };
-	},
-
-	/**
 	 * Append a message to the current session.
 	 *
 	 * @param {Message} message - Message to append.
@@ -344,20 +301,6 @@ export const actions = {
 	 */
 	resetSessionTokens() {
 		return { type: 'RESET_SESSION_TOKENS' };
-	},
-
-	/**
-	 * Set or clear the pending tool confirmation.
-	 *
-	 * @param {PendingConfirmation|null} confirmation - Confirmation payload, or null to clear.
-	 * @return {Object} Redux action.
-	 */
-	setPendingConfirmation( confirmation ) {
-		return { type: 'SET_PENDING_CONFIRMATION', confirmation };
-	},
-
-	setPendingActionCard( card ) {
-		return { type: 'SET_PENDING_ACTION_CARD', card };
 	},
 
 	/**
@@ -1061,7 +1004,9 @@ export const actions = {
 
 			if ( runResult?.job_id ) {
 				dispatch.setCurrentJobId( runResult.job_id );
-				// Track job per-session so other sessions aren't affected.
+				// Track job per-session via jobSlice. pollJob is also responsible
+				// for setting up per-session tracking, but we set initial state here
+				// so the UI shows "processing" immediately before the first poll.
 				if ( sessionId ) {
 					dispatch.setSessionJob( sessionId, {
 						jobId: runResult.job_id,
@@ -1069,7 +1014,8 @@ export const actions = {
 						status: 'processing',
 					} );
 				}
-				dispatch.pollJob( runResult.job_id );
+				// Pass sessionId so jobSlice can do session-scoped polling (t204).
+				dispatch.pollJob( runResult.job_id, sessionId );
 			} else {
 				dispatch.appendMessage( {
 					role: 'system',
@@ -1095,16 +1041,17 @@ export const actions = {
 	 * @return {Function} Redux thunk.
 	 */
 	confirmToolCall( jobId, alwaysAllow = false ) {
-		return async ( { dispatch } ) => {
+		return async ( { dispatch, select } ) => {
 			dispatch.setPendingConfirmation( null );
 			dispatch.setPendingActionCard( null );
+			const sessionId = select.getCurrentSessionId();
 			try {
 				await apiFetch( {
 					path: `/gratis-ai-agent/v1/job/${ jobId }/confirm`,
 					method: 'POST',
 					data: { always_allow: alwaysAllow },
 				} );
-				dispatch.pollJob( jobId );
+				dispatch.pollJob( jobId, sessionId );
 			} catch ( err ) {
 				dispatch.appendMessage( {
 					role: 'system',
@@ -1129,15 +1076,16 @@ export const actions = {
 	 * @return {Function} Redux thunk.
 	 */
 	rejectToolCall( jobId ) {
-		return async ( { dispatch } ) => {
+		return async ( { dispatch, select } ) => {
 			dispatch.setPendingConfirmation( null );
 			dispatch.setPendingActionCard( null );
+			const sessionId = select.getCurrentSessionId();
 			try {
 				await apiFetch( {
 					path: `/gratis-ai-agent/v1/job/${ jobId }/reject`,
 					method: 'POST',
 				} );
-				dispatch.pollJob( jobId );
+				dispatch.pollJob( jobId, sessionId );
 			} catch ( err ) {
 				dispatch.appendMessage( {
 					role: 'system',
@@ -1262,231 +1210,6 @@ export const actions = {
 			} catch {
 				// Best-effort — the message is already visible in the chat.
 			}
-		};
-	},
-
-	/**
-	 * Poll a job until it completes, errors, or requires confirmation.
-	 * Retries every 3 seconds up to 200 attempts (~10 minutes).
-	 *
-	 * @param {string} jobId - Job identifier to poll.
-	 * @return {Function} Redux thunk.
-	 */
-	pollJob( jobId ) {
-		return async ( { dispatch, select } ) => {
-			let attempts = 0;
-			const maxAttempts = 200;
-			// Capture the session this job belongs to so we can update
-			// per-session state even if the user switches tabs.
-			const jobSessionId = select.getCurrentSessionId();
-
-			const poll = async () => {
-				attempts++;
-				if ( attempts > maxAttempts ) {
-					dispatch.appendMessage( {
-						role: 'system',
-						parts: [ { text: 'Error: Request timed out.' } ],
-					} );
-					dispatch.setSending( false );
-					dispatch.setCurrentJobId( null );
-					if ( jobSessionId ) {
-						dispatch.setSessionJob( jobSessionId, null );
-					}
-					return;
-				}
-
-				// If job was cancelled (different jobId now), stop.
-				if ( select.getCurrentJobId() !== jobId ) {
-					return;
-				}
-
-				try {
-					const result = await apiFetch( {
-						path: `/gratis-ai-agent/v1/job/${ jobId }`,
-					} );
-
-					if ( result.status === 'processing' ) {
-						// Update live tool call progress.
-						if ( result.tool_calls?.length ) {
-							dispatch.setLiveToolCalls( result.tool_calls );
-							if ( jobSessionId ) {
-								dispatch.setSessionJob( jobSessionId, {
-									jobId,
-									toolCalls: result.tool_calls,
-									status: 'processing',
-								} );
-							}
-						}
-						setTimeout( poll, 3000 );
-						return;
-					}
-
-					if ( result.status === 'awaiting_confirmation' ) {
-						if ( jobSessionId ) {
-							dispatch.setSessionJob( jobSessionId, {
-								jobId,
-								toolCalls: result.tool_calls || [],
-								status: 'awaiting_confirmation',
-							} );
-						}
-						const cardData = {
-							jobId,
-							tools: result.pending_tools || [],
-						};
-						dispatch.setPendingConfirmation( cardData );
-						dispatch.setPendingActionCard( cardData );
-						// Don't clear sending — we're still waiting.
-						return;
-					}
-
-					if ( result.status === 'error' ) {
-						// Build an error message that includes backtrace
-						// context when available (file, line, stack trace).
-						let errorText = `Error: ${
-							result.message || 'Unknown error'
-						}`;
-						if ( result.error_context ) {
-							const ctx = result.error_context;
-							errorText += `\n\n**Location:** \`${ ctx.file }:${ ctx.line }\``;
-							if (
-								Array.isArray( ctx.trace ) &&
-								ctx.trace.length > 0
-							) {
-								errorText +=
-									'\n\n**Stack trace:**\n```\n' +
-									ctx.trace.join( '\n' ) +
-									'\n```';
-							}
-						}
-						dispatch.appendMessage( {
-							role: 'system',
-							parts: [ { text: errorText } ],
-						} );
-						// WP_Error max_iterations — show feedback banner (t183).
-						const errMsg = result.message || '';
-						if ( /max.?iteration/i.test( errMsg ) ) {
-							dispatch.setFeedbackBanner( {
-								exitReason: 'max_iterations',
-							} );
-						}
-					}
-
-					if ( result.status === 'complete' ) {
-						// Reload the session from the DB — the server already
-						// persisted the reply. This is the single source of
-						// truth and avoids duplicate messages from local append
-						// + DB reload races.
-						if ( result.session_id ) {
-							try {
-								const session = await apiFetch( {
-									path: `/gratis-ai-agent/v1/sessions/${ result.session_id }`,
-								} );
-								// Only update if this is still the active session.
-								if (
-									select.getCurrentSessionId() ===
-									result.session_id
-								) {
-									dispatch.setCurrentSession(
-										session.id,
-										session.messages || [],
-										session.tool_calls || []
-									);
-								}
-							} catch {
-								// Fallback: append locally if DB reload fails.
-								if ( result.reply ) {
-									dispatch.appendMessage( {
-										role: 'model',
-										parts: [ { text: result.reply } ],
-										toolCalls: result.tool_calls,
-									} );
-								}
-							}
-						} else if ( result.reply ) {
-							// No session_id — append locally.
-							dispatch.appendMessage( {
-								role: 'model',
-								parts: [ { text: result.reply } ],
-								toolCalls: result.tool_calls,
-							} );
-						}
-
-						// Update token usage.
-						if ( result.token_usage ) {
-							const current = select.getTokenUsage();
-							dispatch.setTokenUsage( {
-								prompt:
-									current.prompt +
-									( result.token_usage.prompt || 0 ),
-								completion:
-									current.completion +
-									( result.token_usage.completion || 0 ),
-							} );
-
-							const tu = result.token_usage;
-							const totalTokens =
-								( tu.prompt || 0 ) + ( tu.completion || 0 );
-							const cost = result.cost_estimate || 0;
-							dispatch.accumulateSessionTokens(
-								totalTokens,
-								cost
-							);
-						}
-
-						// Update session title in sidebar.
-						if ( result.generated_title && result.session_id ) {
-							dispatch.updateSessionTitle(
-								result.session_id,
-								result.generated_title
-							);
-						}
-
-						// Handle inability-reported flag (t185).
-						// Set when the AI called report-inability ability.
-						if ( result.inability_reported ) {
-							dispatch.setInabilityReported(
-								result.inability_reported
-							);
-						}
-
-						// Show feedback banner on problematic exit reasons (t183).
-						// spin_detected and timeout arrive as exit_reason on the
-						// complete result; max_iterations may also arrive here
-						// (distinct from the WP_Error path above).
-						const FEEDBACK_EXIT_REASONS = [
-							'spin_detected',
-							'timeout',
-							'max_iterations',
-						];
-						if (
-							FEEDBACK_EXIT_REASONS.includes( result.exit_reason )
-						) {
-							dispatch.setFeedbackBanner( {
-								exitReason: result.exit_reason,
-							} );
-						}
-
-						dispatch.fetchSessions();
-					}
-				} catch {
-					// Network blip — keep polling.
-					setTimeout( poll, 3000 );
-					return;
-				}
-
-				dispatch.setSending( false );
-				dispatch.setCurrentJobId( null );
-				dispatch.setLiveToolCalls( [] );
-				if ( jobSessionId ) {
-					dispatch.setSessionJob( jobSessionId, null );
-				}
-
-				// Auto-drain the message queue: if the user sent messages
-				// while the agent was processing, send the next one now.
-				dispatch.drainMessageQueue();
-			};
-
-			setTimeout( poll, 2000 );
 		};
 	},
 
@@ -1648,43 +1371,6 @@ export const selectors = {
 
 	/**
 	 * @param {import('../../types').StoreState} state
-	 * @return {string|null} Active polling job ID, or null.
-	 */
-	getCurrentJobId( state ) {
-		return state.currentJobId;
-	},
-
-	/**
-	 * @param {import('../../types').StoreState} state
-	 * @return {Array} Live tool call progress from the background job.
-	 */
-	getLiveToolCalls( state ) {
-		return state.liveToolCalls;
-	},
-
-	/**
-	 * Get the full sessionJobs map.
-	 *
-	 * @param {import('../../types').StoreState} state
-	 * @return {Object} Map of sessionId → job data.
-	 */
-	getSessionJobs( state ) {
-		return state.sessionJobs;
-	},
-
-	/**
-	 * Get the job for a specific session.
-	 *
-	 * @param {import('../../types').StoreState} state
-	 * @param {number}                           sessionId - Session identifier.
-	 * @return {Object|null} Job data or null.
-	 */
-	getSessionJob( state, sessionId ) {
-		return state.sessionJobs[ sessionId ] || null;
-	},
-
-	/**
-	 * @param {import('../../types').StoreState} state
 	 * @return {import('../../types').TokenUsage} Cumulative token usage for the current session.
 	 */
 	getTokenUsage( state ) {
@@ -1713,19 +1399,6 @@ export const selectors = {
 	 */
 	getMessageTokens( state ) {
 		return state.messageTokens;
-	},
-
-	/**
-	 * @param {import('../../types').StoreState} state
-	 * @return {import('../../types').PendingConfirmation|null} Pending tool confirmation, or null.
-	 */
-	getPendingConfirmation( state ) {
-		return state.pendingConfirmation;
-	},
-
-	// Pending action card (inline confirmation in message list, t074)
-	getPendingActionCard( state ) {
-		return state.pendingActionCard;
 	},
 
 	/**
@@ -1881,24 +1554,6 @@ export function reducer( state, action ) {
 			};
 		case 'SET_SENDING':
 			return { ...state, sending: action.sending };
-		case 'SET_CURRENT_JOB_ID':
-			return {
-				...state,
-				currentJobId: action.jobId,
-				// Clear live tool calls when job changes.
-				liveToolCalls: action.jobId ? state.liveToolCalls : [],
-			};
-		case 'SET_LIVE_TOOL_CALLS':
-			return { ...state, liveToolCalls: action.toolCalls };
-		case 'SET_SESSION_JOB': {
-			const newJobs = { ...state.sessionJobs };
-			if ( action.job ) {
-				newJobs[ action.sessionId ] = action.job;
-			} else {
-				delete newJobs[ action.sessionId ];
-			}
-			return { ...state, sessionJobs: newJobs };
-		}
 		case 'APPEND_MESSAGE':
 			return {
 				...state,
@@ -1935,10 +1590,6 @@ export function reducer( state, action ) {
 				sessionCost: 0,
 				messageTokens: [],
 			};
-		case 'SET_PENDING_CONFIRMATION':
-			return { ...state, pendingConfirmation: action.confirmation };
-		case 'SET_PENDING_ACTION_CARD':
-			return { ...state, pendingActionCard: action.card };
 		case 'TRUNCATE_MESSAGES_TO':
 			return {
 				...state,

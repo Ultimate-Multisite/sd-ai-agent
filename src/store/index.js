@@ -86,6 +86,13 @@ import {
 	reducer as uiReducer,
 } from './slices/uiSlice';
 
+import {
+	initialState as jobInitialState,
+	actions as jobActions,
+	selectors as jobSelectors,
+	reducer as jobReducer,
+} from './slices/jobSlice';
+
 const STORE_NAME = 'gratis-ai-agent';
 
 // Migrate localStorage keys from old "aiAgent" prefix to "gratisAiAgent".
@@ -127,6 +134,7 @@ const DEFAULT_STATE = {
 	...conversationTemplatesInitialState,
 	...sessionFiltersInitialState,
 	...uiInitialState,
+	...jobInitialState,
 };
 
 /**
@@ -142,6 +150,7 @@ const actions = {
 	...conversationTemplatesActions,
 	...sessionFiltersActions,
 	...uiActions,
+	...jobActions,
 };
 
 /**
@@ -157,6 +166,7 @@ const selectors = {
 	...conversationTemplatesSelectors,
 	...sessionFiltersSelectors,
 	...uiSelectors,
+	...jobSelectors,
 
 	// ─── Cross-slice derived selectors ───────────────────────────
 
@@ -211,6 +221,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 	next = conversationTemplatesReducer( next, action );
 	next = sessionFiltersReducer( next, action );
 	next = uiReducer( next, action );
+	next = jobReducer( next, action );
 	return next;
 };
 
