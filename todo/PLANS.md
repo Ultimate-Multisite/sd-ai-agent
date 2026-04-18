@@ -592,9 +592,9 @@ t194 (standalone) → t195 (needs t191) → t196 (standalone) → t197 (needs t1
 
 ### [2026-04-17] Resumable Background Jobs & Multi-Session Chat
 
-**Status:** Planning
+**Status:** Decomposed → TODO.md (t200-t208)
 **Estimate:** ~10d (ai:8d test:1.5d read:4h)
-**Tasks:** Inline below (5 phases + 6 bundled improvements)
+**Tasks:** t200-t208 in TODO.md (9 auto-dispatch tasks across 5 phases + bundled improvements)
 
 #### Purpose
 
