@@ -174,6 +174,18 @@ export const initialState = {
 	// Each entry: { text: string, attachments: [], timestamp: number }
 	// Drained automatically when the current job completes.
 	messageQueue: [],
+
+	// Open tabs for the chat tab bar (t207).
+	// Array of integer session IDs representing sessions pinned as tabs.
+	// Persisted to localStorage so tabs survive page reload.
+	openTabs: ( () => {
+		try {
+			const saved = localStorage.getItem( 'gratisAiAgent_openTabs' );
+			return saved ? JSON.parse( saved ) : [];
+		} catch {
+			return [];
+		}
+	} )(),
 };
 
 export const actions = {
@@ -467,6 +479,39 @@ export const actions = {
 		return { type: 'UPDATE_SESSION_TITLE', sessionId, title };
 	},
 
+	// ─── Tab bar (t207) ──────────────────────────────────────────
+
+	/**
+	 * Add a session to the open tabs list.
+	 * No-ops if the session is already present.
+	 *
+	 * @param {number} sessionId - Session identifier to add.
+	 * @return {Object} Redux action.
+	 */
+	addOpenTab( sessionId ) {
+		return { type: 'ADD_OPEN_TAB', sessionId };
+	},
+
+	/**
+	 * Remove a session from the open tabs list.
+	 *
+	 * @param {number} sessionId - Session identifier to remove.
+	 * @return {Object} Redux action.
+	 */
+	removeOpenTab( sessionId ) {
+		return { type: 'REMOVE_OPEN_TAB', sessionId };
+	},
+
+	/**
+	 * Replace the entire open tabs list.
+	 *
+	 * @param {number[]} tabs - Array of session IDs to set as open tabs.
+	 * @return {Object} Redux action.
+	 */
+	setOpenTabs( tabs ) {
+		return { type: 'SET_OPEN_TABS', tabs };
+	},
+
 	// ─── Thunks ──────────────────────────────────────────────────
 
 	/**
@@ -557,6 +602,8 @@ export const actions = {
 				}
 				// Reset live counter when switching sessions.
 				dispatch.resetSessionTokens();
+				// Auto-add to the tab bar so opened sessions appear as tabs (t207).
+				dispatch.addOpenTab( parseInt( session.id, 10 ) );
 			} catch {
 				// ignore
 			}
@@ -1500,6 +1547,18 @@ export const selectors = {
 	hasQueuedMessages( state ) {
 		return state.messageQueue.length > 0;
 	},
+
+	// ─── Tab bar (t207) ──────────────────────────────────────────
+
+	/**
+	 * Get the list of session IDs currently open as tabs.
+	 *
+	 * @param {import('../../types').StoreState} state
+	 * @return {number[]} Array of open tab session IDs.
+	 */
+	getOpenTabs( state ) {
+		return state.openTabs || [];
+	},
 };
 
 /**
@@ -1687,6 +1746,49 @@ export function reducer( state, action ) {
 				...state,
 				messageQueue: [],
 			};
+		// ─── Tab bar (t207) ─────────────────────────────────────
+		case 'ADD_OPEN_TAB': {
+			const tabId = parseInt( action.sessionId, 10 );
+			if ( ( state.openTabs || [] ).includes( tabId ) ) {
+				return state;
+			}
+			const nextTabs = [ ...( state.openTabs || [] ), tabId ];
+			try {
+				localStorage.setItem(
+					'gratisAiAgent_openTabs',
+					JSON.stringify( nextTabs )
+				);
+			} catch {
+				// ignore storage errors
+			}
+			return { ...state, openTabs: nextTabs };
+		}
+		case 'REMOVE_OPEN_TAB': {
+			const removeId = parseInt( action.sessionId, 10 );
+			const filteredTabs = ( state.openTabs || [] ).filter(
+				( t ) => t !== removeId
+			);
+			try {
+				localStorage.setItem(
+					'gratisAiAgent_openTabs',
+					JSON.stringify( filteredTabs )
+				);
+			} catch {
+				// ignore storage errors
+			}
+			return { ...state, openTabs: filteredTabs };
+		}
+		case 'SET_OPEN_TABS': {
+			try {
+				localStorage.setItem(
+					'gratisAiAgent_openTabs',
+					JSON.stringify( action.tabs )
+				);
+			} catch {
+				// ignore storage errors
+			}
+			return { ...state, openTabs: action.tabs };
+		}
 		default:
 			return state;
 	}
