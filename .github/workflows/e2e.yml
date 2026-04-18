@@ -87,19 +87,27 @@ jobs:
         # security advisories (PKSA-5jz8-6tcw-pbk4, PKSA-z3gr-8qht-p93v),
         # causing the Docker build to fail. This patch extends the constraint
         # to include ^11.0 and disables the Composer audit for that install.
+        # v10.x uses init-config.js; v11.x renamed it to docker-config.js.
         # Remove once @wordpress/env ships a fix upstream.
         run: |
           node -e "
             const fs = require('fs');
             const path = require('path');
-            const f = path.resolve('node_modules/@wordpress/env/lib/runtime/docker/docker-config.js');
-            if (!fs.existsSync(f)) { console.log('File not found, skipping patch'); process.exit(0); }
-            let c = fs.readFileSync(f, 'utf8');
+            const base = 'node_modules/@wordpress/env/lib/runtime/docker/';
+            const candidates = ['init-config.js', 'docker-config.js'];
             const before = 'RUN composer global require --dev phpunit/phpunit:\"^5.7.21 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0\"';
             const after  = 'RUN COMPOSER_NO_AUDIT=1 composer global require --dev phpunit/phpunit:\"^5.7.21 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0\"';
-            if (!c.includes(before)) { console.log('Pattern not found — already patched or @wordpress/env updated'); process.exit(0); }
-            fs.writeFileSync(f, c.replace(before, after));
-            console.log('Patched @wordpress/env/lib/runtime/docker/docker-config.js');
+            let patched = false;
+            for (const name of candidates) {
+              const f = path.resolve(base + name);
+              if (!fs.existsSync(f)) continue;
+              let c = fs.readFileSync(f, 'utf8');
+              if (!c.includes(before)) { console.log(name + ': already patched or pattern changed, skipping'); continue; }
+              fs.writeFileSync(f, c.replace(before, after));
+              console.log('Patched ' + f);
+              patched = true;
+            }
+            if (!patched) console.log('No files needed patching');
           "
 
       - name: Install Playwright browsers
