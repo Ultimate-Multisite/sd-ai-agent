@@ -33,7 +33,7 @@ class ModifiedFilesRepository {
 	 * @param int    $user_id    User ID performing the action.
 	 * @return int|false Inserted row ID or false on failure.
 	 */
-	public static function record( string $file_path, string $action = 'write', int $session_id = 0, int $user_id = 0 ) {
+	public static function record( string $file_path, string $action = 'write', int $session_id = 0, int $user_id = 0 ): int|false {
 		global $wpdb;
 		/** @var \wpdb $wpdb */
 
