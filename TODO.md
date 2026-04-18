@@ -330,22 +330,22 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
 
 ## Backlog
 
-- [ ] t199 Resumable background jobs & multi-session chat #parent #feature → [todo/PLANS.md#resumable-background-jobs] ~10d logged:2026-04-17
+- [ ] t199 Resumable background jobs & multi-session chat #parent #feature → [todo/PLANS.md#resumable-background-jobs] ~10d ref:GH#1027 logged:2026-04-17
 
-- [ ] t200 Active jobs DB table + repository class (Phase 1a) #feature #auto-dispatch ~3h For #t199 logged:2026-04-17
+- [ ] t200 Active jobs DB table + repository class (Phase 1a) #feature #auto-dispatch ~3h For #t199 ref:GH#1028 logged:2026-04-17
   - NEW: includes/Models/DTO/ActiveJobRow.php — readonly DTO: id, session_id, job_id (UUID), user_id, status (processing|awaiting_confirmation|complete|error), pending_tools (JSON), tool_calls (JSON), created_at, updated_at. Model on includes/Models/DTO/SessionRow.php
   - NEW: includes/Models/ActiveJobRepository.php — create(), get_by_job_id(), get_by_session_id(), get_active_for_user(), update_status(), delete(). Model on includes/Models/Memory.php (static CRUD pattern)
   - EDIT: includes/Core/Database.php:255 area — add CREATE TABLE for `{$wpdb->prefix}gratis_ai_agent_active_jobs` with indexes on session_id, job_id, user_id+status. Bump DB_VERSION constant.
   - Verify: `composer phpstan && composer phpcs && wp plugin activate gratis-ai-agent`
 
-- [ ] t201 Persist job lifecycle to DB alongside transients (Phase 1b) #feature #auto-dispatch ~4h For #t199 blocked-by:t200 logged:2026-04-17
+- [ ] t201 Persist job lifecycle to DB alongside transients (Phase 1b) #feature #auto-dispatch ~4h For #t199 blocked-by:t200 ref:GH#1029 logged:2026-04-17
   - EDIT: includes/REST/SessionController.php — `handle_run()` (~line 1175): after `set_transient()`, call `ActiveJobRepository::create()` with job_id, session_id, user_id, status=processing
   - EDIT: includes/REST/SessionController.php — `handle_process()` (~line 1244): on status changes (complete/error/awaiting_confirmation), call `ActiveJobRepository::update_status()` alongside `set_transient()`
   - EDIT: includes/REST/SessionController.php — `handle_job_status()` (~line 922): when `get_transient()` returns false, fall back to `ActiveJobRepository::get_by_job_id()`. On complete, delete DB row after delivering result (same as transient delete on line 986)
   - EDIT: includes/REST/SessionController.php — `resume_job()` (~line 1131): update DB row status to processing on confirm/reject resume
   - Verify: `composer phpstan && composer phpcs`; manually test: send message, verify row appears in `wp_gratis_ai_agent_active_jobs`, verify it's cleaned up after poll reads completion
 
-- [ ] t202 Active-job reconnection REST endpoint + frontend integration (Phase 1c) #feature #auto-dispatch ~3h For #t199 blocked-by:t201 logged:2026-04-17
+- [ ] t202 Active-job reconnection REST endpoint + frontend integration (Phase 1c) #feature #auto-dispatch ~3h For #t199 blocked-by:t201 ref:GH#1030 logged:2026-04-17
   - EDIT: includes/REST/SessionController.php — register `GET /sessions/(?P<id>\d+)/active-job` route. Handler: call `ActiveJobRepository::get_by_session_id()`, return job_id + status + pending_tools + tool_calls (same shape as `/job/{id}` response). Return 404 if no active job.
   - EDIT: includes/REST/SessionController.php — register `GET /sessions/active-jobs` route. Handler: call `ActiveJobRepository::get_active_for_user(get_current_user_id())`, return array of {session_id, job_id, status}.
   - EDIT: src/store/slices/sessionsSlice.js — in `openSession()` thunk: after loading session messages, call `GET /sessions/{id}/active-job`. If active job exists, dispatch `pollJob(jobId, sessionId)` to resume polling.
@@ -354,40 +354,40 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - EDIT: src/admin-page/index.js — call `restoreActiveJobs()` in mount useEffect alongside `fetchSessions()`
   - Verify: `npm run lint:js && npm run build`; manually test: send message, navigate to different WP admin page, come back, verify "Thinking..." resumes
 
-- [ ] t203 Extract jobSlice from sessionsSlice + remove dead SSE state + normalize session IDs #refactor #auto-dispatch ~4h For #t199 logged:2026-04-17
+- [ ] t203 Extract jobSlice from sessionsSlice + remove dead SSE state + normalize session IDs #refactor #auto-dispatch ~4h For #t199 ref:GH#1031 logged:2026-04-17
   - NEW: src/store/slices/jobSlice.js — extract from sessionsSlice.js: state keys (currentJobId, liveToolCalls, pendingConfirmation, pendingActionCard, sessionJobs, sendTimestamp), actions (pollJob, streamMessage, confirmToolCall, rejectToolCall, interruptAgent, setCurrentJobId, setLiveToolCalls, setSessionJob, setPendingConfirmation, setPendingActionCard, setSendTimestamp), selectors, reducer cases. Model on src/store/slices/settingsSlice.js (same export pattern)
   - EDIT: src/store/slices/sessionsSlice.js — remove the extracted state/actions/selectors/reducer cases. Remove dead SSE state: streamingText, isStreaming, streamAbortController, streamError, APPEND_STREAMING_TEXT, SET_STREAMING_TEXT, SET_IS_STREAMING, SET_STREAM_ABORT_CONTROLLER, SET_STREAM_ERROR (~80 lines). Normalize session IDs: in SET_SESSIONS reducer, cast `id` to number; in SET_CURRENT_SESSION, cast sessionId. Remove all downstream `parseInt(session.id, 10)` calls.
   - EDIT: src/store/index.js — import jobSlice, add to combined state/actions/selectors/reducer chain
   - EDIT: src/components/message-list.js:607-627 — extract the IIFE tool-calls resolution into a `useActiveToolCalls(sessionId)` hook (can live in jobSlice or a new src/hooks/use-active-tool-calls.js)
   - Verify: `npm run lint:js && npm run build && npm run test:js`
 
-- [x] t204 Session-scoped polling with exponential backoff + visibility throttling (Phase 2) #feature #auto-dispatch ~4h For #t199 blocked-by:t203 logged:2026-04-17 pr:#1045 completed:2026-04-18
+- [x] t204 Session-scoped polling with exponential backoff + visibility throttling (Phase 2) #feature #auto-dispatch ~4h For #t199 blocked-by:t203 ref:GH#1032 logged:2026-04-17 pr:#1045 completed:2026-04-18
   - EDIT: src/store/slices/jobSlice.js — refactor `pollJob(jobId, sessionId)`: remove check against `currentJobId` so multiple sessions can poll independently. Add exponential backoff: start 1s, after 10 polls → 5s, after 30 polls → 10s cap. Reset to 1s when `tool_calls` array length changes (progress detected). Update `sessionJobs[sessionId]` on every poll regardless of which session is active; only update `liveToolCalls`/`pendingConfirmation` when sessionId matches current.
   - NEW: src/utils/visibility-manager.js — `document.addEventListener('visibilitychange')` singleton. When `document.hidden`: slow all active polls to 15s. When visible: immediately poll once per active session, resume normal intervals. Export `onVisibilityChange(callback)` for notification integration.
   - EDIT: src/store/slices/jobSlice.js — integrate visibility manager: `pollJob` reads visibility state to determine interval.
   - Verify: `npm run lint:js && npm run build`; manually test: start job, switch browser tabs, verify Network tab shows slower polls; switch back, verify immediate poll fires
 
-- [ ] t205 Browser notifications for permission prompts (Phase 3) #feature #auto-dispatch ~3h For #t199 blocked-by:t204 logged:2026-04-17
+- [ ] t205 Browser notifications for permission prompts (Phase 3) #feature #auto-dispatch ~3h For #t199 blocked-by:t204 ref:GH#1033 logged:2026-04-17
   - NEW: src/utils/notification-manager.js — `requestPermission()` (call on first tool confirmation or from settings), `notifyConfirmationNeeded(jobId, toolName)` (fires `new Notification()` with `requireInteraction: true`, `tag: job-confirm-${jobId}`), `clearNotification(jobId)`, title flash manager (toggle document.title with "Approval needed" when `document.hidden`, clear on focus)
   - EDIT: src/store/slices/jobSlice.js — in `pollJob()`, when status === 'awaiting_confirmation' and `document.hidden`: call `notifyConfirmationNeeded()`. When confirmation resolved: call `clearNotification()`.
   - EDIT: src/components/session-sidebar.js — SessionItem: when `sessionJobs[session.id]?.status === 'awaiting_confirmation'`, render a pulsing warning dot badge. Model on existing `hasActiveJob` prop (line 74).
   - EDIT: src/floating-widget/session-tabs.js — same badge on compact tabs
   - Verify: `npm run lint:js && npm run build`; manually test: trigger tool confirmation, switch to another browser tab, verify notification fires and title flashes
 
-- [ ] t206 Cross-page navigation survival via sessionStorage (Phase 4) #feature #auto-dispatch ~2h For #t199 blocked-by:t202,t204 logged:2026-04-17
+- [ ] t206 Cross-page navigation survival via sessionStorage (Phase 4) #feature #auto-dispatch ~2h For #t199 blocked-by:t202,t204 ref:GH#1034 logged:2026-04-17
   - EDIT: src/store/slices/jobSlice.js — in `pollJob()`, on start: write `sessionStorage.setItem('gratisAiAgent_activeJobs', JSON.stringify({[sessionId]: {jobId, startedAt}}))`. On job complete/error: remove entry. On poll resume: read and restore.
   - EDIT: src/floating-widget/index.js — in mount useEffect: read `sessionStorage` active jobs, call `pollJob()` for each before `restoreActiveJobs()` fires (fast path — sessionStorage is synchronous, REST is async)
   - EDIT: src/admin-page/index.js — same sessionStorage restore on mount
   - Verify: `npm run lint:js && npm run build`; manually test: send message, navigate to Posts page in wp-admin, floating widget should show "Thinking..." with tool progress for the active session
 
-- [ ] t207 Tabbed multi-session chat UI (Phase 5) #feature #auto-dispatch ~6h For #t199 blocked-by:t204 logged:2026-04-17
+- [ ] t207 Tabbed multi-session chat UI (Phase 5) #feature #auto-dispatch ~6h For #t199 blocked-by:t204 ref:GH#1035 logged:2026-04-17
   - NEW: src/components/chat-tab-bar.js — tab bar component above ChatPanel. Shows `openTabs` array as clickable tabs with session title (truncated), close button, status indicator (spinner for processing, warning dot for awaiting_confirmation, idle for none). `+` button calls `clearCurrentSession()`. Click tab calls `openSession(id)`. Model on src/floating-widget/session-tabs.js (78 lines) but with close buttons and status indicators.
   - EDIT: src/store/slices/sessionsSlice.js — add `openTabs: []` state, `ADD_OPEN_TAB`, `REMOVE_OPEN_TAB`, `SET_OPEN_TABS` reducers. Persist to `localStorage.getItem('gratisAiAgent_openTabs')`. In `openSession()`, auto-add to openTabs if not present.
   - EDIT: src/components/ChatPanel.js — render `<ChatTabBar />` above header when `openTabs.length > 0` (or always, if a session is active)
   - NEW: src/components/chat-tab-bar.css — styles: horizontal scroll, active tab highlight, status dot animations, close button on hover
   - Verify: `npm run lint:js && npm run build`; manually test: open 3 sessions, verify tab bar shows all 3, clicking switches, close button works, status indicators update during active jobs
 
-- [ ] t208 Dynamic context windows from provider API response #enhancement #auto-dispatch ~2h For #t199 logged:2026-04-17
+- [ ] t208 Dynamic context windows from provider API response #enhancement #auto-dispatch ~2h For #t199 ref:GH#1036 logged:2026-04-17
   - EDIT: src/store/index.js — remove hardcoded `MODEL_CONTEXT_WINDOWS` object (lines 107-115). Replace `getContextPercentage()` and `isContextWarning()` selectors to read from `state.providers` model metadata instead.
   - EDIT: src/store/slices/providersSlice.js — when `fetchProviders()` response includes model data, store `context_window` per model. Add `getModelContextWindow(state, modelId)` selector with 128000 fallback.
   - EDIT: includes/REST/SettingsController.php — in the providers/models endpoint response, include `context_window` field per model from a static lookup (move the PHP-side equivalent of the hardcoded map into CostCalculator or Settings, where model metadata already lives)
