@@ -395,7 +395,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
 
 - [ ] t209 Improve block editor content quality #parent #feature → [todo/PLANS.md#improve-block-editor-content-quality] ~20h logged:2026-04-17
 
-- [ ] t210 Fix `maybe_convert_markdown()` mixed-content bug (Phase 1) #bug #auto-dispatch ~2h For #t209 logged:2026-04-17
+- [x] t210 Fix `maybe_convert_markdown()` mixed-content bug (Phase 1) #bug #auto-dispatch ~2h For #t209 logged:2026-04-17 pr:#1046 completed:2026-04-18
   - `PostAbilities::maybe_convert_markdown()` (line 780) short-circuits when content contains `<!-- wp:` — but the LLM produces hybrid content (image blocks + raw markdown text). The markdown portions are never converted, rendering as unstyled freeform blocks.
   - EDIT: includes/Abilities/PostAbilities.php:775-813 — instead of returning early when `<!-- wp:` found, parse the content with `parse_blocks()`, identify freeform blocks (null blockName) that contain markdown signals, convert those segments individually with `MarkdownToBlocks::convert()`, and reassemble.
   - Verify: `composer phpstan && composer phpcs`; test: pass content with mixed `<!-- wp:image -->` blocks and `## Heading\n\nParagraph text\n\n- list item` — verify freeform segments become proper blocks while existing blocks are preserved.
