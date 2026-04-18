@@ -15,6 +15,7 @@ import { createPortal } from 'react-dom';
  * Internal dependencies
  */
 import STORE_NAME from '../store';
+import ChatTabBar from './chat-tab-bar';
 import ErrorBoundary from './error-boundary';
 import ProviderSelector from './provider-selector';
 import AgentSelector from './agent-selector';
@@ -103,6 +104,7 @@ export default function ChatPanel( { compact = false, onSlashCommand } ) {
 					compact ? 'is-compact' : ''
 				}` }
 			>
+				<ChatTabBar />
 				<div className="gratis-ai-agent-header">
 					<ProviderSelector compact={ compact } />
 					<AgentSelector compact={ compact } />
