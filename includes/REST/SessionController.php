@@ -1553,9 +1553,9 @@ final class SessionController {
 
 			// Persist awaiting_confirmation to DB so status survives transient expiry.
 			/** @var list<array<string, mixed>> $pending_tools_for_db */
-			$pending_tools_for_db = $job['pending_tools'] ?? array();
+			$pending_tools_for_db = (array) $job['pending_tools'];
 			/** @var list<array<string, mixed>> $tool_calls_for_db */
-			$tool_calls_for_db = $job['tool_calls'] ?? array();
+			$tool_calls_for_db = (array) $job['tool_calls'];
 			ActiveJobRepository::update_status(
 				$job_id,
 				'awaiting_confirmation',
@@ -1684,7 +1684,8 @@ final class SessionController {
 		// The full reply/history are in the session messages column already.
 		// A DB-sourced poll response returns status + session_id for the
 		// frontend to reload the session when needed.
-		$db_status = (string) ( $job['status'] ?? 'error' );
+		// @phpstan-ignore-next-line -- status is set above in all paths (error or complete).
+		$db_status = (string) $job['status'];
 		if ( 'error' === $db_status ) {
 			ActiveJobRepository::update_status( $job_id, 'error' );
 		} elseif ( 'complete' === $db_status ) {
