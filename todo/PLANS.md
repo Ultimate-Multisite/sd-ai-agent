@@ -587,3 +587,112 @@ t194 (standalone) → t195 (needs t191) → t196 (standalone) → t197 (needs t1
 #### Surprises & Discoveries
 
 (To be populated during implementation)
+
+---
+
+### [2026-04-17] Resumable Background Jobs & Multi-Session Chat
+
+**Status:** Planning
+**Estimate:** ~10d (ai:8d test:1.5d read:4h)
+**Tasks:** Inline below (5 phases + 6 bundled improvements)
+
+#### Purpose
+
+Users should be able to send a prompt, navigate away (close tab, switch admin pages, open a different chat), and come back to see all progress made while they were gone. Permission prompts that fire while the user is away should persist and notify them via browser notifications. Multiple conversations should be manageable concurrently with tab-based UI.
+
+The server-side architecture already supports this — `fastcgi_finish_request()` decouples processing from the browser, and messages are persisted to the DB on completion. The gaps are all on the frontend reconnection and notification layers.
+
+#### Architecture Analysis (from discussion)
+
+**What already works:**
+- Server processes independently of browser (`fastcgi_finish_request`, `ignore_user_abort`)
+- Job progress stored in transients (polling via `/job/{id}`)
+- Messages persisted to DB on completion (`append_to_session`)
+- Tool confirmation pause/resume (`awaiting_confirmation` state)
+- Per-session job tracking in Redux (`sessionJobs` map — but in-memory only)
+- All three chat surfaces (admin page, floating widget, screen-meta) share the **same** `ChatPanel` component and the **same** `@wordpress/data` Redux store singleton
+
+**Code sharing between surfaces:**
+- `src/components/` (7,541 lines) — 100% shared across all surfaces
+- `src/store/` (3,403 lines) — singleton, shared across all surfaces on same page
+- Unique to admin page: ~600 lines (sidebar, onboarding, shortcuts)
+- Unique to floating widget: ~400 lines (tabs, drag/resize, FAB)
+- Unique to screen-meta: ~80 lines (context builder)
+- Any fix to `ChatPanel`, `message-list`, or the store works everywhere automatically
+
+#### Progress
+
+- [ ] (2026-04-17) Phase 1: DB-backed active job tracking — **foundation** ~2-3d
+  - NEW: `_active_jobs` table (session_id, job_id UUID, user_id, status, pending_tools JSON, tool_calls JSON, timestamps)
+  - `handle_run()` writes row on job creation
+  - `handle_process()` updates row on status changes (alongside transient)
+  - `handle_job_status()` falls back to DB when transient is gone
+  - NEW: `GET /sessions/{id}/active-job` endpoint for reconnection
+  - Make transient the **cache layer**, DB the **source of truth** (fixes lost-result-on-network-blip bug)
+  - Frontend: `openSession()` calls active-job endpoint, resumes polling if job exists
+
+- [ ] (2026-04-17) Phase 2: Session-scoped polling & visibility-aware throttling ~2d
+  - Refactor `pollJob()` to be session-independent (don't check `currentJobId`)
+  - Multiple concurrent poll loops — one per active session job
+  - Exponential backoff: 1s → 5s (after 10 polls) → 10s (after 30 polls), reset on progress
+  - `document.visibilitychange` listener: hidden → slow to 15-30s, visible → immediate poll + resume normal
+  - NEW: `restoreActiveJobs()` thunk — `GET /sessions/active-jobs` on mount, start poll loops
+
+- [ ] (2026-04-17) Phase 3: Browser notifications for permission prompts ~1d
+  - Request `Notification.permission` on first tool confirmation (or via settings)
+  - When `pollJob()` detects `awaiting_confirmation` and `document.hidden`:
+    - Fire `new Notification()` with `requireInteraction: true`
+    - Flash document title: "Approval needed — WP Admin"
+  - Session sidebar: visual badge on sessions with pending confirmations
+  - Clear notification on focus or when confirmation is resolved
+
+- [ ] (2026-04-17) Phase 4: Cross-page navigation survival ~0.5d
+  - Persist active job IDs to `sessionStorage` on poll start
+  - On `FloatingWidget` mount: read sessionStorage, restore poll loops
+  - Combined with Phase 1 DB endpoint gives full resilience:
+    - `sessionStorage` → fast reconnect on same-tab wp-admin navigation
+    - DB → reconnect after tab close/reopen or browser restart
+
+- [ ] (2026-04-17) Phase 5: Tabbed multi-session chat UI ~2-3d
+  - NEW: `ChatTabBar` component — open sessions as tabs above ChatPanel
+  - Tabs show status indicators: spinner (processing), warning (needs confirmation), idle
+  - Close tab removes from open set (session persists in sidebar)
+  - `+` button creates new session tab
+  - Store `openTabs: [sessionId, ...]` in Redux + localStorage
+  - Works in both admin page and floating widget (already shares ChatPanel)
+
+#### Bundled Code Improvements (on the path of phases 1-5)
+
+These touch the same files and are natural to include:
+
+1. **Split job logic from sessionsSlice** (2,042 lines) — extract `jobSlice.js` owning poll/confirm/reject lifecycle. Needed for Phase 2.
+2. **Remove dead SSE state** — `streamingText`, `isStreaming`, `streamAbortController`, `APPEND_STREAMING_TEXT` (~80 lines of unused reducer code). Declutter before adding new state.
+3. **Extract `useActiveToolCalls(sessionId)` hook** — replaces IIFE in message-list.js thinking bubble. Needed for Phase 5 multi-tab.
+4. **Normalize session IDs on ingest** — cast to number once in `setSessions()`/`setCurrentSession()`, eliminate 8+ scattered `parseInt(session.id, 10)` calls.
+5. **Dynamic context windows from provider API** — replace hardcoded `MODEL_CONTEXT_WINDOWS` (7 models) with `context_window` field from `/providers` response.
+6. **Adaptive poll interval** — exponential backoff (part of Phase 2) saves server load especially with multiple concurrent session polls.
+
+#### Context from Discussion
+
+**Key decisions:**
+- Transient becomes cache layer, DB becomes source of truth (fixes silent result loss on network blip or transient eviction)
+- `JOB_TTL = 600` stays as transient cache duration but is no longer the authoritative timeout
+- All notification/reconnection logic goes into shared components — automatic 3-surface coverage
+- Tab bar UI (Phase 5) preferred over split-pane — simpler, more intuitive
+- Dead SSE streaming code to be removed (the production path is exclusively job+poll)
+
+**Open questions:**
+- Should we add a WordPress admin notification (wp-admin notice bar) for pending confirmations in addition to browser notifications?
+- Should the active-jobs table clean up completed rows on a schedule or keep them for audit?
+- Should tab state persist across browser sessions (localStorage) or just within a session (sessionStorage)?
+
+**Implementation order:**
+Phase 1 (foundation) → Phase 2 (polling refactor) → Phase 4 (sessionStorage, trivial add-on) → Phase 3 (notifications, independent) → Phase 5 (tab UI, polish layer)
+
+#### Decision Log
+
+(To be populated during implementation)
+
+#### Surprises & Discoveries
+
+(To be populated during implementation)

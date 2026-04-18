@@ -330,6 +330,14 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
 
 ## Backlog
 
+- [ ] t199 Resumable background jobs & multi-session chat #plan #feature → [todo/PLANS.md#resumable-background-jobs] ~10d logged:2026-04-17
+  - Phase 1: DB-backed active job tracking (foundation) ~2-3d
+  - Phase 2: Session-scoped polling & visibility-aware throttling ~2d
+  - Phase 3: Browser notifications for permission prompts ~1d
+  - Phase 4: Cross-page navigation survival ~0.5d
+  - Phase 5: Tabbed multi-session chat UI ~2-3d
+  - Bundled: split jobSlice, remove dead SSE state, normalize session IDs, dynamic context windows, useActiveToolCalls hook, exponential poll backoff
+
 - [x] t188 Replace provider dropdown with connectors link when no providers defined #enhancement #auto-dispatch ~1h logged:2026-04-16 pr:#981 completed:2026-04-16
 
 ### Post-DI Code Quality & Structure Improvements
