@@ -18,6 +18,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { snapshotDescriptors } from '../../abilities/registry';
 import { ensureRegistered as ensureClientAbilitiesRegistered } from '../../abilities';
+import { clearNotification } from '../../utils/notification-manager';
 
 /**
  * Associate tool call log entries with the correct model text messages.
@@ -1045,6 +1046,8 @@ export const actions = {
 			dispatch.setPendingConfirmation( null );
 			dispatch.setPendingActionCard( null );
 			const sessionId = select.getCurrentSessionId();
+			// Dismiss any browser notification that was fired for this job.
+			clearNotification( jobId );
 			try {
 				await apiFetch( {
 					path: `/gratis-ai-agent/v1/job/${ jobId }/confirm`,
@@ -1080,6 +1083,8 @@ export const actions = {
 			dispatch.setPendingConfirmation( null );
 			dispatch.setPendingActionCard( null );
 			const sessionId = select.getCurrentSessionId();
+			// Dismiss any browser notification that was fired for this job.
+			clearNotification( jobId );
 			try {
 				await apiFetch( {
 					path: `/gratis-ai-agent/v1/job/${ jobId }/reject`,

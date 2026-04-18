@@ -9,6 +9,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { onVisibilityChange } from '../../utils/visibility-manager';
 import { setActiveJob, clearActiveJob } from '../../utils/active-jobs-storage';
+import { notifyConfirmationNeeded } from '../../utils/notification-manager';
 
 export const initialState = {
 	// Active polling job ID (most-recently-started job for the current session).
@@ -232,6 +233,21 @@ export const actions = {
 							dispatch.setPendingConfirmation( cardData );
 							dispatch.setPendingActionCard( cardData );
 						}
+
+						// Fire a browser notification when the user is not
+						// looking at the page so they know approval is needed.
+						if (
+							typeof document !== 'undefined' &&
+							document.hidden
+						) {
+							const firstTool = result.pending_tools?.[ 0 ];
+							const toolName =
+								firstTool?.function?.name ||
+								firstTool?.name ||
+								'';
+							notifyConfirmationNeeded( jobId, toolName );
+						}
+
 						// Don't clear sending — still waiting.
 						unsubscribeVisibility();
 						clearActiveJob( sessionId );
