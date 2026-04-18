@@ -324,7 +324,7 @@ class Settings {
 			'provider_trace_max_rows'  => 200,
 			// Feedback report receiver settings (t180).
 			'feedback_enabled'         => false,
-			'feedback_endpoint_url'    => '',
+			'feedback_endpoint_url'    => 'https://ultimateagentwp.ai/wp-json/gratis-ai-server/v1/reports',
 		);
 	}
 
