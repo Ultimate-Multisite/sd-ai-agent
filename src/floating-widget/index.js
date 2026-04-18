@@ -40,6 +40,7 @@ function FloatingWidget() {
 		setPageContext,
 		setSiteBuilderMode,
 		setFloatingOpen,
+		restoreActiveJobs,
 	} = useDispatch( STORE_NAME );
 
 	const { isOpen, isSiteBuilderMode, settings, bootError } = useSelect(
@@ -62,7 +63,8 @@ function FloatingWidget() {
 	useEffect( () => {
 		fetchProviders();
 		fetchSessions();
-	}, [ fetchProviders, fetchSessions ] );
+		restoreActiveJobs();
+	}, [ fetchProviders, fetchSessions, restoreActiveJobs ] );
 
 	// Fetch settings on mount so the keyboard shortcut is available.
 	const { fetchSettings } = useDispatch( STORE_NAME );

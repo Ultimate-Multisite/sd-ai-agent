@@ -557,8 +557,51 @@ export const actions = {
 				}
 				// Reset live counter when switching sessions.
 				dispatch.resetSessionTokens();
+
+				// Resume polling for any active background job on this session (t202).
+				try {
+					const activeJob = await apiFetch( {
+						path: `/gratis-ai-agent/v1/sessions/${ sessionId }/active-job`,
+					} );
+					if ( activeJob && activeJob.job_id ) {
+						dispatch.pollJob( activeJob.job_id, sessionId );
+					}
+				} catch {
+					// 404 means no active job — normal case, ignore.
+				}
 			} catch {
 				// ignore
+			}
+		};
+	},
+
+	/**
+	 * Restore active background jobs for all sessions after a page navigation.
+	 *
+	 * Calls GET /sessions/active-jobs to discover jobs that were in-progress
+	 * when the user navigated away. Starts pollJob() for each so the UI
+	 * resumes displaying live tool progress without requiring re-submission.
+	 *
+	 * Called from FloatingWidget and AdminPageApp on mount (t202).
+	 *
+	 * @return {Function} Redux thunk.
+	 */
+	restoreActiveJobs() {
+		return async ( { dispatch } ) => {
+			try {
+				const activeJobs = await apiFetch( {
+					path: '/gratis-ai-agent/v1/sessions/active-jobs',
+				} );
+				if ( ! Array.isArray( activeJobs ) ) {
+					return;
+				}
+				for ( const job of activeJobs ) {
+					if ( job.job_id && job.session_id ) {
+						dispatch.pollJob( job.job_id, job.session_id );
+					}
+				}
+			} catch {
+				// Non-fatal — if the endpoint fails, polling simply won't resume.
 			}
 		};
 	},

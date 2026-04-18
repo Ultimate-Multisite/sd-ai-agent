@@ -17,6 +17,7 @@ use GratisAiAgent\Core\CostCalculator;
 use GratisAiAgent\Core\Database;
 use GratisAiAgent\Core\Export;
 use GratisAiAgent\Core\Settings;
+use GratisAiAgent\Models\ActiveJobRepository;
 use GratisAiAgent\Models\Agent;
 use GratisAiAgent\REST\SseStreamer;
 use GratisAiAgent\REST\WebhookDatabase;
@@ -501,6 +502,34 @@ final class SessionController {
 			)
 		);
 
+		// Active-job reconnection endpoints (t202).
+		register_rest_route(
+			RestController::NAMESPACE,
+			'/sessions/active-jobs',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'handle_list_active_jobs' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+			)
+		);
+
+		register_rest_route(
+			RestController::NAMESPACE,
+			'/sessions/(?P<id>\d+)/active-job',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'handle_session_active_job' ),
+				'permission_callback' => array( $this, 'check_session_permission' ),
+				'args'                => array(
+					'id' => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+
 		// Site builder endpoints.
 		register_rest_route(
 			RestController::NAMESPACE,
@@ -925,11 +954,36 @@ final class SessionController {
 		$job    = get_transient( RestController::JOB_PREFIX . $job_id );
 
 		if ( false === $job || ! is_array( $job ) ) {
-			return new WP_Error(
-				'gratis_ai_agent_job_not_found',
-				__( 'Job not found or expired.', 'gratis-ai-agent' ),
-				array( 'status' => 404 )
-			);
+			// Transient expired — fall back to DB for reconnection support (t201/t202).
+			$db_row = ActiveJobRepository::get_by_job_id( $job_id );
+			if ( null === $db_row ) {
+				return new WP_Error(
+					'gratis_ai_agent_job_not_found',
+					__( 'Job not found or expired.', 'gratis-ai-agent' ),
+					array( 'status' => 404 )
+				);
+			}
+
+			// Complete/error rows should have been cleaned up; stale row — clean up and 404.
+			if ( ! in_array( $db_row->status, ActiveJobRepository::ACTIVE_STATUSES, true ) ) {
+				ActiveJobRepository::delete( $job_id );
+				return new WP_Error(
+					'gratis_ai_agent_job_not_found',
+					__( 'Job not found or expired.', 'gratis-ai-agent' ),
+					array( 'status' => 404 )
+				);
+			}
+
+			// Reconstruct a minimal job array from the DB row so the rest of
+			// this method can handle it without branching.
+			$pending_tools_raw = $db_row->pending_tools;
+			$tool_calls_raw    = $db_row->tool_calls;
+			$job               = [
+				'status'        => $db_row->status,
+				'user_id'       => $db_row->user_id,
+				'tool_calls'    => null !== $tool_calls_raw ? ( json_decode( $tool_calls_raw, true ) ?: [] ) : [],
+				'pending_tools' => null !== $pending_tools_raw ? ( json_decode( $pending_tools_raw, true ) ?: [] ) : [],
+			];
 		}
 
 		/** @var array<string, mixed> $job */
@@ -1138,6 +1192,9 @@ final class SessionController {
 
 		set_transient( RestController::JOB_PREFIX . $job_id, $job, RestController::JOB_TTL );
 
+		// Update DB row so reconnection sees the resumed status (t201).
+		ActiveJobRepository::update_status( $job_id, 'processing' );
+
 		// Spawn background worker.
 		wp_remote_post(
 			rest_url( RestController::NAMESPACE . '/process' ),
@@ -1206,6 +1263,13 @@ final class SessionController {
 		);
 
 		set_transient( RestController::JOB_PREFIX . $job_id, $job, RestController::JOB_TTL );
+
+		// Persist to DB for cross-page reconnection support (t200/t201/t202).
+		// Only when a session is associated — anonymous one-off runs have no session to reconnect to.
+		$job_session_id = isset( $job['params']['session_id'] ) ? (int) $job['params']['session_id'] : 0;
+		if ( $job_session_id > 0 ) {
+			ActiveJobRepository::create( $job_id, $job_session_id, get_current_user_id() );
+		}
 
 		// Spawn background worker via non-blocking loopback.
 		wp_remote_post(
@@ -1451,6 +1515,8 @@ final class SessionController {
 
 			unset( $job['token'] );
 			set_transient( RestController::JOB_PREFIX . $job_id, $job, RestController::JOB_TTL );
+			// Clean up DB row — job terminated with an exception (t201).
+			ActiveJobRepository::delete( $job_id );
 			return new WP_REST_Response( array( 'ok' => false ), 200 );
 		}
 
@@ -1489,6 +1555,14 @@ final class SessionController {
 			// Keep token and params for the resume flow.
 			unset( $job['token'] );
 			set_transient( RestController::JOB_PREFIX . $job_id, $job, RestController::JOB_TTL );
+			// Update DB row status so reconnection returns awaiting_confirmation (t201).
+			/** @var array<mixed> $pending_tools_for_db */
+			$pending_tools_for_db = $job['pending_tools'];
+			ActiveJobRepository::update_status(
+				$job_id,
+				'awaiting_confirmation',
+				[ 'pending_tools' => (string) wp_json_encode( $pending_tools_for_db ) ]
+			);
 			return new WP_REST_Response( array( 'ok' => true ), 200 );
 		} else {
 			/** @var array<string, mixed> $result */
@@ -1604,7 +1678,72 @@ final class SessionController {
 		unset( $job['token'] );
 		set_transient( RestController::JOB_PREFIX . $job_id, $job, RestController::JOB_TTL );
 
+		// Clean up DB row — job is complete or errored; transient carries the result (t201).
+		ActiveJobRepository::delete( $job_id );
+
 		return new WP_REST_Response( array( 'ok' => true ), 200 );
+	}
+
+	/**
+	 * Handle GET /sessions/{id}/active-job — return the active job for a session (t202).
+	 *
+	 * Returns the same shape as /job/{id} for processing/awaiting_confirmation states.
+	 * Returns 404 if the session has no active job.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function handle_session_active_job( WP_REST_Request $request ) {
+		$session_id = (int) $request->get_param( 'id' );
+		$db_row     = ActiveJobRepository::get_by_session_id( $session_id );
+
+		if ( null === $db_row ) {
+			return new WP_Error(
+				'gratis_ai_agent_no_active_job',
+				__( 'No active job for this session.', 'gratis-ai-agent' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		$response = array(
+			'job_id' => $db_row->job_id,
+			'status' => $db_row->status,
+		);
+
+		$tool_calls_raw    = $db_row->tool_calls;
+		$pending_tools_raw = $db_row->pending_tools;
+
+		$response['tool_calls'] = null !== $tool_calls_raw ? ( json_decode( $tool_calls_raw, true ) ?: [] ) : [];
+
+		if ( 'awaiting_confirmation' === $db_row->status && null !== $pending_tools_raw ) {
+			$response['pending_tools'] = json_decode( $pending_tools_raw, true ) ?: [];
+		}
+
+		return new WP_REST_Response( $response, 200 );
+	}
+
+	/**
+	 * Handle GET /sessions/active-jobs — list all active jobs for the current user (t202).
+	 *
+	 * Returns an array of { session_id, job_id, status }.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function handle_list_active_jobs(): WP_REST_Response {
+		$rows = ActiveJobRepository::get_active_for_user( get_current_user_id() );
+
+		$data = array_map(
+			static function ( $row ) {
+				return array(
+					'session_id' => $row->session_id,
+					'job_id'     => $row->job_id,
+					'status'     => $row->status,
+				);
+			},
+			$rows
+		);
+
+		return new WP_REST_Response( array_values( $data ), 200 );
 	}
 
 	/**
