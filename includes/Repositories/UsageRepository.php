@@ -30,7 +30,7 @@ class UsageRepository {
 	 * @param array<string, mixed> $data Usage data: user_id, session_id, provider_id, model_id, prompt_tokens, completion_tokens, cost_usd.
 	 * @return int|false Inserted row ID or false.
 	 */
-	public static function log( array $data ) {
+	public static function log( array $data ): int|false {
 		global $wpdb;
 		/** @var \wpdb $wpdb */
 
