@@ -71,6 +71,18 @@ class SystemInstructionBuilder {
 			$base .= "\n\n" . $skill_index;
 		}
 
+		// Auto-inject relevant skill content based on the user's message.
+		// This supplements the passive skill index above — instead of relying
+		// on the LLM to voluntarily call skill-load, we inject the content
+		// directly for matching tasks (e.g. content creation → gutenberg-blocks).
+		if ( ! empty( $this->user_message ) ) {
+			$auto_skill = SkillAutoInjector::inject_for_message( $this->user_message );
+			if ( ! empty( $auto_skill ) ) {
+				// @phpstan-ignore-next-line
+				$base .= "\n\n" . $auto_skill;
+			}
+		}
+
 		// If auto-memory is enabled, tell the agent about memory abilities.
 		$auto_memory = $settings['auto_memory'] ?? true;
 		if ( $auto_memory ) {
