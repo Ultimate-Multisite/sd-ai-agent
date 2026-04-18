@@ -375,4 +375,95 @@ class PostAbilitiesTest extends WP_UnitTestCase {
 		$this->assertIsArray( $result );
 		$this->assertSame( 'My Titled Post', $result['title'] );
 	}
+
+	// ─── maybe_convert_markdown ───────────────────────────────────
+
+	/**
+	 * Invoke the private maybe_convert_markdown() method via reflection.
+	 *
+	 * @param string $content Content to pass.
+	 * @return string Processed content.
+	 */
+	private function call_maybe_convert_markdown( string $content ): string {
+		$method = new \ReflectionMethod( PostAbilities::class, 'maybe_convert_markdown' );
+		$method->setAccessible( true );
+		return (string) $method->invoke( null, $content );
+	}
+
+	/**
+	 * Test that empty content is returned unchanged.
+	 */
+	public function test_maybe_convert_markdown_empty_content() {
+		$result = $this->call_maybe_convert_markdown( '' );
+		$this->assertSame( '', $result );
+	}
+
+	/**
+	 * Test that plain text without markdown signals is returned unchanged.
+	 */
+	public function test_maybe_convert_markdown_plain_text_unchanged() {
+		$plain = 'This is a plain sentence with no markdown.';
+		$result = $this->call_maybe_convert_markdown( $plain );
+		$this->assertSame( $plain, $result );
+	}
+
+	/**
+	 * Test that pure markdown content (≥2 signals) is converted to blocks.
+	 */
+	public function test_maybe_convert_markdown_pure_markdown_converted() {
+		$markdown = "## Introduction\n\nThis is a paragraph.\n\n- Item one\n- Item two";
+		$result   = $this->call_maybe_convert_markdown( $markdown );
+
+		// After conversion, should contain wp: block markers.
+		$this->assertStringContainsString( '<!-- wp:', $result );
+		// Must not contain the raw markdown heading.
+		$this->assertStringNotContainsString( '## Introduction', $result );
+	}
+
+	/**
+	 * Test that pure block markup without any markdown is returned unchanged.
+	 */
+	public function test_maybe_convert_markdown_pure_blocks_unchanged() {
+		$blocks = "<!-- wp:paragraph -->\n<p>Hello world</p>\n<!-- /wp:paragraph -->";
+		$result = $this->call_maybe_convert_markdown( $blocks );
+
+		// No markdown signals in the freeform segments, so the image block is preserved.
+		$this->assertStringContainsString( '<!-- wp:paragraph -->', $result );
+	}
+
+	/**
+	 * Test that mixed content (block markup + freeform markdown) converts
+	 * the markdown portions while preserving existing named blocks.
+	 */
+	public function test_maybe_convert_markdown_mixed_content_converts_freeform() {
+		$mixed = "<!-- wp:image {\"id\":42} -->\n"
+			. "<figure class=\"wp-block-image\"><img src=\"test.jpg\" /></figure>\n"
+			. "<!-- /wp:image -->\n\n"
+			. "## Section Heading\n\nThis paragraph follows.\n\n- Bullet one\n- Bullet two";
+
+		$result = $this->call_maybe_convert_markdown( $mixed );
+
+		// The original image block must be preserved.
+		$this->assertStringContainsString( '<!-- wp:image', $result );
+		// The raw markdown heading must not appear in the output.
+		$this->assertStringNotContainsString( '## Section Heading', $result );
+		// The freeform markdown must have been converted to blocks.
+		$this->assertStringContainsString( '<!-- wp:heading', $result );
+	}
+
+	/**
+	 * Test that mixed content with freeform HTML (non-markdown) keeps freeform
+	 * blocks intact — only segments with ≥2 markdown signals are converted.
+	 */
+	public function test_maybe_convert_markdown_mixed_content_preserves_freeform_html() {
+		$mixed = "<!-- wp:paragraph -->\n<p>Intro</p>\n<!-- /wp:paragraph -->\n\n"
+			. "<p>A plain HTML paragraph without markdown signals.</p>";
+
+		$result = $this->call_maybe_convert_markdown( $mixed );
+
+		// The named block must be preserved.
+		$this->assertStringContainsString( '<!-- wp:paragraph -->', $result );
+		// The plain HTML freeform segment has no markdown signals; it stays.
+		$this->assertStringContainsString( 'A plain HTML paragraph', $result );
+	}
 }
