@@ -82,11 +82,13 @@ jobs:
         run: npm ci
 
       - name: Patch @wordpress/env phpunit constraint
-        # @wordpress/env's CLI.Dockerfile installs phpunit globally with a
-        # constraint that excludes v11+. Composer now blocks all v5–v10 via
-        # security advisories (PKSA-5jz8-6tcw-pbk4, PKSA-z3gr-8qht-p93v),
-        # causing the Docker build to fail. This patch extends the constraint
-        # to include ^11.0 and disables the Composer audit for that install.
+        # @wordpress/env's CLI.Dockerfile installs phpunit globally. Composer
+        # 2.6+ defaults audit.block-insecure to true, which blocks ALL phpunit
+        # versions (v5–v11) due to security advisories PKSA-5jz8-6tcw-pbk4 and
+        # PKSA-z3gr-8qht-p93v. COMPOSER_NO_AUDIT=1 only skips post-install
+        # audit reporting — it does NOT disable block-insecure resolution blocking.
+        # Fix: prepend 'composer config --global audit.block-insecure false &&'
+        # to disable the resolver-level block before running the install.
         # v10.x uses init-config.js; v11.x renamed it to docker-config.js.
         # Remove once @wordpress/env ships a fix upstream.
         run: |
@@ -96,7 +98,7 @@ jobs:
             const base = 'node_modules/@wordpress/env/lib/runtime/docker/';
             const candidates = ['init-config.js', 'docker-config.js'];
             const before = 'RUN composer global require --dev phpunit/phpunit:\"^5.7.21 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0\"';
-            const after  = 'RUN COMPOSER_NO_AUDIT=1 composer global require --dev phpunit/phpunit:\"^5.7.21 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0\"';
+            const after  = 'RUN composer config --global audit.block-insecure false && composer global require --dev phpunit/phpunit:\"^5.7.21 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0\"';
             let patched = false;
             for (const name of candidates) {
               const f = path.resolve(base + name);
