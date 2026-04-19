@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace GratisAiAgent\Tests\Core;
 
-use GratisAiAgent\Core\OnboardingInterview;
 use GratisAiAgent\Core\OnboardingManager;
 use GratisAiAgent\Core\SiteScanner;
 use WP_UnitTestCase;
@@ -27,7 +26,6 @@ class OnboardingManagerTest extends WP_UnitTestCase {
 	public function set_up(): void {
 		parent::set_up();
 		OnboardingManager::reset();
-		OnboardingInterview::reset();
 		global $wpdb;
 		$wpdb->query(
 			$wpdb->prepare(
@@ -42,7 +40,6 @@ class OnboardingManagerTest extends WP_UnitTestCase {
 	 */
 	public function tear_down(): void {
 		OnboardingManager::reset();
-		OnboardingInterview::reset();
 		global $wpdb;
 		$wpdb->query(
 			$wpdb->prepare(

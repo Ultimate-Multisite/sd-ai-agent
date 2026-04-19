@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace GratisAiAgent\Bootstrap;
 
 use GratisAiAgent\Core\OnboardingManager;
+use GratisAiAgent\Core\Settings;
 use GratisAiAgent\Core\SkillUpdateChecker;
 use GratisAiAgent\Core\SiteScanner;
 use XWP\DI\Decorators\Action;
@@ -29,7 +30,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * CTX_GLOBAL is required because the handler spans multiple contexts:
  * - `admin_init` fires in CTX_ADMIN.
- * - `rest_api_init` fires in CTX_REST.
  * - The site-scanner cron hook fires in CTX_CRON.
  */
 #[Handler(
@@ -68,10 +68,11 @@ final class OnboardingHandler {
 	}
 
 	/**
-	 * Register the onboarding REST endpoint on rest_api_init.
+	 * Auto-enable WooCommerce abilities on first load when a provider is
+	 * detected and WooCommerce is active.
 	 */
-	#[Action( tag: 'rest_api_init', priority: 10 )]
-	public function register_onboarding_rest_routes(): void {
-		OnboardingManager::register_rest_routes();
+	#[Action( tag: 'admin_init', priority: 20 )]
+	public function maybe_auto_enable_woo_abilities(): void {
+		Settings::instance()->maybe_auto_enable_woo_abilities();
 	}
 }
