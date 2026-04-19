@@ -60,6 +60,7 @@ class DatabaseSchemaTest extends WP_UnitTestCase {
 		'gratis_ai_agent_provider_trace',
 		'gratis_ai_agent_generated_plugins',
 		'gratis_ai_agent_active_jobs',
+		'gratis_ai_agent_skill_usage',
 	];
 
 	/**
@@ -472,6 +473,19 @@ class DatabaseSchemaTest extends WP_UnitTestCase {
 		$this->assertSame( 'user', $messages[0]['role'] );
 		$this->assertSame( 'Hello, world!', $messages[0]['content'] );
 		$this->assertSame( 'assistant', $messages[1]['role'] );
+	}
+
+	/**
+	 * Skill usage table has the required columns.
+	 */
+	public function test_skill_usage_table_has_required_columns(): void {
+		Database::install();
+
+		$columns = $this->get_column_names( Database::skill_usage_table_name() );
+
+		foreach ( [ 'id', 'skill_id', 'session_id', 'trigger_type', 'injected_tokens', 'outcome', 'model_id', 'created_at' ] as $col ) {
+			$this->assertContains( $col, $columns, "Skill usage table missing column '{$col}'." );
+		}
 	}
 
 	// ── Table count ───────────────────────────────────────────────────────
