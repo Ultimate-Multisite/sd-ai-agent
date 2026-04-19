@@ -10,7 +10,6 @@ import {
 } from '@wordpress/element';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -22,19 +21,27 @@ import '../abilities';
 import SessionSidebar from '../components/session-sidebar';
 import ChatPanel from '../components/ChatPanel';
 import BootError from '../components/boot-error';
-import OnboardingWizard from '../components/onboarding-wizard';
-import OnboardingInterview from '../components/onboarding-interview';
+import ConnectorGate from '../components/connector-gate';
+import OnboardingBootstrap from '../components/onboarding-bootstrap';
 import ShortcutsHelp from '../components/shortcuts-help';
 import { useKeyboardShortcuts } from '../utils/keyboard-shortcuts';
 import '../components/shared.css';
 import './style.css';
 
 /**
- * Root admin page application component. Renders the session sidebar and chat panel,
- * handles onboarding wizard display, keyboard shortcuts, and slash command routing.
+ * Root admin page application component.
  *
- * After the wizard completes, the interview is shown if the site scan has
- * finished and the interview has not yet been done (t064).
+ * Implements a two-state onboarding flow:
+ *
+ * 1. **Connector gate** — shown when no AI provider is configured. The user
+ *    is directed to the WordPress Connectors page. The gate polls every 5 s
+ *    so it disappears automatically once a provider becomes available.
+ *
+ * 2. **Onboarding bootstrap** — shown when a provider exists but onboarding
+ *    has not yet completed. Renders the normal ChatPanel and auto-sends a
+ *    kickoff message so the AI explores the site before asking any questions.
+ *
+ * After onboarding completes the full layout (sidebar + ChatPanel) is shown.
  *
  * @return {JSX.Element|null} Admin page app element, or null while settings are loading.
  */
@@ -46,17 +53,18 @@ function AdminPageApp() {
 		clearCurrentSession,
 		restoreActiveJobs,
 	} = useDispatch( STORE_NAME );
-	const { settings, settingsLoaded, bootError } = useSelect(
-		( select ) => ( {
-			settings: select( STORE_NAME ).getSettings(),
-			settingsLoaded: select( STORE_NAME ).getSettingsLoaded(),
-			bootError: select( STORE_NAME ).getBootError(),
-		} ),
-		[]
-	);
+	const { settings, settingsLoaded, bootError, providers, providersLoaded } =
+		useSelect(
+			( select ) => ( {
+				settings: select( STORE_NAME ).getSettings(),
+				settingsLoaded: select( STORE_NAME ).getSettingsLoaded(),
+				bootError: select( STORE_NAME ).getBootError(),
+				providers: select( STORE_NAME ).getProviders(),
+				providersLoaded: select( STORE_NAME ).getProvidersLoaded(),
+			} ),
+			[]
+		);
 
-	const [ showOnboarding, setShowOnboarding ] = useState( false );
-	const [ showInterview, setShowInterview ] = useState( false );
 	const [ showShortcuts, setShowShortcuts ] = useState( false );
 	const [ sidebarOpen, setSidebarOpen ] = useState( false );
 
@@ -67,52 +75,20 @@ function AdminPageApp() {
 		restoreActiveJobs();
 	}, [ fetchProviders, fetchSessions, fetchSettings, restoreActiveJobs ] );
 
+	// Poll for providers every 5 s while the connector gate is shown.
+	// Stops once at least one provider appears.
 	useEffect( () => {
-		if ( settingsLoaded && settings ) {
-			setShowOnboarding( settings.onboarding_complete === false );
+		const hasProvider = providers.length > 0;
+		if ( ! providersLoaded || hasProvider ) {
+			return;
 		}
-	}, [ settingsLoaded, settings ] );
 
-	/**
-	 * Poll the interview endpoint until the scan is done, then show the interview.
-	 * Gives up after 2 minutes (40 × 3 s) to avoid blocking the user indefinitely.
-	 */
-	const checkInterviewReady = useCallback( () => {
-		let attempts = 0;
-		const maxAttempts = 40;
+		const timer = setInterval( () => {
+			fetchProviders();
+		}, 5000 );
 
-		const poll = () => {
-			apiFetch( { path: '/gratis-ai-agent/v1/onboarding/interview' } )
-				.then( ( data ) => {
-					if ( data.done ) {
-						// Already completed — go straight to chat.
-						return;
-					}
-					if ( data.ready ) {
-						setShowInterview( true );
-						return;
-					}
-					// Scan still running — keep polling.
-					attempts++;
-					if ( attempts < maxAttempts ) {
-						setTimeout( poll, 3000 );
-					}
-				} )
-				.catch( () => {
-					// Non-fatal — skip the interview on error.
-				} );
-		};
-
-		poll();
-	}, [] );
-
-	/**
-	 * Called when the wizard finishes. Check whether the interview should be shown.
-	 */
-	const handleWizardComplete = useCallback( () => {
-		setShowOnboarding( false );
-		checkInterviewReady();
-	}, [ checkInterviewReady ] );
+		return () => clearInterval( timer );
+	}, [ providers, providersLoaded, fetchProviders ] );
 
 	const handleSlashCommand = useCallback( ( command ) => {
 		if ( command === 'help' ) {
@@ -144,22 +120,23 @@ function AdminPageApp() {
 		return <BootError />;
 	}
 
-	if ( ! settingsLoaded ) {
+	if ( ! settingsLoaded || ! providersLoaded ) {
 		return null;
 	}
 
-	if ( showOnboarding ) {
-		return <OnboardingWizard onComplete={ handleWizardComplete } />;
+	// Phase 1 gate: no connector → show connector gate.
+	const hasProvider = providers.length > 0;
+	if ( ! hasProvider ) {
+		return <ConnectorGate />;
 	}
 
-	if ( showInterview ) {
-		return (
-			<OnboardingInterview
-				onComplete={ () => setShowInterview( false ) }
-			/>
-		);
+	// Phase 2 gate: connector exists but onboarding not yet started → bootstrap.
+	const onboardingComplete = settings?.onboarding_complete !== false;
+	if ( ! onboardingComplete ) {
+		return <OnboardingBootstrap />;
 	}
 
+	// Normal chat layout.
 	return (
 		<>
 			<div

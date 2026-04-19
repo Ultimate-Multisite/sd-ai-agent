@@ -130,6 +130,17 @@ class OnboardingManager {
 			]
 		);
 
+		// Bootstrap start endpoint (onboarding v2).
+		register_rest_route(
+			'gratis-ai-agent/v1',
+			'/onboarding/bootstrap-start',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ __CLASS__, 'rest_bootstrap_start' ],
+				'permission_callback' => [ __CLASS__, 'rest_permission' ],
+			]
+		);
+
 		// Interview endpoints (t064).
 		register_rest_route(
 			'gratis-ai-agent/v1',
@@ -294,6 +305,81 @@ class OnboardingManager {
 			[
 				'success' => true,
 				'message' => __( 'Interview answers saved. The AI now has context about your site goals.', 'gratis-ai-agent' ),
+			],
+			200
+		);
+	}
+
+	// ── Bootstrap-start REST handler (onboarding v2) ──────────────────────
+
+	/**
+	 * POST /gratis-ai-agent/v1/onboarding/bootstrap-start
+	 *
+	 * Called by the frontend when a provider is available and onboarding has
+	 * not yet completed. This handler:
+	 *
+	 *  1. Marks onboarding as complete so the gate/bootstrap never shows again.
+	 *  2. Silently auto-detects WooCommerce and stores a site-context memory.
+	 *  3. Creates a dedicated onboarding session for the AI discovery conversation.
+	 *  4. Returns the session ID, bootstrap system prompt, and kickoff message
+	 *     so the frontend can auto-send the first message.
+	 *
+	 * Idempotent: calling it a second time returns success without creating
+	 * a duplicate session (onboarding_complete will already be true, but the
+	 * endpoint gracefully returns without error so the frontend can proceed).
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public static function rest_bootstrap_start(): \WP_REST_Response {
+		$settings = Settings::instance();
+		$all      = $settings->get();
+
+		// Mark onboarding complete — idempotent.
+		if ( empty( $all['onboarding_complete'] ) ) {
+			$settings->update( [ 'onboarding_complete' => true ] );
+		}
+
+		// Auto-detect WooCommerce and save a context memory silently.
+		$woo_active = class_exists( 'WooCommerce' );
+		if ( $woo_active ) {
+			$woo_version = defined( 'WC_VERSION' ) ? (string) WC_VERSION : __( '(unknown version)', 'gratis-ai-agent' );
+			Memory::create(
+				'site_info',
+				sprintf(
+					/* translators: %s: WooCommerce version */
+					__( 'WooCommerce %s is active on this site.', 'gratis-ai-agent' ),
+					$woo_version
+				)
+			);
+		}
+
+		// Create the bootstrap session.
+		$session_id = Database::create_session(
+			[
+				'user_id'     => get_current_user_id(),
+				'title'       => __( 'Getting started', 'gratis-ai-agent' ),
+				'provider_id' => $all['default_provider'] ?? '',
+				'model_id'    => $all['default_model'] ?? '',
+			]
+		);
+
+		$bootstrap_prompt = SystemInstructionBuilder::get_onboarding_bootstrap_prompt();
+
+		// The kickoff message is sent by the frontend as the first user turn.
+		// Keeping it short and natural — the system prompt handles exploration.
+		$kickoff_message = __(
+			"Hi! I just set up this plugin and I'm ready to get started.",
+			'gratis-ai-agent'
+		);
+
+		return new \WP_REST_Response(
+			[
+				'success'                 => true,
+				'onboarding_complete'     => true,
+				'session_id'              => $session_id,
+				'bootstrap_system_prompt' => $bootstrap_prompt,
+				'kickoff_message'         => $kickoff_message,
+				'woo_detected'            => $woo_active,
 			],
 			200
 		);
