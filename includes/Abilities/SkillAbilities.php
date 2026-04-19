@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace GratisAiAgent\Abilities;
 
 use GratisAiAgent\Models\Skill;
+use GratisAiAgent\Repositories\SkillUsageRepository;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -120,6 +121,20 @@ class SkillAbilities {
 			// @phpstan-ignore-next-line
 			return new \WP_Error( 'skill_disabled', "Skill '$slug' is disabled." );
 		}
+
+		// Record tool_call usage for telemetry (Phase 1 / t215).
+		// Model ID is unknown here (abilities don't receive request context),
+		// so model_id defaults to '' and session_id to 0.
+		SkillUsageRepository::create(
+			[
+				'skill_id'        => $skill->id,
+				'session_id'      => 0,
+				'trigger_type'    => 'tool_call',
+				'injected_tokens' => SkillUsageRepository::estimate_tokens( $skill->content ),
+				'outcome'         => 'unknown',
+				'model_id'        => '',
+			]
+		);
 
 		return [
 			'name'    => $skill->name,

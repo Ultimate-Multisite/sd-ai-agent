@@ -253,10 +253,13 @@ class AgentLoop {
 
 		// SystemInstructionBuilder needs the model_id for weak-model nudges
 		// and user_message for knowledge RAG, both resolved above.
+		// session_id is passed so skill injection events are recorded to the
+		// skill_usage telemetry table (Phase 1 / t215).
 		$this->instruction_builder = new SystemInstructionBuilder(
 			(string) $this->model_id,
 			$this->user_message,
-			$this->page_context
+			$this->page_context,
+			$this->session_id
 		);
 
 		// ToolPermissionResolver encapsulates yolo_mode and tool_permissions.

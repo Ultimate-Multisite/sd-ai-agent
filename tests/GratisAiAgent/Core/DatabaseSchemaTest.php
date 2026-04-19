@@ -60,6 +60,7 @@ class DatabaseSchemaTest extends WP_UnitTestCase {
 		'gratis_ai_agent_provider_trace',
 		'gratis_ai_agent_generated_plugins',
 		'gratis_ai_agent_active_jobs',
+		'gratis_ai_agent_skill_usage',
 	];
 
 	/**
