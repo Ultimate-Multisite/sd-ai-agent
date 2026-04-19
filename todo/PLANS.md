@@ -983,3 +983,114 @@ Claude Code comparison (aidevops framework):
 #### Surprises & Discoveries
 
 (To be populated during implementation)
+
+---
+
+### [2026-04-18] Onboarding v2: Gate + AI-Driven Discovery
+
+**Status:** Planning
+**Estimate:** ~8h (ai:6h test:1.5h read:0.5h)
+
+#### Purpose
+
+Replace the multi-step onboarding wizard with a two-state flow: a hard connector gate (no AI without a provider) followed by an AI-driven first conversation where the agent explores the site itself before asking any questions. Inspired by OpenClaw's "infrastructure gates are hard, personalisation is conversational" pattern — the agent does the discovery work, infers what it can from existing content, and only asks what it can't figure out.
+
+Current onboarding has 5 wizard steps (Welcome, Provider, Abilities, WooCommerce, Done) plus a separate static interview form. Users can skip past the provider step with no connector configured (broken experience), and the interview asks questions the AI could answer itself by reading the site's content.
+
+#### Progress
+
+- [ ] (2026-04-18) Phase 1: Connector gate component + remove wizard ~2h
+- [ ] (2026-04-18) Phase 2: Bootstrap system prompt + auto-discovery session ~4h
+- [ ] (2026-04-18) Phase 3: Auto-enable WooCommerce + cleanup dead code ~2h
+
+#### Phase 1: Connector Gate + Remove Wizard
+
+Replace `onboarding-wizard.js` with a single-screen connector gate:
+- If no providers configured: show "Connect an AI Provider" with link to Connectors page
+- Poll the providers store every 3-5 seconds
+- When a provider appears, auto-transition to the chat (State 2) — no user click needed
+- No "Skip", no "Next", no progress dots. Just a gate.
+
+Files:
+- NEW: `src/components/onboarding-gate.js` — connector-required screen with polling
+- EDIT: `src/admin-page/index.js` — replace `OnboardingWizard` import/usage with `OnboardingGate`
+- DELETE content from: `src/components/onboarding-wizard.js` (remove multi-step wizard)
+- DELETE content from: `src/components/onboarding-interview.js` (remove static interview)
+
+#### Phase 2: Bootstrap System Prompt + Auto-Discovery Session
+
+When onboarding transitions past the gate, create a dedicated first session with a bootstrap system prompt injected. The AI:
+1. Uses abilities to read recent posts, pages, menus, site settings, active plugins, theme
+2. Analyzes existing content to infer writing style, tone, audience, site purpose
+3. Triggers RAG knowledge base indexing of existing content
+4. Stores insights as agent memories
+5. Presents a brief summary of findings + 3-5 tailored starter prompts
+6. If site is empty, asks what kind of site the user is building instead
+
+Files:
+- EDIT: `includes/Core/AgentLoop.php` — accept a `bootstrap_prompt` parameter when creating the first session. Prepend to system instructions for that session only.
+- EDIT: `includes/Core/OnboardingManager.php` — simplify to track `onboarding_complete` only. Add REST endpoint to create bootstrap session. Remove interview endpoints.
+- NEW: `includes/Core/BootstrapPrompt.php` — generates the bootstrap system prompt, incorporating site scan results. Prompt instructs the AI to explore the site with tools before asking questions.
+- EDIT: `src/admin-page/index.js` — after gate clears, create session via REST with bootstrap flag, transition to chat.
+- EDIT: `src/store/` — add `isBootstrapSession` flag so UI doesn't show empty-state on first run.
+
+Bootstrap system prompt (stored in PHP, injected once):
+
+```text
+You are starting your first conversation with a new user who just installed
+Gratis AI Agent. Before asking them anything, use your available abilities to
+learn about their site:
+
+1. Read the site's recent posts, pages, and menus.
+2. Check which plugins are active and what abilities are available.
+3. Note the site title, tagline, and any obvious branding.
+4. If WooCommerce is active, check products and store status.
+5. Look at content volume, categories, tags, and publishing patterns.
+
+From this, determine:
+- What kind of site this is (blog, store, portfolio, business, etc.)
+- The writing style and tone of existing content
+- The likely target audience
+- What the site owner probably needs help with
+
+Then present a brief summary of what you found (2-3 sentences) and suggest
+3-5 specific starter prompts tailored to this site. Ask what they'd like to
+work on.
+
+If the site is empty/new, acknowledge that and ask what kind of site they're
+building instead.
+
+Do not ask questions you can answer yourself from the site content. Store any
+insights as memories for future sessions.
+```
+
+#### Phase 3: Auto-Enable WooCommerce + Cleanup
+
+- EDIT: `includes/Core/Settings.php` — on first load with a provider detected, auto-enable WooCommerce abilities if WooCommerce is active. No user toggle needed.
+- DELETE: `includes/Core/OnboardingInterview.php` — entire class (replaced by AI conversation)
+- EDIT: `includes/Bootstrap/OnboardingHandler.php` — remove interview REST route registration
+- EDIT: `includes/Core/OnboardingManager.php` — remove interview REST handlers
+- DELETE: `src/components/__tests__/OnboardingWizard.test.js` — replace with gate tests
+- DELETE: `tests/GratisAiAgent/Core/OnboardingInterviewTest.php`
+
+#### Context from Discussion
+
+**OpenClaw inspiration:** OpenClaw's onboarding has two distinct phases — a hard infrastructure gate (gateway connection, auth) followed by a conversational AI bootstrapping session where the agent reads BOOTSTRAP.md and walks the user through identity/personality setup conversationally. Key quotes from their BOOTSTRAP.md: "Don't interrogate. Don't be robotic. Just... talk." and their kickoff message auto-sends to start the AI conversation immediately.
+
+**Key design decisions:**
+- No multi-step wizard at all — two states only (gate or chat)
+- The AI explores the site with tools before asking the user anything
+- Content analysis determines style/tone/audience when possible — the AI doesn't ask what it can infer
+- WooCommerce auto-detected and auto-enabled silently
+- RAG indexing queued during onboarding so knowledge base is populated for future sessions
+- Empty sites get a different AI flow (ask about goals) vs content-rich sites (present findings)
+- The static interview form is eliminated entirely — the AI conversation replaces it
+- Memories are stored through normal abilities, not a separate interview-to-memory pipeline
+
+#### Decision Log
+
+(To be populated during implementation)
+
+#### Surprises & Discoveries
+
+(To be populated during implementation)
