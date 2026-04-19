@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace GratisAiAgent\Bootstrap;
 
 use GratisAiAgent\Core\OnboardingManager;
+use GratisAiAgent\Core\SkillUpdateChecker;
 use GratisAiAgent\Core\SiteScanner;
 use XWP\DI\Decorators\Action;
 use XWP\DI\Decorators\Handler;
@@ -46,6 +47,16 @@ final class OnboardingHandler {
 	#[Action( tag: SiteScanner::CRON_HOOK, priority: 10 )]
 	public function run_site_scan(): void {
 		SiteScanner::run();
+	}
+
+	/**
+	 * Run the daily skill update check cron job.
+	 *
+	 * Scheduled as a recurring daily event via {@see SkillUpdateChecker::schedule()}.
+	 */
+	#[Action( tag: SkillUpdateChecker::CRON_HOOK, priority: 10 )]
+	public function run_skill_update_check(): void {
+		SkillUpdateChecker::run();
 	}
 
 	/**

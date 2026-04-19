@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace GratisAiAgent\Models;
 
+use GratisAiAgent\Core\Settings;
 use GratisAiAgent\Models\DTO\SkillRow;
 
 class Skill {
@@ -336,6 +337,12 @@ class Skill {
 	/**
 	 * Reset a built-in skill to its original content.
 	 *
+	 * Tries to pull the canonical content from the remote manifest URL first
+	 * (when `skill_manifest_url` is configured), so that the "reset" action
+	 * restores the latest upstream version rather than the locally-bundled one.
+	 * Falls back to the bundled .md file when the remote fetch fails or is not
+	 * configured.
+	 *
 	 * Clears `user_modified` so that subsequent remote auto-updates will apply.
 	 *
 	 * @param int $id Skill ID.
@@ -348,6 +355,13 @@ class Skill {
 			return false;
 		}
 
+		// Prefer the latest upstream content from the remote manifest.
+		$remote_entry = self::fetch_manifest_entry( $skill->slug );
+		if ( null !== $remote_entry ) {
+			return self::apply_update( $id, $remote_entry );
+		}
+
+		// Fall back to the locally-bundled .md file.
 		$builtins = self::get_builtin_definitions();
 
 		if ( ! isset( $builtins[ $skill->slug ] ) ) {
@@ -369,6 +383,53 @@ class Skill {
 				'user_modified' => false,
 			]
 		);
+	}
+
+	/**
+	 * Fetch a single skill entry from the remote manifest URL.
+	 *
+	 * Returns null when skill_manifest_url is not configured, the remote
+	 * request fails, the response is not valid JSON, or the slug is absent
+	 * from the manifest.
+	 *
+	 * @param string $slug Skill slug to look up in the manifest.
+	 * @return array<array-key, mixed>|null Manifest entry for the slug, or null.
+	 */
+	private static function fetch_manifest_entry( string $slug ): ?array {
+		$settings     = Settings::instance()->get();
+		$manifest_url = (string) ( $settings['skill_manifest_url'] ?? '' );
+
+		if ( '' === $manifest_url ) {
+			return null;
+		}
+
+		$response = wp_remote_get(
+			$manifest_url,
+			[
+				'timeout'     => 15,
+				'redirection' => 3,
+				'headers'     => [ 'Accept' => 'application/json' ],
+			]
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return null;
+		}
+
+		if ( 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			return null;
+		}
+
+		$body     = wp_remote_retrieve_body( $response );
+		$manifest = json_decode( $body, true );
+
+		if ( ! is_array( $manifest ) ) {
+			return null;
+		}
+
+		return isset( $manifest[ $slug ] ) && is_array( $manifest[ $slug ] )
+			? $manifest[ $slug ]
+			: null;
 	}
 
 	/**

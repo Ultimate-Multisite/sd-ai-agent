@@ -25,6 +25,7 @@ use GratisAiAgent\Abilities\ToolCapabilities;
 use GratisAiAgent\Automations\AutomationRunner;
 use GratisAiAgent\Core\Database;
 use GratisAiAgent\Core\OnboardingManager;
+use GratisAiAgent\Core\SkillUpdateChecker;
 use GratisAiAgent\Core\SiteScanner;
 use GratisAiAgent\Knowledge\KnowledgeHooks;
 
@@ -52,6 +53,7 @@ final class LifecycleHandler {
 		Database::install();
 		AutomationRunner::reschedule_all();
 		OnboardingManager::on_activation();
+		SkillUpdateChecker::schedule();
 		ToolCapabilities::register_capabilities( ToolCapabilities::all_ability_ids() );
 	}
 
@@ -66,5 +68,6 @@ final class LifecycleHandler {
 		KnowledgeHooks::deactivate();
 		AutomationRunner::unschedule_all();
 		SiteScanner::unschedule();
+		SkillUpdateChecker::unschedule();
 	}
 }
