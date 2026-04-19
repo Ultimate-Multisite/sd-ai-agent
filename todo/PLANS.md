@@ -750,3 +750,236 @@ Pages created by the AI agent look awful — raw markdown mixed with block marku
 #### Surprises & Discoveries
 
 (To be populated during implementation)
+
+---
+
+### [2026-04-18] Adaptive Skill System — Usage Tracking, Tiered Injection, Remote Updates {#adaptive-skill-system}
+
+**Status:** Planning
+**Estimate:** ~30h (ai:24h test:4h read:2h)
+**Tasks:** t215-t220 in TODO.md
+
+#### Purpose
+
+The skill system is static and blind. Built-in skills ship as frozen `.md` files,
+the auto-injector uses hardcoded regex patterns (`SkillAutoInjector::TRIGGER_MAP`),
+there's no telemetry on which skills help vs. waste tokens, no mechanism for skill
+updates between plugin releases, and the auto-injection fires identically for
+Claude Opus and a quantized 7B model — burning 1500-3000 tokens per turn on strong
+models that would have loaded the skill on demand.
+
+This plan introduces three capabilities: (1) usage tracking so the system learns
+which skills help, (2) model-aware tiered injection so weak models get auto-injection
+while strong models get the lean index-only path, and (3) an upstream update channel
+so skill content can improve between plugin releases.
+
+#### Architecture
+
+```
+                         System Prompt Assembly
+                         (SystemInstructionBuilder)
+                                   |
+                    +--------------+--------------+
+                    |                             |
+          ModelHealthTracker                      |
+          is_weak(model_id)?                      |
+                    |                             |
+           +-------+-------+                     |
+           | YES           | NO                   |
+           v               v                      |
+   Auto-inject best     Index only               |
+   matching skill       (~15 tok/skill)          |
+   (~1500 tok, 1 max)   Model calls skill-load    |
+           |            when it decides            |
+           v               |                      |
+   SkillUsageTracker       |                      |
+   records outcome    <----+                      |
+   (helpful/neutral)                              |
+           |                                      |
+           v                                      |
+   WP-Cron daily:                                 |
+   SkillUpdateChecker ---- Remote manifest --------+
+   (hash comparison)        (static JSON CDN)
+```
+
+#### Progress
+
+- [ ] (2026-04-18) Phase 1: Skill usage tracking table + telemetry ~4h
+- [ ] (2026-04-18) Phase 2: Model-aware tiered injection ~4h
+- [ ] (2026-04-18) Phase 3: Skill versioning + remote update channel ~8h
+- [ ] (2026-04-18) Phase 4: Settings UI + admin dashboard ~6h
+- [ ] (2026-04-18) Phase 5: Skill directory endpoint (server-side) ~8h
+
+#### Phase 1: Skill Usage Tracking (t215)
+
+**Goal:** Track which skills get loaded, how they were triggered, and whether
+they helped — so the system can tune trigger patterns and surface quality signals.
+
+Schema: `gratis_ai_agent_skill_usage` table:
+- `id` bigint PK
+- `skill_id` bigint FK to skills table
+- `session_id` bigint FK to sessions table
+- `trigger_type` enum('auto', 'manual', 'tool_call') — how the skill was loaded
+- `injected_tokens` int — estimated token cost of the injection
+- `outcome` enum('helpful', 'neutral', 'negative', 'unknown') — heuristic or explicit
+- `model_id` varchar(100) — which model received the skill
+- `created_at` datetime
+
+Outcome heuristic: if the agent completed the task (no `exit_reason` error) and
+the skill's domain matched the task, mark `helpful`. If the user's next message
+is unrelated (skill was a false positive match), mark `neutral`. Explicit
+feedback from thumbs-down (t186) marks `negative`.
+
+**Files:**
+- EDIT: `includes/Core/Database.php` — add CREATE TABLE, bump DB_VERSION
+- NEW: `includes/Models/DTO/SkillUsageRow.php` — readonly DTO
+- NEW: `includes/Models/SkillUsageRepository.php` — create(), get_by_skill(), get_stats()
+- EDIT: `includes/Core/SkillAutoInjector.php` — record auto-injection events
+- EDIT: `includes/Abilities/SkillAbilities.php` — record manual skill-load calls
+- EDIT: `includes/Core/AgentLoop.php` — after loop completes, evaluate outcome heuristic
+- Verify: `composer phpstan && composer phpcs`
+
+#### Phase 2: Model-Aware Tiered Injection (t216)
+
+**Goal:** Strong models get the lean skill index only (~150 tokens). Weak models
+get auto-injected skill content. Eliminates 1500-3000 tokens/turn waste on
+capable models.
+
+**Changes:**
+- EDIT: `includes/Core/SystemInstructionBuilder.php:78-84` — wrap auto-injection
+  in `ModelHealthTracker::is_weak($this->model_id)` check
+- EDIT: `includes/Core/SkillAutoInjector.php` — reduce `MAX_INJECTED_SKILLS` from 2
+  to 1 (weak models can't use two guides effectively)
+- EDIT: `includes/Core/SkillAutoInjector.php` — add `get_index_description()` method
+  returning a richer one-line description for the index (helps strong models decide
+  when to call skill-load)
+- Track skill-load tool usage in `ModelHealthTracker` — models that never call
+  skill-load despite the index being present generate a signal toward "needs
+  auto-injection"
+- Verify: `composer phpstan && composer phpcs`
+
+#### Phase 3: Skill Versioning + Remote Update Channel (t217, t218)
+
+**Goal:** Built-in skill content can improve between plugin releases via a remote
+manifest check. User customizations are preserved.
+
+**Schema changes to skills table:**
+- `version` varchar(20) DEFAULT '1.0.0'
+- `content_hash` char(32) DEFAULT '' — md5 of content for change detection
+- `source_url` varchar(500) DEFAULT '' — upstream URL for updates
+- `user_modified` tinyint(1) DEFAULT 0 — set when admin edits a built-in skill
+
+**Remote manifest** (static JSON, CDN-hosted):
+```json
+{
+  "manifest_version": 1,
+  "skills": {
+    "wordpress-admin": {"version": "1.1.0", "content_hash": "abc123", "updated_at": "2026-04-18"},
+    "woocommerce": {"version": "1.2.0", "content_hash": "def456", "updated_at": "2026-04-15"}
+  }
+}
+```
+
+**WP-Cron job** (daily): fetch manifest, compare hashes, update `is_builtin=1 AND
+user_modified=0` skills. Conditional HTTP (ETag/If-Modified-Since) to avoid
+unnecessary downloads.
+
+**Files:**
+- EDIT: `includes/Core/Database.php` — ALTER TABLE add columns, bump DB_VERSION
+- EDIT: `includes/Models/Skill.php` — add `check_for_updates()`, `apply_update()`,
+  track `user_modified` on `update()`
+- NEW: `includes/Core/SkillUpdateChecker.php` — WP-Cron callback, manifest fetch,
+  hash comparison, conditional HTTP
+- EDIT: `includes/Models/Skill.php::reset_builtin()` — pull from remote instead of
+  bundled .md file (with fallback to bundled if offline)
+- NEW: `includes/Core/Settings.php` — add `skill_auto_update` setting (default: on)
+- Verify: `composer phpstan && composer phpcs`
+
+#### Phase 4: Settings UI + Admin Dashboard (t219)
+
+**Goal:** Admin can see skill effectiveness data, control auto-update, and monitor
+the update channel.
+
+**Changes:**
+- EDIT: `src/settings-page/skill-manager.js` — add "Usage Stats" column to skill
+  list (load count, helpful %, last used)
+- EDIT: `src/settings-page/skill-manager.js` — add "Auto-update" toggle per skill
+  and global toggle
+- EDIT: `src/settings-page/skill-manager.js` — show "Update available" badge when
+  remote version is newer
+- EDIT: `src/settings-page/skill-manager.js` — show "Modified" badge on user-edited
+  built-in skills with "Reset to upstream" button
+- NEW: REST endpoint `GET /gratis-ai-agent/v1/skills/usage-stats` — aggregated usage
+  data per skill
+- Verify: `npm run lint:js && npm run build`
+
+#### Phase 5: Skill Directory Endpoint (t220)
+
+**Goal:** A lightweight server-side endpoint for hosting the skill manifest and
+individual skill content. Can start as static files, graduate to a WordPress
+custom post type.
+
+**Approach:** Host on the same site as the feedback receiver
+(gratis-ai-feedback repo). Minimal — a manifest.json + individual skill .md
+files served via a REST endpoint.
+
+**Files (in gratis-ai-feedback repo):**
+- NEW: `includes/Skills/SkillDirectoryController.php` — `GET /skills/manifest`,
+  `GET /skills/{slug}`
+- NEW: `skills/` directory — hosted .md files for each built-in skill
+- Manifest auto-generated from directory contents + file hashes
+- Version bumped via commit — hash changes trigger client-side updates
+
+Defer marketplace/community features (ratings, submissions, browsing) to a
+future phase. The initial goal is a push channel for built-in skill improvements.
+
+#### Context from Discussion
+
+**Investigation findings (2026-04-18):**
+
+Current skill architecture components:
+- `Skill.php` — model with CRUD, seeding from `.md` files, `get_index_for_prompt()`
+- `SkillAutoInjector.php` — hardcoded regex `TRIGGER_MAP` (9 patterns), injects up to
+  2 full skill guides into every system prompt when patterns match
+- `SkillAbilities.php` — `skill-load` and `skill-list` WordPress abilities (tools)
+- `SkillService.php` — business logic for REST layer (create, delete, format)
+- `SkillController.php` — REST API (CRUD, reset built-in)
+- `SystemInstructionBuilder.php` — assembles system prompt, calls both `get_index_for_prompt()`
+  AND `inject_for_message()` unconditionally
+- `SkillRow.php` — immutable DTO for DB rows
+- 11 built-in skills as `.md` files in `includes/Models/skills/`
+- DB schema: id, slug, name, description, content, is_builtin, enabled, created_at, updated_at
+
+Claude Code comparison (aidevops framework):
+- Uses `SKILL.md` files + MCP tool for on-demand loading — model decides when to load
+- `skill-update-helper.sh` tracks upstream via GitHub commit SHA or URL content hash
+- Conditional HTTP requests (ETag/If-Modified-Since) avoid re-downloading unchanged content
+- `skill-sources.json` stores upstream_url, upstream_commit, upstream_hash, upstream_etag,
+  upstream_last_modified, imported_at, last_checked, merge_strategy
+- Auto-update creates PRs via worktree workflow with conventional commits and changelogs
+- `skills.sh` public registry for community skill discovery and installation
+
+**Token cost analysis:**
+- Skill index (`get_index_for_prompt()`): ~15 tokens/skill, ~150 total — cheap, always present
+- Auto-injected skill content: ~1000-2000 tokens/skill, up to 2 = 3000 tokens/turn
+- Auto-injection fires on broad regex (e.g. any message mentioning "page" triggers gutenberg-blocks)
+- Strong models (GPT-4.1, Claude Sonnet/Opus) reliably call `skill-load` from the index alone
+- Weak models (Mistral-7B, Phi-3, quantized Llama) ignore the index, need auto-injection
+- `ModelHealthTracker` already classifies models as weak/strong via name heuristics + telemetry
+
+**Key design decisions:**
+- Auto-injection becomes model-aware: weak models get it, strong models don't
+- Cap auto-injection at 1 skill (was 2) — weak models can't use two guides effectively
+- Track skill-load tool usage as a signal in ModelHealthTracker
+- Remote manifest uses the same hash-comparison pattern as Knowledge system
+- User-modified built-in skills protected from auto-updates (`user_modified` flag)
+- Server component starts minimal (static JSON manifest) — no dynamic backend initially
+- Marketplace/community features deferred until tracking data proves skills matter
+
+#### Decision Log
+
+(To be populated during implementation)
+
+#### Surprises & Discoveries
+
+(To be populated during implementation)

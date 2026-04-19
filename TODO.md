@@ -330,6 +330,42 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
 
 ## Backlog
 
+- [ ] t215 Adaptive skill system #parent #feature → [todo/PLANS.md#adaptive-skill-system] ~30h logged:2026-04-18
+
+- [ ] t216 Skill usage tracking table + telemetry (Phase 1) #feature #auto-dispatch ~4h For #t215 logged:2026-04-18
+  - NEW: includes/Models/DTO/SkillUsageRow.php — readonly DTO: id, skill_id, session_id, trigger_type, injected_tokens, outcome, model_id, created_at. Model on includes/Models/DTO/SkillRow.php
+  - NEW: includes/Models/SkillUsageRepository.php — create(), get_by_skill(), get_stats(). Model on includes/Models/Memory.php (static CRUD pattern)
+  - EDIT: includes/Core/Database.php — add CREATE TABLE for skill_usage, bump DB_VERSION
+  - EDIT: includes/Core/SkillAutoInjector.php — record auto-injection events via SkillUsageRepository::create()
+  - EDIT: includes/Abilities/SkillAbilities.php — record manual skill-load calls
+  - EDIT: includes/Core/AgentLoop.php — after loop completes, evaluate outcome heuristic (no exit_reason error + skill domain match = helpful)
+  - Verify: `composer phpstan && composer phpcs`
+
+- [ ] t217 Model-aware tiered skill injection (Phase 2) #enhancement #auto-dispatch ~4h For #t215 blocked-by:t216 logged:2026-04-18
+  - EDIT: includes/Core/SystemInstructionBuilder.php:78-84 — wrap SkillAutoInjector::inject_for_message() in ModelHealthTracker::is_weak() check. Strong models get index only (~150 tokens), weak models get auto-injected content
+  - EDIT: includes/Core/SkillAutoInjector.php — reduce MAX_INJECTED_SKILLS from 2 to 1
+  - EDIT: includes/Abilities/SkillAbilities.php — record skill-load calls as ModelHealthTracker::record_success() signal
+  - Verify: `composer phpstan && composer phpcs`
+
+- [ ] t218 Skill versioning schema + remote update checker (Phase 3a) #feature #auto-dispatch ~4h For #t215 logged:2026-04-18
+  - EDIT: includes/Core/Database.php — ALTER TABLE skills ADD version, content_hash, source_url, user_modified columns, bump DB_VERSION
+  - EDIT: includes/Models/Skill.php — set user_modified=1 on update() when skill is_builtin, add check_for_updates() and apply_update() methods
+  - EDIT: includes/Models/DTO/SkillRow.php — add version, content_hash, source_url, user_modified properties
+  - EDIT: includes/Core/Settings.php — add skill_auto_update and skill_manifest_url settings
+  - Verify: `composer phpstan && composer phpcs`
+
+- [ ] t219 WP-Cron skill update checker + conditional HTTP (Phase 3b) #feature #auto-dispatch ~4h For #t215 blocked-by:t218 logged:2026-04-18
+  - NEW: includes/Core/SkillUpdateChecker.php — WP-Cron callback: fetch manifest JSON from skill_manifest_url, compare content_hash per slug, update is_builtin=1 AND user_modified=0 skills. Use wp_remote_get with If-None-Match/If-Modified-Since headers. Model on Knowledge.php hash-comparison pattern (line 44)
+  - EDIT: includes/Models/Skill.php::reset_builtin() — pull from remote manifest URL with fallback to bundled .md file
+  - EDIT: gratis-ai-agent.php or LifecycleHandler — register wp_schedule_event for daily skill check
+  - Verify: `composer phpstan && composer phpcs`
+
+- [ ] t220 Skill manager UI: usage stats + update badges + auto-update toggle (Phase 4) #ui #auto-dispatch ~6h For #t215 blocked-by:t216,t219 logged:2026-04-18
+  - EDIT: src/settings-page/skill-manager.js — add "Usage Stats" column (load count, helpful %, last used), "Update available" badge, "Modified" badge with "Reset to upstream" button, per-skill and global auto-update toggle
+  - EDIT: includes/REST/SkillController.php — add GET /skills/usage-stats endpoint returning aggregated data from SkillUsageRepository::get_stats()
+  - EDIT: src/store/slices/skillsSlice.js — add fetchSkillUsageStats thunk and state
+  - Verify: `npm run lint:js && npm run build`
+
 - [ ] t199 Resumable background jobs & multi-session chat #parent #feature → [todo/PLANS.md#resumable-background-jobs] ~10d ref:GH#1027 logged:2026-04-17
 
 - [ ] t200 Active jobs DB table + repository class (Phase 1a) #feature #auto-dispatch ~3h For #t199 ref:GH#1028 logged:2026-04-17
