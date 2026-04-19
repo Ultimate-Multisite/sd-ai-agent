@@ -36,6 +36,7 @@ readonly class SessionRow {
 	 * @param string      $createdAt        MySQL datetime string (UTC).
 	 * @param string      $updatedAt        MySQL datetime string (UTC).
 	 */
+	// phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- Intentional camelCase: properties map to a REST API / JavaScript layer that uses camelCase, avoiding the confusion of a DTO with mixed naming.
 	public function __construct(
 		public int $id,
 		public int $userId,
@@ -53,6 +54,7 @@ readonly class SessionRow {
 		public string $createdAt,
 		public string $updatedAt,
 	) {}
+	// phpcs:enable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 
 	/**
 	 * Construct a SessionRow from the raw stdClass returned by wpdb::get_row().
