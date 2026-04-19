@@ -339,7 +339,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - DELETE content from: src/components/onboarding-interview.js (static form interview)
   - Verify: `npm run lint:js && npm run build`
 
-- [ ] t223 Bootstrap system prompt + auto-discovery session (Phase 2) #feature #auto-dispatch ~4h For #t221 blocked-by:t222 logged:2026-04-18
+- [x] t223 Bootstrap system prompt + auto-discovery session (Phase 2) #feature #auto-dispatch ~4h For #t221 blocked-by:t222 logged:2026-04-18 pr:#1098 completed:2026-04-19
   - NEW: includes/Core/BootstrapPrompt.php — generates onboarding system prompt. Instructs AI to explore site with abilities (read posts, pages, plugins, theme, WooCommerce), infer style/tone/audience, queue RAG indexing, store memories, then present findings + starter prompts. Model on includes/Core/SystemInstructionBuilder.php
   - EDIT: includes/Core/AgentLoop.php — accept bootstrap_prompt param when creating first session, prepend to system instructions for that session only
   - EDIT: includes/Core/OnboardingManager.php — simplify to track onboarding_complete. Add REST endpoint to create bootstrap session. Remove interview endpoints.
