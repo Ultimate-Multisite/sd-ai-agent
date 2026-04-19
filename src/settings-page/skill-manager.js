@@ -10,24 +10,13 @@ import {
 	ToggleControl,
 	Notice,
 } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { trash, pencil, plus, backup, update } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import STORE_NAME from '../store';
-
-/**
- * Minimal sprintf — replaces the first %d or %s in a format string.
- *
- * @param {string} format - Format string with one %d or %s placeholder.
- * @param {*}      value  - Value to substitute.
- * @return {string} Formatted string.
- */
-function sprintf( format, value ) {
-	return format.replace( /%[ds]/, String( value ) );
-}
 
 /**
  * Format a UTC MySQL datetime string (YYYY-MM-DD HH:MM:SS) for display.
@@ -95,6 +84,7 @@ export default function SkillManager() {
 		skills,
 		skillsLoaded,
 		skillStats,
+		skillStatsLoaded,
 		skillUpdates,
 		skillUpdatesChecking,
 		settings,
@@ -104,6 +94,7 @@ export default function SkillManager() {
 			skills: select( STORE_NAME ).getSkills(),
 			skillsLoaded: select( STORE_NAME ).getSkillsLoaded(),
 			skillStats: select( STORE_NAME ).getSkillStats(),
+			skillStatsLoaded: select( STORE_NAME ).getSkillStatsLoaded(),
 			skillUpdates: select( STORE_NAME ).getSkillUpdates(),
 			skillUpdatesChecking:
 				select( STORE_NAME ).getSkillUpdatesChecking(),
@@ -122,12 +113,23 @@ export default function SkillManager() {
 	const [ updateNotice, setUpdateNotice ] = useState( null );
 
 	useEffect( () => {
-		fetchSkills();
-		fetchSkillStats();
+		if ( ! skillsLoaded ) {
+			fetchSkills();
+		}
+		if ( ! skillStatsLoaded ) {
+			fetchSkillStats();
+		}
 		if ( ! settingsLoaded ) {
 			fetchSettings();
 		}
-	}, [ fetchSkills, fetchSkillStats, fetchSettings, settingsLoaded ] );
+	}, [
+		fetchSkills,
+		fetchSkillStats,
+		fetchSettings,
+		skillsLoaded,
+		skillStatsLoaded,
+		settingsLoaded,
+	] );
 
 	const resetForm = useCallback( () => {
 		setShowForm( false );
@@ -246,15 +248,22 @@ export default function SkillManager() {
 		if ( appliedCount > 0 ) {
 			const appliedMsg = sprintf(
 				/* translators: %d: number of skills updated */
-				__( '%d skill(s) updated automatically.', 'gratis-ai-agent' ),
+				_n(
+					'%d skill updated automatically.',
+					'%d skills updated automatically.',
+					appliedCount,
+					'gratis-ai-agent'
+				),
 				appliedCount
 			);
 			setUpdateNotice( { status: 'success', message: appliedMsg } );
 		} else if ( updateCount > 0 ) {
 			const updateMsg = sprintf(
 				/* translators: %d: number of skills with available updates */
-				__(
-					'%d update(s) available. Auto-update is disabled or skills have been customised.',
+				_n(
+					'%d update available. Auto-update is disabled or skills have been customised.',
+					'%d updates available. Auto-update is disabled or skills have been customised.',
+					updateCount,
 					'gratis-ai-agent'
 				),
 				updateCount
@@ -492,8 +501,10 @@ export default function SkillManager() {
 														<>
 															{ sprintf(
 																/* translators: %d: number of times the skill was loaded */
-																__(
+																_n(
+																	'Used %d time',
 																	'Used %d times',
+																	stats.total_loads,
 																	'gratis-ai-agent'
 																),
 																stats.total_loads
@@ -519,8 +530,10 @@ export default function SkillManager() {
 														<span className="gratis-ai-agent-skill-helpful">
 															{ sprintf(
 																/* translators: %d: number of helpful feedback responses */
-																__(
+																_n(
 																	'%d helpful',
+																	'%d helpful',
+																	stats.helpful_count,
 																	'gratis-ai-agent'
 																),
 																stats.helpful_count
