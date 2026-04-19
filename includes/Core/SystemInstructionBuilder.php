@@ -26,11 +26,13 @@ class SystemInstructionBuilder {
 	 * @param string                   $model_id     Current AI model ID (for weak-model nudges).
 	 * @param string                   $user_message User's message (for knowledge context RAG).
 	 * @param array<int|string, mixed> $page_context Page context from the widget.
+	 * @param int                      $session_id   Session ID for skill usage telemetry (0 if unknown).
 	 */
 	public function __construct(
 		private string $model_id = '',
 		private string $user_message = '',
-		private array $page_context = array()
+		private array $page_context = array(),
+		private int $session_id = 0,
 	) {}
 
 	/**
@@ -71,12 +73,18 @@ class SystemInstructionBuilder {
 			$base .= "\n\n" . $skill_index;
 		}
 
-		// Auto-inject relevant skill content based on the user's message.
-		// This supplements the passive skill index above — instead of relying
-		// on the LLM to voluntarily call skill-load, we inject the content
-		// directly for matching tasks (e.g. content creation → gutenberg-blocks).
-		if ( ! empty( $this->user_message ) ) {
-			$auto_skill = SkillAutoInjector::inject_for_message( $this->user_message );
+		// Auto-inject relevant skill content based on the user's message —
+		// but only for models that need it (Phase 2 / t216).
+		//
+		// Strong models (GPT-4.1, Claude Sonnet/Opus) reliably call skill-load
+		// from the index alone, so auto-injection just burns 1500-3000 tokens/turn.
+		// Weak models (quantized open-weight, small-param models) tend to ignore
+		// the index and benefit from having the skill content pre-loaded.
+		//
+		// The model_id also passes through so injections are recorded to the
+		// skill_usage table for telemetry (Phase 1 / t215).
+		if ( ! empty( $this->user_message ) && ModelHealthTracker::is_weak( $this->model_id ) ) {
+			$auto_skill = SkillAutoInjector::inject_for_message( $this->user_message, $this->model_id, $this->session_id );
 			if ( ! empty( $auto_skill ) ) {
 				// @phpstan-ignore-next-line
 				$base .= "\n\n" . $auto_skill;

@@ -6,6 +6,14 @@ declare(strict_types=1);
  * the user's message. Mirrors the knowledge-base RAG injection pattern
  * but uses keyword matching instead of vector search.
  *
+ * Phase 2 (t216): Auto-injection is now model-aware. Strong models receive
+ * the skill index only and call skill-load on demand. Weak models receive
+ * auto-injected content (capped at 1 skill) to compensate for unreliable
+ * tool-call behaviour.
+ *
+ * Phase 1 (t215): Injection events are recorded to gratis_ai_agent_skill_usage
+ * when model_id/session_id context is supplied.
+ *
  * @package GratisAiAgent\Core
  * @license GPL-2.0-or-later
  */
@@ -13,6 +21,7 @@ declare(strict_types=1);
 namespace GratisAiAgent\Core;
 
 use GratisAiAgent\Models\Skill;
+use GratisAiAgent\Repositories\SkillUsageRepository;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -21,9 +30,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 class SkillAutoInjector {
 
 	/**
-	 * Maximum number of skills to inject per prompt to limit token usage.
+	 * Maximum number of skills to inject per prompt.
+	 *
+	 * Reduced from 2 to 1 (Phase 2/t216): weak models cannot effectively
+	 * use two guides simultaneously, and injecting both wastes tokens.
 	 */
-	private const MAX_INJECTED_SKILLS = 2;
+	private const MAX_INJECTED_SKILLS = 1;
 
 	/**
 	 * Keyword-to-skill trigger map.
@@ -48,10 +60,15 @@ class SkillAutoInjector {
 	/**
 	 * Analyze the user message and return matching skill content to inject.
 	 *
+	 * When model_id and session_id are provided, each injected skill is
+	 * recorded to the skill_usage table for telemetry.
+	 *
 	 * @param string $user_message The user's chat message.
+	 * @param string $model_id     Model ID receiving the injection (for telemetry).
+	 * @param int    $session_id   Session ID (0 if unknown) (for telemetry).
 	 * @return string Formatted skill content for system prompt injection, or empty string.
 	 */
-	public static function inject_for_message( string $user_message ): string {
+	public static function inject_for_message( string $user_message, string $model_id = '', int $session_id = 0 ): string {
 		if ( '' === trim( $user_message ) ) {
 			return '';
 		}
@@ -72,6 +89,11 @@ class SkillAutoInjector {
 			}
 
 			$sections[] = $content;
+
+			// Record the injection event for telemetry (Phase 1 / t215).
+			if ( '' !== $model_id ) {
+				self::record_injection( $slug, $content, $model_id, $session_id );
+			}
 		}
 
 		if ( empty( $sections ) ) {
@@ -87,26 +109,54 @@ class SkillAutoInjector {
 	/**
 	 * Match user message against the trigger map and return unique skill slugs.
 	 *
+	 * Collects all pattern matches first, then de-duplicates with array_unique
+	 * and caps at MAX_INJECTED_SKILLS. The two-pass approach avoids PHPStan
+	 * type-narrowing issues with in_array/isset on a dynamically-growing array.
+	 *
 	 * @param string $user_message The user's chat message.
 	 * @return list<string> Matched skill slugs (max MAX_INJECTED_SKILLS).
 	 */
 	private static function match_skills( string $user_message ): array {
-		$matched = [];
+		$raw = [];
 
 		foreach ( self::TRIGGER_MAP as $pattern => $slug ) {
-			if ( in_array( $slug, $matched, true ) ) {
-				continue;
-			}
-
 			if ( preg_match( $pattern, $user_message ) ) {
-				$matched[] = $slug;
-
-				if ( count( $matched ) >= self::MAX_INJECTED_SKILLS ) {
-					break;
-				}
+				$raw[] = $slug;
 			}
 		}
 
-		return $matched;
+		$unique = array_values( array_unique( $raw ) );
+
+		return array_slice( $unique, 0, self::MAX_INJECTED_SKILLS );
+	}
+
+	/**
+	 * Record a skill auto-injection event to the usage table.
+	 *
+	 * Looks up the skill by slug to get its ID. Silently no-ops if the
+	 * skill cannot be found (e.g. custom slug not yet in DB).
+	 *
+	 * @param string $slug       Skill slug that was injected.
+	 * @param string $content    Injected content (used to estimate token cost).
+	 * @param string $model_id   Model receiving the injection.
+	 * @param int    $session_id Session context (0 if unknown).
+	 * @return void
+	 */
+	private static function record_injection( string $slug, string $content, string $model_id, int $session_id ): void {
+		$skill = Skill::get_by_slug( $slug );
+		if ( ! $skill ) {
+			return;
+		}
+
+		SkillUsageRepository::create(
+			[
+				'skill_id'        => $skill->id,
+				'session_id'      => $session_id,
+				'trigger_type'    => 'auto',
+				'injected_tokens' => SkillUsageRepository::estimate_tokens( $content ),
+				'outcome'         => 'unknown',
+				'model_id'        => $model_id,
+			]
+		);
 	}
 }
