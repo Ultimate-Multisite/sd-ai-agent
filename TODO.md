@@ -330,7 +330,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
 
 ## Backlog
 
-- [ ] t215 Adaptive skill system #parent #feature → [todo/PLANS.md#adaptive-skill-system] ~30h logged:2026-04-18
+- [x] t215 Adaptive skill system #parent #feature → [todo/PLANS.md#adaptive-skill-system] ~30h logged:2026-04-18 pr:#1086 completed:2026-04-19
 
 - [ ] t216 Skill usage tracking table + telemetry (Phase 1) #feature #auto-dispatch ~4h For #t215 logged:2026-04-18
   - NEW: includes/Models/DTO/SkillUsageRow.php — readonly DTO: id, skill_id, session_id, trigger_type, injected_tokens, outcome, model_id, created_at. Model on includes/Models/DTO/SkillRow.php
