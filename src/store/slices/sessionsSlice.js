@@ -993,6 +993,12 @@ export const actions = {
 				body.agent_id = selectedAgentId;
 			}
 
+			// Allow callers (e.g. onboarding bootstrap) to supply a one-off
+			// system instruction override that locks the prompt for this session.
+			if ( options.systemInstruction ) {
+				body.system_instruction = options.systemInstruction;
+			}
+
 			// Include client-side ability descriptors so the server can route
 			// JS tool calls back to the browser instead of executing them
 			// server-side. The WP 7.0 abilities API is fully async — both
@@ -1171,14 +1177,15 @@ export const actions = {
 	 * @param {string} message     - User message text.
 	 * @param {Array}  attachments - Optional array of attachment objects with
 	 *                             { name, type, dataUrl, isImage } shape.
+	 * @param {Object} options     - Optional overrides (e.g. systemInstruction).
 	 * @return {Function} Redux thunk.
 	 */
-	sendMessage( message, attachments = [] ) {
+	sendMessage( message, attachments = [], options = {} ) {
 		return ( { dispatch, select } ) => {
 			const isBusy = select.isSending();
 
 			if ( ! isBusy ) {
-				dispatch.streamMessage( message, attachments );
+				dispatch.streamMessage( message, attachments, options );
 			} else {
 				// Enqueue the message for later processing.
 				dispatch.enqueueMessage( message, attachments );

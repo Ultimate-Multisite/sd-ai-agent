@@ -327,11 +327,16 @@ class Database {
 			content longtext NOT NULL,
 			is_builtin tinyint(1) NOT NULL DEFAULT 0,
 			enabled tinyint(1) NOT NULL DEFAULT 1,
+			version varchar(20) NOT NULL DEFAULT '',
+			content_hash varchar(64) NOT NULL DEFAULT '',
+			source_url varchar(2048) NOT NULL DEFAULT '',
+			user_modified tinyint(1) NOT NULL DEFAULT 0,
 			created_at datetime NOT NULL,
 			updated_at datetime NOT NULL,
 			PRIMARY KEY  (id),
 			UNIQUE KEY slug (slug),
-			KEY enabled (enabled)
+			KEY enabled (enabled),
+			KEY is_builtin (is_builtin)
 		) {$charset};
 
 		CREATE TABLE {$custom_tools_table} (
