@@ -335,6 +335,17 @@ final class SkillController extends XWP_REST_Controller {
 			);
 		}
 
+		// Reject non-HTTPS schemes to reduce SSRF surface area.
+		// Admin-supplied URLs are lower risk, but an https-only policy blocks accidental
+		// plain-http manifests and prevents probing cloud metadata endpoints.
+		if ( ! str_starts_with( strtolower( $manifest_url ), 'https://' ) ) {
+			return new WP_Error(
+				'gratis_ai_agent_manifest_invalid_scheme',
+				__( 'Skill manifest URL must use HTTPS.', 'gratis-ai-agent' ),
+				array( 'status' => 400 )
+			);
+		}
+
 		// Fetch the remote manifest.
 		$response = wp_remote_get(
 			$manifest_url,
@@ -404,12 +415,12 @@ final class SkillController extends XWP_REST_Controller {
 			}
 
 			$results[ $skill->id ] = array(
-				'skill_id'       => $skill->id,
-				'slug'           => $skill->slug,
-				'has_update'     => $has_update,
+				'skill_id'       => (int) $skill->id,
+				'slug'           => (string) $skill->slug,
+				'has_update'     => (bool) $has_update,
 				'remote_version' => (string) ( $entry['version'] ?? '' ),
-				'applied'        => $applied,
-				'user_modified'  => $skill->user_modified,
+				'applied'        => (bool) $applied,
+				'user_modified'  => (bool) $skill->user_modified,
 			);
 		}
 
