@@ -330,6 +330,30 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
 
 ## Backlog
 
+- [ ] t221 Onboarding v2: Gate + AI-driven discovery #parent #feature → [todo/PLANS.md#onboarding-v2-gate--ai-driven-discovery] ~8h logged:2026-04-18
+
+- [ ] t222 Connector gate component + remove wizard (Phase 1) #feature #auto-dispatch ~2h For #t221 logged:2026-04-18
+  - NEW: src/components/onboarding-gate.js — single-screen "Connect an AI Provider" gate with provider polling (3-5s interval). Auto-transitions to chat when provider appears. No skip, no next, no dots.
+  - EDIT: src/admin-page/index.js — replace OnboardingWizard import/usage with OnboardingGate. Remove OnboardingInterview import. On gate clear, create bootstrap session and show chat.
+  - DELETE content from: src/components/onboarding-wizard.js (entire multi-step wizard)
+  - DELETE content from: src/components/onboarding-interview.js (static form interview)
+  - Verify: `npm run lint:js && npm run build`
+
+- [ ] t223 Bootstrap system prompt + auto-discovery session (Phase 2) #feature #auto-dispatch ~4h For #t221 blocked-by:t222 logged:2026-04-18
+  - NEW: includes/Core/BootstrapPrompt.php — generates onboarding system prompt. Instructs AI to explore site with abilities (read posts, pages, plugins, theme, WooCommerce), infer style/tone/audience, queue RAG indexing, store memories, then present findings + starter prompts. Model on includes/Core/SystemInstructionBuilder.php
+  - EDIT: includes/Core/AgentLoop.php — accept bootstrap_prompt param when creating first session, prepend to system instructions for that session only
+  - EDIT: includes/Core/OnboardingManager.php — simplify to track onboarding_complete. Add REST endpoint to create bootstrap session. Remove interview endpoints.
+  - EDIT: src/store/ — add isBootstrapSession flag so UI doesn't show empty-state on first run
+  - Verify: `composer phpstan && composer phpcs && npm run lint:js && npm run build`
+
+- [ ] t224 Auto-enable WooCommerce abilities + cleanup dead onboarding code (Phase 3) #enhancement #auto-dispatch ~2h For #t221 blocked-by:t223 logged:2026-04-18
+  - EDIT: includes/Core/Settings.php — on first load with provider detected, auto-enable WooCommerce abilities if WooCommerce active
+  - DELETE: includes/Core/OnboardingInterview.php — entire class replaced by AI conversation
+  - EDIT: includes/Bootstrap/OnboardingHandler.php — remove interview REST route registration
+  - DELETE: src/components/__tests__/OnboardingWizard.test.js — replace with onboarding-gate tests
+  - DELETE: tests/GratisAiAgent/Core/OnboardingInterviewTest.php
+  - Verify: `composer phpstan && composer phpcs && npm run lint:js && npm run build`
+
 - [ ] t215 Adaptive skill system #parent #feature → [todo/PLANS.md#adaptive-skill-system] ~30h logged:2026-04-18
 
 - [ ] t216 Skill usage tracking table + telemetry (Phase 1) #feature #auto-dispatch ~4h For #t215 logged:2026-04-18
