@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace GratisAiAgent\Abilities;
 
 use GratisAiAgent\Models\Skill;
+use GratisAiAgent\Models\SkillUsageRepository;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -116,10 +117,22 @@ class SkillAbilities {
 			return new \WP_Error( 'skill_not_found', "Skill '$slug' not found." );
 		}
 
-		if ( ! (int) $skill->enabled ) {
+		if ( ! $skill->enabled ) {
 			// @phpstan-ignore-next-line
 			return new \WP_Error( 'skill_disabled', "Skill '$slug' is disabled." );
 		}
+
+		// Record the tool_call load event for telemetry.
+		$injected_tokens = (int) ceil( mb_strlen( $skill->content ) / 4 );
+		$session_id      = (int) ( $input['_session_id'] ?? 0 );
+		$model_id        = (string) ( $input['_model_id'] ?? '' );
+		SkillUsageRepository::create(
+			$skill->id,
+			$session_id,
+			SkillUsageRepository::TRIGGER_TOOL_CALL,
+			$injected_tokens,
+			$model_id
+		);
 
 		return [
 			'name'    => $skill->name,

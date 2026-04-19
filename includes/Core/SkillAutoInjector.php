@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace GratisAiAgent\Core;
 
 use GratisAiAgent\Models\Skill;
+use GratisAiAgent\Models\SkillUsageRepository;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -24,6 +25,17 @@ class SkillAutoInjector {
 	 * Maximum number of skills to inject per prompt to limit token usage.
 	 */
 	private const MAX_INJECTED_SKILLS = 2;
+
+	/**
+	 * Per-request dedup cache: tracks (session_id, skill_id) pairs already
+	 * recorded this PHP request so we don't insert a row on every prompt
+	 * rebuild (inject_for_message is called each iteration of the agent loop).
+	 *
+	 * Key: "{session_id}:{skill_id}", value: true.
+	 *
+	 * @var array<string, true>
+	 */
+	private static array $recorded_this_request = [];
 
 	/**
 	 * Keyword-to-skill trigger map.
@@ -48,10 +60,15 @@ class SkillAutoInjector {
 	/**
 	 * Analyze the user message and return matching skill content to inject.
 	 *
+	 * When $session_id > 0 or $model_id is non-empty, each injected skill is
+	 * recorded in the skill_usage table for telemetry.
+	 *
 	 * @param string $user_message The user's chat message.
+	 * @param int    $session_id   Session ID for telemetry (0 = no session).
+	 * @param string $model_id     Model ID for telemetry ('').
 	 * @return string Formatted skill content for system prompt injection, or empty string.
 	 */
-	public static function inject_for_message( string $user_message ): string {
+	public static function inject_for_message( string $user_message, int $session_id = 0, string $model_id = '' ): string {
 		if ( '' === trim( $user_message ) ) {
 			return '';
 		}
@@ -65,13 +82,33 @@ class SkillAutoInjector {
 		$sections = [];
 
 		foreach ( $matched_slugs as $slug ) {
-			$content = Skill::get_content_by_slug( $slug );
+			$skill = Skill::get_by_slug( $slug );
 
-			if ( null === $content || '' === $content ) {
+			if ( null === $skill || ! $skill->enabled ) {
+				continue;
+			}
+
+			$content = $skill->content;
+
+			if ( '' === $content ) {
 				continue;
 			}
 
 			$sections[] = $content;
+
+			// Record the auto-injection event for telemetry (once per session+skill per request).
+			$dedup_key = "{$session_id}:{$skill->id}";
+			if ( ! isset( self::$recorded_this_request[ $dedup_key ] ) ) {
+				$injected_tokens = (int) ceil( mb_strlen( $content ) / 4 );
+				SkillUsageRepository::create(
+					$skill->id,
+					$session_id,
+					SkillUsageRepository::TRIGGER_AUTO,
+					$injected_tokens,
+					$model_id
+				);
+				self::$recorded_this_request[ $dedup_key ] = true;
+			}
 		}
 
 		if ( empty( $sections ) ) {

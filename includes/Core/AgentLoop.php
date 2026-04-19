@@ -25,6 +25,7 @@ namespace GratisAiAgent\Core;
 use GratisAiAgent\Abilities\FeedbackAbilities;
 use GratisAiAgent\Core\BudgetManager;
 use GratisAiAgent\Core\ChangeLogger;
+use GratisAiAgent\Models\SkillUsageRepository;
 use GratisAiAgent\Tools\ModelHealthTracker;
 use GratisAiAgent\Tools\ToolDiscovery;
 use GratisAiAgent\Core\RolePermissions;
@@ -251,12 +252,13 @@ class AgentLoop {
 
 		// ── Initialise focused service objects ───────────────────────────
 
-		// SystemInstructionBuilder needs the model_id for weak-model nudges
-		// and user_message for knowledge RAG, both resolved above.
+		// SystemInstructionBuilder needs the model_id for weak-model nudges,
+		// user_message for knowledge RAG, and session_id for skill telemetry.
 		$this->instruction_builder = new SystemInstructionBuilder(
 			(string) $this->model_id,
 			$this->user_message,
-			$this->page_context
+			$this->page_context,
+			$this->session_id
 		);
 
 		// ToolPermissionResolver encapsulates yolo_mode and tool_permissions.
@@ -319,7 +321,12 @@ class AgentLoop {
 		// Append the new user message to history.
 		$this->history[] = new UserMessage( array( new MessagePart( $this->user_message ) ) );
 
-		return $this->run_loop( $this->max_iterations );
+		$result = $this->run_loop( $this->max_iterations );
+
+		// Apply Phase-1 outcome heuristic to skill usage rows for this session.
+		$this->evaluate_skill_outcomes( $result );
+
+		return $result;
 	}
 
 	/**
@@ -1192,6 +1199,41 @@ class AgentLoop {
 			$result['inability_reported'] = $inability;
 		}
 		return $result;
+	}
+
+	// ── Skill usage outcome heuristic ─────────────────────────────────────
+
+	/**
+	 * Apply the outcome heuristic to skill usage rows for the current session.
+	 *
+	 * Called after the loop completes. If the loop exited cleanly (reply returned,
+	 * no error exit_reason), injected skills are marked 'helpful'. All other
+	 * exits (timeout, spin, error) are marked 'neutral' — we cannot infer benefit
+	 * when the agent did not reach a conclusive answer.
+	 *
+	 * This is a Phase-1 heuristic. Phase-2 will refine based on model-reported
+	 * inability, thumbs-down feedback (t186), and follow-up message correlation.
+	 *
+	 * @param array<string,mixed>|WP_Error $result The loop result.
+	 */
+	private function evaluate_skill_outcomes( $result ): void {
+		if ( $this->session_id <= 0 ) {
+			return;
+		}
+
+		if ( is_wp_error( $result ) ) {
+			SkillUsageRepository::update_session_outcomes( $this->session_id, SkillUsageRepository::OUTCOME_NEUTRAL );
+			return;
+		}
+
+		// @phpstan-ignore-next-line
+		$exit_reason = $result['exit_reason'] ?? '';
+
+		$outcome = ( '' === $exit_reason )
+			? SkillUsageRepository::OUTCOME_HELPFUL
+			: SkillUsageRepository::OUTCOME_NEUTRAL;
+
+		SkillUsageRepository::update_session_outcomes( $this->session_id, $outcome );
 	}
 
 	// ── Client ability partitioning ───────────────────────────────────────

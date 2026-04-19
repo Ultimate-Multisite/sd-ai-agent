@@ -26,11 +26,13 @@ class SystemInstructionBuilder {
 	 * @param string                   $model_id     Current AI model ID (for weak-model nudges).
 	 * @param string                   $user_message User's message (for knowledge context RAG).
 	 * @param array<int|string, mixed> $page_context Page context from the widget.
+	 * @param int                      $session_id   Session ID for skill usage telemetry (0 = no session).
 	 */
 	public function __construct(
 		private string $model_id = '',
 		private string $user_message = '',
-		private array $page_context = array()
+		private array $page_context = array(),
+		private int $session_id = 0
 	) {}
 
 	/**
@@ -76,7 +78,7 @@ class SystemInstructionBuilder {
 		// on the LLM to voluntarily call skill-load, we inject the content
 		// directly for matching tasks (e.g. content creation → gutenberg-blocks).
 		if ( ! empty( $this->user_message ) ) {
-			$auto_skill = SkillAutoInjector::inject_for_message( $this->user_message );
+			$auto_skill = SkillAutoInjector::inject_for_message( $this->user_message, $this->session_id, $this->model_id );
 			if ( ! empty( $auto_skill ) ) {
 				// @phpstan-ignore-next-line
 				$base .= "\n\n" . $auto_skill;

@@ -35,7 +35,7 @@ use GratisAiAgent\Tools\CustomTools;
 class Database {
 
 	const DB_VERSION_OPTION = 'gratis_ai_agent_db_version';
-	const DB_VERSION        = '16.0.0';
+	const DB_VERSION        = '17.0.0';
 
 	// ─── Table Name Registry ──────────────────────────────────────────────────
 
@@ -213,6 +213,15 @@ class Database {
 		return $wpdb->prefix . 'gratis_ai_agent_active_jobs';
 	}
 
+	/**
+	 * Get the skill usage table name.
+	 */
+	public static function skill_usage_table_name(): string {
+		global $wpdb;
+		/** @var \wpdb $wpdb */
+		return $wpdb->prefix . 'gratis_ai_agent_skill_usage';
+	}
+
 	// ─── Schema Installation ──────────────────────────────────────────────────
 
 	/**
@@ -250,6 +259,7 @@ class Database {
 		$provider_trace_table         = self::provider_trace_table_name();
 		$generated_plugins_table      = self::generated_plugins_table_name();
 		$active_jobs_table            = self::active_jobs_table_name();
+		$skill_usage_table            = self::skill_usage_table_name();
 		$charset                      = $wpdb->get_charset_collate();
 
 		// Knowledge tables.
@@ -595,6 +605,22 @@ class Database {
 			UNIQUE KEY job_id (job_id),
 			KEY session_id (session_id),
 			KEY user_id_status (user_id, status)
+		) {$charset};
+
+		CREATE TABLE {$skill_usage_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			skill_id bigint(20) unsigned NOT NULL,
+			session_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			trigger_type varchar(20) NOT NULL DEFAULT 'auto',
+			injected_tokens int(11) NOT NULL DEFAULT 0,
+			outcome varchar(20) NOT NULL DEFAULT 'unknown',
+			model_id varchar(100) NOT NULL DEFAULT '',
+			created_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			KEY skill_id (skill_id),
+			KEY session_id (session_id),
+			KEY outcome (outcome),
+			KEY created_at (created_at)
 		) {$charset};";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
