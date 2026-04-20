@@ -475,24 +475,49 @@ class BenchmarkRunner {
 		if ( ! empty( $provider_id ) ) {
 			try {
 				$registry = \WordPress\AiClient\AiClient::defaultRegistry();
-				if ( $registry->hasProvider( $provider_id ) ) {
-					$builder->using_provider( $provider_id );
+				if ( ! $registry->hasProvider( $provider_id ) ) {
+					return new \WP_Error(
+						'benchmark_invalid_provider',
+						sprintf(
+							/* translators: %s is the provider ID. */
+							__( 'Provider "%s" not found.', 'gratis-ai-agent' ),
+							$provider_id
+						)
+					);
+				}
+				$builder->using_provider( $provider_id );
 
-					// If specific model requested, use it directly.
-					if ( ! empty( $model_id ) ) {
-						$model = $registry->getProviderModel( $provider_id, $model_id );
-						$builder->using_model( $model );
+				// If specific model requested, use it directly.
+				if ( ! empty( $model_id ) ) {
+					$model = $registry->getProviderModel( $provider_id, $model_id );
+					if ( null === $model ) {
+						return new \WP_Error(
+							'benchmark_invalid_model',
+							sprintf(
+								/* translators: %1$s is the model ID, %2$s is the provider ID. */
+								__( 'Model "%1$s" not found for provider "%2$s".', 'gratis-ai-agent' ),
+								$model_id,
+								$provider_id
+							)
+						);
 					}
+					$builder->using_model( $model );
 				}
 			} catch ( \Throwable $e ) {
-				// Registry unavailable - continue with defaults.
+				return new \WP_Error(
+					'benchmark_provider_error',
+					$e->getMessage()
+				);
 			}
 		} elseif ( ! empty( $model_id ) ) {
 			// Empty provider but specific model - try to resolve via preference.
 			try {
 				$builder->using_model_preference( $model_id );
 			} catch ( \Throwable $e ) {
-				// Model preference not supported - continue without it.
+				return new \WP_Error(
+					'benchmark_model_error',
+					$e->getMessage()
+				);
 			}
 		}
 
