@@ -299,7 +299,7 @@ class BenchmarkRunner {
 		$max_tokens = self::get_max_tokens_for_question( $question );
 
 		// Call the model.
-		$response = self::call_model( $model, $prompt, $max_tokens );
+		$response = self::call_model( $model, $prompt );
 
 		$latency_ms = (int) ( ( microtime( true ) - $start_time ) * 1000 );
 
@@ -438,7 +438,7 @@ class BenchmarkRunner {
 	 * connectors, and OpenAI-compatible endpoints) through a unified interface.
 	 *
 	 * @param array<string, mixed> $model Model configuration.
-	 * @param string $prompt Prompt text.
+	 * @param string               $prompt Prompt text.
 	 * @return array<string, mixed>|\WP_Error
 	 */
 	private static function call_model( array $model, string $prompt ) {
@@ -468,9 +468,7 @@ class BenchmarkRunner {
 			);
 		}
 
-		// Ensure provider credentials are loaded (same logic the chat uses).
-		GratisAiAgent\Core\ProviderCredentialLoader::load();
-
+		// WordPress AI SDK handles credentials internally.
 		$builder = wp_ai_client_prompt( $prompt );
 
 		// Set provider and model through the SDK registry.
@@ -504,27 +502,25 @@ class BenchmarkRunner {
 			return $result;
 		}
 
-		$content            = '';
-		$prompt_tokens      = 0;
+		$content           = '';
+		$prompt_tokens     = 0;
 		$completion_tokens = 0;
 
 		if ( $result instanceof \WordPress\AiClient\Results\DTO\GenerativeAiResult ) {
 			$content = $result->toText();
 			try {
-				$usage = $result->getTokenUsage();
-				if ( $usage ) {
-					$prompt_tokens     = $usage->getPromptTokens();
-					$completion_tokens = $usage->getCompletionTokens();
-				}
+				$usage             = $result->getTokenUsage();
+				$prompt_tokens     = $usage->getPromptTokens();
+				$completion_tokens = $usage->getCompletionTokens();
 			} catch ( \Throwable $e ) {
 				// Token usage not available.
 			}
 		}
 
 		return array(
-			'content'            => $content,
-			'prompt_tokens'      => $prompt_tokens,
-			'completion_tokens'   => $completion_tokens,
+			'content'           => $content,
+			'prompt_tokens'     => $prompt_tokens,
+			'completion_tokens' => $completion_tokens,
 		);
 	}
 
