@@ -80,12 +80,12 @@ register_deactivation_hook( __FILE__, [ LifecycleHandler::class, 'deactivate' ] 
 // REST context when the container actually initialises.
 // phpcs:disable WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 if ( ! empty( $_GET['rest_route'] ) ) {
-	$_rest_prefix = function_exists( 'rest_get_url_prefix' ) ? rest_get_url_prefix() : 'wp-json';
-	$_request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-	if ( false === strpos( (string) $_request_uri, $_rest_prefix ) ) {
-		$_SERVER['REQUEST_URI'] = '/' . $_rest_prefix . wp_unslash( $_GET['rest_route'] );
+	$gratis_rest_prefix = function_exists( 'rest_get_url_prefix' ) ? rest_get_url_prefix() : 'wp-json';
+	$gratis_request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+	if ( false === strpos( (string) $gratis_request_uri, $gratis_rest_prefix ) ) {
+		$_SERVER['REQUEST_URI'] = '/' . $gratis_rest_prefix . wp_unslash( $_GET['rest_route'] );
 	}
-	unset( $_rest_prefix, $_request_uri );
+	unset( $gratis_rest_prefix, $gratis_request_uri );
 }
 // phpcs:enable WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 

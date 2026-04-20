@@ -349,7 +349,7 @@ Yes, the plugin works on both single-site and multisite WordPress installations.
 == Upgrade Notice ==
 
 = 1.6.0 =
-Architecture release: complete dependency injection migration via x-wp/di, database split into domain repositories, typed DTOs, service extraction from REST controllers, and new interfaces for key contracts. Also adds inline tool call details in chat and always-on message input with queue support. Multiple bug fixes including API error loop prevention and improved error diagnostics.
+Architecture release: dependency injection via x-wp/di, domain repositories, typed DTOs, service extraction, and new interfaces. Adds inline tool call details in chat, always-on message input with queue, and bug fixes.
 
 = 1.5.0 =
 Major feature release: adds customer feedback & issue reporting system (thumbs-down, consent UI, AI triage), Plugin Builder with sandbox activation, async job architecture, internet search ability, and 7 plugin management abilities. Database will upgrade automatically.
