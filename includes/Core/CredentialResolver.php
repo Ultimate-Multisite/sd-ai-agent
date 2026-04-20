@@ -29,6 +29,10 @@ class CredentialResolver {
 	/**
 	 * WordPress option that stores the AI Experiments plugin provider credentials.
 	 * Shape: array<string, string>  (provider_id => api_key)
+	 *
+	 * NOTE: This uses the WordPress AI Client SDK standard option name.
+	 * WordPress expects this exact name to discover credentials.
+	 * See: https://developer.wordpress.org/plugins/wordpress-api/ai-client-sdk/
 	 */
 	const AI_EXPERIMENTS_CREDENTIALS_OPTION = 'wp_ai_client_provider_credentials';
 

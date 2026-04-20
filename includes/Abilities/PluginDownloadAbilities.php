@@ -229,6 +229,8 @@ class GetPluginDownloadUrlAbility extends AbstractAbility {
 		}
 
 		// Verify the plugin directory exists.
+		// NOTE: Using WP_PLUGIN_DIR per wp.org guidelines.
+		// See: https://developer.wordpress.org/plugins/plugin-basics/determining-plugin-and-content-directories/
 		$plugin_dir = WP_PLUGIN_DIR . '/' . $slug;
 		if ( ! is_dir( $plugin_dir ) ) {
 			return new WP_Error(
