@@ -295,10 +295,9 @@ class BenchmarkRunner {
 	private static function benchmark_question( array $model, array $question ): array {
 		$start_time = microtime( true );
 
-		$prompt     = self::build_prompt( $question );
-		$max_tokens = self::get_max_tokens_for_question( $question );
+		$prompt = self::build_prompt( $question );
 
-		// Call the model.
+		// Call the model (token limits are managed by the SDK internally).
 		$response = self::call_model( $model, $prompt );
 
 		$latency_ms = (int) ( ( microtime( true ) - $start_time ) * 1000 );
@@ -441,7 +440,7 @@ class BenchmarkRunner {
 	 * @param string               $prompt Prompt text.
 	 * @return array<string, mixed>|\WP_Error
 	 */
-	private static function call_model( array $model, string $prompt ) {
+	private static function call_model( array $model, string $prompt ): array|\WP_Error {
 		$provider_id = $model['provider_id'] ?? '';
 		$model_id    = $model['model_id'] ?? '';
 
@@ -460,7 +459,7 @@ class BenchmarkRunner {
 	 * @param string $prompt    Prompt text.
 	 * @return array<string, mixed>|\WP_Error
 	 */
-	private static function call_wp_ai_client( string $provider_id, string $model_id, string $prompt ) {
+	private static function call_wp_ai_client( string $provider_id, string $model_id, string $prompt ): array|\WP_Error {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
 			return new \WP_Error(
 				'benchmark_no_ai_client',
