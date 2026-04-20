@@ -122,6 +122,10 @@ vendor/yoast
 # Build artefacts that should not be re-packaged
 *.zip
 *.map
+build/*.asset.php
+build/*.css
+build/*.js
+build/di-cache
 
 # Misc
 *.log

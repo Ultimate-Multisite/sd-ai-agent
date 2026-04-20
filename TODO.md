@@ -2,6 +2,12 @@
 
 ## Ready
 
+- [x] t225 WordPress plugin check readiness (wp.org submission) @superdav42 #enhancement ~30m logged:2026-04-20
+  - Ran `wp plugin check` for WordPress.org submission
+  - Fixed: removed stray zip from root, added build/* to .distignore
+  - .distignore correctly excludes all dev files but scanner scans dev dir anyway
+  - Production warnings: upgrade notice length (readme.txt), non-prefixed globals ($_rest_prefix, $_request_uri)
+
 - [x] t138 Add E2E tests for spending limits and budget caps @superdav42 #testing ~2h ref=GH#651 #auto-dispatch pr:#655 completed:2026-03-24
   - Spending limits are a financial safety feature — silent regressions could allow unbounded AI spend
   - Create tests/e2e/spending-limits.spec.js with ≥4 test cases covering settings UI, persistence, enforcement warning, reset
