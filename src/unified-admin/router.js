@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
 import ChatRoute from './routes/chat';
 import AbilitiesRoute from './routes/abilities';
 import ChangesRoute from './routes/changes';
+import ConnectorsRoute from './routes/connectors';
 import SettingsRoute from './routes/settings';
 
 /**
@@ -35,6 +36,9 @@ export default function Router( { route } ) {
 
 		case 'changes':
 			return <ChangesRoute />;
+
+		case 'connectors':
+			return <ConnectorsRoute />;
 
 		case 'settings':
 			return <SettingsRoute subRoute={ subRoute } />;

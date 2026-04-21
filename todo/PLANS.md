@@ -10,7 +10,7 @@ that no external AI tool can match.
 
 ### What we have that nobody else does
 
-- **True agentic architecture** -- autonomous multi-step tool calling via WordPress 6.9 Abilities API
+- **True agentic architecture** -- autonomous multi-step tool calling via WordPress Abilities API
 - **Provider independence (BYOK)** -- users bring their own API key, pay direct, no markup
 - **Extensible via Abilities API** -- any plugin can register abilities the agent discovers automatically
 - **Event-driven + scheduled automations** -- 20+ WordPress/WooCommerce triggers, cron-based tasks
@@ -1094,3 +1094,79 @@ insights as memories for future sessions.
 #### Surprises & Discoveries
 
 (To be populated during implementation)
+
+---
+
+### [2026-04-21] WP 6.9 Compatibility — Polyfill WP 7.0 AI APIs + Connectors Page {#wp-69-compat}
+
+**Status:** Planning
+**Estimate:** ~40h (ai:30h test:8h read:2h)
+**Tasks:** t226 (parent), t227-t231 (phases)
+
+#### Purpose
+
+WP 7.0 has been delayed again. The plugin currently hard-requires WP 7.0 for four API layers (php-ai-client SDK, Abilities API, AI Client bridge, Connectors API). We need the plugin to work on WP 6.9 while remaining forward-compatible — when users upgrade to WP 7.0, everything should keep working seamlessly with zero migration.
+
+#### Architecture
+
+**Strategy: conditional polyfill.** Every API layer is wrapped in `function_exists()` / `class_exists()` guards. On WP 6.9, our bundled copies load. On WP 7.0, core's definitions take precedence automatically.
+
+**Four layers to polyfill:**
+
+| Layer | Source | LOC | Approach |
+|-------|--------|-----|----------|
+| php-ai-client SDK (`WordPress\AiClient\*`) | `wp-includes/php-ai-client/` | ~12,800 | Composer package via Jetpack Autoloader |
+| Abilities API (`WP_Ability`, registries, global functions) | `wp-includes/abilities-api/` | ~2,100 | Composer package (same as WooCommerce) |
+| WP AI Client bridge (`WP_AI_Client_Prompt_Builder`, resolver, `wp_ai_client_prompt()`) | `wp-includes/ai-client/` | ~1,100 | Copy + conditional guards in `includes/Compat/` |
+| Connectors API (`WP_Connector_Registry`, settings, credentials) | `wp-includes/connectors.php` + registry | ~1,800 | Copy + conditional guards + custom admin page |
+
+**Provider plugins (Anthropic, OpenAI, Google) are NOT bundled** — they already target `Requires at least: 6.9` and install as standalone plugins. Our Connectors page provides Install/Activate buttons that call the WP Plugins REST API, identical to WP 7.0's core Connectors page.
+
+#### Progress
+
+- [ ] (2026-04-21) Phase 1: Add Composer packages (php-ai-client + abilities-api) ~4h — t227
+- [ ] (2026-04-21) Phase 2: Create WP AI Client bridge polyfill ~8h — t228
+- [ ] (2026-04-21) Phase 3: Create Connectors API polyfill ~8h — t229
+- [ ] (2026-04-21) Phase 4: Build Connectors admin page (React) ~16h — t230
+- [ ] (2026-04-21) Phase 5: Lower version requirement + test both versions ~4h — t231
+
+#### Context from Discussion
+
+**Key research findings:**
+
+1. **WooCommerce precedent:** WooCommerce already vendors `wordpress/abilities-api` via Composer in production. This validates the approach of bundling WP 7.0 packages in plugins for pre-7.0 compatibility.
+
+2. **Provider plugins target 6.9:** Both `ai-provider-for-anthropic` and `ai-provider-for-openai` declare `Requires at least: 6.9`. They register via `AiClient::defaultRegistry()->registerProvider()` — they just need the SDK available, which our Composer bundle provides. No bundling needed.
+
+3. **Jetpack Autoloader handles conflicts:** Already in our `composer.json`. It resolves version conflicts by loading the newest copy — when WP 7.0 core provides classes, Jetpack defers to them. When on 6.9, our vendored copy loads.
+
+4. **Same credential option names:** WP 7.0's Connectors API stores API keys in `connectors_ai_{provider}_api_key` options (auto-generated from provider ID). Our polyfill uses the same naming convention, so credentials entered on 6.9 work on 7.0 with zero migration.
+
+5. **WP 7.0 Connectors page is too tightly coupled to copy:** It uses `@wordpress/boot` + script modules + the new WP routing system (none available on 6.9). We build a simpler React page using `@wordpress/components` + `@wordpress/data` (same tech stack we already use) that calls the same REST endpoints.
+
+6. **Bridge classes are small:** `WP_AI_Client_Prompt_Builder` (472 lines) and `WP_AI_Client_Ability_Function_Resolver` (232 lines) are the only non-packaged WP core classes we need. Plus 4 small adapter classes and 2 global function files. Total ~1,100 LOC to copy.
+
+7. **Existing code needs zero changes:** All 30+ ability classes, AgentLoop, ToolDiscovery, CredentialResolver, ProviderCredentialLoader, REST controllers, and the React chat UI work unchanged. The polyfill sits underneath them.
+
+**Risks:**
+- `wordpress/php-ai-client` may not be on Packagist yet — fallback: vendor as local path package or copy under `lib/`
+- `WP_AI_Client_Prompt_Builder` constructor takes a registry arg in WP 7.0-RC2 but our stub doesn't — need to match the real signature
+- Pin to RC2 SDK version and track upstream for breaking changes before 7.0 final
+
+**Forward-compatibility guarantees:**
+- Every polyfill guarded by `function_exists()` / `class_exists()` — WP 7.0 definitions win
+- Same option names for credentials — zero migration
+- Connectors page detects WP 7.0 and shows link to core page instead
+- Jetpack Autoloader handles SDK/Abilities class version resolution
+
+#### Decision Log
+
+- 2026-04-21: Decided NOT to bundle provider plugins — they already target 6.9, install as standalone. Build install/activate UI in our Connectors page instead.
+- 2026-04-21: Decided NOT to copy WP 7.0's Connectors SPA — too coupled to @wordpress/boot. Build simpler page with same tech stack we already use.
+- 2026-04-21: Decided to use Jetpack Autoloader (already in composer.json) for SDK/Abilities version conflict resolution — proven pattern (WooCommerce uses it).
+
+#### Surprises & Discoveries
+
+- WP 7.0's `WP_AI_Client_Prompt_Builder` constructor takes `(ProviderRegistry $registry, $prompt)` — our stub file had `(string $prompt)`. The polyfill must match the real constructor.
+- The AI Experiments plugin (`ai`) also requires WP 7.0 (`WPAI_MIN_WP_VERSION = '7.0'`) — it cannot serve as a polyfill source.
+- `_wp_connectors_get_provider_settings()` and `_wp_connectors_get_real_api_key()` are used by our existing `ProviderCredentialLoader` — both need to be in the polyfill.

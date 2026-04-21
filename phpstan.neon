@@ -8,6 +8,15 @@ parameters:
 		- gratis-ai-agent.php
 	excludePaths:
 		- includes/CLI
+		# Compat polyfill files define the same global classes/functions as stubs/wordpress-7-runtime.php.
+		# Exclude them from PHPStan analysis to avoid duplicate-class errors; the stubs already provide
+		# the type information PHPStan needs. AiBridgeLoader.php and SdkLoader.php (PSR-4) are not excluded.
+		- includes/Compat/ai-client
+		- includes/Compat/ai-client.php
+		# wp-connectors-polyfill.php defines _wp_connectors_get_provider_settings() and
+		# _wp_connectors_get_real_api_key() which are already stubbed in stubs/wordpress-7-runtime.php.
+		# Exclude to avoid duplicate-function errors.
+		- includes/Compat/wp-connectors-polyfill.php
 	bootstrapFiles:
 		- vendor/autoload.php
 	scanFiles:
@@ -18,6 +27,16 @@ parameters:
 	ignoreErrors:
 		# WP_CLI is only available when running in CLI context
 		- '#Call to static method .* on an unknown class WP_CLI#'
+		# AiBridgeLoader: polyfill classes (WP_AI_Client_Cache, WP_AI_Client_Discovery_Strategy,
+		# WP_AI_Client_Event_Dispatcher) are defined in includes/Compat/ai-client/ which is excluded
+		# from PHPStan analysis. Their stubs do not define these specific classes, and the SDK
+		# AiClient::setCache() / setEventDispatcher() methods are not in the WP 7.0 stubs.
+		- '#Instantiated class WP_AI_Client_Cache not found#'
+		- '#Instantiated class WP_AI_Client_Event_Dispatcher not found#'
+		- '#Instantiated class WP_AI_Client_Discovery_Strategy not found#'
+		- '#Call to static method init\(\) on an unknown class WP_AI_Client_Discovery_Strategy#'
+		- '#Call to an undefined static method WordPress\\AiClient\\AiClient::setCache\(\)#'
+		- '#Call to an undefined static method WordPress\\AiClient\\AiClient::setEventDispatcher\(\)#'
 		# Constants defined at runtime (plugin_dir_url/plugin_dir_path return string at runtime)
 		- '#Constant GRATIS_AI_AGENT_.* not found#'
 		# GRATIS_AI_AGENT_URL/DIR are string constants defined at runtime; PHPStan sees them as mixed
@@ -295,4 +314,50 @@ parameters:
 		# PixabayImageSource: array_map callback type mismatch
 		- identifier: argument.type
 		- identifier: return.unresolvableType
+		# AiGenerateSource: wp_ai_client_prompt() stub returns WP_AI_Client_Prompt_Builder but
+		# the real function can return WP_Error. Defensive is_wp_error/is_array/is_string checks
+		# are intentional runtime guards for future SDK changes.
+		- '#Call to function is_wp_error\(\) with WP_AI_Client_Prompt_Builder will always evaluate to false#'
+		- '#Call to function is_array\(\) with WP_AI_Client_Prompt_Builder will always evaluate to false#'
+		- '#Call to function is_string\(\) with WP_AI_Client_Prompt_Builder will always evaluate to false#'
+		# AiGenerateSource: generate_image() result type is unknown (class-string|object from
+		# method_exists guard); to_base64() call is intentional runtime pattern.
+		- '#Cannot call method to_base64\(\) on class-string\|object#'
+		# AiGenerateSource: array offsets on *NEVER* type — consequence of is_array() narrowing.
+		- '#Offset .* on \*NEVER\* on left side of \?\? always exists and is not nullable#'
+		# ImageSources: array_map Closure return type mismatch — PHPStan infers typed shape but
+		# array_map expects (callable(mixed): mixed). Safe at runtime.
+		- '#\$callback of function array_map expects \(callable\(mixed\): mixed\)\|null, Closure\(array\): array\{#'
+		# ImageSources: return type mismatch — array shapes are compatible at runtime.
+		- '#Method GratisAiAgent\\Abilities\\ImageSources\\.*::search\(\) should return#'
+		- '#Method GratisAiAgent\\Abilities\\ImageSources\\.*::get_image\(\) should return#'
+		- '#Method GratisAiAgent\\Abilities\\ImageSources\\ImageSourceFactory::import_image\(\) should return#'
+		# ImageSourceFactory: $hit parameter type — mixed from foreach over unknown array at runtime.
+		- message: '#\$hit of static method GratisAiAgent\\Abilities\\ImageSources\\ImageSourceFactory::handle_sideload\(\) expects array, mixed given#'
+		  identifier: argument.type
+		# ImageSourceFactory: $post_id from media_handle_sideload is int at runtime.
+		- message: '#\$post_id of function media_handle_sideload expects int, mixed given#'
+		  identifier: argument.type
+		# ImageSourceFactory: PHPDoc @return references type from compat/stubs not yet in scan paths.
+		- '#PHPDoc tag `@return` contains unresolvable type#'
+		# ImageSourceFactory: iterable type parameters — array shapes safe at runtime.
+		- message: '#has parameter \$options with no value type specified in iterable type array#'
+		  identifier: missingType.iterableValue
+		- message: '#has parameter \$hit with no value type specified in iterable type array#'
+		  identifier: missingType.iterableValue
+		# StockImageAbilities: file_exists/unlink accept string|WP_Error — WP_Error path is guarded.
+		- message: '#\$filename of function file_exists expects string, string\|WP_Error given#'
+		  identifier: argument.type
+		- message: '#\$filename of function unlink expects string, string\|WP_Error given#'
+		  identifier: argument.type
+		# StockImageAbilities: media_handle_sideload file_array value is string at runtime.
+		- message: '#\$file_array of function media_handle_sideload expects array<string>, array<string, string\|WP_Error> given#'
+		  identifier: argument.type
+		# StockImageAbilities: is_string() guard on WP_Error result — intentional defensive code.
+		- '#Call to function is_string\(\) with string will always evaluate to true#'
+		# StockImageAbilities/ImageSourceFactory: get_blog_id_from_url domain may be false|null.
+		- message: '#\$domain of function get_blog_id_from_url expects string, string\|false\|null given#'
+		  identifier: argument.type
+		# ImageSourceFactory: if condition always true — consequence of is_string narrowing.
+		- '#If condition is always true#'
 

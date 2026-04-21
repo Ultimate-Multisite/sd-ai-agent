@@ -336,6 +336,40 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
 
 ## Backlog
 
+- [ ] t226 WP 6.9 compatibility: polyfill WP 7.0 AI APIs + Connectors page #parent #feature #plan → [todo/PLANS.md#wp-69-compat] ~40h logged:2026-04-21
+
+- [ ] t227 Add wordpress/php-ai-client + wordpress/abilities-api Composer packages (Phase 1) #feature ~4h For #t226 logged:2026-04-21
+  - Add wordpress/php-ai-client and wordpress/abilities-api to composer.json require
+  - Jetpack Autoloader resolves version conflicts — core's copy wins on WP 7.0, bundled copy loads on 6.9
+  - Test: composer install succeeds, WP_Ability and WordPress\AiClient\AiClient classes are available
+
+- [x] t228 Create WP AI Client bridge polyfill for WP 6.9 (Phase 2) #feature ~8h For #t226 blocked-by:t227 logged:2026-04-21 pr:#1133 completed:2026-04-21
+  - NEW: includes/Compat/WP7Polyfill.php — conditional loader (function_exists/class_exists guards)
+  - Copy from WP 7.0-RC2: wp_ai_client_prompt(), wp_supports_ai(), WP_AI_Client_Prompt_Builder (472 lines), WP_AI_Client_Ability_Function_Resolver (232 lines), 4 adapter classes (HTTP client, discovery, cache, event dispatcher)
+  - EDIT: gratis-ai-agent.php — load polyfill before DI container bootstrap
+  - All definitions guarded — WP 7.0 core takes precedence when present
+
+- [ ] t229 Create Connectors API polyfill for WP 6.9 (Phase 3) #feature ~8h For #t226 blocked-by:t227 logged:2026-04-21
+  - NEW: includes/Compat/ConnectorsPolyfill.php — conditional definitions
+  - Copy from WP 7.0-RC2: WP_Connector_Registry (388 lines), wp_get_connectors(), wp_is_connector_registered(), wp_get_connector(), _wp_connectors_init(), _wp_connectors_register_default_ai_providers(), _wp_connectors_pass_default_keys_to_ai_client(), _wp_register_default_connector_settings(), credential helpers
+  - Same option names as WP 7.0 (connectors_ai_anthropic_api_key, etc.) — zero migration on upgrade
+
+- [x] t230 Build Connectors admin page with install/activate/API key UI (Phase 4) #feature ~16h For #t226 blocked-by:t228,t229 logged:2026-04-21 pr:#1136 completed:2026-04-21
+  - NEW: src/connectors-page/ — React page using @wordpress/components + @wordpress/data
+  - Lists providers (Anthropic, OpenAI, Google) with Install/Activate/Connected status
+  - Installs plugins via WP Plugins REST API (POST /wp/v2/plugins {slug, status: active}) — same as WP 7.0
+  - API key entry, validation via registry->isProviderConfigured(), masked display
+  - Stores keys in connectors_ai_{provider}_api_key options (same as WP 7.0)
+  - NEW: includes/Admin/ConnectorsPage.php — admin menu registration, script enqueue
+  - On WP 7.0: detect core Connectors page exists, show redirect link instead
+
+- [ ] t231 Lower version requirement to 6.9 + add WP 7.0 detection guards + test both versions (Phase 5) #feature ~4h For #t226 blocked-by:t230 logged:2026-04-21
+  - EDIT: gratis-ai-agent.php — Requires at least: 6.9
+  - EDIT: readme.txt — Requires at least: 6.9
+  - Add version detection: if WP >= 7.0, skip all polyfills, Connectors page shows link to core page
+  - Test on WP 6.9: full flow (install provider plugin, enter API key, chat works)
+  - Test on WP 7.0-RC2: polyfills skipped, core APIs used, credentials migrate seamlessly
+
 - [x] t221 Onboarding v2: Gate + AI-driven discovery #parent #feature → [todo/PLANS.md#onboarding-v2-gate--ai-driven-discovery] ~8h logged:2026-04-18 pr:#1097 completed:2026-04-19
 
 - [x] t222 Connector gate component + remove wizard (Phase 1) #feature #auto-dispatch ~2h For #t221 logged:2026-04-18 pr:#1103 completed:2026-04-19
