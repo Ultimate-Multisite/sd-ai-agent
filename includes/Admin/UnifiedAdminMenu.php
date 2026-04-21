@@ -23,12 +23,44 @@ class UnifiedAdminMenu {
 	const CAPABILITY = 'manage_options';
 
 	/**
+	 * Whether the native WP 7.0 Connectors page is available.
+	 *
+	 * On WP 7.0+, the native Connectors page handles provider credential
+	 * management at options-connectors.php. On WP 6.9, our polyfill page is
+	 * shown instead.
+	 *
+	 * @return bool True when running on WP 7.0+ (native Connectors page exists).
+	 */
+	public static function hasNativeConnectorsPage(): bool {
+		return function_exists( '_wp_connectors_get_provider_settings' );
+	}
+
+	/**
+	 * Get the URL for the Connectors page.
+	 *
+	 * On WP 7.0+, returns the native options-connectors.php URL.
+	 * On WP 6.9, returns our polyfill page URL within the unified admin.
+	 *
+	 * @return string Admin URL for the Connectors page.
+	 */
+	public static function getConnectorsUrl(): string {
+		if ( self::hasNativeConnectorsPage() ) {
+			return admin_url( 'options-connectors.php' );
+		}
+		return admin_url( 'admin.php?page=' . self::SLUG . '#/connectors' );
+	}
+
+	/**
 	 * Menu configuration for React Router routes.
+	 *
+	 * On WP 6.9 (no native Connectors page), a Connectors item is added to
+	 * the menu so users can configure provider API keys. On WP 7.0+, the item
+	 * is omitted because the native page handles it.
 	 *
 	 * @return array
 	 */
 	public static function getMenuItems(): array {
-		return array(
+		$items = array(
 			array(
 				'slug'       => 'chat',
 				'label'      => __( 'Chat', 'gratis-ai-agent' ),
@@ -50,14 +82,30 @@ class UnifiedAdminMenu {
 				'position'   => 20,
 				'capability' => self::CAPABILITY,
 			),
-			array(
-				'slug'       => 'settings',
-				'label'      => __( 'Settings', 'gratis-ai-agent' ),
-				'icon'       => 'dashicons-admin-settings',
-				'position'   => 30,
-				'capability' => self::CAPABILITY,
-			),
 		);
+
+		// Add the Connectors item only when there is no native WP 7.0 page.
+		// On WP 7.0+, the options-connectors.php page handles provider setup;
+		// we don't need to duplicate it in the admin menu.
+		if ( ! self::hasNativeConnectorsPage() ) {
+			$items[] = array(
+				'slug'       => 'connectors',
+				'label'      => __( 'Connectors', 'gratis-ai-agent' ),
+				'icon'       => 'dashicons-admin-plugins',
+				'position'   => 25,
+				'capability' => self::CAPABILITY,
+			);
+		}
+
+		$items[] = array(
+			'slug'       => 'settings',
+			'label'      => __( 'Settings', 'gratis-ai-agent' ),
+			'icon'       => 'dashicons-admin-settings',
+			'position'   => 30,
+			'capability' => self::CAPABILITY,
+		);
+
+		return $items;
 	}
 
 	/**
@@ -241,7 +289,7 @@ class UnifiedAdminMenu {
 				'nonce'           => wp_create_nonce( 'wp_rest' ),
 				'initialRoute'    => self::getCurrentRoute(),
 				'menuItems'       => self::getMenuItems(),
-				'connectorsUrl'   => admin_url( 'options-connectors.php' ),
+				'connectorsUrl'   => self::getConnectorsUrl(),
 			)
 		);
 	}

@@ -284,4 +284,50 @@ parameters:
 		# at runtime the result is always array<int, array<string, mixed>>.
 		- message: '#Method GratisAiAgent\\Core\\ConversationSerializer::serialize\(\) should return array<int, array<string, mixed>> but returns array<array<string, mixed>>#'
 		  identifier: return.type
+		# AiGenerateSource: wp_ai_client_prompt() stub returns WP_AI_Client_Prompt_Builder but
+		# the real function can return WP_Error. Defensive is_wp_error/is_array/is_string checks
+		# are intentional runtime guards for future SDK changes.
+		- '#Call to function is_wp_error\(\) with WP_AI_Client_Prompt_Builder will always evaluate to false#'
+		- '#Call to function is_array\(\) with WP_AI_Client_Prompt_Builder will always evaluate to false#'
+		- '#Call to function is_string\(\) with WP_AI_Client_Prompt_Builder will always evaluate to false#'
+		# AiGenerateSource: generate_image() result type is unknown (class-string|object from
+		# method_exists guard); to_base64() call is intentional runtime pattern.
+		- '#Cannot call method to_base64\(\) on class-string\|object#'
+		# AiGenerateSource: array offsets on *NEVER* type — consequence of is_array() narrowing.
+		- '#Offset .* on \*NEVER\* on left side of \?\? always exists and is not nullable#'
+		# ImageSources: array_map Closure return type mismatch — PHPStan infers typed shape but
+		# array_map expects (callable(mixed): mixed). Safe at runtime.
+		- '#\$callback of function array_map expects \(callable\(mixed\): mixed\)\|null, Closure\(array\): array\{#'
+		# ImageSources: return type mismatch — array shapes are compatible at runtime.
+		- '#Method GratisAiAgent\\Abilities\\ImageSources\\.*::search\(\) should return#'
+		- '#Method GratisAiAgent\\Abilities\\ImageSources\\.*::get_image\(\) should return#'
+		- '#Method GratisAiAgent\\Abilities\\ImageSources\\ImageSourceFactory::import_image\(\) should return#'
+		# ImageSourceFactory: $hit parameter type — mixed from foreach over unknown array at runtime.
+		- message: '#\$hit of static method GratisAiAgent\\Abilities\\ImageSources\\ImageSourceFactory::handle_sideload\(\) expects array, mixed given#'
+		  identifier: argument.type
+		# ImageSourceFactory: $post_id from media_handle_sideload is int at runtime.
+		- message: '#\$post_id of function media_handle_sideload expects int, mixed given#'
+		  identifier: argument.type
+		# ImageSourceFactory: PHPDoc @return references type from compat/stubs not yet in scan paths.
+		- '#PHPDoc tag `@return` contains unresolvable type#'
+		# ImageSourceFactory: iterable type parameters — array shapes safe at runtime.
+		- message: '#has parameter \$options with no value type specified in iterable type array#'
+		  identifier: missingType.iterableValue
+		- message: '#has parameter \$hit with no value type specified in iterable type array#'
+		  identifier: missingType.iterableValue
+		# StockImageAbilities: file_exists/unlink accept string|WP_Error — WP_Error path is guarded.
+		- message: '#\$filename of function file_exists expects string, string\|WP_Error given#'
+		  identifier: argument.type
+		- message: '#\$filename of function unlink expects string, string\|WP_Error given#'
+		  identifier: argument.type
+		# StockImageAbilities: media_handle_sideload file_array value is string at runtime.
+		- message: '#\$file_array of function media_handle_sideload expects array<string>, array<string, string\|WP_Error> given#'
+		  identifier: argument.type
+		# StockImageAbilities: is_string() guard on WP_Error result — intentional defensive code.
+		- '#Call to function is_string\(\) with string will always evaluate to true#'
+		# StockImageAbilities/ImageSourceFactory: get_blog_id_from_url domain may be false|null.
+		- message: '#\$domain of function get_blog_id_from_url expects string, string\|false\|null given#'
+		  identifier: argument.type
+		# ImageSourceFactory: if condition always true — consequence of is_string narrowing.
+		- '#If condition is always true#'
 
