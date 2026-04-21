@@ -558,44 +558,63 @@ class ListOptionsAbility extends AbstractAbility {
 		$limit    = min( 200, max( 1, (int) ( $input['limit'] ?? 50 ) ) );
 		$autoload = isset( $input['autoload'] ) ? (string) $input['autoload'] : 'all';
 
-		// Build query.
-		$where_clauses = [];
-		$query_args    = [];
-
+		// Each branch uses a fully static SQL template — $autoload and $prefix are never
+		// interpolated into SQL; only %i/%s/%d placeholders carry runtime values.
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Discovery query; caching not appropriate for dynamic option listings.
 		if ( '' !== $prefix ) {
-			$where_clauses[] = 'option_name LIKE %s';
-			$query_args[]    = $wpdb->esc_like( $prefix ) . '%';
-		}
-
-		if ( 'yes' === $autoload ) {
-			$where_clauses[] = "autoload IN ('yes', 'on', '1', 'true')";
-		} elseif ( 'no' === $autoload ) {
-			$where_clauses[] = "autoload NOT IN ('yes', 'on', '1', 'true')";
-		}
-
-		$where_sql = '';
-		if ( ! empty( $where_clauses ) ) {
-			$where_sql = 'WHERE ' . implode( ' AND ', $where_clauses );
-		}
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Dynamic prefix filter; caching not appropriate for discovery queries.
-		if ( ! empty( $query_args ) ) {
-			// @phpstan-ignore-next-line
-			$sql = $wpdb->prepare(
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $where_sql contains only safe, pre-escaped clauses.
-				"SELECT option_name, option_value, autoload FROM {$wpdb->options} {$where_sql} ORDER BY option_name ASC LIMIT %d",
-				array_merge( $query_args, [ $limit ] )
-			);
+			if ( 'yes' === $autoload ) {
+				$rows = $wpdb->get_results(
+					$wpdb->prepare(
+						"SELECT option_name, option_value, autoload FROM %i WHERE option_name LIKE %s AND autoload IN ('yes', 'on', '1', 'true') ORDER BY option_name LIMIT %d",
+						$wpdb->options, $prefix, $limit
+					),
+					ARRAY_A
+				);
+			} elseif ( 'no' === $autoload ) {
+				$rows = $wpdb->get_results(
+					$wpdb->prepare(
+						"SELECT option_name, option_value, autoload FROM %i WHERE option_name LIKE %s AND autoload NOT IN ('yes', 'on', '1', 'true') ORDER BY option_name LIMIT %d",
+						$wpdb->options, $prefix, $limit
+					),
+					ARRAY_A
+				);
+			} else {
+				$rows = $wpdb->get_results(
+					$wpdb->prepare(
+						"SELECT option_name, option_value, autoload FROM %i WHERE option_name LIKE %s ORDER BY option_name LIMIT %d",
+						$wpdb->options, $prefix, $limit
+					),
+					ARRAY_A
+				);
+			}
 		} else {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- No user input; $limit is cast to int above.
-			$sql = $wpdb->prepare(
-				"SELECT option_name, option_value, autoload FROM {$wpdb->options} ORDER BY option_name ASC LIMIT %d",
-				$limit
-			);
+			if ( 'yes' === $autoload ) {
+				$rows = $wpdb->get_results(
+					$wpdb->prepare(
+						"SELECT option_name, option_value, autoload FROM %i WHERE autoload IN ('yes', 'on', '1', 'true') ORDER BY option_name LIMIT %d",
+						$wpdb->options, $limit
+					),
+					ARRAY_A
+				);
+			} elseif ( 'no' === $autoload ) {
+				$rows = $wpdb->get_results(
+					$wpdb->prepare(
+						"SELECT option_name, option_value, autoload FROM %i WHERE autoload NOT IN ('yes', 'on', '1', 'true') ORDER BY option_name LIMIT %d",
+						$wpdb->options, $limit
+					),
+					ARRAY_A
+				);
+			} else {
+				$rows = $wpdb->get_results(
+					$wpdb->prepare(
+						"SELECT option_name, option_value, autoload FROM %i ORDER BY option_name LIMIT %d",
+						$wpdb->options, $limit
+					),
+					ARRAY_A
+				);
+			}
 		}
-
-		// @phpstan-ignore-next-line
-		$rows = $wpdb->get_results( $sql, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Discovery query; caching not appropriate for dynamic option listings.
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
 		if ( null === $rows ) {
 			return new WP_Error(

@@ -75,7 +75,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 #[Handler(
 	container: 'gratis-ai-agent',
-	strategy: Handler::INIT_IMMEDIATELY,
+	strategy: Handler::INIT_JUST_IN_TIME,
 )]
 final class AbilitiesHandler {
 

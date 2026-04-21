@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5785b89a8cabda8dd7061c5d7f919077",
+    "content-hash": "152674ee305422ffd612525bc1e183fe",
     "packages": [
         {
             "name": "automattic/jetpack-autoloader",
@@ -601,104 +601,23 @@
             "time": "2024-12-23T08:48:59+00:00"
         },
         {
-            "name": "symfony/polyfill-php81",
-            "version": "v1.36.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/polyfill-php81.git",
-                "reference": "4a4cfc2d253c21a5ad0e53071df248ed48c6ce5c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php81/zipball/4a4cfc2d253c21a5ad0e53071df248ed48c6ce5c",
-                "reference": "4a4cfc2d253c21a5ad0e53071df248ed48c6ce5c",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.2"
-            },
-            "type": "library",
-            "extra": {
-                "thanks": {
-                    "url": "https://github.com/symfony/polyfill",
-                    "name": "symfony/polyfill"
-                }
-            },
-            "autoload": {
-                "files": [
-                    "bootstrap.php"
-                ],
-                "psr-4": {
-                    "Symfony\\Polyfill\\Php81\\": ""
-                },
-                "classmap": [
-                    "Resources/stubs"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nicolas Grekas",
-                    "email": "p@tchwork.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony polyfill backporting some PHP 8.1+ features to lower PHP versions",
-            "homepage": "https://symfony.com",
-            "keywords": [
-                "compatibility",
-                "polyfill",
-                "portable",
-                "shim"
-            ],
-            "support": {
-                "source": "https://github.com/symfony/polyfill-php81/tree/v1.36.0"
-            },
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/nicolas-grekas",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2024-09-09T11:45:10+00:00"
-        },
-        {
             "name": "x-wp/di",
-            "version": "v1.9.2",
+            "version": "dev-fix/rest-context-plain-permalink-support",
             "source": {
                 "type": "git",
-                "url": "https://github.com/x-wp/di.git",
-                "reference": "565e3f18917fe7bfdcac887603e269c893ae2800"
+                "url": "https://github.com/superdav42/di.git",
+                "reference": "9f7902d78fba587992b2926c9e2015e425aa6c1b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/x-wp/di/zipball/565e3f18917fe7bfdcac887603e269c893ae2800",
-                "reference": "565e3f18917fe7bfdcac887603e269c893ae2800",
+                "url": "https://api.github.com/repos/superdav42/di/zipball/9f7902d78fba587992b2926c9e2015e425aa6c1b",
+                "reference": "9f7902d78fba587992b2926c9e2015e425aa6c1b",
                 "shasum": ""
             },
             "require": {
                 "automattic/jetpack-constants": "^2 || ^3",
-                "php": ">=8.0",
-                "php-di/php-di": "^7",
-                "symfony/polyfill-php81": "^1.31",
+                "php": ">=8.1 <8.5",
+                "php-di/php-di": "^7.1",
                 "x-wp/helper-classes": "^1.13",
                 "x-wp/helper-functions": "^1.13"
             },
@@ -729,18 +648,20 @@
             },
             "type": "library",
             "autoload": {
-                "files": [
-                    "src/Functions/xwp-di-container-fns.php",
-                    "src/Functions/xwp-di-helper-fns.php"
-                ],
                 "psr-4": {
                     "XWP\\DI\\": "src/"
                 },
                 "classmap": [
                     "src/Core/"
+                ],
+                "files": [
+                    "src/Functions/xwp-di-container-fns.php",
+                    "src/Functions/xwp-di-helper-fns.php"
                 ]
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "XWP\\DI\\T\\": "tests/fixtures/shared/"
+            },
             "license": [
                 "GPL-2.0-only"
             ],
@@ -760,16 +681,10 @@
                 "wordpress"
             ],
             "support": {
-                "issues": "https://github.com/x-wp/hook-manager/issues",
-                "source": "https://github.com/x-wp/di/tree/v1.9.2"
+                "issues": "https://github.com/x-wp/di/issues",
+                "source": "https://github.com/superdav42/di/tree/fix/rest-context-plain-permalink-support"
             },
-            "funding": [
-                {
-                    "url": "https://github.com/seebeen",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-04-04T16:33:24+00:00"
+            "time": "2026-04-21T01:31:45+00:00"
         },
         {
             "name": "x-wp/helper-classes",
@@ -3670,9 +3585,18 @@
             "time": "2025-02-09T18:36:24+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "x-wp/di",
+            "version": "dev-fix/rest-context-plain-permalink-support",
+            "alias": "1.9.99",
+            "alias_normalized": "1.9.99.0"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "x-wp/di": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

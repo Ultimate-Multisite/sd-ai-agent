@@ -23,8 +23,6 @@ declare(strict_types=1);
 
 namespace GratisAiAgent\Abilities;
 
-use GratisAiAgent\Models\GitTrackerManager;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

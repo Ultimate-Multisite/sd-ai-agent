@@ -44,8 +44,9 @@ declare(strict_types=1);
  * Prevents direct access to the file.
  */
 if ( ! defined( 'ABSPATH' ) ) {
-\t_exit();
-} return array`
+\texit();
+}
+return array`
 	);
 	fs.writeFileSync( filePath, updated, 'utf8' );
 	console.log( `Updated: ${ path.relative( process.cwd(), filePath ) }` );

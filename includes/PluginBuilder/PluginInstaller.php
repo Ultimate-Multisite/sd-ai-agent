@@ -364,6 +364,7 @@ class PluginInstaller {
 		}
 
 		// Remove DB record.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Internal plugin deletion; caching not applicable.
 		$wpdb->delete(
 			self::table_name(),
 			[ 'slug' => $slug ],
