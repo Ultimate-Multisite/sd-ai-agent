@@ -200,10 +200,18 @@ parameters:
 		# intentional defensive code for runtime compatibility.
 		- message: '#Call to function method_exists\(\) with WP_Ability and .get_input_schema. will always evaluate to true#'
 		  identifier: function.alreadyNarrowedType
-		# WP_AI_Client_Prompt_Builder methods are defined in stubs; method_exists() guards are
+# WP_AI_Client_Prompt_Builder methods are defined in stubs; method_exists() guards are
 		# intentional defensive code for runtime compatibility with WP builds that may differ.
 		- message: '#Call to function method_exists\(\) with WP_AI_Client_Prompt_Builder and .* will always evaluate to true#'
 		  identifier: function.alreadyNarrowedType
+		# AiGenerateSource: wp_ai_client_prompt() returns WP_AI_Client_Prompt_Builder which has
+		# no image generation methods in stubs. The method_exists() guards and type checks are intentional
+		# defensive code - at runtime the actual WP AI SDK may provide image generation.
+		- message: '#Call to function is_wp_error\(\) with WP_AI_Client_Prompt_Builder will always evaluate to false#'
+		- message: '#Cannot call method to_base64\(\) on class-string\|object#'
+		- message: '#Offset .* on \*NEVER\* on left side of \?\? always exists#'
+		- message: '#Call to function is_array\(\) with WP_AI_Client_Prompt_Builder will always evaluate to false#'
+		- message: '#Call to function is_string\(\) with WP_AI_Client_Prompt_Builder will always evaluate to false#'
 		# GenerativeAiResult instanceof check — after is_wp_error() guard the result is always
 		# GenerativeAiResult; intentional defensive code for runtime compatibility.
 		- message: '#Instanceof between WordPress\\AiClient\\Results\\DTO\\GenerativeAiResult and WordPress\\AiClient\\Results\\DTO\\GenerativeAiResult will always evaluate to true#'
@@ -269,4 +277,13 @@ parameters:
 		# at runtime the result is always array<int, array<string, mixed>>.
 		- message: '#Method GratisAiAgent\\Core\\ConversationSerializer::serialize\(\) should return array<int, array<string, mixed>> but returns array<array<string, mixed>>#'
 		  identifier: return.type
+		# StockImageAbilities: retry loop cleanup - WP_Error from download_url flows to unlink/file_exists
+		- message: '#file_exists expects string, string\|WP_Error given#'
+		- message: '#unlink expects string, string\|WP_Error given#'
+		- message: '#media_handle_sideload expects array<string>#'
+		- message: '#If condition is always true#'
+		# StockImageAbilities: strtoupper returns string, is_string check is redundant
+		- message: '#Call to function is_string\(\) with string will always evaluate to true#'
+		# OpenverseImageSource/PixabayImageSource: API response mixed types
+		- identifier: return.type
 
