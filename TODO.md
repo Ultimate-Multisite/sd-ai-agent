@@ -343,7 +343,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - Jetpack Autoloader resolves version conflicts — core's copy wins on WP 7.0, bundled copy loads on 6.9
   - Test: composer install succeeds, WP_Ability and WordPress\AiClient\AiClient classes are available
 
-- [ ] t228 Create WP AI Client bridge polyfill for WP 6.9 (Phase 2) #feature ~8h For #t226 blocked-by:t227 logged:2026-04-21
+- [x] t228 Create WP AI Client bridge polyfill for WP 6.9 (Phase 2) #feature ~8h For #t226 blocked-by:t227 logged:2026-04-21 pr:#1133 completed:2026-04-21
   - NEW: includes/Compat/WP7Polyfill.php — conditional loader (function_exists/class_exists guards)
   - Copy from WP 7.0-RC2: wp_ai_client_prompt(), wp_supports_ai(), WP_AI_Client_Prompt_Builder (472 lines), WP_AI_Client_Ability_Function_Resolver (232 lines), 4 adapter classes (HTTP client, discovery, cache, event dispatcher)
   - EDIT: gratis-ai-agent.php — load polyfill before DI container bootstrap
