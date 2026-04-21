@@ -55,6 +55,50 @@ if ( file_exists( GRATIS_AI_AGENT_DIR . '/vendor/autoload_packages.php' ) ) {
 	return;
 }
 
+// WP 7.0 Compatibility: prevent PSR interface conflict with bundled php-ai-client.
+//
+// WP 7.0 bundles a scoped copy of php-ai-client in wp-includes/php-ai-client/
+// with renamed PSR interfaces (WordPress\AiClientDependencies\Psr\*). Our
+// Composer copy uses the standard unscoped Psr\* interfaces. When both are
+// loaded in the same PHP process, WP_AI_Client_HTTP_Client's declaration
+// becomes incompatible with ClientWithOptionsInterface (fatal error).
+//
+// On WP 7.0+, we register a high-priority SPL autoloader that loads
+// WordPress\AiClient\* and WordPress\AiClientDependencies\* from WP core's
+// bundled copy (scoped PSR) instead of our Composer vendor directory.
+// Jetpack Autoloader still runs but PHP skips it for already-defined classes.
+//
+// On WP 6.9 (where function_exists('wp_ai_client_prompt') is false), this
+// block is skipped and Jetpack loads our bundled copies as normal.
+if ( function_exists( 'wp_ai_client_prompt' ) && defined( 'ABSPATH' ) ) {
+	$gratis_wp_sdk_dir = ABSPATH . 'wp-includes/php-ai-client/';
+	if ( is_dir( $gratis_wp_sdk_dir . 'src' ) ) {
+		spl_autoload_register(
+			static function ( string $class_name ) use ( $gratis_wp_sdk_dir ): void {
+				if ( 0 === strncmp( $class_name, 'WordPress\\AiClient\\', 19 ) ) {
+					$relative_class = substr( $class_name, 19 );
+					$file           = $gratis_wp_sdk_dir . 'src/' . str_replace( '\\', DIRECTORY_SEPARATOR, $relative_class ) . '.php';
+					if ( file_exists( $file ) ) {
+						require $file; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable
+					}
+					return;
+				}
+				if ( 0 === strncmp( $class_name, 'WordPress\\AiClientDependencies\\', 31 ) ) {
+					$relative_class = substr( $class_name, 31 );
+					$file           = $gratis_wp_sdk_dir . 'third-party/' . str_replace( '\\', DIRECTORY_SEPARATOR, $relative_class ) . '.php';
+					if ( file_exists( $file ) ) {
+						require $file; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable
+					}
+					return;
+				}
+			},
+			true,  // throw exceptions on error
+			true   // prepend — must run BEFORE the Jetpack Autoloader (which also prepends)
+		);
+	}
+	unset( $gratis_wp_sdk_dir );
+}
+
 use GratisAiAgent\Bootstrap\LifecycleHandler;
 use GratisAiAgent\Plugin;
 
