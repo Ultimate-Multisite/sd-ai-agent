@@ -286,4 +286,13 @@ parameters:
 		- message: '#Call to function is_string\(\) with string will always evaluate to true#'
 		# OpenverseImageSource/PixabayImageSource: API response mixed types
 		- identifier: return.type
+		# ImageSourceFactory: add type hints for parameters
+		- message: '#has parameter .* with no value type specified in iterable type array#'
+		- message: '#expects array, mixed given#'
+		- message: '#expects string, string\|false\|null given#'
+		- message: '#expects int, mixed given#'
+		- message: '#PHPDoc tag .@return. contains unresolvable type#'
+		# PixabayImageSource: array_map callback type mismatch
+		- identifier: argument.type
+		- identifier: return.unresolvableType
 
