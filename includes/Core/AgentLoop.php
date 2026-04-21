@@ -361,6 +361,13 @@ class AgentLoop {
 		if ( $confirmed ) {
 			// The last message in history is the model's tool call message.
 			$assistant_message = end( $this->history );
+			if ( false === $assistant_message ) {
+				// History is unexpectedly empty; nothing to execute.
+				return new \WP_Error(
+					'gratis_ai_agent_empty_history',
+					__( 'Cannot resume confirmation: conversation history is empty.', 'gratis-ai-agent' )
+				);
+			}
 			ChangeLogger::begin( $this->session_id, 'confirmed-tool' );
 			try {
 				$response_message = $this->get_ability_resolver()->execute_abilities( $assistant_message );

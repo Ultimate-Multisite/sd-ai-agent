@@ -25,29 +25,6 @@ parameters:
 		- '#Binary operation "\." between .* and mixed results in an error#'
 		# WordPress functions that may not be stubbed
 		- '#Function _wp_connectors_get_real_api_key not found#'
-		# WordPress\AiClient\* SDK — the php-ai-client package was removed from vendor/ in
-		# commit 7b10461 (issue #769) because WordPress 7.0 bundles it as a core component.
-		# PHPStan cannot resolve these classes without the vendor stubs; suppress all errors
-		# for the WordPress\AiClient namespace until phpstan-wordpress provides core stubs.
-		- '#unknown class WordPress\\AiClient\\#'
-		- '#Instantiated class WordPress\\AiClient\\#'
-		- '#Class WordPress\\AiClient\\#'
-		- '#has invalid type WordPress\\AiClient\\#'
-		- '#Call to (method|static method) .* on an unknown class WordPress\\AiClient\\#'
-		- '#PHPDoc tag .* contains unknown class WordPress\\AiClient\\#'
-		- '#Parameter .* has invalid type WordPress\\AiClient\\#'
-		- '#Parameter .* of method .* has invalid type WordPress\\AiClient\\#'
-		- '#Parameter .* of anonymous function has invalid type WordPress\\AiClient\\#'
-		- '#Property .* has unknown class WordPress\\AiClient\\#'
-		- '#Property .* \(.*WordPress\\AiClient\\.*\) does not accept#'
-		- '#Method .* has invalid return type WordPress\\AiClient\\#'
-		- '#Method .* should return.*WordPress\\AiClient\\#'
-		- '#expects WordPress\\AiClient\\#'
-		# Secondary effects: when WordPress\AiClient\* classes are unknown, enum cases
-		# become class-string|object and registry calls return mixed — suppress cascades.
-		- '#Cannot access property \$value on class-string\|object#'
-		- '#Cannot call method (getValue|getText|getType|getFunctionCall|getFunctionResponse)\(\) on class-string\|object#'
-		- '#Cannot call static method (metadata|modelMetadataDirectory)\(\) on mixed#'
 		# Mixed-type calls — configure_model() parameter is untyped; other mixed values from
 		# WP DB rows and request params flow through methods without explicit type annotations.
 		- '#Cannot call method .* on mixed#'
@@ -196,8 +173,9 @@ parameters:
 		# defensive code for runtime compatibility with WP builds that may differ from stubs.
 		- message: '#Call to function is_array\(\) with array will always evaluate to true#'
 		  identifier: function.alreadyNarrowedType
-		# WP_Ability::get_input_schema() is defined in stubs; method_exists() guard is
-		# intentional defensive code for runtime compatibility.
+		# WP_Ability::get_input_schema() is defined in the wordpress/abilities-api package;
+		# method_exists() guard is intentional defensive code for runtime compatibility
+		# with WP 6.9 environments where older versions of the package may not have this method.
 		- message: '#Call to function method_exists\(\) with WP_Ability and .get_input_schema. will always evaluate to true#'
 		  identifier: function.alreadyNarrowedType
 		# WP_AI_Client_Prompt_Builder methods are defined in stubs; method_exists() guards are
@@ -208,6 +186,16 @@ parameters:
 		# GenerativeAiResult; intentional defensive code for runtime compatibility.
 		- message: '#Instanceof between WordPress\\AiClient\\Results\\DTO\\GenerativeAiResult and WordPress\\AiClient\\Results\\DTO\\GenerativeAiResult will always evaluate to true#'
 		  identifier: instanceof.alwaysTrue
+		# BenchmarkRunner: ProviderRegistry::getProviderModel() now returns ModelInterface (not null)
+		# in the real package. The null check is defensive code from when the stub returned mixed.
+		# At runtime getProviderModel() throws InvalidArgumentException instead of returning null.
+		- message: '#Strict comparison using === between null and WordPress\\AiClient\\Providers\\Models\\Contracts\\ModelInterface#'
+		  identifier: identical.alwaysFalse
+		# ConversationSerializer: Message::fromArray() PHPDoc declares a specific array shape but
+		# accepts any array at runtime. Our deserialize() passes array<string, mixed> which always
+		# has the correct structure at runtime (serialized by our own serialize() method).
+		- message: '#Parameter \#1 \$array of static method WordPress\\AiClient\\Messages\\DTO\\Message::fromArray\(\) expects array\{.*\}, array<string, mixed> given#'
+		  identifier: argument.type
 		# AgentLoop: $settings comes from Settings::get() which returns mixed; build_system_instruction
 		# expects array<string, mixed>. The value is always an array at runtime.
 		- message: '#\$settings of method GratisAiAgent\\Core\\AgentLoop::build_system_instruction\(\) expects array<string, mixed>, mixed given#'
