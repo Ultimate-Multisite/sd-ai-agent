@@ -11,7 +11,7 @@
  * WordPress dependencies
  */
 import { createRoot, useEffect } from '@wordpress/element';
-import { useDispatch } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -67,11 +67,32 @@ function buildContextString( screenContext ) {
 function ScreenMetaChat() {
 	const { setPageContext, fetchProviders, fetchSessions } =
 		useDispatch( STORE_NAME );
+	const providersLoaded = useSelect(
+		( select ) => select( STORE_NAME ).getProvidersLoaded(),
+		[]
+	);
 
 	useEffect( () => {
 		fetchProviders();
 		fetchSessions();
 	}, [ fetchProviders, fetchSessions ] );
+
+	// Refresh providers when user returns to the tab (e.g., after making
+	// changes on the Connectors admin page).
+	useEffect( () => {
+		const handleVisibilityChange = () => {
+			if ( ! document.hidden && providersLoaded ) {
+				fetchProviders();
+			}
+		};
+
+		document.addEventListener( 'visibilitychange', handleVisibilityChange );
+		return () =>
+			document.removeEventListener(
+				'visibilitychange',
+				handleVisibilityChange
+			);
+	}, [ providersLoaded, fetchProviders ] );
 
 	// Set context from PHP-injected screen data on mount.
 	useEffect( () => {

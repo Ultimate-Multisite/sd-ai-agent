@@ -90,6 +90,23 @@ function AdminPageApp() {
 		return () => clearInterval( timer );
 	}, [ providers, providersLoaded, fetchProviders ] );
 
+	// Refresh providers when user returns to the tab (e.g., after making
+	// changes on the Connectors admin page).
+	useEffect( () => {
+		const handleVisibilityChange = () => {
+			if ( ! document.hidden && providersLoaded ) {
+				fetchProviders();
+			}
+		};
+
+		document.addEventListener( 'visibilitychange', handleVisibilityChange );
+		return () =>
+			document.removeEventListener(
+				'visibilitychange',
+				handleVisibilityChange
+			);
+	}, [ providersLoaded, fetchProviders ] );
+
 	const handleSlashCommand = useCallback( ( command ) => {
 		if ( command === 'help' ) {
 			setShowShortcuts( true );

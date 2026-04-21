@@ -367,6 +367,25 @@
 	display: none;
 }
 
+.gratis-ai-agent-provider-selector__row {
+	display: flex;
+	align-items: flex-end;
+	gap: 4px;
+}
+
+.gratis-ai-agent-provider-selector__refresh {
+	flex-shrink: 0;
+	margin-bottom: 2px;
+}
+
+.gratis-ai-agent-provider-selector__refresh svg {
+	transition: transform 0.3s ease;
+}
+
+.gratis-ai-agent-provider-selector__refresh:disabled svg {
+	animation: spin 1s linear infinite;
+}
+
 /* Bubbles (needed for floating widget) — wp-admin form conventions */
 .gratis-ai-agent-floating-panel .gratis-ai-agent-user {
 	background: #f0f6fc;

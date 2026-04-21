@@ -1123,7 +1123,9 @@ final class SettingsController {
 					// For the OpenAI-compatible connector, fetch models directly
 					// from the endpoint rather than going through the SDK model
 					// directory (which can fail due to SDK transporter issues).
-					if ( 'ai-provider-for-any-openai-compatible' === $provider_id
+					// Use str_starts_with to handle multi-endpoint setups where each
+					// endpoint gets a unique ID (e.g., ai-provider-for-any-openai-compatible-1).
+					if ( str_starts_with( $provider_id, 'ai-provider-for-any-openai-compatible' )
 						&& function_exists( 'OpenAiCompatibleConnector\\rest_list_models' )
 					) {
 						$fake_request = new WP_REST_Request( 'GET' );
