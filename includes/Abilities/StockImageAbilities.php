@@ -370,14 +370,14 @@ INSTRUCTION;
 			return '';
 		}
 
-		$contents = file_get_contents( $file_path );
+		$contents = file_get_contents( $file_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 		if ( false === $contents ) {
 			return '';
 		}
 
 		$finfo  = new \finfo( FILEINFO_MIME_TYPE );
 		$mime   = $finfo->file( $file_path );
-		$base64 = base64_encode( $contents );
+		$base64 = base64_encode( $contents ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 
 		return sprintf( 'data:%s;base64,%s', $mime, $base64 );
 	}

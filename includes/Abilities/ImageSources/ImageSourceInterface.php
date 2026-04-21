@@ -38,7 +38,7 @@ interface ImageSourceInterface {
 	/**
 	 * Get display name for the source.
 	 *
-	 * @return stringhuman-readable name.
+	 * @return string Human-readable name.
 	 */
 	public function get_name(): string;
 

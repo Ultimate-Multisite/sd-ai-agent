@@ -155,7 +155,7 @@ class AiGenerateSource implements ImageSourceInterface {
 			}
 
 			// Write the base64 image to a temp file with strict mode.
-			$image_data = base64_decode( $base64_image, true );
+			$image_data = base64_decode( $base64_image, true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
 			if ( false === $image_data ) {
 				return new WP_Error( 'generation_failed', 'Failed to decode base64 image.' );
 			}
@@ -163,7 +163,7 @@ class AiGenerateSource implements ImageSourceInterface {
 			$tmp_dir  = get_temp_dir();
 			$tmp_file = $tmp_dir . 'gratis-ai-' . uniqid() . '.png';
 
-			$written = file_put_contents( $tmp_file, $image_data ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_put_contents
+			$written = file_put_contents( $tmp_file, $image_data ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_put_contents,WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 			if ( false === $written ) {
 				return new WP_Error( 'generation_failed', 'Failed to write temp image file.' );
 			}
