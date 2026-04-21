@@ -336,9 +336,9 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
 
 ## Backlog
 
-- [ ] t226 WP 6.9 compatibility: polyfill WP 7.0 AI APIs + Connectors page #parent #feature #plan → [todo/PLANS.md#wp-69-compat] ~40h logged:2026-04-21
+- [x] t226 WP 6.9 compatibility: polyfill WP 7.0 AI APIs + Connectors page #parent #feature #plan → [todo/PLANS.md#wp-69-compat] ~40h logged:2026-04-21 pr:#1133,#1136,#1137 completed:2026-04-21
 
-- [ ] t227 Add wordpress/php-ai-client + wordpress/abilities-api Composer packages (Phase 1) #feature ~4h For #t226 logged:2026-04-21
+- [x] t227 Add wordpress/php-ai-client + wordpress/abilities-api Composer packages (Phase 1) #feature ~4h For #t226 logged:2026-04-21 pr:#1137 completed:2026-04-21
   - Add wordpress/php-ai-client and wordpress/abilities-api to composer.json require
   - Jetpack Autoloader resolves version conflicts — core's copy wins on WP 7.0, bundled copy loads on 6.9
   - Test: composer install succeeds, WP_Ability and WordPress\AiClient\AiClient classes are available
@@ -349,7 +349,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - EDIT: gratis-ai-agent.php — load polyfill before DI container bootstrap
   - All definitions guarded — WP 7.0 core takes precedence when present
 
-- [ ] t229 Create Connectors API polyfill for WP 6.9 (Phase 3) #feature ~8h For #t226 blocked-by:t227 logged:2026-04-21
+- [x] t229 Create Connectors API polyfill for WP 6.9 (Phase 3) #feature ~8h For #t226 blocked-by:t227 logged:2026-04-21 pr:#1137 completed:2026-04-21
   - NEW: includes/Compat/ConnectorsPolyfill.php — conditional definitions
   - Copy from WP 7.0-RC2: WP_Connector_Registry (388 lines), wp_get_connectors(), wp_is_connector_registered(), wp_get_connector(), _wp_connectors_init(), _wp_connectors_register_default_ai_providers(), _wp_connectors_pass_default_keys_to_ai_client(), _wp_register_default_connector_settings(), credential helpers
   - Same option names as WP 7.0 (connectors_ai_anthropic_api_key, etc.) — zero migration on upgrade
@@ -363,7 +363,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - NEW: includes/Admin/ConnectorsPage.php — admin menu registration, script enqueue
   - On WP 7.0: detect core Connectors page exists, show redirect link instead
 
-- [ ] t231 Lower version requirement to 6.9 + add WP 7.0 detection guards + test both versions (Phase 5) #feature ~4h For #t226 blocked-by:t230 logged:2026-04-21
+- [x] t231 Lower version requirement to 6.9 + add WP 7.0 detection guards + test both versions (Phase 5) #feature ~4h For #t226 blocked-by:t230 logged:2026-04-21 pr:#1137 completed:2026-04-21
   - EDIT: gratis-ai-agent.php — Requires at least: 6.9
   - EDIT: readme.txt — Requires at least: 6.9
   - Add version detection: if WP >= 7.0, skip all polyfills, Connectors page shows link to core page
