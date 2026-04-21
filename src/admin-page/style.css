@@ -499,6 +499,34 @@ body.toplevel_page_gratis-ai-agent #wpbody-content > .updated {
 	min-width: 160px;
 }
 
+.gratis-ai-agent-provider-selector__row {
+	display: flex;
+	align-items: flex-end;
+	gap: 4px;
+}
+
+.gratis-ai-agent-provider-selector__refresh {
+	flex-shrink: 0;
+	margin-bottom: 2px;
+}
+
+.gratis-ai-agent-provider-selector__refresh svg {
+	transition: transform 0.3s ease;
+}
+
+.gratis-ai-agent-provider-selector__refresh:disabled svg {
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	from {
+		transform: rotate( 0deg );
+	}
+	to {
+		transform: rotate( 360deg );
+	}
+}
+
 /* Messages */
 .gratis-ai-agent-messages {
 	flex: 1;

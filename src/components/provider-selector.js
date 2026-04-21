@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { SelectControl } from '@wordpress/components';
+import { Button, SelectControl } from '@wordpress/components';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
@@ -22,7 +22,7 @@ import STORE_NAME from '../store';
  * @return {JSX.Element} The provider/model selector element.
  */
 export default function ProviderSelector( { compact = false } ) {
-	const { providers, selectedProviderId, selectedModelId, models } =
+	const { providers, selectedProviderId, selectedModelId, models, loading } =
 		useSelect( ( select ) => {
 			const store = select( STORE_NAME );
 			return {
@@ -30,10 +30,16 @@ export default function ProviderSelector( { compact = false } ) {
 				selectedProviderId: store.getSelectedProviderId(),
 				selectedModelId: store.getSelectedModelId(),
 				models: store.getSelectedProviderModels(),
+				loading: store.getProvidersLoading(),
 			};
 		}, [] );
 
-	const { setSelectedProvider, setSelectedModel } = useDispatch( STORE_NAME );
+	const { setSelectedProvider, setSelectedModel, fetchProviders } =
+		useDispatch( STORE_NAME );
+
+	const onRefresh = () => {
+		fetchProviders();
+	};
 
 	if ( ! providers.length ) {
 		return (
@@ -75,14 +81,29 @@ export default function ProviderSelector( { compact = false } ) {
 				compact ? 'is-compact' : ''
 			}` }
 		>
-			<SelectControl
-				label={ compact ? null : __( 'Provider', 'gratis-ai-agent' ) }
-				value={ selectedProviderId }
-				options={ providerOptions }
-				onChange={ onProviderChange }
-				__nextHasNoMarginBottom
-				size={ compact ? 'compact' : 'default' }
-			/>
+			<div className="gratis-ai-agent-provider-selector__row">
+				<SelectControl
+					label={
+						compact ? null : __( 'Provider', 'gratis-ai-agent' )
+					}
+					value={ selectedProviderId }
+					options={ providerOptions }
+					onChange={ onProviderChange }
+					__nextHasNoMarginBottom
+					size={ compact ? 'compact' : 'default' }
+				/>
+				<Button
+					variant="tertiary"
+					onClick={ onRefresh }
+					disabled={ loading }
+					className="gratis-ai-agent-provider-selector__refresh"
+					icon={ loading ? undefined : 'update' }
+					title={ __( 'Refresh providers', 'gratis-ai-agent' ) }
+					__nextHasNoMarginBottom
+				>
+					{ loading ? '…' : '' }
+				</Button>
+			</div>
 			<SelectControl
 				label={ compact ? null : __( 'Model', 'gratis-ai-agent' ) }
 				value={ selectedModelId }

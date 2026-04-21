@@ -68,6 +68,27 @@ function FloatingWidget() {
 		restoreActiveJobs();
 	}, [ fetchProviders, fetchSessions, restoreActiveJobs ] );
 
+	// Refresh providers when user returns to the tab (e.g., after making
+	// changes on the Connectors admin page).
+	const providersLoaded = useSelect(
+		( select ) => select( STORE_NAME ).getProvidersLoaded(),
+		[]
+	);
+	useEffect( () => {
+		const handleVisibilityChange = () => {
+			if ( ! document.hidden && providersLoaded ) {
+				fetchProviders();
+			}
+		};
+
+		document.addEventListener( 'visibilitychange', handleVisibilityChange );
+		return () =>
+			document.removeEventListener(
+				'visibilitychange',
+				handleVisibilityChange
+			);
+	}, [ providersLoaded, fetchProviders ] );
+
 	// Cross-page navigation survival (Phase 4 / t206):
 	// Restore any active poll loops from sessionStorage. If the user navigated
 	// away from an admin page while a background job was running, sessionStorage
