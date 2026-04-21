@@ -354,7 +354,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
   - Copy from WP 7.0-RC2: WP_Connector_Registry (388 lines), wp_get_connectors(), wp_is_connector_registered(), wp_get_connector(), _wp_connectors_init(), _wp_connectors_register_default_ai_providers(), _wp_connectors_pass_default_keys_to_ai_client(), _wp_register_default_connector_settings(), credential helpers
   - Same option names as WP 7.0 (connectors_ai_anthropic_api_key, etc.) — zero migration on upgrade
 
-- [ ] t230 Build Connectors admin page with install/activate/API key UI (Phase 4) #feature ~16h For #t226 blocked-by:t228,t229 logged:2026-04-21
+- [x] t230 Build Connectors admin page with install/activate/API key UI (Phase 4) #feature ~16h For #t226 blocked-by:t228,t229 logged:2026-04-21 pr:#1136 completed:2026-04-21
   - NEW: src/connectors-page/ — React page using @wordpress/components + @wordpress/data
   - Lists providers (Anthropic, OpenAI, Google) with Install/Activate/Connected status
   - Installs plugins via WP Plugins REST API (POST /wp/v2/plugins {slug, status: active}) — same as WP 7.0
