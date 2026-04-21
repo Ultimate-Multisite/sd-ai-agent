@@ -105,7 +105,7 @@ export default function ChatPanel( { compact = false, onSlashCommand } ) {
 					compact ? 'is-compact' : ''
 				}` }
 			>
-				<ChatTabBar />
+				{ ! compact && <ChatTabBar /> }
 				<div className="gratis-ai-agent-header">
 					<ProviderSelector compact={ compact } />
 					<AgentSelector compact={ compact } />
