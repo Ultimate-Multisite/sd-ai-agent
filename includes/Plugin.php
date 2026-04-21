@@ -42,6 +42,7 @@ use GratisAiAgent\Infrastructure\WordPress\Abilities\AbilitySchemaFilter;
 use GratisAiAgent\Infrastructure\WordPress\Abilities\UsageInstructionsFilter;
 use GratisAiAgent\REST\AgentController;
 use GratisAiAgent\REST\AutomationController;
+use GratisAiAgent\REST\ConnectorsController;
 use GratisAiAgent\REST\BenchmarkController;
 use GratisAiAgent\REST\ChangesController;
 use GratisAiAgent\REST\FeedbackController;
@@ -110,6 +111,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		KnowledgeController::class,
 		SessionController::class,
 		SettingsController::class,
+		ConnectorsController::class,
 		WebhookController::class,
 	),
 	extendable: true,
