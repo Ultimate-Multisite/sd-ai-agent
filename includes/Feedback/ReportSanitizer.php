@@ -47,13 +47,13 @@ class ReportSanitizer {
 		if ( is_array( $session_data ) ) {
 			if ( isset( $session_data['messages'] ) && is_array( $session_data['messages'] ) ) {
 				/** @var array<int, array<string, mixed>> $messages */
-				$messages                           = $session_data['messages'];
+				$messages                            = $session_data['messages'];
 				$payload['session_data']['messages'] = self::sanitize_messages( $messages );
 			}
 
 			if ( isset( $session_data['tool_calls'] ) && is_array( $session_data['tool_calls'] ) ) {
 				/** @var array<int, array<string, mixed>> $tool_calls */
-				$tool_calls                           = $session_data['tool_calls'];
+				$tool_calls                            = $session_data['tool_calls'];
 				$payload['session_data']['tool_calls'] = self::sanitize_tool_calls( $tool_calls );
 			}
 		}
