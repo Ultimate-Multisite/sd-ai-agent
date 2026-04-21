@@ -105,7 +105,7 @@ class UnifiedImageAbility extends \GratisAiAgent\Abilities\AbstractAbility {
 				'title'         => [ 'type' => 'string' ],
 				'source'        => [ 'type' => 'string' ],
 				'sources'       => [ 'type' => 'array' ],
-				'error'        => [ 'type' => 'string' ],
+				'error'         => [ 'type' => 'string' ],
 				'tip'           => [ 'type' => 'string' ],
 			],
 		];
@@ -114,14 +114,37 @@ class UnifiedImageAbility extends \GratisAiAgent\Abilities\AbstractAbility {
 	/**
 	 * {@inheritdoc}
 	 */
-	protected function permission_callback( $input = null ): bool {
-		return current_user_can( 'upload_files' );
+	protected function permission_callback( mixed $input = null ): bool {
+		$site_url = is_array( $input ) ? (string) ( $input['site_url'] ?? '' ) : '';
+
+		if ( '' === $site_url || ! is_multisite() ) {
+			return current_user_can( 'upload_files' );
+		}
+
+		$blog_id = get_blog_id_from_url(
+			(string) ( wp_parse_url( $site_url, PHP_URL_HOST ) ?? '' ),
+			(string) ( wp_parse_url( $site_url, PHP_URL_PATH ) ?: '/' )
+		);
+
+		if ( ! $blog_id ) {
+			return false;
+		}
+
+		if ( (int) $blog_id === get_current_blog_id() ) {
+			return current_user_can( 'upload_files' );
+		}
+
+		switch_to_blog( $blog_id );
+		$allowed = current_user_can( 'upload_files' );
+		restore_current_blog();
+
+		return $allowed;
 	}
 
 	/**
 	 * {@inheritdoc}
 	 */
-	protected function execute_callback( $input ) {
+	protected function execute_callback( mixed $input ): array|\WP_Error {
 		// @phpstan-ignore-next-line
 		$keyword  = sanitize_text_field( $input['keyword'] ?? '' );
 		$source   = sanitize_text_field( $input['source'] ?? 'auto' );
@@ -134,7 +157,7 @@ class UnifiedImageAbility extends \GratisAiAgent\Abilities\AbstractAbility {
 		}
 
 		// Determine source: check if user wants generation.
-		$source_id = 'auto' === $source ? '' : $source;
+		$source_id          = 'auto' === $source ? '' : $source;
 		$is_generate_intent = preg_match(
 			'/^(generate|create|make|draw|draw|produce)\s+(an?\s+)?(image|photo|picture)/i',
 			$keyword
@@ -142,11 +165,12 @@ class UnifiedImageAbility extends \GratisAiAgent\Abilities\AbstractAbility {
 
 		if ( $is_generate_intent ) {
 			// Extract the prompt from the keyword.
-			$prompt = preg_replace(
+			$prompt    = preg_replace(
 				'/^(generate|create|make|draw|produce)\s+(an?\s+)?(image|photo|picture)\s+(of\s+)?/i',
 				'',
 				$keyword
-			);
+			) ?? $keyword;
+			$prompt    = trim( $prompt );
 			$source_id = 'generate';
 		} else {
 			$prompt = $keyword;

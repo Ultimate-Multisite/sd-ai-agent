@@ -195,19 +195,19 @@ class StockImageAbilities {
 			require_once ABSPATH . 'wp-admin/includes/image.php';
 		}
 
-		$last_error    = '';
-		$tmp_file    = null;
+		$last_error = '';
+		$tmp_file   = null;
 		$image_url  = '';
 		$retry      = 0;
 
 		// Retry loop: download, verify, import.
-		while ( $retry <= self::MAX_RETRIES ) {
+		while ( $retry < self::MAX_RETRIES ) {
 			++$retry;
 
 			// Build a deterministic-ish lock so the same keyword doesn't always
 			// return the exact same image, but retries in the same request do.
 			// Vary by retry count to get different images on each attempt.
-			$lock = crc32( $keyword . ( gmdate( 'Y-m-d-H' ) + $retry ) );
+			$lock = crc32( $keyword . gmdate( 'Y-m-d-H' ) . $retry );
 			$url  = sprintf(
 				'https://loremflickr.com/%d/%d/%s?lock=%d',
 				$width,
@@ -246,7 +246,7 @@ class StockImageAbilities {
 				'error' => sprintf(
 					'Could not find an image matching "%s" after %d attempts. %s',
 					$keyword,
-					self::MAX_RETRIES + 1,
+					self::MAX_RETRIES,
 					$last_error
 				),
 			];
@@ -254,7 +254,7 @@ class StockImageAbilities {
 
 		// Build a meaningful filename from the keyword.
 		$safe_keyword = sanitize_file_name( $keyword );
-		$filename   = $safe_keyword . '-' . $width . 'x' . $height . '.jpg';
+		$filename     = $safe_keyword . '-' . $width . 'x' . $height . '.jpg';
 
 		$file_array = [
 			'name'     => $filename,
@@ -344,7 +344,13 @@ INSTRUCTION;
 
 		$response = strtoupper( trim( (string) $result ) );
 
-		if ( false !== strpos( $response, 'MATCH' ) ) {
+		// First check for explicit NO_MATCH.
+		if ( strpos( $response, 'NO_MATCH' ) !== false ) {
+			return sprintf( 'AI verification failed: image does not match keyword "%s".', $keyword );
+		}
+
+		// Only accept exact MATCH.
+		if ( 'MATCH' === $response ) {
 			return true;
 		}
 
@@ -369,9 +375,9 @@ INSTRUCTION;
 			return '';
 		}
 
-		$finfo    = new \finfo( FILEINFO_MIME_TYPE );
-		$mime    = $finfo->file( $file_path );
-		$base64  = base64_encode( $contents );
+		$finfo  = new \finfo( FILEINFO_MIME_TYPE );
+		$mime   = $finfo->file( $file_path );
+		$base64 = base64_encode( $contents );
 
 		return sprintf( 'data:%s;base64,%s', $mime, $base64 );
 	}

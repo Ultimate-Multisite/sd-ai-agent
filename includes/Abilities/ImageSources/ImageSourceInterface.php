@@ -54,7 +54,7 @@ interface ImageSourceInterface {
 	 *
 	 * @param string $keyword Search term.
 	 * @param int    $per_page Number of results to return.
-	 * @return array{\hites: array, total: int, source: string}|\WP_Error Array with hits or error.
+	 * @return array{hits: array, total: int, source: string}|\WP_Error Array with hits or error.
 	 */
 	public function search( string $keyword, int $per_page = 10 ): array|\WP_Error;
 

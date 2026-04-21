@@ -83,10 +83,10 @@ class PixabayImageSource implements ImageSourceInterface {
 
 		$url = add_query_arg(
 			[
-				'key'       => $api_key,
-				'q'         => rawurlencode( $keyword ),
-				'per_page'   => min( $per_page, 200 ),
-				'image_type' => 'photo',
+				'key'         => $api_key,
+				'q'           => rawurlencode( $keyword ),
+				'per_page'    => min( $per_page, 200 ),
+				'image_type'  => 'photo',
 				'safe_search' => 'true',
 			],
 			self::API_BASE
@@ -108,7 +108,7 @@ class PixabayImageSource implements ImageSourceInterface {
 		if ( empty( $body['hits'] ) ) {
 			return [
 				'hits'   => [],
-				'total' => 0,
+				'total'  => 0,
 				'source' => 'pixabay',
 			];
 		}
@@ -123,10 +123,10 @@ class PixabayImageSource implements ImageSourceInterface {
 					'width'      => $item['imageWidth'] ?? 0,
 					'height'     => $item['imageHeight'] ?? 0,
 					'title'      => $item['tags'] ?? '',
-					'author'    => $item['user'] ?? '',
+					'author'     => $item['user'] ?? '',
 					'author_url' => 'https://pixabay.com/users/' . ( $item['user'] ?? '' ),
-					'license'   => 'CC0',
-					'source'    => 'pixabay',
+					'license'    => 'CC0',
+					'source'     => 'pixabay',
 				];
 			},
 			$body['hits']
@@ -134,7 +134,7 @@ class PixabayImageSource implements ImageSourceInterface {
 
 		return [
 			'hits'   => $hits,
-			'total' => $body['totalHits'] ?? count( $hits ),
+			'total'  => $body['totalHits'] ?? count( $hits ),
 			'source' => 'pixabay',
 		];
 	}
@@ -178,12 +178,12 @@ class PixabayImageSource implements ImageSourceInterface {
 
 		return [
 			'url'        => $item['largeImageURL'] ?? '',
-			'width'     => $item['imageWidth'] ?? 0,
-			'height'    => $item['imageHeight'] ?? 0,
-			'author'    => $item['user'] ?? '',
+			'width'      => $item['imageWidth'] ?? 0,
+			'height'     => $item['imageHeight'] ?? 0,
+			'author'     => $item['user'] ?? '',
 			'author_url' => 'https://pixabay.com/users/' . ( $item['user'] ?? '' ),
-			'license'   => 'CC0',
-			'source'    => 'pixabay',
+			'license'    => 'CC0',
+			'source'     => 'pixabay',
 		];
 	}
 

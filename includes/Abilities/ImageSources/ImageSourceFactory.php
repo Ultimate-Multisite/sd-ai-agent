@@ -109,15 +109,25 @@ class ImageSourceFactory {
 	 * 3. Free sources only
 	 *
 	 * @param string $preferred Preferred source ID (optional).
-	 * @return ImageSourceInterface Selected source.
+	 * @return ImageSourceInterface|\WP_Error Selected source or error if explicitly requested source is unavailable.
 	 */
-	public static function select_source( string $preferred = '' ): ImageSourceInterface {
+	public static function select_source( string $preferred = '' ): ImageSourceInterface|\WP_Error {
 		// If user explicitly requested a source, use it if available.
 		if ( ! empty( $preferred ) ) {
 			$source = self::get( $preferred );
-			if ( $source && $source->is_available() ) {
-				return $source;
+			if ( ! $source ) {
+				return new WP_Error(
+					'unknown_image_source',
+					sprintf( 'Unknown image source: %s.', $preferred )
+				);
 			}
+			if ( ! $source->is_available() ) {
+				return new WP_Error(
+					'image_source_unavailable',
+					sprintf( 'Image source "%s" is not available.', $preferred )
+				);
+			}
+			return $source;
 		}
 
 		// Use priority: openverse (free) → pixabay (free) → generate (paid).
@@ -149,7 +159,7 @@ class ImageSourceFactory {
 	 * @param string $source_id   Source ID (auto-selected if empty).
 	 * @param int    $width     Desired width (0 for original).
 	 * @param int    $height    Desired height (0 for original).
-	 * @param array $options   Additional options.
+	 * @param array  $options   Additional options.
 	 * @return array{\attachment_id: int, url: string, alt: string, title: string, source: string}|\WP_Error
 	 */
 	public static function import_image(
@@ -162,6 +172,11 @@ class ImageSourceFactory {
 
 		// Auto-select source if not specified.
 		$source = self::select_source( $source_id );
+
+		// Handle error from select_source (e.g., explicitly requested source unavailable).
+		if ( is_wp_error( $source ) ) {
+			return $source;
+		}
 
 		// For AI generation, use the download method directly.
 		if ( 'generate' === $source->get_id() ) {
@@ -201,7 +216,7 @@ class ImageSourceFactory {
 		}
 
 		// Get the first hit.
-		$hit = $hits[0];
+		$hit      = $hits[0];
 		$image_id = $hit['id'] ?? '';
 
 		// Download the image.
@@ -225,14 +240,14 @@ class ImageSourceFactory {
 	 * @param string $keyword Original keyword.
 	 * @param array  $options Options (site_url, post_id).
 	 * @param array  $hit     Original hit data.
-	 * @return array Result array.
+	 * @return array|\WP_Error Result array or error.
 	 */
 	private static function handle_sideload(
 		string $tmp_file,
 		string $keyword,
 		array $options = [],
 		array $hit = []
-	): array {
+	): array|\WP_Error {
 
 		$site_url = $options['site_url'] ?? '';
 		$post_id  = $options['post_id'] ?? 0;
@@ -245,15 +260,37 @@ class ImageSourceFactory {
 				wp_parse_url( $site_url, PHP_URL_PATH ) ?: '/'
 			);
 
-			if ( $blog_id && $blog_id !== get_current_blog_id() ) {
+			// Reject unknown sites.
+			if ( ! $blog_id ) {
+				return new WP_Error(
+					'unknown_site',
+					sprintf( 'Could not find a site matching URL: %s.', $site_url )
+				);
+			}
+
+			if ( (int) $blog_id !== get_current_blog_id() ) {
 				switch_to_blog( $blog_id );
 				$switched = true;
 			}
 		}
 
+		// Detect real file extension from the temp file.
+		$extension = 'jpg';
+		if ( file_exists( $tmp_file ) ) {
+			$finfo         = new \finfo( FILEINFO_MIME_TYPE );
+			$mime_type     = $finfo->file( $tmp_file );
+			$extension_map = [
+				'image/jpeg' => 'jpg',
+				'image/png'  => 'png',
+				'image/gif'  => 'gif',
+				'image/webp' => 'webp',
+			];
+			$extension     = $extension_map[ $mime_type ] ?? 'jpg';
+		}
+
 		// Build filename.
 		$safe_keyword = sanitize_file_name( $keyword );
-		$filename  = $safe_keyword . '-' . time() . '.jpg';
+		$filename     = $safe_keyword . '-' . time() . '.' . $extension;
 
 		$file_array = [
 			'name'     => $filename,
@@ -279,9 +316,7 @@ class ImageSourceFactory {
 				unlink( $tmp_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
 			}
 
-			return [
-				'error' => 'Failed to import: ' . $attachment_id->get_error_message(),
-			];
+			return $attachment_id;
 		}
 
 		// Set alt text from keyword.
@@ -291,14 +326,14 @@ class ImageSourceFactory {
 
 		return [
 			'attachment_id' => $attachment_id,
-			'url'       => $attachment_url,
-			'alt'       => $title,
-			'title'     => $title,
-			'source'    => $hit['source'] ?? 'unknown',
-			'tip'      => 'Use attachment_id as featured_image_id for create-post.',
+			'url'           => $attachment_url,
+			'alt'           => $title,
+			'title'         => $title,
+			'source'        => $hit['source'] ?? 'unknown',
+			'tip'           => 'Use attachment_id as featured_image_id for create-post.',
 		];
 	}
 }
 
-// Initialize on load.
-add_action( 'plugins_loaded', [ ImageSourceFactory::class, 'init' ], 5 );
+// Initialize is handled by DI container or lazy initialization.
+// The get() and get_available() methods call init() automatically if needed.

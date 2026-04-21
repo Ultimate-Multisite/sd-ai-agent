@@ -93,22 +93,22 @@ class OpenverseImageSource implements ImageSourceInterface {
 			static function ( array $item ): array {
 				// Build URLs - API returns 'url' for original, 'thumbnail' for preview.
 				$full    = $item['url'] ?? '';
-				$medium = $item['thumbnail'] ?? '';
+				$medium  = $item['thumbnail'] ?? '';
 				$preview = $item['thumbnail'] ?? $full;
 
 				return [
-					'id'         => $item['id'],
-					'preview'    => $preview,
-					'medium'     => $medium,
-					'full'       => $full,
-					'width'      => $item['width'] ?? 0,
-					'height'     => $item['height'] ?? 0,
-					'title'      => $item['title'] ?? '',
-					'author'     => $item['creator'] ?? '',
-					'author_url' => $item['creator_url'] ?? '',
-					'license'    => $item['license'] ?? '',
+					'id'          => $item['id'],
+					'preview'     => $preview,
+					'medium'      => $medium,
+					'full'        => $full,
+					'width'       => $item['width'] ?? 0,
+					'height'      => $item['height'] ?? 0,
+					'title'       => $item['title'] ?? '',
+					'author'      => $item['creator'] ?? '',
+					'author_url'  => $item['creator_url'] ?? '',
+					'license'     => $item['license'] ?? '',
 					'license_url' => $item['license_url'] ?? '',
-					'source'     => $item['source'] ?? $item['provider'] ?? 'openverse',
+					'source'      => $item['source'] ?? $item['provider'] ?? 'openverse',
 					'attribution' => $item['attribution'] ?? '',
 				];
 			},

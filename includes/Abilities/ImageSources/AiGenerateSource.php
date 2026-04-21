@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace GratisAiAgent\Abilities\ImageSources;
 
-use WordPress\AI\Client as AI_Client;
 use WP_Error;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -47,24 +46,14 @@ class AiGenerateSource implements ImageSourceInterface {
 	 * {@inheritdoc}
 	 */
 	public function is_available(): bool {
-		if ( ! class_exists( AI_Client::class ) ) {
+		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
 			return false;
 		}
 
-		// Check if any provider supports image generation.
-		$registry = \WordPress\AI\AiClient::defaultRegistry();
-		$providers = $registry->getProviders();
-
-		foreach ( $providers as $provider_id => $provider ) {
-			$models = $registry->getModels( $provider_id );
-			foreach ( $models as $model ) {
-				if ( $model->supportsImageGeneration() ) {
-					return true;
-				}
-			}
-		}
-
-		return false;
+		// Check if AI client is configured by attempting a simple prompt.
+		// The wp_ai_client_prompt function will return WP_Error if not configured.
+		$test = wp_ai_client_prompt( 'test' );
+		return ! is_wp_error( $test );
 	}
 
 	/**
@@ -85,7 +74,7 @@ class AiGenerateSource implements ImageSourceInterface {
 					'source'  => 'generate',
 				],
 			],
-			'total' => 1,
+			'total'  => 1,
 			'source' => 'generate',
 		];
 	}
@@ -101,7 +90,7 @@ class AiGenerateSource implements ImageSourceInterface {
 	/**
 	 * {@inheritdoc}
 	 *
-	 * Generates an image using the WordPress AI SDK.
+	 * Generates an image using the WordPress AI SDK via wp_ai_client_prompt.
 	 */
 	public function download( string $prompt, int $width = 0, int $height = 0 ): string|\WP_Error {
 		// Strip the generate: prefix if present.
@@ -113,32 +102,60 @@ class AiGenerateSource implements ImageSourceInterface {
 			return new WP_Error( 'missing_prompt', 'Prompt is required for image generation.' );
 		}
 
+		// Add size hints to the prompt.
+		$full_prompt = $prompt;
+		if ( $width > 0 && $height > 0 ) {
+			$full_prompt = sprintf(
+				'%s. Create an image that is %d pixels wide by %d pixels tall.',
+				$prompt,
+				$width,
+				$height
+			);
+		}
+
 		try {
-			$result = AI_Client::generateImageResult( $prompt );
+			$result = wp_ai_client_prompt( $full_prompt );
 
-			if ( ! $result->isSupported() ) {
-				return new WP_Error(
-					'generation_unsupported',
-					__( 'No configured provider supports image generation. Please configure an image generation provider in Settings > AI Credentials.', 'gratis-ai-agent' )
-				);
-			}
-
-			if ( $result->isError() ) {
+			if ( is_wp_error( $result ) ) {
 				return new WP_Error(
 					'generation_failed',
-					$result->getErrorMessage()
+					$result->get_error_message()
 				);
 			}
 
-			// Get the base64 image from the result.
-			$base64_image = $result->toBase64();
+			// Try to get image from result - check for different result types.
+			$base64_image = '';
+
+			// Check if result has image generation method.
+			if ( method_exists( $result, 'generate_image' ) ) {
+				$image_result = $result->generate_image( $full_prompt );
+				if ( is_wp_error( $image_result ) ) {
+					return new WP_Error(
+						'generation_failed',
+						$image_result->get_error_message()
+					);
+				}
+				if ( method_exists( $image_result, 'to_base64' ) ) {
+					$base64_image = $image_result->to_base64();
+				}
+			}
+
+			// If no image from fluent API, try to get it from the result directly.
+			// The result might be an array with image data or a direct string.
+			if ( empty( $base64_image ) ) {
+				if ( is_array( $result ) ) {
+					$base64_image = $result['image'] ?? $result['b64_json'] ?? $result['base64'] ?? '';
+				} elseif ( is_string( $result ) ) {
+					$base64_image = $result;
+				}
+			}
 
 			if ( empty( $base64_image ) ) {
 				return new WP_Error( 'generation_failed', 'No image data returned.' );
 			}
 
-			// Write the base64 image to a temp file.
-			$image_data = base64_decode( $base64_image );
+			// Write the base64 image to a temp file with strict mode.
+			$image_data = base64_decode( $base64_image, true );
 			if ( false === $image_data ) {
 				return new WP_Error( 'generation_failed', 'Failed to decode base64 image.' );
 			}
