@@ -310,7 +310,37 @@ The compiled container caches handler metadata. Stale cache = handlers not found
 curl -s -o /dev/null -w "%{http_code}" "http://wordpress.local:8080/wp-json/gratis-ai-agent/v1/memory"
 ```
 
-### 10. Pre-commit vendor dance
+### 10. Shipping compiled containers in distributions
+
+When distributing the plugin (e.g., towordpress.org), the compiled PHP-DI container must work on any installation with different paths. The problem: `compile_dir` is an absolute path during compilation, and `plugin.dir/url` values are baked into the generated class.
+
+**Solution:** Use `\DI\factory()` instead of `\DI\value()` for runtime-resolved values:
+
+```php
+// Plugin.php - BAD: values baked at compile-time
+'plugin.dir' => \DI\value( GRAT_IS_AI_AGENT_DIR ),
+'plugin.url' => \DI\value( GRAT_IS_AI_AGENT_URL ),
+
+// Plugin.php - GOOD: resolves at runtime
+'plugin.dir' => \DI\factory( static fn(): string => defined( 'GRATIS_AI_AGENT_DIR' ) ? constant( 'GRATIS_AI_AGENT_DIR' ) : '' ),
+'plugin.url' => \DI\factory( static fn(): string => defined( 'GRATIS_AI_AGENT_URL' ) ? constant( 'GRATIS_AI_AGENT_URL' ) : '' ),
+```
+
+This generates a factory closure in the compiled container instead of hardcoded strings:
+
+```php
+// Before (baked):
+protected function get4() { return '/home/dave/Git/gratis-ai-agent'; }
+
+// After (runtime-resolved):
+protected function get4() {
+    return $this->resolveFactory(static fn(): string => ..., 'plugin.dir');
+}
+```
+
+**`compile_dir` can stay absolute** — it's only used during compilation on the development machine, not at runtime.
+
+### 11. Pre-commit vendor dance
 
 The pre-commit hook runs `composer install --no-dev` before staging `vendor/`, then `composer install` afterwards. This ensures only production deps are committed. Don't manually `git add vendor/` — let the hook handle it.
 
