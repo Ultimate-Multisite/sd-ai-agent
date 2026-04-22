@@ -108,8 +108,8 @@
 			"wp-scripts lint-style --fix"
 		],
 		"**/*.php": [
-			"composer phpcbf --",
-			"composer phpcs --"
+			"bash -c 'vendor/bin/phpcbf \"$@\"; ec=$?; [ $ec -le 1 ] || exit $ec' --",
+			"vendor/bin/phpcs"
 		]
 	},
 	"size-limit": [

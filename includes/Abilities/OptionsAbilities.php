@@ -594,14 +594,14 @@ class ListOptionsAbility extends AbstractAbility {
 				);
 			}
 		} elseif ( 'yes' === $autoload ) {
-			$rows = $wpdb->get_results(
-				$wpdb->prepare(
-					"SELECT option_name, option_value, autoload FROM %i WHERE autoload IN ('yes', 'on', '1', 'true') ORDER BY option_name LIMIT %d",
-					$wpdb->options,
-					$limit
-				),
-				ARRAY_A
-			);
+				$rows = $wpdb->get_results(
+					$wpdb->prepare(
+						"SELECT option_name, option_value, autoload FROM %i WHERE autoload IN ('yes', 'on', '1', 'true') ORDER BY option_name LIMIT %d",
+						$wpdb->options,
+						$limit
+					),
+					ARRAY_A
+				);
 		} elseif ( 'no' === $autoload ) {
 			$rows = $wpdb->get_results(
 				$wpdb->prepare(

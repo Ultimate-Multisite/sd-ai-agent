@@ -131,7 +131,7 @@ class PostAbilities {
 						],
 						'featured_image_id' => [
 							'type'        => 'integer',
-							'description' => 'Attachment ID to set as the featured image (e.g. from import-stock-image result).',
+							'description' => 'Attachment ID to set as the featured image (e.g. from stock-image or generate-image result).',
 						],
 						'meta'              => [
 							'type'        => 'object',
@@ -292,90 +292,6 @@ class PostAbilities {
 				'execute_callback'    => [ __CLASS__, 'handle_delete_post' ],
 				'permission_callback' => function (): bool {
 					return current_user_can( 'delete_posts' );
-				},
-			]
-		);
-
-		wp_register_ability(
-			'ai-agent/create-post-with-image',
-			[
-				'label'               => __( 'Create Post with Stock Image', 'gratis-ai-agent' ),
-				'description'         => __( 'Create a WordPress post or page AND automatically import a stock image as the featured image — all in one step. Use this when you need to create content with an image.', 'gratis-ai-agent' ),
-				'category'            => 'gratis-ai-agent',
-				'input_schema'        => [
-					'type'       => 'object',
-					'properties' => [
-						'title'         => [
-							'type'        => 'string',
-							'description' => 'The post title.',
-						],
-						'content'       => [
-							'type'        => 'string',
-							'description' => 'The post content in markdown or HTML.',
-						],
-						'excerpt'       => [
-							'type'        => 'string',
-							'description' => 'Optional post excerpt / meta description.',
-						],
-						'status'        => [
-							'type'        => 'string',
-							'enum'        => [ 'draft', 'publish', 'pending', 'private', 'future' ],
-							'description' => 'Post status (default: draft).',
-						],
-						'post_type'     => [
-							'type'        => 'string',
-							'description' => 'Post type (default: post). Use page for pages.',
-						],
-						'categories'    => [
-							'type'        => 'array',
-							'items'       => [
-								'oneOf' => [
-									[ 'type' => 'string' ],
-									[ 'type' => 'integer' ],
-								],
-							],
-							'description' => 'Category IDs (integers) or names (strings).',
-						],
-						'tags'          => [
-							'type'        => 'array',
-							'items'       => [ 'type' => 'string' ],
-							'description' => 'Tag names.',
-						],
-						'image_keyword' => [
-							'type'        => 'string',
-							'description' => 'Search keyword for the stock image.',
-						],
-						'meta'          => [
-							'type'        => 'object',
-							'description' => 'Key-value pairs of post meta.',
-						],
-						'site_url'      => [
-							'type'        => 'string',
-							'description' => 'Subsite URL for multisite.',
-						],
-					],
-					'required'   => [ 'title', 'content', 'image_keyword' ],
-				],
-				'output_schema'       => [
-					'type'       => 'object',
-					'properties' => [
-						'post_id'        => [ 'type' => 'integer' ],
-						'permalink'      => [ 'type' => 'string' ],
-						'status'         => [ 'type' => 'string' ],
-						'post_type'      => [ 'type' => 'string' ],
-						'featured_image' => [ 'type' => 'object' ],
-					],
-				],
-				'meta'                => [
-					'annotations'  => [
-						'readonly'    => false,
-						'destructive' => false,
-					],
-					'show_in_rest' => true,
-				],
-				'execute_callback'    => [ __CLASS__, 'handle_create_post_with_image' ],
-				'permission_callback' => function (): bool {
-					return current_user_can( 'edit_posts' ) && current_user_can( 'upload_files' );
 				},
 			]
 		);
@@ -734,51 +650,6 @@ class PostAbilities {
 			'action'       => $force_delete ? 'permanently_deleted' : 'trashed',
 			'force_delete' => $force_delete,
 		];
-	}
-
-
-	/**
-	 * Handle the create-post-with-image composite ability.
-	 *
-	 * Creates a post AND imports a stock image as the featured image in one
-	 * atomic operation.
-	 *
-	 * @param array<string, mixed> $input Input with title, content, image_keyword, etc.
-	 * @return array<string, mixed>|WP_Error
-	 */
-	public static function handle_create_post_with_image( array $input ) {
-		// @phpstan-ignore-next-line
-		$image_keyword = sanitize_text_field( $input['image_keyword'] ?? '' );
-		$image_result  = null;
-
-		if ( ! empty( $image_keyword ) ) {
-			$image_input  = [
-				'keyword'  => $image_keyword,
-				'site_url' => $input['site_url'] ?? '',
-			];
-			$image_result = StockImageAbilities::handle_import( $image_input );
-			if ( is_array( $image_result ) && ! empty( $image_result['attachment_id'] ) ) {
-				// @phpstan-ignore-next-line
-				$input['featured_image_id'] = (int) $image_result['attachment_id'];
-			}
-		}
-
-		$post_result = self::handle_create_post( $input );
-
-		if ( is_wp_error( $post_result ) ) {
-			return $post_result;
-		}
-
-		if ( is_array( $image_result ) && ! empty( $image_result['attachment_id'] ) ) {
-			$post_result['featured_image'] = [
-				'attachment_id' => $image_result['attachment_id'],
-				'url'           => $image_result['url'] ?? '',
-			];
-		} elseif ( is_wp_error( $image_result ) ) {
-			$post_result['featured_image_error'] = $image_result->get_error_message();
-		}
-
-		return $post_result;
 	}
 
 	/**

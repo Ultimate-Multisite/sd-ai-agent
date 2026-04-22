@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 /**
- * AI Image Generation source using WordPress AI SDK.
+ * AI Image Generation source using the WordPress AI Client SDK.
  *
- * Uses the WordPress AI SDK (wp-ai-client) to support any configured
- * image generation provider - OpenAI DALL-E, Stability AI, or self-hosted.
+ * Uses wp_ai_client_prompt()->generate_image() so any provider configured
+ * in WordPress core Settings > AI that supports image generation will be used.
  *
  * @package GratisAiAgent
  * @license GPL-2.0-or-later
@@ -20,9 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * AI Image Generation source.
- *
- * Uses the WordPress AI SDK for provider-agnostic image generation.
+ * AI Image Generation source via the WP AI Client SDK.
  *
  * @since 1.5.0
  */
@@ -46,30 +44,22 @@ class AiGenerateSource implements ImageSourceInterface {
 	 * {@inheritdoc}
 	 */
 	public function is_available(): bool {
-		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
-			return false;
-		}
-
-		// Check if AI client is configured by attempting a simple prompt.
-		// The wp_ai_client_prompt function will return WP_Error if not configured.
-		$test = wp_ai_client_prompt( 'test' );
-		return ! is_wp_error( $test );
+		return function_exists( 'wp_ai_client_prompt' )
+			&& wp_ai_client_prompt()->is_supported_for_image_generation();
 	}
 
 	/**
 	 * {@inheritdoc}
 	 *
-	 * For AI generation, search returns a single "synthetic" result
-	 * that can be used to trigger generation.
+	 * For AI generation, search returns a single synthetic hit used to
+	 * trigger generation via download().
 	 */
 	public function search( string $keyword, int $per_page = 10 ): array|\WP_Error {
-		// AI generation doesn't search - it generates.
-		// Return a synthetic hit that represents the generation intent.
 		return [
 			'hits'   => [
 				[
 					'id'      => 'generate:' . rawurlencode( $keyword ),
-					'preview' => '', // No preview - generated on demand.
+					'preview' => '',
 					'prompt'  => $keyword,
 					'source'  => 'generate',
 				],
@@ -83,99 +73,35 @@ class AiGenerateSource implements ImageSourceInterface {
 	 * {@inheritdoc}
 	 */
 	public function get_image( string $image_id ): array|\WP_Error {
-		// Not applicable for generation.
-		return new WP_Error( 'not_applicable', 'Use download() method for AI generation.' );
+		return new WP_Error( 'not_applicable', 'Use download() for AI generation.' );
 	}
 
 	/**
 	 * {@inheritdoc}
 	 *
-	 * Generates an image using the WordPress AI SDK via wp_ai_client_prompt.
+	 * Generates an image via the WP AI Client SDK and returns a local temp file path.
 	 */
 	public function download( string $prompt, int $width = 0, int $height = 0 ): string|\WP_Error {
-		// Strip the generate: prefix if present.
-		$prompt = str_starts_with( $prompt, 'generate:' )
-			? substr( $prompt, 9 )
-			: $prompt;
+		// Strip the generate: prefix if present (from search() synthetic hit).
+		if ( str_starts_with( $prompt, 'generate:' ) ) {
+			$prompt = rawurldecode( substr( $prompt, 9 ) );
+		}
 
 		if ( empty( $prompt ) ) {
 			return new WP_Error( 'missing_prompt', 'Prompt is required for image generation.' );
 		}
 
-		// Add size hints to the prompt.
-		$full_prompt = $prompt;
-		if ( $width > 0 && $height > 0 ) {
-			$full_prompt = sprintf(
-				'%s. Create an image that is %d pixels wide by %d pixels tall.',
-				$prompt,
-				$width,
-				$height
-			);
+		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
+			return new WP_Error( 'no_ai_client', 'wp_ai_client_prompt() is not available.' );
 		}
 
-		try {
-			$result = wp_ai_client_prompt( $full_prompt );
+		$file = wp_ai_client_prompt( $prompt )->generate_image();
 
-			if ( is_wp_error( $result ) ) {
-				return new WP_Error(
-					'generation_failed',
-					$result->get_error_message()
-				);
-			}
-
-			// Try to get image from result - check for different result types.
-			$base64_image = '';
-
-			// Check if result has image generation method.
-			if ( method_exists( $result, 'generate_image' ) ) {
-				$image_result = $result->generate_image( $full_prompt );
-				if ( is_wp_error( $image_result ) ) {
-					return new WP_Error(
-						'generation_failed',
-						$image_result->get_error_message()
-					);
-				}
-				if ( method_exists( $image_result, 'to_base64' ) ) {
-					$base64_image = $image_result->to_base64();
-				}
-			}
-
-			// If no image from fluent API, try to get it from the result directly.
-			// The result might be an array with image data or a direct string.
-			if ( empty( $base64_image ) ) {
-				if ( is_array( $result ) ) {
-					$base64_image = $result['image'] ?? $result['b64_json'] ?? $result['base64'] ?? '';
-				} elseif ( is_string( $result ) ) {
-					$base64_image = $result;
-				}
-			}
-
-			if ( empty( $base64_image ) ) {
-				return new WP_Error( 'generation_failed', 'No image data returned.' );
-			}
-
-			// Write the base64 image to a temp file with strict mode.
-			$image_data = base64_decode( $base64_image, true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
-			if ( false === $image_data ) {
-				return new WP_Error( 'generation_failed', 'Failed to decode base64 image.' );
-			}
-
-			$tmp_dir  = get_temp_dir();
-			$tmp_file = $tmp_dir . 'gratis-ai-' . uniqid() . '.png';
-
-			$written = file_put_contents( $tmp_file, $image_data ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_put_contents,WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-			if ( false === $written ) {
-				return new WP_Error( 'generation_failed', 'Failed to write temp image file.' );
-			}
-
-			return $tmp_file;
-
-		} catch ( \Throwable $e ) {
-			return new WP_Error(
-				'generation_error',
-				$e->getMessage()
-			);
+		if ( is_wp_error( $file ) ) {
+			return new WP_Error( 'generation_failed', $file->get_error_message() );
 		}
+
+		return $this->file_to_temp( $file );
 	}
 
 	/**
@@ -183,5 +109,58 @@ class AiGenerateSource implements ImageSourceInterface {
 	 */
 	public function get_cost_type(): string {
 		return 'api';
+	}
+
+	/**
+	 * Save an AI SDK File object to a local temp file.
+	 *
+	 * @param mixed $file File object returned by generate_image().
+	 * @return string|\WP_Error Temp file path or WP_Error.
+	 */
+	private function file_to_temp( $file ): string|\WP_Error {
+		if ( ! function_exists( 'download_url' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+
+		// Remote URL — let WordPress download it.
+		if ( method_exists( $file, 'isRemote' ) && $file->isRemote() ) {
+			$url = $file->getUrl();
+			if ( empty( $url ) ) {
+				return new WP_Error( 'generation_failed', 'Generated image has no URL.' );
+			}
+			$tmp = download_url( $url, 60 );
+			if ( is_wp_error( $tmp ) ) {
+				return new WP_Error( 'download_failed', 'Failed to download generated image: ' . $tmp->get_error_message() );
+			}
+			return $tmp;
+		}
+
+		// Inline base64 — write directly to temp file.
+		$base64 = method_exists( $file, 'getBase64Data' ) ? $file->getBase64Data() : null;
+		if ( null === $base64 || '' === $base64 ) {
+			return new WP_Error( 'generation_failed', 'Generated image returned no data.' );
+		}
+
+		$image_data = base64_decode( $base64, true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+		if ( false === $image_data ) {
+			return new WP_Error( 'generation_failed', 'Failed to decode generated image data.' );
+		}
+
+		$mime     = method_exists( $file, 'getMimeType' ) ? $file->getMimeType() : 'image/png';
+		$ext_map  = [
+			'image/jpeg' => 'jpg',
+			'image/png'  => 'png',
+			'image/gif'  => 'gif',
+			'image/webp' => 'webp',
+		];
+		$ext      = $ext_map[ $mime ] ?? 'png';
+		$tmp_file = get_temp_dir() . 'gratis-ai-' . uniqid() . '.' . $ext;
+
+		$written = file_put_contents( $tmp_file, $image_data ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+		if ( false === $written ) {
+			return new WP_Error( 'generation_failed', 'Failed to write temp image file.' );
+		}
+
+		return $tmp_file;
 	}
 }

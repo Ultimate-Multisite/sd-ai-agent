@@ -176,8 +176,9 @@ class ToolCapabilities {
 			'gratis-ai-agent/discovery-list',
 			'gratis-ai-agent/discovery-get',
 			'gratis-ai-agent/discovery-execute',
-			// Stock images.
-			'gratis-ai-agent/import-stock-image',
+			// Images.
+			'gratis-ai-agent/stock-image',
+			'gratis-ai-agent/generate-image',
 			// SEO.
 			'gratis-ai-agent/seo-audit-url',
 			'gratis-ai-agent/seo-analyze-content',

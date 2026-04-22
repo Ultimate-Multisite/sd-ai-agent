@@ -12,16 +12,17 @@ declare(strict_types=1);
 namespace GratisAiAgent\REST;
 
 use GratisAiAgent\Core\AgentLoop;
+use GratisAiAgent\Core\ConversationSerializer;
 use GratisAiAgent\Core\ConversationTrimmer;
 use GratisAiAgent\Core\CostCalculator;
 use GratisAiAgent\Core\Database;
 use GratisAiAgent\Core\Export;
 use GratisAiAgent\Core\Settings;
+use GratisAiAgent\Core\SystemInstructionBuilder;
+use GratisAiAgent\Core\ToolPermissionResolver;
 use GratisAiAgent\Models\ActiveJobRepository;
 use GratisAiAgent\Models\Agent;
 use GratisAiAgent\Models\DTO\ActiveJobRow;
-use GratisAiAgent\REST\SseStreamer;
-use GratisAiAgent\REST\WebhookDatabase;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -1114,7 +1115,7 @@ final class SessionController {
 					$tool_name = \WP_AI_Client_Ability_Function_Resolver::function_name_to_ability_name( $tool_name );
 				}
 				if ( '' !== $tool_name ) {
-					AgentLoop::set_always_allow( $tool_name );
+					ToolPermissionResolver::set_always_allow( $tool_name );
 				}
 			}
 		}
@@ -1376,7 +1377,7 @@ final class SessionController {
 				$session_messages = array_values( array_filter( (array) $session_messages, 'is_array' ) );
 				if ( ! empty( $session_messages ) ) {
 					try {
-						$history = AgentLoop::deserialize_history( $session_messages );
+						$history = ConversationSerializer::deserialize( $session_messages );
 						// Strip orphaned tool_use blocks (no matching tool_result) at
 						// load time. Prevents API 400 errors when a prior job was
 						// interrupted between recording a tool_use and its tool_result.
@@ -1390,7 +1391,7 @@ final class SessionController {
 			try {
 				/** @var list<array<string, mixed>> $params_history */
 				$params_history = $params['history'];
-				$history        = AgentLoop::deserialize_history( array_values( $params_history ) );
+				$history        = ConversationSerializer::deserialize( array_values( $params_history ) );
 				// Same defensive strip for history passed directly in the request body.
 				$history = ConversationTrimmer::validate_tool_pairs( $history );
 			} catch ( \Exception $e ) {
@@ -1496,7 +1497,7 @@ final class SessionController {
 
 				/** @var list<array<string, mixed>> $state_history */
 				$state_history  = $state['history'] ?? array();
-				$resume_history = AgentLoop::deserialize_history( array_values( $state_history ) );
+				$resume_history = ConversationSerializer::deserialize( array_values( $state_history ) );
 
 				$resume_options = $options;
 				// @phpstan-ignore-next-line
@@ -1821,7 +1822,7 @@ final class SessionController {
 				'started'           => true,
 				'site_builder_mode' => true,
 				'session_id'        => $session_id,
-				'system_prompt'     => AgentLoop::get_site_builder_system_prompt(),
+				'system_prompt'     => SystemInstructionBuilder::get_site_builder_system_prompt(),
 				'message'           => __( 'Site builder mode enabled. The widget will open automatically.', 'gratis-ai-agent' ),
 			),
 			200

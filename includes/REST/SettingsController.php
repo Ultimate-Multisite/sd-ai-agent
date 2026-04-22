@@ -17,8 +17,10 @@ use GratisAiAgent\Core\AgentLoop;
 use GratisAiAgent\Core\BudgetManager;
 use GratisAiAgent\Core\Database;
 use GratisAiAgent\Core\FreshInstallDetector;
+use GratisAiAgent\Core\ProviderCredentialLoader;
 use GratisAiAgent\Core\RolePermissions;
 use GratisAiAgent\Core\Settings;
+use GratisAiAgent\Core\SystemInstructionBuilder;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -458,7 +460,7 @@ final class SettingsController {
 		// Include built-in defaults so the UI can show them as placeholders.
 		// @phpstan-ignore-next-line
 		$settings['_defaults'] = array(
-			'system_prompt'    => AgentLoop::get_default_system_prompt(),
+			'system_prompt'    => SystemInstructionBuilder::default_system_instruction(),
 			'greeting_message' => __( 'Send a message to start a conversation.', 'gratis-ai-agent' ),
 		);
 
@@ -1095,8 +1097,8 @@ final class SettingsController {
 				$provider_ids = array();
 			}
 
-			// Ensure credentials are loaded (same logic the agent loop uses).
-			AgentLoop::ensure_provider_credentials_static();
+			// Ensure credentials are loaded
+			ProviderCredentialLoader::load();
 
 			foreach ( $provider_ids as $provider_id ) {
 				// Skip if already added as a direct provider.
@@ -1245,7 +1247,7 @@ final class SettingsController {
 			try {
 				$registry     = \WordPress\AiClient\AiClient::defaultRegistry();
 				$provider_ids = $registry->getRegisteredProviderIds();
-				AgentLoop::ensure_provider_credentials_static();
+				ProviderCredentialLoader::load();
 				foreach ( $provider_ids as $provider_id ) {
 					$auth = $registry->getProviderRequestAuthentication( $provider_id );
 					if ( null !== $auth ) {
