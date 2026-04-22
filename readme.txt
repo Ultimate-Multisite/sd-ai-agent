@@ -4,7 +4,7 @@ Tags: ai, chatbot, assistant, automation, tools
 Requires at least: 7.0
 Tested up to: 7.0
 Requires PHP: 8.2
-Stable tag: 1.7.0
+Stable tag: 1.8.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -173,6 +173,18 @@ Yes, the plugin works on both single-site and multisite WordPress installations.
 8. Settings page with 12 configuration tabs
 
 == Changelog ==
+
+= 1.8.0 - Released on 2026-04-22 =
+* New: Split image abilities — extract GenerateImageAbility, rename Stock/Unified abilities
+* New: WP 6.9 compatibility — bundle php-ai-client SDK, Connectors polyfill
+* New: Provider refresh on tab visibility change and manual refresh button
+* New: Connectors admin page with install/activate/API key UI
+* Improved: Bootstrap-start idempotency — persist session ID, dual-store completion
+* Improved: Provider-selector refresh button — always show icon, fix accessibility
+* Improved: Ability-call error handling — return WP_Error for malformed arguments
+* Fix: Load provider credentials in BenchmarkRunner before AI calls
+* Fix: Hide ChatTabBar in compact mode to remove duplicate tabs
+* Fix: Allow manual feedback form submissions regardless of setting
 
 = 1.7.0 - Released on 2026-04-20 =
 * New: Adaptive skill system — usage tracking, model-aware injection, and remote skill registry
