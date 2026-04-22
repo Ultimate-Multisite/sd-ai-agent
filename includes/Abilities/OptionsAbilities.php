@@ -566,7 +566,9 @@ class ListOptionsAbility extends AbstractAbility {
 				$rows = $wpdb->get_results(
 					$wpdb->prepare(
 						"SELECT option_name, option_value, autoload FROM %i WHERE option_name LIKE %s AND autoload IN ('yes', 'on', '1', 'true') ORDER BY option_name LIMIT %d",
-						$wpdb->options, $prefix, $limit
+						$wpdb->options,
+						$prefix,
+						$limit
 					),
 					ARRAY_A
 				);
@@ -574,45 +576,50 @@ class ListOptionsAbility extends AbstractAbility {
 				$rows = $wpdb->get_results(
 					$wpdb->prepare(
 						"SELECT option_name, option_value, autoload FROM %i WHERE option_name LIKE %s AND autoload NOT IN ('yes', 'on', '1', 'true') ORDER BY option_name LIMIT %d",
-						$wpdb->options, $prefix, $limit
+						$wpdb->options,
+						$prefix,
+						$limit
 					),
 					ARRAY_A
 				);
 			} else {
 				$rows = $wpdb->get_results(
 					$wpdb->prepare(
-						"SELECT option_name, option_value, autoload FROM %i WHERE option_name LIKE %s ORDER BY option_name LIMIT %d",
-						$wpdb->options, $prefix, $limit
+						'SELECT option_name, option_value, autoload FROM %i WHERE option_name LIKE %s ORDER BY option_name LIMIT %d',
+						$wpdb->options,
+						$prefix,
+						$limit
 					),
 					ARRAY_A
 				);
 			}
+		} elseif ( 'yes' === $autoload ) {
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT option_name, option_value, autoload FROM %i WHERE autoload IN ('yes', 'on', '1', 'true') ORDER BY option_name LIMIT %d",
+					$wpdb->options,
+					$limit
+				),
+				ARRAY_A
+			);
+		} elseif ( 'no' === $autoload ) {
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT option_name, option_value, autoload FROM %i WHERE autoload NOT IN ('yes', 'on', '1', 'true') ORDER BY option_name LIMIT %d",
+					$wpdb->options,
+					$limit
+				),
+				ARRAY_A
+			);
 		} else {
-			if ( 'yes' === $autoload ) {
-				$rows = $wpdb->get_results(
-					$wpdb->prepare(
-						"SELECT option_name, option_value, autoload FROM %i WHERE autoload IN ('yes', 'on', '1', 'true') ORDER BY option_name LIMIT %d",
-						$wpdb->options, $limit
-					),
-					ARRAY_A
-				);
-			} elseif ( 'no' === $autoload ) {
-				$rows = $wpdb->get_results(
-					$wpdb->prepare(
-						"SELECT option_name, option_value, autoload FROM %i WHERE autoload NOT IN ('yes', 'on', '1', 'true') ORDER BY option_name LIMIT %d",
-						$wpdb->options, $limit
-					),
-					ARRAY_A
-				);
-			} else {
-				$rows = $wpdb->get_results(
-					$wpdb->prepare(
-						"SELECT option_name, option_value, autoload FROM %i ORDER BY option_name LIMIT %d",
-						$wpdb->options, $limit
-					),
-					ARRAY_A
-				);
-			}
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					'SELECT option_name, option_value, autoload FROM %i ORDER BY option_name LIMIT %d',
+					$wpdb->options,
+					$limit
+				),
+				ARRAY_A
+			);
 		}
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
