@@ -47,7 +47,8 @@ class ToolCapabilitiesTest extends WP_UnitTestCase {
 			'seo-audit-url'            => [ 'gratis-ai-agent/seo-audit-url', 'gratis_ai_agent_tool_seo_audit_url' ],
 			'content-analyze'          => [ 'gratis-ai-agent/content-analyze', 'gratis_ai_agent_tool_content_analyze' ],
 			'markdown-to-blocks'       => [ 'gratis-ai-agent/markdown-to-blocks', 'gratis_ai_agent_tool_markdown_to_blocks' ],
-			'import-stock-image'       => [ 'gratis-ai-agent/import-stock-image', 'gratis_ai_agent_tool_import_stock_image' ],
+			'stock-image'              => [ 'gratis-ai-agent/stock-image', 'gratis_ai_agent_tool_stock_image' ],
+			'generate-image'           => [ 'gratis-ai-agent/generate-image', 'gratis_ai_agent_tool_generate_image' ],
 			'custom-tool-with-slashes' => [ 'gratis-ai-agent-custom/my-tool', 'gratis_ai_agent_tool_gratis_ai_agent_custom_my_tool' ],
 		];
 	}

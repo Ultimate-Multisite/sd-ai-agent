@@ -122,12 +122,10 @@ function associateToolCallsWithMessages( messages, toolCalls ) {
 			}
 		}
 		if ( unmatched.length > 0 ) {
-			// Find last model message with text.
+			// Find last model message (with or without text) so failed
+			// trailing tool calls stay on the message that made them.
 			for ( let i = result.length - 1; i >= 0; i-- ) {
-				if (
-					result[ i ].role === 'model' &&
-					result[ i ].parts?.some( ( p ) => p.text )
-				) {
+				if ( result[ i ].role === 'model' ) {
 					const existing = result[ i ].toolCalls || [];
 					result[ i ] = {
 						...result[ i ],

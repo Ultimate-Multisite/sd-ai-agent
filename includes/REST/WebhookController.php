@@ -31,6 +31,7 @@ namespace GratisAiAgent\REST;
 use GratisAiAgent\Core\AgentLoop;
 use GratisAiAgent\Core\CostCalculator;
 use GratisAiAgent\Core\Database;
+use GratisAiAgent\Core\ProviderCredentialLoader;
 use GratisAiAgent\Core\Settings;
 use GratisAiAgent\REST\WebhookDatabase;
 use WP_Error;
@@ -779,7 +780,7 @@ final class WebhookController {
 
 		$start_ms = (int) round( microtime( true ) * 1000 );
 
-		AgentLoop::ensure_provider_credentials_static();
+		ProviderCredentialLoader::load();
 
 		$loop   = new AgentLoop( $message, [], [], $options );
 		$result = $loop->run();

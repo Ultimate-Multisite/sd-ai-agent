@@ -12,6 +12,7 @@ namespace GratisAiAgent\Automations;
 
 use GratisAiAgent\Core\AgentLoop;
 use GratisAiAgent\Core\PlaceholderResolver;
+use GratisAiAgent\Core\ProviderCredentialLoader;
 use GratisAiAgent\Core\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -159,7 +160,7 @@ class EventTriggerHandler {
 		}
 
 		// Ensure credentials are available.
-		AgentLoop::ensure_provider_credentials_static();
+		ProviderCredentialLoader::load();
 
 		$settings = Settings::instance()->get();
 		$options  = [

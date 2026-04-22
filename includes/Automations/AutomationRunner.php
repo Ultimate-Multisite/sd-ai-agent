@@ -12,6 +12,7 @@ namespace GratisAiAgent\Automations;
 
 use GratisAiAgent\Core\AgentLoop;
 use GratisAiAgent\Core\BudgetManager;
+use GratisAiAgent\Core\ProviderCredentialLoader;
 use GratisAiAgent\Core\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -95,7 +96,7 @@ class AutomationRunner {
 		$now        = current_time( 'mysql', true );
 
 		// Ensure provider credentials are available.
-		AgentLoop::ensure_provider_credentials_static();
+		ProviderCredentialLoader::load();
 
 		// Build agent loop options.
 		$settings = Settings::instance()->get();

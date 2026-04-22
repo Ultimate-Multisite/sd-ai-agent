@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace GratisAiAgent\CLI;
 
 use GratisAiAgent\Core\AgentLoop;
+use GratisAiAgent\Core\ConversationSerializer;
 use WP_CLI;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -165,7 +166,7 @@ class CliCommand extends \WP_CLI_Command {
 			// Resume the loop with the serialized history.
 			/** @var list<array<string, mixed>> $result_history */
 			$result_history = $result['history'] ?? [];
-			$history        = AgentLoop::deserialize_history( array_values( $result_history ) );
+			$history        = ConversationSerializer::deserialize( array_values( $result_history ) );
 			$remaining      = $result['iterations_remaining'] ?? $max_iterations;
 
 			$resume_options                  = $options;

@@ -411,10 +411,11 @@ export default function MessageList() {
 		if ( msg.role === 'function' ) {
 			return acc;
 		}
-		// Skip model messages that only have function calls and no text.
+		// Skip model messages that only have function calls and no text,
+		// unless they have toolCalls to display (e.g. failed ability calls).
 		if ( msg.role === 'model' ) {
 			const text = extractText( msg );
-			if ( ! text ) {
+			if ( ! text && ! msg.toolCalls?.length ) {
 				return acc;
 			}
 		}
@@ -429,13 +430,13 @@ export default function MessageList() {
 			) }
 			{ visibleMessages.map( ( { msg, originalIndex }, i ) => {
 				const rawText = extractText( msg );
-				if ( ! rawText ) {
+				if ( ! rawText && ! msg.toolCalls?.length ) {
 					return null;
 				}
 
 				const isModel = msg.role === 'model';
 				const { cleanText, suggestions } = isModel
-					? parseSuggestions( rawText )
+					? parseSuggestions( rawText || '' )
 					: { cleanText: rawText, suggestions: [] };
 
 				const isLastModel =
@@ -452,12 +453,14 @@ export default function MessageList() {
 						{ msg.toolCalls?.length > 0 && (
 							<ToolCallDetails toolCalls={ msg.toolCalls } />
 						) }
-						<MessageBubble
-							role={ msg.role }
-							text={ cleanText }
-							attachments={ msg.attachments }
-							queued={ msg.queued }
-						/>
+						{ cleanText && (
+							<MessageBubble
+								role={ msg.role }
+								text={ cleanText }
+								attachments={ msg.attachments }
+								queued={ msg.queued }
+							/>
+						) }
 						<MessageActions
 							message={ msg }
 							index={ originalIndex }

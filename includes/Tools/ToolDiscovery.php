@@ -60,11 +60,6 @@ class ToolDiscovery {
 		'ai-agent/memory-list',
 		'ai-agent/skill-load',
 		'ai-agent/knowledge-search',
-		'gratis-ai-agent/get-plugins',
-		'gratis-ai-agent/get-themes',
-		'gratis-ai-agent/file-read',
-		'gratis-ai-agent/file-list',
-		'gratis-ai-agent/db-query',
 		// WP-CLI is the proper tool for admin commands like `wp site list`,
 		// `wp plugin list`, etc. Registered by the cli-abilities-bridge plugin.
 		'wp-cli/execute',
@@ -158,8 +153,9 @@ class ToolDiscovery {
 							'description' => 'The ability id to invoke (e.g. "multisite-ultimate/site-create-item").',
 						),
 						'arguments' => array(
-							'type'        => 'object',
-							'description' => 'Arguments object that matches the ability\'s input schema. REQUIRED — you MUST provide arguments that satisfy the target ability\'s required fields.',
+							'type'                 => 'object',
+							'description'          => 'Arguments object that matches the ability\'s input schema. REQUIRED — you MUST provide arguments that satisfy the target ability\'s required fields.',
+							'additionalProperties' => true,
 						),
 					),
 					'required'   => array( 'ability', 'arguments' ),
@@ -193,12 +189,12 @@ class ToolDiscovery {
 	 * @return string[]
 	 */
 	public static function tier_1_for_run(): array {
-		$tracked = AbilityUsageTracker::top( self::MAX_TIER_1 );
 		$curated = self::DEFAULT_TIER_1;
+		$tracked = AbilityUsageTracker::top( self::MAX_TIER_1 - count( $curated ) );
 
 		// Tracked first (so the most-used floats to the top of the list);
 		// curated entries fill remaining slots up to the cap.
-		$names = array_values( array_unique( array_merge( $tracked, $curated ) ) );
+		$names = array_values( array_unique( array_merge( $curated, $tracked ) ) );
 
 		// Hard cap, then re-add meta-tools so they survive truncation.
 		if ( count( $names ) > self::MAX_TIER_1 ) {

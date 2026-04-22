@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 /**
- * Unified image ability that chooses between search and generation.
+ * Stock image ability — search and import free stock photos.
  *
- * The agent can ask for "images of X" or "generate an image of X" and this
- * ability will handle both - using the best available source.
+ * Searches Openverse (CC0) or Pixabay for a keyword and imports the result
+ * into the WordPress media library. Never falls back to AI generation.
  *
  * @package GratisAiAgent
  * @license GPL-2.0-or-later
@@ -21,11 +21,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Unified image ability - handles both search and AI generation.
+ * Searches free stock image APIs and imports the result into WordPress.
  *
- * @since 1.5.0
+ * @since 1.6.0
  */
-class UnifiedImageAbility extends \GratisAiAgent\Abilities\AbstractAbility {
+class StockImageAbility extends \GratisAiAgent\Abilities\AbstractAbility {
 
 	/**
 	 * Register this ability.
@@ -36,10 +36,10 @@ class UnifiedImageAbility extends \GratisAiAgent\Abilities\AbstractAbility {
 		}
 
 		wp_register_ability(
-			'gratis-ai-agent/image',
+			'gratis-ai-agent/stock-image',
 			[
-				'label'         => __( 'Image', 'gratis-ai-agent' ),
-				'description'   => __( 'Find or generate images. For searches like "images of cows", uses free stock image APIs (Openverse, Pixabay). For generation prompts, uses DALL-E 3 AI. Returns attachment ID and URL.', 'gratis-ai-agent' ),
+				'label'         => __( 'Stock Image', 'gratis-ai-agent' ),
+				'description'   => __( 'Search for a free stock photo by keyword (Openverse CC0 or Pixabay) and import it into the media library. Returns attachment ID and URL. Use this when you need a real photograph or illustration from existing stock libraries.', 'gratis-ai-agent' ),
 				'ability_class' => self::class,
 			]
 		);
@@ -49,14 +49,14 @@ class UnifiedImageAbility extends \GratisAiAgent\Abilities\AbstractAbility {
 	 * {@inheritdoc}
 	 */
 	protected function label(): string {
-		return __( 'Image', 'gratis-ai-agent' );
+		return __( 'Stock Image', 'gratis-ai-agent' );
 	}
 
 	/**
 	 * {@inheritdoc}
 	 */
 	protected function description(): string {
-		return __( 'Find or generate images. For searches like "images of cows", uses free stock image APIs (Openverse, Pixabay). For generation prompts, uses DALL-E 3 AI. Returns attachment ID and URL.', 'gratis-ai-agent' );
+		return __( 'Search for a free stock photo by keyword (Openverse CC0 or Pixabay) and import it into the media library. Returns attachment ID and URL. Use this when you need a real photograph or illustration from existing stock libraries.', 'gratis-ai-agent' );
 	}
 
 	/**
@@ -68,24 +68,19 @@ class UnifiedImageAbility extends \GratisAiAgent\Abilities\AbstractAbility {
 			'properties' => [
 				'keyword'  => [
 					'type'        => 'string',
-					'description' => 'Search term or generation prompt. For "images of X", searches free stock APIs. For "generate an image of X", uses AI generation.',
-				],
-				'source'   => [
-					'type'        => 'string',
-					'enum'        => [ 'openverse', 'pixabay', 'generate', 'auto' ],
-					'description' => 'Preferred source: "openverse" (free CC0), "pixabay" (free with API key), "generate" (AI), "auto" (best available). Defaults to "auto".',
+					'description' => 'Search term for finding a relevant stock photo (e.g. "mountain landscape", "coffee shop", "team meeting").',
 				],
 				'width'    => [
 					'type'        => 'integer',
-					'description' => 'Image width in pixels (default: 1200)',
+					'description' => 'Desired image width in pixels (default: 1200).',
 				],
 				'height'   => [
 					'type'        => 'integer',
-					'description' => 'Image height in pixels (default: 800)',
+					'description' => 'Desired image height in pixels (default: 800).',
 				],
 				'site_url' => [
 					'type'        => 'string',
-					'description' => 'Subsite URL for multisite (omit for main site)',
+					'description' => 'Subsite URL to import into on multisite (e.g. "https://example.com/mysite"). Omit for the main site.',
 				],
 			],
 			'required'   => [ 'keyword' ],
@@ -104,7 +99,6 @@ class UnifiedImageAbility extends \GratisAiAgent\Abilities\AbstractAbility {
 				'alt'           => [ 'type' => 'string' ],
 				'title'         => [ 'type' => 'string' ],
 				'source'        => [ 'type' => 'string' ],
-				'sources'       => [ 'type' => 'array' ],
 				'error'         => [ 'type' => 'string' ],
 				'tip'           => [ 'type' => 'string' ],
 			],
@@ -147,7 +141,6 @@ class UnifiedImageAbility extends \GratisAiAgent\Abilities\AbstractAbility {
 	protected function execute_callback( mixed $input ): array|\WP_Error {
 		// @phpstan-ignore-next-line
 		$keyword  = sanitize_text_field( $input['keyword'] ?? '' );
-		$source   = sanitize_text_field( $input['source'] ?? 'auto' );
 		$width    = (int) ( $input['width'] ?? 1200 );
 		$height   = (int) ( $input['height'] ?? 800 );
 		$site_url = sanitize_text_field( $input['site_url'] ?? '' );
@@ -156,48 +149,32 @@ class UnifiedImageAbility extends \GratisAiAgent\Abilities\AbstractAbility {
 			return new WP_Error( 'missing_keyword', 'keyword is required.' );
 		}
 
-		// Determine source: check if user wants generation.
-		$source_id          = 'auto' === $source ? '' : $source;
-		$is_generate_intent = preg_match(
-			'/^(generate|create|make|draw|draw|produce)\s+(an?\s+)?(image|photo|picture)/i',
-			$keyword
-		);
-
-		if ( $is_generate_intent ) {
-			// Extract the prompt from the keyword.
-			$prompt    = preg_replace(
-				'/^(generate|create|make|draw|produce)\s+(an?\s+)?(image|photo|picture)\s+(of\s+)?/i',
-				'',
-				$keyword
-			) ?? $keyword;
-			$prompt    = trim( $prompt );
-			$source_id = 'generate';
-		} else {
-			$prompt = $keyword;
+		// Find the first available free source.
+		$source = null;
+		foreach ( ImageSourceFactory::get_available() as $s ) {
+			if ( 'free' === $s->get_cost_type() ) {
+				$source = $s;
+				break;
+			}
 		}
 
-		$options = [
-			'site_url' => $site_url,
-		];
-
-		// Import the image.
-		$result = ImageSourceFactory::import_image(
-			$prompt,
-			$source_id,
-			$width,
-			$height,
-			$options
-		);
-
-		if ( is_wp_error( $result ) ) {
+		if ( null === $source ) {
 			return [
-				'error'   => $result->get_error_message(),
-				'sources' => ImageSourceFactory::get_source_info(),
+				'error' => 'No free stock image source is available. Configure Openverse or Pixabay, or use gratis-ai-agent/generate-image to create an AI-generated image instead.',
 			];
 		}
 
-		// Add available sources to response.
-		$result['sources'] = ImageSourceFactory::get_source_info();
+		$options = [ 'site_url' => $site_url ];
+
+		$result = ImageSourceFactory::import_image( $keyword, $source->get_id(), $width, $height, $options );
+
+		if ( is_wp_error( $result ) ) {
+			return [
+				'error' => $result->get_error_message(),
+			];
+		}
+
+		$result['tip'] = 'Use attachment_id as featured_image_id when calling create-post or update-post.';
 
 		return $result;
 	}

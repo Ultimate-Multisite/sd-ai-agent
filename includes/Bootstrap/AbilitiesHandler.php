@@ -53,7 +53,6 @@ use GratisAiAgent\Abilities\SeoAbilities;
 use GratisAiAgent\Abilities\SiteBuilderAbilities;
 use GratisAiAgent\Abilities\SiteHealthAbilities;
 use GratisAiAgent\Abilities\SkillAbilities;
-use GratisAiAgent\Abilities\StockImageAbilities;
 use GratisAiAgent\Abilities\UserAbilities;
 use GratisAiAgent\Abilities\WooCommerceAbilities;
 use GratisAiAgent\Abilities\WordPressAbilities;
@@ -92,8 +91,7 @@ final class AbilitiesHandler {
 		FeedbackAbilities::register_abilities();
 		SkillAbilities::register_abilities();
 		KnowledgeAbilities::register_abilities();
-		ImageAbilities\UnifiedImageAbility::register();
-		StockImageAbilities::register_abilities();
+		ImageAbilities\StockImageAbility::register();
 		AiImageAbilities::register_abilities();
 		InternetSearchAbilities::register_abilities();
 		SeoAbilities::register_abilities();

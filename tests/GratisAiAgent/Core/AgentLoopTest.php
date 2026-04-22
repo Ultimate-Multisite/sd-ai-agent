@@ -34,7 +34,11 @@ declare(strict_types=1);
 namespace GratisAiAgent\Tests\Core;
 
 use GratisAiAgent\Core\AgentLoop;
+use GratisAiAgent\Core\ConversationSerializer;
+use GratisAiAgent\Core\ProviderCredentialLoader;
 use GratisAiAgent\Core\Settings;
+use GratisAiAgent\Core\SystemInstructionBuilder;
+use GratisAiAgent\Core\ToolPermissionResolver;
 use WP_UnitTestCase;
 
 /**
@@ -782,7 +786,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 		$this->assertNotEmpty( $result['history'] );
 
 		// Deserialise and verify we get Message objects back.
-		$messages = AgentLoop::deserialize_history( $result['history'] );
+		$messages = ConversationSerializer::deserialize( $result['history'] );
 
 		$this->assertIsArray( $messages );
 		$this->assertNotEmpty( $messages );
@@ -796,7 +800,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 	 * Test deserialize_history with empty array returns empty array.
 	 */
 	public function test_deserialize_history_empty(): void {
-		$result = AgentLoop::deserialize_history( [] );
+		$result = ConversationSerializer::deserialize( [] );
 		$this->assertIsArray( $result );
 		$this->assertEmpty( $result );
 	}
@@ -809,7 +813,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 	 * Test get_default_system_prompt returns a non-empty string.
 	 */
 	public function test_get_default_system_prompt_returns_string(): void {
-		$prompt = AgentLoop::get_default_system_prompt();
+		$prompt = SystemInstructionBuilder::default_system_instruction();
 
 		$this->assertIsString( $prompt );
 		$this->assertNotEmpty( $prompt );
@@ -819,7 +823,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 	 * Test get_default_system_prompt contains expected WordPress context.
 	 */
 	public function test_get_default_system_prompt_contains_wordpress_context(): void {
-		$prompt = AgentLoop::get_default_system_prompt();
+		$prompt = SystemInstructionBuilder::default_system_instruction();
 
 		$this->assertStringContainsString( 'WordPress', $prompt );
 	}
@@ -906,7 +910,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 	 */
 	public function test_ensure_provider_credentials_static_is_safe(): void {
 		// Should not throw even if the AI Client registry is unavailable.
-		AgentLoop::ensure_provider_credentials_static();
+		ProviderCredentialLoader::load();
 		$this->assertTrue( true ); // Reached without exception.
 	}
 
@@ -1128,7 +1132,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 			]
 		);
 
-		$this->assertSame( 'read', AgentLoop::classify_ability( $ability ) );
+		$this->assertSame( 'read', ToolPermissionResolver::classify_ability( $ability ) );
 	}
 
 	/**
@@ -1157,7 +1161,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 			]
 		);
 
-		$this->assertSame( 'write', AgentLoop::classify_ability( $ability ) );
+		$this->assertSame( 'write', ToolPermissionResolver::classify_ability( $ability ) );
 	}
 
 	/**
@@ -1189,7 +1193,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 			]
 		);
 
-		$this->assertSame( 'destructive', AgentLoop::classify_ability( $ability ) );
+		$this->assertSame( 'destructive', ToolPermissionResolver::classify_ability( $ability ) );
 	}
 
 	// -------------------------------------------------------------------------
@@ -1200,7 +1204,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 	 * Test set_always_allow persists the permission in settings.
 	 */
 	public function test_set_always_allow_persists_permission(): void {
-		AgentLoop::set_always_allow( 'gratis-ai-agent/memory-save' );
+		ToolPermissionResolver::set_always_allow( 'gratis-ai-agent/memory-save' );
 
 		$settings = new Settings();
 		$perms    = $settings->get( 'tool_permissions' );
@@ -1225,7 +1229,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 			]
 		);
 
-		$always = AgentLoop::get_always_allowed();
+		$always = ToolPermissionResolver::get_always_allowed();
 
 		$this->assertIsArray( $always );
 		$this->assertCount( 2, $always );
@@ -1241,7 +1245,7 @@ class AgentLoopTest extends WP_UnitTestCase {
 	public function test_get_always_allowed_returns_empty_when_no_perms(): void {
 		delete_option( Settings::OPTION_NAME );
 
-		$always = AgentLoop::get_always_allowed();
+		$always = ToolPermissionResolver::get_always_allowed();
 
 		$this->assertIsArray( $always );
 		$this->assertEmpty( $always );

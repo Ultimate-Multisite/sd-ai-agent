@@ -239,10 +239,16 @@ function ToolCallPair( { call, response } ) {
 						color="purple"
 					/>
 				) }
-				{ hasResponse && (
-					<span className="gratis-ai-agent-tool-pair-status gratis-ai-agent-tool-pair-status--ok">
-						\u2713
+				{ hasResponse && response.response?.success === false ? (
+					<span className="gratis-ai-agent-tool-pair-status gratis-ai-agent-tool-pair-status--error">
+						{ '✗' }
 					</span>
+				) : (
+					hasResponse && (
+						<span className="gratis-ai-agent-tool-pair-status gratis-ai-agent-tool-pair-status--ok">
+							{ '✓' }
+						</span>
+					)
 				) }
 			</div>
 

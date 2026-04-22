@@ -15,7 +15,6 @@ declare(strict_types=1);
 namespace GratisAiAgent\Services;
 
 use GratisAiAgent\Abilities\Js\JsAbilityCatalog;
-use GratisAiAgent\Core\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -83,12 +82,11 @@ final class AbilityExplorerService {
 			return array();
 		}
 
-		$abilities            = wp_get_abilities();
-		$configured_providers = self::get_configured_providers();
-		$list                 = array();
+		$abilities = wp_get_abilities();
+		$list      = array();
 
 		foreach ( $abilities as $ability ) {
-			$list[] = self::format_ability_for_explorer( $ability, $configured_providers );
+			$list[] = self::format_ability_for_explorer( $ability );
 		}
 
 		// Append client-side (JS) abilities from the catalog.
@@ -116,31 +114,12 @@ final class AbilityExplorerService {
 	}
 
 	/**
-	 * Build the list of configured direct provider IDs.
-	 *
-	 * A provider is "configured" when it has a non-empty API key stored in settings.
-	 *
-	 * @return array<string> List of configured provider ID strings.
-	 */
-	private static function get_configured_providers(): array {
-		$configured = array();
-		foreach ( Settings::DIRECT_PROVIDERS as $provider_id => $provider_meta ) {
-			$key = Settings::instance()->get_provider_key( $provider_id );
-			if ( '' !== $key ) {
-				$configured[] = $provider_id;
-			}
-		}
-		return $configured;
-	}
-
-	/**
 	 * Format a PHP ability object for the explorer endpoint.
 	 *
-	 * @param object        $ability              Ability object from wp_get_abilities().
-	 * @param array<string> $configured_providers List of configured provider IDs.
+	 * @param object $ability Ability object from wp_get_abilities().
 	 * @return array<string, mixed> Formatted ability data.
 	 */
-	private static function format_ability_for_explorer( object $ability, array $configured_providers ): array {
+	private static function format_ability_for_explorer( object $ability ): array {
 		// @phpstan-ignore-next-line
 		$input_schema = $ability->get_input_schema();
 		// @phpstan-ignore-next-line
@@ -157,34 +136,20 @@ final class AbilityExplorerService {
 			$param_count = count( $input_schema['properties'] );
 		}
 
-		// Derive configuration status from ability name matching provider IDs.
 		// @phpstan-ignore-next-line
-		$ability_name      = $ability->get_name();
-		$is_configured     = true;
-		$required_api_keys = array();
-
-		foreach ( Settings::DIRECT_PROVIDERS as $provider_id => $provider_meta ) {
-			if ( str_contains( $ability_name, $provider_id ) ) {
-				$required_api_keys[] = $provider_meta['name'] . ' API Key';
-				if ( ! in_array( $provider_id, $configured_providers, true ) ) {
-					$is_configured = false;
-				}
-			}
-		}
+		$ability_name = $ability->get_name();
 
 		return array(
-			'name'              => $ability_name,
+			'name'            => $ability_name,
 			// @phpstan-ignore-next-line
-			'label'             => $ability->get_label(),
+			'label'           => $ability->get_label(),
 			// @phpstan-ignore-next-line
-			'description'       => $ability->get_description(),
+			'description'     => $ability->get_description(),
 			// @phpstan-ignore-next-line
-			'category'          => $ability->get_category(),
-			'param_count'       => $param_count,
-			'required_params'   => $required_params,
-			'is_configured'     => $is_configured,
-			'required_api_keys' => $required_api_keys,
-			'annotations'       => array(
+			'category'        => $ability->get_category(),
+			'param_count'     => $param_count,
+			'required_params' => $required_params,
+			'annotations'     => array(
 				// @phpstan-ignore-next-line
 				'readonly'    => (bool) ( $annotations['readonly'] ?? false ),
 				// @phpstan-ignore-next-line
@@ -193,8 +158,8 @@ final class AbilityExplorerService {
 				'idempotent'  => (bool) ( $annotations['idempotent'] ?? false ),
 			),
 			// @phpstan-ignore-next-line
-			'output_schema'     => $ability->get_output_schema(),
-			'show_in_rest'      => (bool) ( $meta['show_in_rest'] ?? false ),
+			'output_schema'   => $ability->get_output_schema(),
+			'show_in_rest'    => (bool) ( $meta['show_in_rest'] ?? false ),
 		);
 	}
 
@@ -211,21 +176,19 @@ final class AbilityExplorerService {
 		$annotations     = $descriptor['annotations'] ?? array();
 
 		return array(
-			'name'              => $descriptor['name'],
-			'label'             => $descriptor['label'],
-			'description'       => $descriptor['description'],
-			'category'          => $descriptor['category'],
-			'param_count'       => $param_count,
-			'required_params'   => $required_params,
-			'is_configured'     => true,
-			'required_api_keys' => array(),
-			'annotations'       => array(
+			'name'            => $descriptor['name'],
+			'label'           => $descriptor['label'],
+			'description'     => $descriptor['description'],
+			'category'        => $descriptor['category'],
+			'param_count'     => $param_count,
+			'required_params' => $required_params,
+			'annotations'     => array(
 				'readonly'    => (bool) ( $annotations['readonly'] ?? false ),
 				'destructive' => false,
 				'idempotent'  => false,
 			),
-			'output_schema'     => $descriptor['output_schema'] ?? array(),
-			'show_in_rest'      => false,
+			'output_schema'   => $descriptor['output_schema'] ?? array(),
+			'show_in_rest'    => false,
 		);
 	}
 

@@ -1132,6 +1132,10 @@ body.toplevel_page_gratis-ai-agent #wpbody-content > .updated {
 	color: #00a32a;
 }
 
+.gratis-ai-agent-tool-pair-status--error {
+	color: #d63638;
+}
+
 /* Badge styling */
 .gratis-ai-agent-tool-badge {
 	display: inline-flex;
