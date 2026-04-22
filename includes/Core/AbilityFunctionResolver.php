@@ -227,18 +227,41 @@ class AbilityFunctionResolver extends \WP_AI_Client_Ability_Function_Resolver {
 	}
 
 	/**
-	 * Recursively convert stdClass objects to associative arrays.
+	 * Recursively normalize function-call arguments for WordPress abilities.
 	 *
-	 * AI provider JSON decoders may return nested stdClass objects for
-	 * function-call arguments. WordPress abilities expect plain arrays.
+	 * Handles three cases that AI provider JSON decoders may produce:
+	 * 1. stdClass objects — converted to associative arrays.
+	 * 2. JSON strings — some providers (especially OpenAI-compatible) serialize
+	 *    nested object-typed arguments as a raw JSON string rather than a parsed
+	 *    object. These are decoded so that `validate_input()` sees the correct
+	 *    type instead of rejecting a string where the schema declares `object`.
+	 * 3. Arrays — recursed into for nested normalization.
+	 *
+	 * Without this normalization, `WP_Ability::validate_input()` rejects
+	 * JSON-string arguments with `ability_invalid_input` because
+	 * `rest_is_object()` returns false for strings, preventing
+	 * `do_execute()` (and therefore `handle_ability_call()`) from ever
+	 * running.
 	 *
 	 * @param array<string, mixed> $args Function call arguments.
-	 * @return array<string, mixed> Normalized arguments with all stdClass converted.
+	 * @return array<string, mixed> Normalized arguments with stdClass and JSON strings converted.
 	 */
 	private static function normalize_args( array $args ): array {
 		foreach ( $args as $key => $value ) {
 			if ( $value instanceof \stdClass ) {
 				$args[ $key ] = self::normalize_args( (array) $value );
+			} elseif ( is_string( $value ) && '' !== $value ) {
+				// Decode JSON strings that represent objects/arrays.
+				// This is critical for the Tier 2 ability-call meta-tool,
+				// where the `arguments` property is declared as `type: object`
+				// but some AI providers send it as a JSON string.
+				$decoded = json_decode( $value, true );
+				if ( is_array( $decoded ) ) {
+					$args[ $key ] = self::normalize_args( $decoded );
+				}
+				// If json_decode failed or returned a scalar, leave the
+				// original string value untouched — it may be a legitimate
+				// string argument, not a mis-typed object.
 			} elseif ( is_array( $value ) ) {
 				$args[ $key ] = self::normalize_args( $value );
 			}
