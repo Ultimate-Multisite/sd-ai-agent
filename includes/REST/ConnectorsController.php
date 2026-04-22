@@ -27,6 +27,7 @@ use WP_REST_Response;
 use WP_REST_Server;
 use XWP\DI\Decorators\Action;
 use XWP\DI\Decorators\Handler;
+use GratisAiAgent\Admin\UnifiedAdminMenu;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -51,20 +52,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class ConnectorsController {
 
 	use PermissionTrait;
-
-	/**
-	 * Whether the native WP 7.0 Connectors page is available.
-	 *
-	 * Uses version_compare() against $wp_version rather than function_exists()
-	 * because the polyfill (wp-connectors-polyfill.php) defines the same
-	 * functions on WP 6.9, making function_exists() always return true.
-	 *
-	 * @return bool True when running on WP 7.0+ (native Connectors page exists).
-	 */
-	private static function has_native_connectors_page(): bool {
-		global $wp_version;
-		return version_compare( $wp_version, '7.0', '>=' );
-	}
 
 	/**
 	 * Known AI provider connectors with their plugin and option metadata.
@@ -171,7 +158,7 @@ final class ConnectorsController {
 		return new WP_REST_Response(
 			array(
 				'providers'     => $providers,
-				'wp_has_native' => self::has_native_connectors_page(),
+				'wp_has_native' => UnifiedAdminMenu::hasNativeConnectorsPage(),
 			),
 			200
 		);
