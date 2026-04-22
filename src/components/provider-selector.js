@@ -97,12 +97,10 @@ export default function ProviderSelector( { compact = false } ) {
 					onClick={ onRefresh }
 					disabled={ loading }
 					className="gratis-ai-agent-provider-selector__refresh"
-					icon={ loading ? undefined : 'update' }
-					title={ __( 'Refresh providers', 'gratis-ai-agent' ) }
-					__nextHasNoMarginBottom
-				>
-					{ loading ? '…' : '' }
-				</Button>
+					icon="update"
+					label={ __( 'Refresh providers', 'gratis-ai-agent' ) }
+					showTooltip
+				/>
 			</div>
 			<SelectControl
 				label={ compact ? null : __( 'Model', 'gratis-ai-agent' ) }
