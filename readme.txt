@@ -174,10 +174,15 @@ Yes, the plugin works on both single-site and multisite WordPress installations.
 
 == Changelog ==
 
+<<<<<<< Updated upstream
 = 1.8.2 - Released on 2026-04-23 =
 * Fix: Replace polyfill connectors page with official URL and one-click Gutenberg install
 * Fix: Add menu icon back
 * Fix: Use correct URL
+=======
+= 1.8.2 - Released on 2026-04-22 =
+* Fix: Replace polyfill connectors page with official URL and one-click Gutenberg install
+>>>>>>> Stashed changes
 
 = 1.8.1 - Released on 2026-04-22 =
 * Fix: Connectors page showing WP 7.0 redirect on WP 6.9
