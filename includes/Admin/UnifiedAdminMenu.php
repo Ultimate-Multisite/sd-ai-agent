@@ -41,9 +41,7 @@ class UnifiedAdminMenu {
 		if ( version_compare( $wp_version, '7.0-alpha1', '>=' ) ) {
 			return true;
 		}
-
-		// On WP 6.9, the Connectors page is available via Gutenberg 22.8.0+.
-		return self::hasGutenbergConnectorsPage();
+		return false;
 	}
 
 	/**
@@ -71,7 +69,7 @@ class UnifiedAdminMenu {
 	 * @return string Admin URL for the Connectors page.
 	 */
 	public static function getConnectorsUrl(): string {
-		return admin_url( 'options-general.php?page=options-connectors-wp-admin' );
+		return self::hasNativeConnectorsPage() ? admin_url( 'options-connectors.php' ) : admin_url( 'options-general.php?page=options-connectors-wp-admin' );
 	}
 
 	/**
@@ -305,7 +303,7 @@ class UnifiedAdminMenu {
 				'initialRoute'        => self::getCurrentRoute(),
 				'menuItems'           => self::getMenuItems(),
 				'connectorsUrl'       => self::getConnectorsUrl(),
-				'connectorsAvailable' => self::hasNativeConnectorsPage() ? '1' : '',
+				'connectorsAvailable' => self::hasNativeConnectorsPage() || self::hasGutenbergConnectorsPage() ? '1' : '',
 			)
 		);
 	}
