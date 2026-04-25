@@ -206,11 +206,14 @@ async function executeScreenshotUrl( args ) {
 		};
 	}
 
-	// Append query param to suppress the WordPress admin bar in the iframe.
+	// Load the published URL as-is — no query params appended.
+	// WordPress's `?preview=true` triggers is_preview() which renders
+	// draft/unsaved post content, not the published page. It also does NOT
+	// hide the admin bar. Instead, after the iframe loads we inject CSS to
+	// hide #wpadminbar and remove the 32px body offset WordPress adds for
+	// logged-in users. This gives us a clean capture of the published
+	// frontend without admin chrome.
 	const targetUrl = new URL( resolved );
-	if ( ! targetUrl.pathname.includes( '/wp-admin' ) ) {
-		targetUrl.searchParams.set( 'preview', 'true' );
-	}
 
 	let iframe = null;
 
@@ -269,6 +272,18 @@ async function executeScreenshotUrl( args ) {
 				error: 'Cannot access iframe content. The page may block framing.',
 			};
 		}
+
+		// Hide the WordPress admin bar and remove its 32px body/html offset
+		// so the screenshot shows the published frontend without admin chrome.
+		// WordPress adds margin-top: 32px to <html> and a fixed #wpadminbar
+		// for logged-in users; both must be neutralised for a clean capture.
+		const adminBarStyle = iframeDoc.createElement( 'style' );
+		adminBarStyle.textContent = [
+			'#wpadminbar { display: none !important; }',
+			'html { margin-top: 0 !important; }',
+			'* html body { margin-top: 0 !important; }',
+		].join( ' ' );
+		iframeDoc.head.appendChild( adminBarStyle );
 
 		const captureTarget = iframeDoc.body;
 
