@@ -176,13 +176,17 @@ class UnifiedAdminMenuTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test getConnectorsUrl() always returns the official Connectors page URL.
+	 * Test getConnectorsUrl() always returns a Connectors page URL.
+	 *
+	 * On WP 7.0+ the URL is options-connectors.php; on WP 6.9 it points to the
+	 * polyfill at options-general.php?page=options-connectors-wp-admin. Both
+	 * contain 'options-connectors'.
 	 */
 	public function test_get_connectors_url_returns_official_url(): void {
 		$url = UnifiedAdminMenu::getConnectorsUrl();
 		$this->assertIsString( $url );
 		$this->assertNotEmpty( $url );
-		$this->assertStringContainsString( 'options-connectors-wp-admin', $url );
+		$this->assertStringContainsString( 'options-connectors', $url );
 	}
 
 	/**
@@ -236,6 +240,20 @@ class UnifiedAdminMenuTest extends WP_UnitTestCase {
 		$url = UnifiedAdminMenu::getConnectorsUrl();
 		$this->assertIsString( $url );
 		$this->assertNotEmpty( $url );
+	}
+
+	/**
+	 * Test getMenuItems() never includes a Connectors item regardless of WP version.
+	 *
+	 * The polyfill Connectors menu item was removed. Users are directed to the
+	 * official WP 7.0+ page or prompted to install Gutenberg — no menu item is
+	 * added for either case.
+	 */
+	public function test_get_menu_items_connectors_conditional(): void {
+		$items = UnifiedAdminMenu::getMenuItems();
+		$slugs = array_column( $items, 'slug' );
+
+		$this->assertNotContains( 'connectors', $slugs );
 	}
 
 	// ─── getCurrentRoute ──────────────────────────────────────────────────────
