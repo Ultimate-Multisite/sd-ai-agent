@@ -62,10 +62,11 @@ class UnifiedAdminMenuTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test getMenuItems() returns at least 4 items.
+	 * Test getMenuItems() returns exactly 4 items.
 	 *
-	 * On WP 6.9 (no native Connectors page) a 5th Connectors item is added;
-	 * on WP 7.0+ the native page handles connectors so only 4 items appear.
+	 * The menu always contains chat, abilities, changes, settings.
+	 * The Connectors item is never added — users are directed to the
+	 * official Connectors page or prompted to install Gutenberg.
 	 */
 	public function test_get_menu_items_returns_four_items(): void {
 		$items = UnifiedAdminMenu::getMenuItems();
