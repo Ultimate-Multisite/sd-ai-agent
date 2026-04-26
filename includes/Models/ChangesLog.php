@@ -22,7 +22,14 @@ class ChangesLog {
 	/**
 	 * Record a single field change made by an AI ability.
 	 *
-	 * @param array<string,mixed> $data Change data: session_id, user_id, object_type, object_id, object_title, ability_name, field_name, before_value, after_value.
+	 * Pass `revertable => false` for changes the system cannot automatically
+	 * undo (filesystem writes, WP-CLI commands, deleted media, etc.). Those
+	 * rows still appear in the log as an audit trail but the UI shows a
+	 * "Cannot undo" notice instead of a Revert button.
+	 *
+	 * @param array<string,mixed> $data Change data: session_id, user_id, object_type,
+	 *                                  object_id, object_title, ability_name, field_name,
+	 *                                  before_value, after_value, revertable (optional, default true).
 	 * @return int|false Inserted row ID or false on failure.
 	 */
 	public static function record( array $data ): int|false {
@@ -50,9 +57,11 @@ class ChangesLog {
 				'before_value' => $data['before_value'] ?? '',
 				'after_value'  => $data['after_value'] ?? '',
 				'reverted'     => 0,
+				// @phpstan-ignore-next-line
+				'revertable'   => isset( $data['revertable'] ) ? ( $data['revertable'] ? 1 : 0 ) : 1,
 				'created_at'   => current_time( 'mysql', true ),
 			],
-			[ '%d', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%d', '%s' ]
+			[ '%d', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%s' ]
 		);
 
 		return $result ? (int) $wpdb->insert_id : false;
