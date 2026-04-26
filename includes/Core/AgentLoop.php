@@ -248,6 +248,7 @@ class AgentLoop {
 
 		// Per-agent Tier 1 tool override (passed from Agent::get_loop_options).
 		$raw_tier_1_tools = $options['tier_1_tools'] ?? array();
+		// @phpstan-ignore-next-line -- Options bag contains mixed values; runtime array_values is safe.
 		$this->agent_tier_1_tools = is_array( $raw_tier_1_tools ) ? array_values( $raw_tier_1_tools ) : array();
 
 		// Progress callback for live tool-call reporting (used by job system).

@@ -193,7 +193,7 @@ class ToolDiscovery {
 	 * @param list<string> $agent_tools Optional per-agent Tier 1 tool override.
 	 * @return string[]
 	 */
-	public static function tier_1_for_run( array $agent_tools = array() ): array {
+	public static function tier_1_for_run( array $agent_tools = array() ): array { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- list<string> is valid PHPStan but not a native PHP type.
 		if ( ! empty( $agent_tools ) ) {
 			// Agent-specific: use the agent's curated list as the base.
 			$curated = $agent_tools;

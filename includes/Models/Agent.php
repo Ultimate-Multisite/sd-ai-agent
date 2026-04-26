@@ -493,7 +493,7 @@ class Agent {
 	 * @param list<string> $base_tools Base tier 1 tools.
 	 * @return array<string, mixed>
 	 */
-	private static function get_onboarding_definition( array $base_tools ): array {
+	private static function get_onboarding_definition( array $base_tools ): array { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- list<string> is valid PHPStan but not a native PHP type.
 		$site_title = function_exists( 'get_bloginfo' ) ? get_bloginfo( 'name' ) : '';
 		$site_url   = function_exists( 'get_site_url' ) ? get_site_url() : '';
 
@@ -535,11 +535,18 @@ class Agent {
 				. '- Be yourself - curious, helpful, genuinely interested in this site.',
 			'greeting'      => __( "Welcome! I'm your AI assistant. Let me take a quick look around your site and then we can get started.", 'gratis-ai-agent' ),
 			'avatar_icon'   => 'dashicons-welcome-learn-more',
-			'tier_1_tools'  => array_values( array_unique( array_merge( $base_tools, [
-				'gratis-ai-agent/manage-options',
-				'ai-agent/list-posts',
-				'gratis-ai-agent/get-plugins',
-			] ) ) ),
+			'tier_1_tools'  => array_values(
+				array_unique(
+					array_merge(
+						$base_tools,
+						[
+							'gratis-ai-agent/manage-options',
+							'ai-agent/list-posts',
+							'gratis-ai-agent/get-plugins',
+						]
+					)
+				)
+			),
 			'suggestions'   => [
 				[
 					'title'       => __( 'Set up my site', 'gratis-ai-agent' ),
@@ -573,7 +580,7 @@ class Agent {
 	 * @param list<string> $base_tools Base tier 1 tools.
 	 * @return array<string, mixed>
 	 */
-	private static function get_general_definition( array $base_tools ): array {
+	private static function get_general_definition( array $base_tools ): array { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- list<string> is valid PHPStan but not a native PHP type.
 		$wp_path  = defined( 'ABSPATH' ) ? ABSPATH : '';
 		$site_url = function_exists( 'get_site_url' ) ? get_site_url() : '';
 
@@ -650,7 +657,7 @@ class Agent {
 	 * @param list<string> $base_tools Base tier 1 tools.
 	 * @return array<string, mixed>
 	 */
-	private static function get_content_creator_definition( array $base_tools ): array {
+	private static function get_content_creator_definition( array $base_tools ): array { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- list<string> is valid PHPStan but not a native PHP type.
 		return [
 			'slug'          => 'content-creator',
 			'name'          => __( 'Content Creator', 'gratis-ai-agent' ),
@@ -681,11 +688,18 @@ class Agent {
 				. '- Proofread for grammar, spelling, and readability.',
 			'greeting'      => __( "I'm your content creator. Tell me what you'd like to write, or I can suggest topics based on your site.", 'gratis-ai-agent' ),
 			'avatar_icon'   => 'dashicons-edit-page',
-			'tier_1_tools'  => array_values( array_unique( array_merge( $base_tools, [
-				'ai-agent/list-posts',
-				'ai-agent/update-post',
-				'gratis-ai-agent/stock-image',
-			] ) ) ),
+			'tier_1_tools'  => array_values(
+				array_unique(
+					array_merge(
+						$base_tools,
+						[
+							'ai-agent/list-posts',
+							'ai-agent/update-post',
+							'gratis-ai-agent/stock-image',
+						]
+					)
+				)
+			),
 			'suggestions'   => [
 				[
 					'title'       => __( 'Write a blog post', 'gratis-ai-agent' ),
@@ -719,7 +733,7 @@ class Agent {
 	 * @param list<string> $base_tools Base tier 1 tools.
 	 * @return array<string, mixed>
 	 */
-	private static function get_seo_definition( array $base_tools ): array {
+	private static function get_seo_definition( array $base_tools ): array { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- list<string> is valid PHPStan but not a native PHP type.
 		return [
 			'slug'          => 'seo',
 			'name'          => __( 'SEO Specialist', 'gratis-ai-agent' ),
@@ -749,12 +763,19 @@ class Agent {
 				. '- Provide before/after comparisons when making changes.',
 			'greeting'      => __( "I'm your SEO specialist. I can audit your site, optimize content, or fix technical SEO issues. What would you like to focus on?", 'gratis-ai-agent' ),
 			'avatar_icon'   => 'dashicons-chart-line',
-			'tier_1_tools'  => array_values( array_unique( array_merge( $base_tools, [
-				'ai-agent/list-posts',
-				'ai-agent/update-post',
-				'gratis-ai-agent/manage-options',
-				'gratis-ai-agent/get-plugins',
-			] ) ) ),
+			'tier_1_tools'  => array_values(
+				array_unique(
+					array_merge(
+						$base_tools,
+						[
+							'ai-agent/list-posts',
+							'ai-agent/update-post',
+							'gratis-ai-agent/manage-options',
+							'gratis-ai-agent/get-plugins',
+						]
+					)
+				)
+			),
 			'suggestions'   => [
 				[
 					'title'       => __( 'Full SEO audit', 'gratis-ai-agent' ),
@@ -788,7 +809,7 @@ class Agent {
 	 * @param list<string> $base_tools Base tier 1 tools.
 	 * @return array<string, mixed>
 	 */
-	private static function get_ecommerce_definition( array $base_tools ): array {
+	private static function get_ecommerce_definition( array $base_tools ): array { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- list<string> is valid PHPStan but not a native PHP type.
 		return [
 			'slug'          => 'ecommerce',
 			'name'          => __( 'E-Commerce', 'gratis-ai-agent' ),
@@ -820,12 +841,19 @@ class Agent {
 				. '- Track store improvements over time using memories.',
 			'greeting'      => __( "I'm your e-commerce assistant. I can manage products, analyze orders, or optimize your store. What do you need?", 'gratis-ai-agent' ),
 			'avatar_icon'   => 'dashicons-cart',
-			'tier_1_tools'  => array_values( array_unique( array_merge( $base_tools, [
-				'gratis-ai-agent/woo-create-product',
-				'gratis-ai-agent/woo-get-products',
-				'gratis-ai-agent/stock-image',
-				'gratis-ai-agent/get-plugins',
-			] ) ) ),
+			'tier_1_tools'  => array_values(
+				array_unique(
+					array_merge(
+						$base_tools,
+						[
+							'gratis-ai-agent/woo-create-product',
+							'gratis-ai-agent/woo-get-products',
+							'gratis-ai-agent/stock-image',
+							'gratis-ai-agent/get-plugins',
+						]
+					)
+				)
+			),
 			'suggestions'   => [
 				[
 					'title'       => __( 'Add a new product', 'gratis-ai-agent' ),
