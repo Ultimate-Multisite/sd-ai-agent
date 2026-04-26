@@ -184,12 +184,22 @@ class ToolDiscovery {
 	 * top-N most-frequently used abilities, capped at MAX_TIER_1, plus the
 	 * two meta-tools.
 	 *
+	 * When $agent_tools is provided (non-empty array), it replaces the
+	 * curated cold-start list entirely. The meta-tools are always included
+	 * regardless.
+	 *
 	 * Disabled or non-existent abilities are filtered out.
 	 *
+	 * @param list<string> $agent_tools Optional per-agent Tier 1 tool override.
 	 * @return string[]
 	 */
-	public static function tier_1_for_run(): array {
-		$curated = self::DEFAULT_TIER_1;
+	public static function tier_1_for_run( array $agent_tools = array() ): array { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- list<string> is valid PHPStan but not a native PHP type.
+		if ( ! empty( $agent_tools ) ) {
+			// Agent-specific: use the agent's curated list as the base.
+			$curated = $agent_tools;
+		} else {
+			$curated = self::DEFAULT_TIER_1;
+		}
 		$tracked = AbilityUsageTracker::top( self::MAX_TIER_1 - count( $curated ) );
 
 		// Tracked first (so the most-used floats to the top of the list);

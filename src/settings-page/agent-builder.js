@@ -15,7 +15,8 @@ import {
 	CardBody,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { trash, pencil, plus } from '@wordpress/icons';
+import { trash, pencil, plus, reset as resetIcon } from '@wordpress/icons';
+import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
@@ -33,7 +34,143 @@ const EMPTY_FORM = {
 	max_iterations: '',
 	greeting: '',
 	avatar_icon: '',
+	tier_1_tools: [],
 };
+
+/**
+ * Tier 1 Tools editor — shows current tools as removable chips and an
+ * autocomplete search input to add new ones.
+ *
+ * @param {Object}   props              Component props.
+ * @param {string[]} props.tools        Current tier 1 tool IDs.
+ * @param {Function} props.onChange     Callback when tools change.
+ * @param {Array}    props.allAbilities Full abilities catalog for autocomplete.
+ */
+function Tier1ToolsEditor( { tools, onChange, allAbilities } ) {
+	const [ search, setSearch ] = useState( '' );
+	const [ showResults, setShowResults ] = useState( false );
+
+	const filtered = search.trim()
+		? allAbilities.filter(
+				( a ) =>
+					! tools.includes( a.id ) &&
+					( a.id.toLowerCase().includes( search.toLowerCase() ) ||
+						a.label
+							.toLowerCase()
+							.includes( search.toLowerCase() ) ||
+						a.category
+							.toLowerCase()
+							.includes( search.toLowerCase() ) )
+		  )
+		: [];
+
+	const handleRemove = useCallback(
+		( toolId ) => {
+			onChange( tools.filter( ( t ) => t !== toolId ) );
+		},
+		[ tools, onChange ]
+	);
+
+	const handleAdd = useCallback(
+		( toolId ) => {
+			if ( ! tools.includes( toolId ) ) {
+				onChange( [ ...tools, toolId ] );
+			}
+			setSearch( '' );
+			setShowResults( false );
+		},
+		[ tools, onChange ]
+	);
+
+	const getLabel = useCallback(
+		( toolId ) => {
+			const ability = allAbilities.find( ( a ) => a.id === toolId );
+			return ability ? ability.label : toolId;
+		},
+		[ allAbilities ]
+	);
+
+	return (
+		<div className="gratis-ai-agent-tier1-editor">
+			<div className="gratis-ai-agent-tier1-list">
+				{ tools.map( ( toolId ) => (
+					<span key={ toolId } className="gratis-ai-agent-tier1-chip">
+						<span className="gratis-ai-agent-tier1-chip-label">
+							{ getLabel( toolId ) }
+						</span>
+						<button
+							type="button"
+							className="gratis-ai-agent-tier1-chip-remove"
+							onClick={ () => handleRemove( toolId ) }
+							aria-label={ sprintf(
+								/* translators: %s: tool name */
+								__( 'Remove %s', 'gratis-ai-agent' ),
+								getLabel( toolId )
+							) }
+						>
+							&times;
+						</button>
+					</span>
+				) ) }
+			</div>
+			{ tools.length > 10 && (
+				<p className="gratis-ai-agent-tier1-warning">
+					{ __(
+						'Tip: Keep tier 1 tools to around 10 to minimize context size and cost.',
+						'gratis-ai-agent'
+					) }
+				</p>
+			) }
+			<div className="gratis-ai-agent-tier1-add">
+				<TextControl
+					placeholder={ __(
+						'Search abilities to add…',
+						'gratis-ai-agent'
+					) }
+					value={ search }
+					onChange={ ( v ) => {
+						setSearch( v );
+						setShowResults( v.trim().length > 0 );
+					} }
+					onFocus={ () => {
+						if ( search.trim() ) {
+							setShowResults( true );
+						}
+					} }
+					__nextHasNoMarginBottom
+				/>
+				{ showResults && filtered.length > 0 && (
+					<ul className="gratis-ai-agent-tier1-results">
+						{ filtered.slice( 0, 10 ).map( ( ability ) => (
+							<li key={ ability.id }>
+								<button
+									type="button"
+									className="gratis-ai-agent-tier1-result-item"
+									onClick={ () => handleAdd( ability.id ) }
+								>
+									<span className="gratis-ai-agent-tier1-result-name">
+										{ ability.label }
+									</span>
+									<span className="gratis-ai-agent-tier1-result-id">
+										{ ability.id }
+									</span>
+								</button>
+							</li>
+						) ) }
+					</ul>
+				) }
+				{ showResults && search.trim() && filtered.length === 0 && (
+					<p className="gratis-ai-agent-tier1-no-results">
+						{ __(
+							'No matching abilities found.',
+							'gratis-ai-agent'
+						) }
+					</p>
+				) }
+			</div>
+		</div>
+	);
+}
 
 /**
  *
@@ -60,10 +197,17 @@ export default function AgentBuilder() {
 	const [ editId, setEditId ] = useState( null );
 	const [ form, setForm ] = useState( { ...EMPTY_FORM } );
 	const [ saving, setSaving ] = useState( false );
+	const [ resetting, setResetting ] = useState( false );
 	const [ notice, setNotice ] = useState( null );
+	const [ allAbilities, setAllAbilities ] = useState( [] );
+
 	useEffect( () => {
 		fetchAgents();
 		fetchProviders();
+		// Fetch abilities catalog for the tier 1 tool picker.
+		apiFetch( { path: '/gratis-ai-agent/v1/abilities' } )
+			.then( setAllAbilities )
+			.catch( () => {} );
 	}, [ fetchAgents, fetchProviders ] );
 
 	const resetForm = useCallback( () => {
@@ -95,6 +239,7 @@ export default function AgentBuilder() {
 					: '',
 			greeting: agent.greeting || '',
 			avatar_icon: agent.avatar_icon || '',
+			tier_1_tools: agent.tier_1_tools || [],
 		} );
 		setShowForm( true );
 		setNotice( null );
@@ -129,6 +274,7 @@ export default function AgentBuilder() {
 				tool_profile: form.tool_profile,
 				greeting: form.greeting,
 				avatar_icon: form.avatar_icon,
+				tier_1_tools: form.tier_1_tools,
 			};
 
 			if ( form.temperature !== '' ) {
@@ -167,6 +313,16 @@ export default function AgentBuilder() {
 
 	const handleDelete = useCallback(
 		async ( agent ) => {
+			if ( agent.slug === 'general' ) {
+				setNotice( {
+					status: 'error',
+					message: __(
+						'The General agent cannot be deleted.',
+						'gratis-ai-agent'
+					),
+				} );
+				return;
+			}
 			if (
 				// eslint-disable-next-line no-alert
 				! window.confirm(
@@ -182,10 +338,60 @@ export default function AgentBuilder() {
 			) {
 				return;
 			}
-			await deleteAgent( agent.id );
+			try {
+				await deleteAgent( agent.id );
+			} catch ( err ) {
+				setNotice( {
+					status: 'error',
+					message:
+						err?.message ||
+						__( 'Failed to delete agent.', 'gratis-ai-agent' ),
+				} );
+			}
 		},
 		[ deleteAgent ]
 	);
+
+	const handleResetDefaults = useCallback( async () => {
+		if (
+			// eslint-disable-next-line no-alert
+			! window.confirm(
+				__(
+					'Reset all built-in agents to their factory defaults? Your customizations to built-in agents will be lost.',
+					'gratis-ai-agent'
+				)
+			)
+		) {
+			return;
+		}
+
+		setResetting( true );
+		setNotice( null );
+
+		try {
+			await apiFetch( {
+				path: '/gratis-ai-agent/v1/agents/reset-defaults',
+				method: 'POST',
+			} );
+			fetchAgents();
+			setNotice( {
+				status: 'success',
+				message: __(
+					'Built-in agents reset to factory defaults.',
+					'gratis-ai-agent'
+				),
+			} );
+		} catch ( err ) {
+			setNotice( {
+				status: 'error',
+				message:
+					err?.message ||
+					__( 'Failed to reset agents.', 'gratis-ai-agent' ),
+			} );
+		}
+
+		setResetting( false );
+	}, [ fetchAgents ] );
 
 	// Build provider options for the dropdown.
 	const providerOptions = [
@@ -235,19 +441,10 @@ export default function AgentBuilder() {
 				<>
 					<p className="description">
 						{ __(
-							'Create specialized agents with custom system prompts, models, and tool profiles. Select an agent in the chat to use it.',
+							'Agents have specialized system prompts, tools, and settings. Select an agent in the chat to use it. The General agent is used by default.',
 							'gratis-ai-agent'
 						) }
 					</p>
-
-					{ agents.length === 0 && (
-						<p>
-							{ __(
-								'No agents yet. Create your first agent below.',
-								'gratis-ai-agent'
-							) }
-						</p>
-					) }
 
 					{ agents.map( ( agent ) => (
 						<Card key={ agent.id } className="gratis-ai-agent-card">
@@ -255,6 +452,14 @@ export default function AgentBuilder() {
 								<div className="gratis-ai-agent-card-header">
 									<div className="gratis-ai-agent-card-title">
 										<strong>{ agent.name }</strong>
+										{ agent.is_builtin && (
+											<span className="gratis-ai-agent-card-badge">
+												{ __(
+													'Built-in',
+													'gratis-ai-agent'
+												) }
+											</span>
+										) }
 										{ agent.description && (
 											<span className="gratis-ai-agent-card-desc">
 												{ agent.description }
@@ -273,18 +478,20 @@ export default function AgentBuilder() {
 											}
 											size="small"
 										/>
-										<Button
-											icon={ trash }
-											label={ __(
-												'Delete agent',
-												'gratis-ai-agent'
-											) }
-											onClick={ () =>
-												handleDelete( agent )
-											}
-											isDestructive
-											size="small"
-										/>
+										{ agent.slug !== 'general' && (
+											<Button
+												icon={ trash }
+												label={ __(
+													'Delete agent',
+													'gratis-ai-agent'
+												) }
+												onClick={ () =>
+													handleDelete( agent )
+												}
+												isDestructive
+												size="small"
+											/>
+										) }
 									</div>
 								</div>
 							</CardHeader>
@@ -323,6 +530,17 @@ export default function AgentBuilder() {
 											{ agent.temperature }
 										</span>
 									) }
+									{ agent.tier_1_tools?.length > 0 && (
+										<span>
+											<strong>
+												{ __(
+													'Tools:',
+													'gratis-ai-agent'
+												) }
+											</strong>{ ' ' }
+											{ agent.tier_1_tools.length }
+										</span>
+									) }
 								</div>
 								{ agent.system_prompt && (
 									<p className="gratis-ai-agent-prompt-preview">
@@ -330,7 +548,7 @@ export default function AgentBuilder() {
 											? agent.system_prompt.slice(
 													0,
 													120
-											  ) + '…'
+											  ) + '...'
 											: agent.system_prompt }
 									</p>
 								) }
@@ -338,17 +556,28 @@ export default function AgentBuilder() {
 						</Card>
 					) ) }
 
-					<Button
-						variant="secondary"
-						icon={ plus }
-						onClick={ () => {
-							setShowForm( true );
-							setEditId( null );
-							setForm( { ...EMPTY_FORM } );
-						} }
-					>
-						{ __( 'Add Agent', 'gratis-ai-agent' ) }
-					</Button>
+					<div className="gratis-ai-agent-builder-actions">
+						<Button
+							variant="secondary"
+							icon={ plus }
+							onClick={ () => {
+								setShowForm( true );
+								setEditId( null );
+								setForm( { ...EMPTY_FORM } );
+							} }
+						>
+							{ __( 'Add Agent', 'gratis-ai-agent' ) }
+						</Button>
+						<Button
+							variant="tertiary"
+							icon={ resetIcon }
+							onClick={ handleResetDefaults }
+							isBusy={ resetting }
+							disabled={ resetting }
+						>
+							{ __( 'Reset to Defaults', 'gratis-ai-agent' ) }
+						</Button>
+					</div>
 				</>
 			) }
 
@@ -397,7 +626,7 @@ export default function AgentBuilder() {
 						onChange={ ( v ) => updateField( 'system_prompt', v ) }
 						rows={ 8 }
 						help={ __(
-							'Custom instructions for this agent. Replaces the global system prompt. Leave empty to use the global default.',
+							'Instructions that define how this agent behaves. Each agent has its own system prompt.',
 							'gratis-ai-agent'
 						) }
 					/>
@@ -408,10 +637,29 @@ export default function AgentBuilder() {
 						onChange={ ( v ) => updateField( 'greeting', v ) }
 						rows={ 2 }
 						help={ __(
-							'Message shown when this agent starts a conversation. Leave empty for the global default.',
+							'Message shown when this agent starts a conversation.',
 							'gratis-ai-agent'
 						) }
 					/>
+
+					<div className="gratis-ai-agent-form-field">
+						<h4 className="gratis-ai-agent-form-label">
+							{ __( 'Tier 1 Tools', 'gratis-ai-agent' ) }
+						</h4>
+						<p className="description">
+							{ __(
+								'Tools immediately available to this agent. Other tools can still be discovered via search. Aim for about 10 tools to keep context size low.',
+								'gratis-ai-agent'
+							) }
+						</p>
+						<Tier1ToolsEditor
+							tools={ form.tier_1_tools || [] }
+							onChange={ ( v ) =>
+								updateField( 'tier_1_tools', v )
+							}
+							allAbilities={ allAbilities }
+						/>
+					</div>
 
 					<SelectControl
 						label={ __( 'Provider', 'gratis-ai-agent' ) }
@@ -474,7 +722,7 @@ export default function AgentBuilder() {
 						value={ form.avatar_icon }
 						onChange={ ( v ) => updateField( 'avatar_icon', v ) }
 						help={ __(
-							'Dashicon name or emoji for the agent avatar (e.g. "dashicons-admin-users" or "🤖").',
+							'Dashicon name or emoji for the agent avatar.',
 							'gratis-ai-agent'
 						) }
 						__nextHasNoMarginBottom

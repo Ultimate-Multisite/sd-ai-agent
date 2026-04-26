@@ -129,6 +129,9 @@ class AgentLoop {
 	/** @var int Session ID for change attribution (0 = no session). */
 	private int $session_id = 0;
 
+	/** @var list<string> Per-agent Tier 1 tool override (empty = use global default). */
+	private array $agent_tier_1_tools = array();
+
 	/**
 	 * Client-side ability descriptors validated against JsAbilityCatalog.
 	 * These are abilities the browser can execute; the loop pauses and returns
@@ -242,6 +245,11 @@ class AgentLoop {
 			'prompt'     => 0,
 			'completion' => 0,
 		);
+
+		// Per-agent Tier 1 tool override (passed from Agent::get_loop_options).
+		$raw_tier_1_tools = $options['tier_1_tools'] ?? array();
+		// @phpstan-ignore-next-line -- Options bag contains mixed values; runtime array_values is safe.
+		$this->agent_tier_1_tools = is_array( $raw_tier_1_tools ) ? array_values( $raw_tier_1_tools ) : array();
 
 		// Progress callback for live tool-call reporting (used by job system).
 		if ( isset( $options['progress_callback'] ) && is_callable( $options['progress_callback'] ) ) {
@@ -947,7 +955,7 @@ class AgentLoop {
 			return array_merge( $resolved, $this->client_router->build_stubs() );
 		}
 
-		$tier_1 = ToolDiscovery::tier_1_for_run();
+		$tier_1 = ToolDiscovery::tier_1_for_run( $this->agent_tier_1_tools );
 
 		$role_allowed = RolePermissions::get_allowed_abilities_for_current_user();
 		$perms        = $this->tool_permissions;

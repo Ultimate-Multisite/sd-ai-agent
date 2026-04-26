@@ -313,6 +313,7 @@ class UnifiedAdminMenu {
 				'menuItems'           => self::getMenuItems(),
 				'connectorsUrl'       => self::getConnectorsUrl(),
 				'connectorsAvailable' => self::hasNativeConnectorsPage() || self::hasGutenbergConnectorsPage() ? '1' : '',
+				'onboarding_complete' => \GratisAiAgent\Core\OnboardingManager::is_complete(),
 				// Provider trace is a debug-only feature. The JS settings page reads
 				// this flag to show or hide the Provider Trace tab.
 				'wpDebug'             => defined( 'WP_DEBUG' ) && WP_DEBUG ? '1' : '',
