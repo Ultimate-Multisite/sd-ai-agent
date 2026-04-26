@@ -16,6 +16,7 @@ use GratisAiAgent\Abilities\InternetSearchAbilities;
 use GratisAiAgent\Core\AgentLoop;
 use GratisAiAgent\Core\BudgetManager;
 use GratisAiAgent\Core\Database;
+use GratisAiAgent\Core\Features;
 use GratisAiAgent\Core\FreshInstallDetector;
 use GratisAiAgent\Core\ProviderCredentialLoader;
 use GratisAiAgent\Core\RolePermissions;
@@ -191,42 +192,44 @@ final class SettingsController {
 			)
 		);
 
-		// Role permissions endpoints.
-		register_rest_route(
-			RestController::NAMESPACE,
-			'/role-permissions',
-			array(
+		// Role permissions endpoints — only registered when access control feature is enabled.
+		if ( Features::is_enabled( Features::ACCESS_CONTROL ) ) {
+			register_rest_route(
+				RestController::NAMESPACE,
+				'/role-permissions',
 				array(
-					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'handle_get_role_permissions' ),
-					'permission_callback' => array( $this, 'check_permission' ),
-				),
-				array(
-					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'handle_update_role_permissions' ),
-					'permission_callback' => array( $this, 'check_permission' ),
-					'args'                => array(
-						'permissions' => array(
-							'required' => true,
-							'type'     => 'object',
+					array(
+						'methods'             => WP_REST_Server::READABLE,
+						'callback'            => array( $this, 'handle_get_role_permissions' ),
+						'permission_callback' => array( $this, 'check_permission' ),
+					),
+					array(
+						'methods'             => WP_REST_Server::CREATABLE,
+						'callback'            => array( $this, 'handle_update_role_permissions' ),
+						'permission_callback' => array( $this, 'check_permission' ),
+						'args'                => array(
+							'permissions' => array(
+								'required' => true,
+								'type'     => 'object',
+							),
 						),
 					),
-				),
-			)
-		);
+				)
+			);
 
-		// Role permissions — available roles list.
-		register_rest_route(
-			RestController::NAMESPACE,
-			'/role-permissions/roles',
-			array(
+			// Role permissions — available roles list.
+			register_rest_route(
+				RestController::NAMESPACE,
+				'/role-permissions/roles',
 				array(
-					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'handle_get_roles' ),
-					'permission_callback' => array( $this, 'check_permission' ),
-				),
-			)
-		);
+					array(
+						'methods'             => WP_REST_Server::READABLE,
+						'callback'            => array( $this, 'handle_get_roles' ),
+						'permission_callback' => array( $this, 'check_permission' ),
+					),
+				)
+			);
+		}
 
 		// Fresh install detection endpoint.
 		register_rest_route(
@@ -438,6 +441,14 @@ final class SettingsController {
 		// Indicate whether a Brave Search API key is configured (boolean only, no key value).
 		// @phpstan-ignore-next-line
 		$settings['_brave_search_key_configured'] = '' !== InternetSearchAbilities::get_brave_api_key();
+
+		// Indicate whether a feedback-report receiver API key is configured (boolean only, no key value — t180).
+		// @phpstan-ignore-next-line
+		$settings['_feedback_api_key_configured'] = true;
+
+		// Expose active feature flags so the JS UI can gate sections consistently.
+		// @phpstan-ignore-next-line
+		$settings['_features'] = Features::all();
 
 		return new WP_REST_Response( $settings, 200 );
 	}
