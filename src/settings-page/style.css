@@ -1000,3 +1000,11 @@
 	margin: 16px 0 4px;
 }
 
+/* Save-feedback snackbar — viewport-fixed so it is visible regardless of scroll position */
+.gratis-ai-agent-snackbar-list {
+	position: fixed;
+	bottom: 0;
+	right: 0;
+	z-index: 99999;
+}
+

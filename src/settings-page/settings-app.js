@@ -13,6 +13,7 @@ import {
 	Notice,
 	Spinner,
 	SelectControl,
+	SnackbarList,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
@@ -78,9 +79,15 @@ export default function SettingsApp() {
 	// Available TTS voices (loaded asynchronously in some browsers).
 	const ttsVoices = useAvailableVoices();
 
+	const { createNotice, removeNotice } = useDispatch( 'core/notices' );
+	const snackbarNotices = useSelect( ( select ) =>
+		select( 'core/notices' )
+			.getNotices()
+			.filter( ( n ) => n.type === 'snackbar' )
+	);
+
 	const [ local, setLocal ] = useState( null );
 	const [ saving, setSaving ] = useState( false );
-	const [ notice, setNotice ] = useState( null );
 	const [ abilities, setAbilities ] = useState( [] );
 	const [ activeTab, setActiveTab ] = useState( 'general' );
 
@@ -327,21 +334,30 @@ export default function SettingsApp() {
 
 	const handleSave = useCallback( async () => {
 		setSaving( true );
-		setNotice( null );
 		try {
 			await saveSettings( local );
-			setNotice( {
-				status: 'success',
-				message: __( 'Settings saved.', 'gratis-ai-agent' ),
-			} );
+			createNotice(
+				'success',
+				__( 'Settings saved.', 'gratis-ai-agent' ),
+				{
+					type: 'snackbar',
+					isDismissible: true,
+					id: 'gratis-ai-agent-settings-save',
+				}
+			);
 		} catch {
-			setNotice( {
-				status: 'error',
-				message: __( 'Failed to save settings.', 'gratis-ai-agent' ),
-			} );
+			createNotice(
+				'error',
+				__( 'Failed to save settings.', 'gratis-ai-agent' ),
+				{
+					type: 'snackbar',
+					isDismissible: true,
+					id: 'gratis-ai-agent-settings-save',
+				}
+			);
 		}
 		setSaving( false );
-	}, [ local, saveSettings ] );
+	}, [ local, saveSettings, createNotice ] );
 
 	if ( ! settingsLoaded || ! local ) {
 		return (
@@ -447,15 +463,6 @@ export default function SettingsApp() {
 
 	return (
 		<div className="gratis-ai-agent-settings">
-			{ notice && (
-				<Notice
-					status={ notice.status }
-					isDismissible
-					onDismiss={ () => setNotice( null ) }
-				>
-					{ notice.message }
-				</Notice>
-			) }
 			<Notice
 				status="info"
 				isDismissible={ false }
@@ -1967,6 +1974,11 @@ export default function SettingsApp() {
 					</Button>
 				</div>
 			) }
+			<SnackbarList
+				notices={ snackbarNotices }
+				className="gratis-ai-agent-snackbar-list"
+				onRemove={ removeNotice }
+			/>
 		</div>
 	);
 }
