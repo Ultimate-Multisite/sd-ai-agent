@@ -137,6 +137,27 @@
 	color: #060;
 }
 
+/* Status badges (replace @wordpress/components Badge which is not universally available) */
+.gratis-changes-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 10px;
+	font-size: 0.78em;
+	font-weight: 600;
+	line-height: 1.6;
+	white-space: nowrap;
+}
+
+.gratis-changes-badge--active {
+	background: #d7f5e5;
+	color: #1a6140;
+}
+
+.gratis-changes-badge--reverted {
+	background: #f0f0f0;
+	color: #757575;
+}
+
 /* Diff modal */
 .gratis-changes-diff-modal .components-modal__content {
 	min-width: min( 80vw, 900px );

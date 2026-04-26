@@ -9,7 +9,6 @@ import {
 	SelectControl,
 	CheckboxControl,
 	Modal,
-	Badge,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
@@ -300,6 +299,7 @@ export default function ChangesApp() {
 			{ /* Filters */ }
 			<div className="gratis-changes-filters">
 				<SelectControl
+					__next40pxDefaultSize
 					label={ __( 'Object Type', 'gratis-ai-agent' ) }
 					value={ filterType }
 					options={ [
@@ -310,6 +310,10 @@ export default function ChangesApp() {
 						{
 							label: __( 'Post', 'gratis-ai-agent' ),
 							value: 'post',
+						},
+						{
+							label: __( 'Page', 'gratis-ai-agent' ),
+							value: 'page',
 						},
 						{
 							label: __( 'Option', 'gratis-ai-agent' ),
@@ -330,6 +334,7 @@ export default function ChangesApp() {
 					} }
 				/>
 				<SelectControl
+					__next40pxDefaultSize
 					label={ __( 'Status', 'gratis-ai-agent' ) }
 					value={ filterReverted }
 					options={ [
@@ -477,19 +482,19 @@ export default function ChangesApp() {
 										</td>
 										<td>
 											{ change.reverted ? (
-												<Badge>
+												<span className="gratis-changes-badge gratis-changes-badge--reverted">
 													{ __(
 														'Reverted',
 														'gratis-ai-agent'
 													) }
-												</Badge>
+												</span>
 											) : (
-												<Badge>
+												<span className="gratis-changes-badge gratis-changes-badge--active">
 													{ __(
 														'Active',
 														'gratis-ai-agent'
 													) }
-												</Badge>
+												</span>
 											) }
 										</td>
 										<td>

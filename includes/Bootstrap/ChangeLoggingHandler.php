@@ -76,6 +76,17 @@ final class ChangeLoggingHandler {
 	}
 
 	/**
+	 * Cache the term's current name before it is overwritten by wp_update_term().
+	 *
+	 * @param int    $term_id  Term ID being edited.
+	 * @param string $taxonomy Taxonomy slug.
+	 */
+	#[Action( tag: 'edit_terms', priority: 10 )]
+	public function on_edit_terms( int $term_id, string $taxonomy ): void {
+		ChangeLogger::on_edit_terms( $term_id, $taxonomy );
+	}
+
+	/**
 	 * Record term changes.
 	 *
 	 * @param int    $term_id  Term ID.

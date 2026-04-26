@@ -46,6 +46,17 @@ class ChangeLogger {
 	private static string $ability_name = '';
 
 	/**
+	 * Cache of term names captured before a term edit fires.
+	 *
+	 * Keyed by term_id so the before-value is available inside
+	 * on_edited_term() which fires after the save.
+	 * Read via array-key access: self::$term_name_cache[$term_id] in on_edited_term().
+	 *
+	 * @var array<int,string>
+	 */
+	private static array $term_name_cache = [];
+
+	/**
 	 * Begin recording changes for an AI session.
 	 *
 	 * Call this before executing an ability that may make changes.
@@ -86,7 +97,8 @@ class ChangeLogger {
 		add_action( 'updated_option', [ __CLASS__, 'on_updated_option' ], 10, 3 );
 		add_action( 'added_option', [ __CLASS__, 'on_added_option' ], 10, 2 );
 
-		// Term changes.
+		// Term changes: capture before-value before the save, record after.
+		add_action( 'edit_terms', [ __CLASS__, 'on_edit_terms' ], 10, 2 );
 		add_action( 'edited_term', [ __CLASS__, 'on_edited_term' ], 10, 3 );
 
 		// User profile changes.
@@ -95,6 +107,10 @@ class ChangeLogger {
 
 	/**
 	 * Record post field changes.
+	 *
+	 * Uses the actual post_type (e.g. 'post', 'page', 'product') as the
+	 * object_type so the revert service can call wp_update_post() for any
+	 * registered post type, and the UI can filter by the real type.
 	 *
 	 * @param int      $post_id     Post ID.
 	 * @param \WP_Post $post_after  Post object after update.
@@ -124,7 +140,7 @@ class ChangeLogger {
 			ChangesLog::record(
 				[
 					'session_id'   => self::$session_id,
-					'object_type'  => 'post',
+					'object_type'  => $post_after->post_type,
 					'object_id'    => $post_id,
 					'object_title' => $post_after->post_title,
 					'ability_name' => self::$ability_name,
@@ -141,6 +157,10 @@ class ChangeLogger {
 	 *
 	 * Skips transients and internal WordPress options to avoid noise.
 	 *
+	 * Values are stored via maybe_serialize() so that complex types (arrays,
+	 * objects) round-trip correctly through maybe_unserialize() in the revert
+	 * service. Scalar strings are unaffected by maybe_serialize().
+	 *
 	 * @param string $option    Option name.
 	 * @param mixed  $old_value Old value.
 	 * @param mixed  $new_value New value.
@@ -154,8 +174,10 @@ class ChangeLogger {
 			return;
 		}
 
-		$before = is_scalar( $old_value ) ? (string) $old_value : wp_json_encode( $old_value );
-		$after  = is_scalar( $new_value ) ? (string) $new_value : wp_json_encode( $new_value );
+		// Use maybe_serialize so arrays/objects can be restored correctly by
+		// maybe_unserialize() in ChangeRevertService. For scalars this is a no-op.
+		$before = maybe_serialize( $old_value );
+		$after  = maybe_serialize( $new_value );
 
 		if ( $before === $after ) {
 			return;
@@ -195,7 +217,7 @@ class ChangeLogger {
 			return;
 		}
 
-		$after = is_scalar( $value ) ? (string) $value : wp_json_encode( $value );
+		$after = maybe_serialize( $value );
 
 		if ( self::is_sensitive_option( $option ) ) {
 			$after = self::redact_value();
@@ -216,7 +238,31 @@ class ChangeLogger {
 	}
 
 	/**
+	 * Cache the term's current name before it is overwritten by wp_update_term().
+	 *
+	 * WordPress fires the 'edit_terms' action before the row is saved, which is
+	 * the only opportunity to capture the old name. The value is stored in
+	 * $term_name_cache keyed by term_id so on_edited_term() can use it.
+	 *
+	 * @param int    $term_id  Term ID being edited.
+	 * @param string $taxonomy Taxonomy slug.
+	 */
+	public static function on_edit_terms( int $term_id, string $taxonomy ): void {
+		if ( ! self::$active ) {
+			return;
+		}
+
+		$term = get_term( $term_id, $taxonomy );
+		if ( $term && ! is_wp_error( $term ) ) {
+			self::$term_name_cache[ $term_id ] = $term->name;
+		}
+	}
+
+	/**
 	 * Record term changes.
+	 *
+	 * Reads the before-name from $term_name_cache which was populated by
+	 * on_edit_terms() before the save occurred.
 	 *
 	 * @param int    $term_id  Term ID.
 	 * @param int    $tt_id    Term taxonomy ID.
@@ -229,6 +275,15 @@ class ChangeLogger {
 
 		$term = get_term( $term_id, $taxonomy );
 		if ( ! $term || is_wp_error( $term ) ) {
+			unset( self::$term_name_cache[ $term_id ] );
+			return;
+		}
+
+		$before_name = self::$term_name_cache[ $term_id ] ?? '';
+		unset( self::$term_name_cache[ $term_id ] );
+
+		// Skip if name did not actually change.
+		if ( $before_name === $term->name ) {
 			return;
 		}
 
@@ -240,7 +295,7 @@ class ChangeLogger {
 				'object_title' => $term->name,
 				'ability_name' => self::$ability_name,
 				'field_name'   => $taxonomy,
-				'before_value' => '',
+				'before_value' => $before_name,
 				'after_value'  => $term->name,
 			]
 		);

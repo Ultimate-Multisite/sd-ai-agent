@@ -101,7 +101,7 @@ class ChangesLog {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table; built from prepared fragments.
 		$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} {$where_sql}" );
 
-		$items = $wpdb->get_results(
+		$raw_items = $wpdb->get_results(
 			$wpdb->prepare(
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from internal method; where_sql built from prepared fragments.
 				"SELECT * FROM {$table} {$where_sql} ORDER BY created_at DESC LIMIT %d OFFSET %d",
@@ -111,8 +111,17 @@ class ChangesLog {
 		);
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
+		// Map through the typed DTO so that scalar fields are correctly typed in
+		// the JSON response. Without this, tinyint columns such as `reverted`
+		// arrive as the string "0" in JavaScript, which is truthy — causing every
+		// record to appear as already-reverted in the UI.
+		$items = array_map(
+			static fn( \stdClass $row ) => ChangesLogRow::from_row( $row ),
+			$raw_items ?: []
+		);
+
 		return [
-			'items' => $items ?: [],
+			'items' => $items,
 			'total' => $total,
 		];
 	}
