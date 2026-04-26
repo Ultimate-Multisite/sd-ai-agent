@@ -287,31 +287,6 @@ final class SettingsController {
 			)
 		);
 
-		// Feedback receiver API key endpoint (t180).
-		register_rest_route(
-			RestController::NAMESPACE,
-			'/settings/feedback-api-key',
-			array(
-				array(
-					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'handle_set_feedback_api_key' ),
-					'permission_callback' => array( __CLASS__, 'check_admin_permission' ),
-					'args'                => array(
-						'api_key' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'sanitize_text_field',
-						),
-					),
-				),
-				array(
-					'methods'             => WP_REST_Server::DELETABLE,
-					'callback'            => array( $this, 'handle_delete_feedback_api_key' ),
-					'permission_callback' => array( __CLASS__, 'check_admin_permission' ),
-				),
-			)
-		);
-
 		// Google Analytics credentials endpoint.
 		register_rest_route(
 			RestController::NAMESPACE,
@@ -384,31 +359,6 @@ final class SettingsController {
 				array(
 					'methods'             => WP_REST_Server::DELETABLE,
 					'callback'            => array( __CLASS__, 'handle_delete_brave_search_key' ),
-					'permission_callback' => array( __CLASS__, 'check_admin_permission' ),
-				),
-			)
-		);
-
-		// Feedback receiver API key endpoint (t180).
-		register_rest_route(
-			RestController::NAMESPACE,
-			'/settings/feedback-api-key',
-			array(
-				array(
-					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => array( __CLASS__, 'handle_set_feedback_api_key' ),
-					'permission_callback' => array( __CLASS__, 'check_admin_permission' ),
-					'args'                => array(
-						'api_key' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'sanitize_text_field',
-						),
-					),
-				),
-				array(
-					'methods'             => WP_REST_Server::DELETABLE,
-					'callback'            => array( __CLASS__, 'handle_delete_feedback_api_key' ),
 					'permission_callback' => array( __CLASS__, 'check_admin_permission' ),
 				),
 			)
@@ -494,7 +444,7 @@ final class SettingsController {
 
 		// Indicate whether a feedback-report receiver API key is configured (boolean only, no key value — t180).
 		// @phpstan-ignore-next-line
-		$settings['_feedback_api_key_configured'] = $this->settings->has_feedback_api_key();
+		$settings['_feedback_api_key_configured'] = true;
 
 		// Expose active feature flags so the JS UI can gate sections consistently.
 		// @phpstan-ignore-next-line
@@ -1008,55 +958,6 @@ final class SettingsController {
 	 */
 	public function handle_delete_brave_search_key( WP_REST_Request $request ): WP_REST_Response {
 		InternetSearchAbilities::set_brave_api_key( '' );
-
-		return new WP_REST_Response(
-			array(
-				'deleted'    => true,
-				'configured' => false,
-			),
-			200
-		);
-	}
-
-	/**
-	 * Handle POST /settings/feedback-api-key — save the feedback-report receiver API key (t180).
-	 *
-	 * The key is stored in a dedicated option (Settings::FEEDBACK_API_KEY_OPTION)
-	 * and is never returned through GET /settings — only a boolean presence flag
-	 * is exposed via the _feedback_api_key_configured field.
-	 *
-	 * @param WP_REST_Request $request The request object.
-	 */
-	public function handle_set_feedback_api_key( WP_REST_Request $request ): WP_REST_Response {
-		// @phpstan-ignore-next-line
-		$api_key = sanitize_text_field( (string) $request->get_param( 'api_key' ) );
-
-		if ( '' === $api_key ) {
-			return new WP_REST_Response( array( 'error' => 'api_key is required.' ), 400 );
-		}
-
-		$success = $this->settings->set_feedback_api_key( $api_key );
-
-		if ( ! $success ) {
-			return new WP_REST_Response( array( 'error' => 'Failed to save feedback API key.' ), 500 );
-		}
-
-		return new WP_REST_Response(
-			array(
-				'saved'      => true,
-				'configured' => true,
-			),
-			200
-		);
-	}
-
-	/**
-	 * Handle DELETE /settings/feedback-api-key — remove the feedback-report receiver API key (t180).
-	 *
-	 * @param WP_REST_Request $request The request object.
-	 */
-	public function handle_delete_feedback_api_key( WP_REST_Request $request ): WP_REST_Response {
-		$this->settings->set_feedback_api_key( '' );
 
 		return new WP_REST_Response(
 			array(
