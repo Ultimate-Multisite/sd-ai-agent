@@ -293,7 +293,7 @@ class Settings {
 			'system_prompt'            => '',
 			'auto_memory'              => true,
 			'tool_permissions'         => array(),
-			'temperature'              => 0.7,
+			'temperature'              => 0.2,
 			'max_output_tokens'        => 4096,
 			'context_window_default'   => 128000,
 			'onboarding_complete'      => false,
