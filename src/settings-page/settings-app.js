@@ -808,52 +808,6 @@ export default function SettingsApp() {
 
 										<h3 className="gratis-ai-agent-settings-section-title">
 											{ __(
-												'System Prompt',
-												'gratis-ai-agent'
-											) }
-										</h3>
-										<table className="form-table gratis-ai-agent-form-table">
-											<tbody>
-												<tr>
-													<th scope="row">
-														<label htmlFor="gratis-system-prompt">
-															{ __(
-																'Custom System Prompt',
-																'gratis-ai-agent'
-															) }
-														</label>
-													</th>
-													<td>
-														<TextareaControl
-															id="gratis-system-prompt"
-															value={
-																local.system_prompt
-															}
-															onChange={ ( v ) =>
-																updateField(
-																	'system_prompt',
-																	v
-																)
-															}
-															placeholder={
-																settings
-																	?._defaults
-																	?.system_prompt ||
-																''
-															}
-															rows={ 12 }
-															help={ __(
-																'Leave empty to use the built-in default shown above. Memories are appended automatically.',
-																'gratis-ai-agent'
-															) }
-														/>
-													</td>
-												</tr>
-											</tbody>
-										</table>
-
-										<h3 className="gratis-ai-agent-settings-section-title">
-											{ __(
 												'AI Image Generation',
 												'gratis-ai-agent'
 											) }
