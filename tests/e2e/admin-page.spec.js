@@ -32,14 +32,15 @@ test.describe( 'Admin Page - Chat UI', () => {
 
 	test( 'admin page loads with correct layout', async ( { page } ) => {
 		// The unified admin SPA renders .gratis-ai-agent-unified-admin as the outer
-		// wrapper. The AdminPageApp (chat UI) is mounted inside
-		// #gratis-ai-agent-chat-container by ChatRoute via window.gratisAiAgentChat.mount().
-		// Scope layout assertions to #gratis-ai-agent-chat-container to avoid matching
-		// the floating widget's hidden elements.
+		// wrapper. The AdminPageApp mounts ChatRedesign inside
+		// #gratis-ai-agent-chat-container. ChatRedesign uses gaa-cr-* classes:
+		//   .gaa-cr-shell   — two-column shell  (was .gratis-ai-agent-layout)
+		//   .gaa-cr-sidebar — sidebar panel     (was .gratis-ai-agent-sidebar)
+		//   .gaa-cr-convo   — conversation area (was .gratis-ai-agent-main)
 		const chatContainer = page.locator( '#gratis-ai-agent-chat-container' );
-		await expect( chatContainer.locator( '.gratis-ai-agent-layout' ) ).toBeVisible();
-		await expect( chatContainer.locator( '.gratis-ai-agent-sidebar' ) ).toBeVisible();
-		await expect( chatContainer.locator( '.gratis-ai-agent-main' ) ).toBeVisible();
+		await expect( chatContainer.locator( '.gaa-cr-shell' ) ).toBeVisible();
+		await expect( chatContainer.locator( '.gaa-cr-sidebar' ) ).toBeVisible();
+		await expect( chatContainer.locator( '.gaa-cr-convo' ) ).toBeVisible();
 	} );
 
 	test( 'chat panel is visible on admin page', async ( { page } ) => {
@@ -60,11 +61,10 @@ test.describe( 'Admin Page - Chat UI', () => {
 	} );
 
 	test( 'empty state is shown when no messages', async ( { page } ) => {
-		// Scope to the non-compact (admin page) chat panel to avoid matching
-		// the floating widget's hidden empty state element.
-		const emptyState = page.locator(
-			'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-empty-state'
-		);
+		// The ChatRedesign MessageList renders .gaa-cr-empty when there are no
+		// messages. Scoped to .gaa-cr (the admin chat root) so it doesn't match
+		// any other empty-state element that may be present on the page.
+		const emptyState = page.locator( '.gaa-cr .gaa-cr-empty' );
 		await expect( emptyState ).toBeVisible();
 	} );
 
@@ -93,20 +93,24 @@ test.describe( 'Admin Page - Chat UI', () => {
 	} );
 
 	test( 'message input placeholder text is correct', async ( { page } ) => {
+		// The ChatRedesign InputArea placeholder was updated when the input was
+		// redesigned. Old: "Type a message or / for commands…"
 		const input = getMessageInput( page );
 		await expect( input ).toHaveAttribute(
 			'placeholder',
-			'Type a message or / for commands…'
+			'Ask the agent to do something, or type / for commands…'
 		);
 	} );
 
 	test( 'sidebar has new chat button', async ( { page } ) => {
-		const newChatButton = page.locator( '.gratis-ai-agent-new-chat-btn' );
+		// The ChatRedesign Sidebar uses .gaa-cr-new-chat (was .gratis-ai-agent-new-chat-btn).
+		const newChatButton = page.locator( '.gaa-cr-new-chat' );
 		await expect( newChatButton ).toBeVisible();
 	} );
 
 	test( 'sidebar has session search input', async ( { page } ) => {
-		const searchInput = page.locator( '.gratis-ai-agent-sidebar-search' );
+		// The ChatRedesign Sidebar uses .gaa-cr-sidebar-search (was .gratis-ai-agent-sidebar-search).
+		const searchInput = page.locator( '.gaa-cr-sidebar-search' );
 		await expect( searchInput ).toBeVisible();
 	} );
 } );
@@ -130,15 +134,12 @@ test.describe( 'Admin Page - Session Management', () => {
 		// disappear quickly if the backend returns an error fast).
 		await waitForMessageSubmitted( page );
 
-		// Click new chat.
-		const newChatButton = page.locator( '.gratis-ai-agent-new-chat-btn' );
+		// Click new chat — ChatRedesign Sidebar uses .gaa-cr-new-chat.
+		const newChatButton = page.locator( '.gaa-cr-new-chat' );
 		await newChatButton.click();
 
-		// Empty state should reappear. Scope to the non-compact chat panel to
-		// avoid matching the floating widget's hidden empty state element.
-		const emptyState = page.locator(
-			'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-empty-state'
-		);
+		// Empty state should reappear — ChatRedesign MessageList renders .gaa-cr-empty.
+		const emptyState = page.locator( '.gaa-cr .gaa-cr-empty' );
 		await expect( emptyState ).toBeVisible( { timeout: 5_000 } );
 	} );
 
@@ -157,11 +158,12 @@ test.describe( 'Admin Page - Session Management', () => {
 		// WP trunk if the backend returns an error response fast.
 		await waitForMessageSubmitted( page );
 
-		// At least one session item should appear in the sidebar.
+		// At least one session row should appear in the sidebar.
+		// The ChatRedesign Sidebar uses .gaa-cr-session-row (was .gratis-ai-agent-session-item).
 		// Use toBeVisible() on the first item rather than toHaveCount(1) because
 		// prior tests in the same run may have created sessions that persist in
 		// the wp-env database across tests.
-		const sessionItems = page.locator( '.gratis-ai-agent-session-item' );
+		const sessionItems = page.locator( '.gaa-cr-session-row' );
 		await expect( sessionItems.first() ).toBeVisible( { timeout: 10_000 } );
 	} );
 } );
@@ -187,18 +189,16 @@ test.describe( 'Admin Page - Keyboard Shortcuts', () => {
 		// Trigger new chat shortcut.
 		await page.keyboard.press( 'ControlOrMeta+n' );
 
-		// Scope to the non-compact chat panel to avoid matching the floating
-		// widget's hidden empty state element.
-		const emptyState = page.locator(
-			'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-empty-state'
-		);
+		// ChatRedesign MessageList renders .gaa-cr-empty when there are no messages.
+		const emptyState = page.locator( '.gaa-cr .gaa-cr-empty' );
 		await expect( emptyState ).toBeVisible( { timeout: 5_000 } );
 	} );
 
 	test( 'Ctrl+K / Cmd+K focuses the sidebar search', async ( { page } ) => {
 		await page.keyboard.press( 'ControlOrMeta+k' );
 
-		const searchInput = page.locator( '.gratis-ai-agent-sidebar-search' );
+		// ChatRedesign Sidebar uses .gaa-cr-sidebar-search (was .gratis-ai-agent-sidebar-search).
+		const searchInput = page.locator( '.gaa-cr-sidebar-search' );
 		await expect( searchInput ).toBeFocused();
 	} );
 } );

@@ -3,6 +3,21 @@
  *
  * Provides login, navigation, and common assertion utilities
  * for testing the Gratis AI Agent plugin in a wp-env environment.
+ *
+ * Selector reference — chat redesign (gaa-cr-* classes)
+ * -------------------------------------------------------
+ * The admin page chat UI was redesigned. Old gratis-ai-agent-chat-panel
+ * selectors no longer apply. Mapping used throughout this file:
+ *
+ *   Old selector                                     → New selector
+ *   .gratis-ai-agent-chat-panel:not(.is-compact)     → .gaa-cr
+ *   …chat-panel .gratis-ai-agent-input               → .gaa-cr .gaa-cr-input-textarea
+ *   …chat-panel .gratis-ai-agent-send-btn            → .gaa-cr .gaa-cr-send-btn:not(.is-stop)
+ *   …chat-panel .gratis-ai-agent-stop-btn            → .gaa-cr .gaa-cr-send-btn.is-stop
+ *   …chat-panel .gratis-ai-agent-messages            → .gaa-cr .gaa-cr-messages
+ *   …chat-panel .gratis-ai-agent-message-row         → .gaa-cr .gaa-cr-msg-row
+ *   .gratis-ai-agent-session-item                    → .gaa-cr-session-row
+ *   .gratis-ai-agent-session-empty                   → .gaa-cr-session-empty
  */
 
 const WP_ADMIN_USER = process.env.WP_ADMIN_USER || 'admin';
@@ -94,20 +109,21 @@ async function goToAgentPage( page ) {
 
 	// Wait for the unified admin app root to be present. The SPA mounts into
 	// #gratis-ai-agent-root and renders .gratis-ai-agent-unified-admin once React
-	// has hydrated. This replaces the old .gratis-ai-agent-chat-panel wait which
-	// could time out under CI load when the admin-page bundle is slow to mount.
-	// Use 30 s — WP 6.9 CI runners can be slow to render the SPA even with
-	// 2 parallel workers.
+	// has hydrated. Use 30 s — WP 6.9 CI runners can be slow to render the SPA
+	// even with 2 parallel workers.
 	await page
 		.locator( '.gratis-ai-agent-unified-admin' )
 		.waitFor( { state: 'visible', timeout: 30_000 } )
 		.catch( () => {} ); // Non-fatal: some tests navigate away before app renders.
 
-	// Wait for the chat container to be present — ChatRoute mounts the chat
-	// app into #gratis-ai-agent-chat-container. Either the container or the session
-	// list / empty state must be visible before we return.
+	// Wait for the chat container or a visible session row/empty state.
+	// ChatRoute mounts the chat app into #gratis-ai-agent-chat-container.
+	// The redesigned sidebar uses gaa-cr-session-row (was gratis-ai-agent-session-item)
+	// and gaa-cr-session-empty (was gratis-ai-agent-session-empty).
 	await page
-		.locator( '#gratis-ai-agent-chat-container, .gratis-ai-agent-session-item, .gratis-ai-agent-session-empty' )
+		.locator(
+			'#gratis-ai-agent-chat-container, .gaa-cr-session-row, .gaa-cr-session-empty'
+		)
 		.first()
 		.waitFor( { state: 'visible', timeout: 10_000 } )
 		.catch( () => {} ); // Non-fatal: some tests navigate away before list renders.
@@ -164,100 +180,80 @@ function getFloatingPanel( page ) {
 /**
  * Get the chat message input textarea.
  *
- * Scoped to the non-compact (admin page) chat panel to avoid matching the
- * floating widget's hidden .gratis-ai-agent-input element. The floating widget
- * renders ChatPanel with compact=true (adds is-compact class), while the
- * admin page chat panel does not have is-compact.
+ * The admin page chat UI uses the redesigned ChatRedesign component with
+ * gaa-cr-* CSS classes. The textarea is .gaa-cr-input-textarea inside .gaa-cr.
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  * @return {import('@playwright/test').Locator} The textarea locator.
  */
 function getMessageInput( page ) {
-	return page
-		.locator( '.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-input' )
-		.first();
+	return page.locator( '.gaa-cr .gaa-cr-input-textarea' ).first();
 }
 
 /**
  * Get the send message button.
  *
- * Scoped to the non-compact (admin page) chat panel to avoid matching the
- * floating widget's hidden send button.
+ * In the ChatRedesign InputArea, the send button has class gaa-cr-send-btn.
+ * When generating, the same position gets class is-stop. The :not(.is-stop)
+ * guard targets the send button only.
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  * @return {import('@playwright/test').Locator} The send button locator.
  */
 function getSendButton( page ) {
-	return page
-		.locator(
-			'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-send-btn'
-		)
-		.first();
+	return page.locator( '.gaa-cr .gaa-cr-send-btn:not(.is-stop)' ).first();
 }
 
 /**
  * Get the stop generation button.
  *
- * Scoped to the non-compact (admin page) chat panel to avoid matching the
- * floating widget's hidden stop button.
+ * In the ChatRedesign InputArea, the stop button is the send button position
+ * with the additional is-stop class applied while generating.
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  * @return {import('@playwright/test').Locator} The stop button locator.
  */
 function getStopButton( page ) {
-	return page
-		.locator(
-			'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-stop-btn'
-		)
-		.first();
+	return page.locator( '.gaa-cr .gaa-cr-send-btn.is-stop' ).first();
 }
 
 /**
  * Get the message list container.
  *
- * Scoped to the non-compact (admin page) chat panel to avoid matching the
- * floating widget's hidden message list.
+ * In the ChatRedesign MessageList, the scroll container has class gaa-cr-messages.
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  * @return {import('@playwright/test').Locator} The message list locator.
  */
 function getMessageList( page ) {
-	return page
-		.locator(
-			'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-messages'
-		)
-		.first();
+	return page.locator( '.gaa-cr .gaa-cr-messages' ).first();
 }
 
 /**
  * Get all message rows in the chat.
  *
- * Scoped to the non-compact (admin page) chat panel to avoid matching the
- * floating widget's hidden message rows.
+ * In the ChatRedesign message-items, every rendered message row has class
+ * gaa-cr-msg-row (was gratis-ai-agent-message-row in the old ChatPanel).
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  * @return {import('@playwright/test').Locator} The message rows locator.
  */
 function getMessageRows( page ) {
-	return page.locator(
-		'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-message-row'
-	);
+	return page.locator( '.gaa-cr .gaa-cr-msg-row' );
 }
 
 /**
- * Get the admin page chat panel (non-compact, not the floating widget).
+ * Get the admin page chat root (the ChatRedesign .gaa-cr element).
  *
- * The floating widget renders ChatPanel with compact=true (adds is-compact
- * class). The admin page chat panel does not have is-compact. This selector
- * avoids strict-mode violations when both panels are in the DOM.
+ * The admin page now renders ChatRedesign with root class .gaa-cr instead of
+ * the old ChatPanel (.gratis-ai-agent-chat-panel). The floating widget and
+ * compact panels do not render the ChatRedesign root, so this is unambiguous.
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
- * @return {import('@playwright/test').Locator} The chat panel locator.
+ * @return {import('@playwright/test').Locator} The chat redesign root locator.
  */
 function getChatPanel( page ) {
-	return page
-		.locator( '.gratis-ai-agent-chat-panel:not(.is-compact)' )
-		.first();
+	return page.locator( '.gaa-cr' ).first();
 }
 
 /**
@@ -383,22 +379,16 @@ async function goToBenchmarkPage( page ) {
  * message row is appended synchronously (before any async REST calls), so it
  * persists regardless of whether the backend job succeeds or fails quickly.
  *
- * On WP trunk the /v1/run endpoint may return an error response faster than
- * on WP 6.9, causing sending=false (and the stop button to disappear) before
- * the 10 s timeout. The message row does not disappear on error, making it a
- * stable signal that the message was submitted.
+ * In the ChatRedesign, message rows use class gaa-cr-msg-row
+ * (was gratis-ai-agent-message-row in the old ChatPanel).
  *
  * @param {import('@playwright/test').Page} page    - Playwright page object.
  * @param {number}                          timeout - Max wait in ms (default 5 000).
  * @return {Promise<void>}
  */
 async function waitForMessageSubmitted( page, timeout = 5_000 ) {
-	// Scope to the non-compact (admin page) chat panel to avoid matching the
-	// floating widget's hidden message rows.
 	await page
-		.locator(
-			'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-message-row'
-		)
+		.locator( '.gaa-cr .gaa-cr-msg-row' )
 		.first()
 		.waitFor( { state: 'visible', timeout } );
 }
