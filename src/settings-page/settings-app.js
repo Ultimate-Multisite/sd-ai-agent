@@ -21,6 +21,7 @@ import {
 	useAvailableVoices,
 	isTTSSupported,
 } from '../components/use-text-to-speech';
+import { isSoundSupported } from '../utils/sound-manager';
 
 /**
  * Internal dependencies
@@ -54,6 +55,9 @@ export default function SettingsApp() {
 		setTtsVoiceURI,
 		setTtsRate,
 		setTtsPitch,
+		setSoundSuccessEnabled,
+		setSoundErrorEnabled,
+		setSoundThinkingEnabled,
 	} = useDispatch( STORE_NAME );
 	const {
 		settings,
@@ -63,6 +67,9 @@ export default function SettingsApp() {
 		ttsVoiceURI,
 		ttsRate,
 		ttsPitch,
+		soundSuccessEnabled,
+		soundErrorEnabled,
+		soundThinkingEnabled,
 	} = useSelect(
 		( select ) => ( {
 			settings: select( STORE_NAME ).getSettings(),
@@ -72,6 +79,9 @@ export default function SettingsApp() {
 			ttsVoiceURI: select( STORE_NAME ).getTtsVoiceURI(),
 			ttsRate: select( STORE_NAME ).getTtsRate(),
 			ttsPitch: select( STORE_NAME ).getTtsPitch(),
+			soundSuccessEnabled: select( STORE_NAME ).isSoundSuccessEnabled(),
+			soundErrorEnabled: select( STORE_NAME ).isSoundErrorEnabled(),
+			soundThinkingEnabled: select( STORE_NAME ).isSoundThinkingEnabled(),
 		} ),
 		[]
 	);
@@ -1256,6 +1266,108 @@ export default function SettingsApp() {
 												</tbody>
 											</table>
 										) }
+
+										<h3 className="gratis-ai-agent-settings-section-title">
+											{ __(
+												'Sound Notifications',
+												'gratis-ai-agent'
+											) }
+										</h3>
+										{ ! isSoundSupported && (
+											<p className="description">
+												{ __(
+													'Sound notifications are not supported in this browser.',
+													'gratis-ai-agent'
+												) }
+											</p>
+										) }
+										{ isSoundSupported && (
+											<table className="form-table gratis-ai-agent-form-table">
+												<tbody>
+													<tr>
+														<th scope="row">
+															{ __(
+																'Success Sound',
+																'gratis-ai-agent'
+															) }
+														</th>
+														<td>
+															<ToggleControl
+																label={ __(
+																	'Play a "ding" when the agent finishes successfully',
+																	'gratis-ai-agent'
+																) }
+																checked={
+																	soundSuccessEnabled
+																}
+																onChange={
+																	setSoundSuccessEnabled
+																}
+																help={ __(
+																	'A short ascending tone plays when the AI completes a request without error.',
+																	'gratis-ai-agent'
+																) }
+																__nextHasNoMarginBottom
+															/>
+														</td>
+													</tr>
+													<tr>
+														<th scope="row">
+															{ __(
+																'Error Sound',
+																'gratis-ai-agent'
+															) }
+														</th>
+														<td>
+															<ToggleControl
+																label={ __(
+																	'Play a "dong" when the agent encounters an error',
+																	'gratis-ai-agent'
+																) }
+																checked={
+																	soundErrorEnabled
+																}
+																onChange={
+																	setSoundErrorEnabled
+																}
+																help={ __(
+																	'A descending tone plays when the AI returns an error response.',
+																	'gratis-ai-agent'
+																) }
+																__nextHasNoMarginBottom
+															/>
+														</td>
+													</tr>
+													<tr>
+														<th scope="row">
+															{ __(
+																'Thinking Sound',
+																'gratis-ai-agent'
+															) }
+														</th>
+														<td>
+															<ToggleControl
+																label={ __(
+																	'Play a tick when a tool action completes',
+																	'gratis-ai-agent'
+																) }
+																checked={
+																	soundThinkingEnabled
+																}
+																onChange={
+																	setSoundThinkingEnabled
+																}
+																help={ __(
+																	'A subtle tick plays each time the agent completes a tool action during processing.',
+																	'gratis-ai-agent'
+																) }
+																__nextHasNoMarginBottom
+															/>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										) }
 									</div>
 								);
 
@@ -1515,44 +1627,44 @@ export default function SettingsApp() {
 									</div>
 								);
 
-						case 'access-branding':
-							return (
-								<div className="gratis-ai-agent-settings-section">
-									{ features.access_control && (
-										<>
-											<h3 className="gratis-ai-agent-settings-section-title">
-												{ __(
-													'Role Permissions',
-													'gratis-ai-agent'
-												) }
-											</h3>
-											<ErrorBoundary
-												label={ __(
-													'Role permissions manager',
-													'gratis-ai-agent'
-												) }
-											>
-												<RolePermissionsManager />
-											</ErrorBoundary>
-										</>
-									) }
+							case 'access-branding':
+								return (
+									<div className="gratis-ai-agent-settings-section">
+										{ features.access_control && (
+											<>
+												<h3 className="gratis-ai-agent-settings-section-title">
+													{ __(
+														'Role Permissions',
+														'gratis-ai-agent'
+													) }
+												</h3>
+												<ErrorBoundary
+													label={ __(
+														'Role permissions manager',
+														'gratis-ai-agent'
+													) }
+												>
+													<RolePermissionsManager />
+												</ErrorBoundary>
+											</>
+										) }
 
-									{ features.branding && (
-										<>
-											<h3 className="gratis-ai-agent-settings-section-title">
-												{ __(
-													'Branding',
-													'gratis-ai-agent'
-												) }
-											</h3>
-											<BrandingManager
-												local={ local }
-												updateField={ updateField }
-											/>
-										</>
-									) }
-								</div>
-							);
+										{ features.branding && (
+											<>
+												<h3 className="gratis-ai-agent-settings-section-title">
+													{ __(
+														'Branding',
+														'gratis-ai-agent'
+													) }
+												</h3>
+												<BrandingManager
+													local={ local }
+													updateField={ updateField }
+												/>
+											</>
+										) }
+									</div>
+								);
 
 							case 'usage':
 								return (

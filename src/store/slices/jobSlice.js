@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
 import { onVisibilityChange } from '../../utils/visibility-manager';
 import { setActiveJob, clearActiveJob } from '../../utils/active-jobs-storage';
 import { notifyConfirmationNeeded } from '../../utils/notification-manager';
+import { playDing, playDong, playThinking } from '../../utils/sound-manager';
 
 export const initialState = {
 	// Active polling job ID (most-recently-started job for the current session).
@@ -135,7 +136,12 @@ export const actions = {
 				return 1000; // 1s initially.
 			};
 
+			// Tracks whether the last poll returned status 'complete'.
+			// Used outside the try block to decide whether to play the ding.
+			let lastStatusComplete = false;
+
 			const poll = async () => {
+				lastStatusComplete = false;
 				attempts++;
 				if ( attempts > maxAttempts ) {
 					unsubscribeVisibility();
@@ -181,6 +187,10 @@ export const actions = {
 						if ( newLen > lastToolCallsLength ) {
 							lastToolCallsLength = newLen;
 							attempts = 0; // Reset backoff on progress.
+							// Play thinking tick for each new tool action.
+							if ( select.getCurrentSessionId() === sessionId ) {
+								playThinking();
+							}
 						}
 
 						// Slow poll if tab is hidden.
@@ -293,6 +303,8 @@ export const actions = {
 									exitReason: 'max_iterations',
 								} );
 							}
+							// Play error sound for the active session.
+							playDong();
 						}
 					}
 
@@ -434,6 +446,8 @@ export const actions = {
 						if ( select.getCurrentSessionId() === sessionId ) {
 							dispatch.fetchSessions();
 						}
+						// Mark successful completion so the ding can fire below.
+						lastStatusComplete = true;
 					}
 				} catch {
 					// Network blip — keep polling with backoff.
@@ -448,6 +462,10 @@ export const actions = {
 				unsubscribeVisibility();
 				clearActiveJob( sessionId );
 				if ( select.getCurrentSessionId() === sessionId ) {
+					// Play success sound when the job completed without error.
+					if ( lastStatusComplete ) {
+						playDing();
+					}
 					dispatch.setSending( false );
 					dispatch.setLiveToolCalls( [] );
 					// Auto-drain the message queue.
