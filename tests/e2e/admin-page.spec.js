@@ -197,8 +197,10 @@ test.describe( 'Admin Page - Keyboard Shortcuts', () => {
 	test( 'Ctrl+K / Cmd+K focuses the sidebar search', async ( { page } ) => {
 		await page.keyboard.press( 'ControlOrMeta+k' );
 
-		// ChatRedesign Sidebar uses .gaa-cr-sidebar-search (was .gratis-ai-agent-sidebar-search).
-		const searchInput = page.locator( '.gaa-cr-sidebar-search' );
+		// ChatRedesign Sidebar: the container is .gaa-cr-sidebar-search (div) but
+		// the focusable element is .gaa-cr-search-input (input) inside it.
+		// The AdminPageApp shortcut handler focuses .gaa-cr-search-input directly.
+		const searchInput = page.locator( '.gaa-cr-search-input' );
 		await expect( searchInput ).toBeFocused();
 	} );
 } );
