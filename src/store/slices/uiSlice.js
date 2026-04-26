@@ -44,6 +44,14 @@ export const initialState = {
 	ttsPitch: parseFloat(
 		localStorage.getItem( 'gratisAiAgentTtsPitch' ) || '1'
 	),
+
+	// Sound notifications — persisted to localStorage.
+	soundSuccessEnabled:
+		localStorage.getItem( 'gratisAiAgentSoundSuccess' ) === 'true',
+	soundErrorEnabled:
+		localStorage.getItem( 'gratisAiAgentSoundError' ) === 'true',
+	soundThinkingEnabled:
+		localStorage.getItem( 'gratisAiAgentSoundThinking' ) === 'true',
 };
 
 export const actions = {
@@ -172,6 +180,50 @@ export const actions = {
 	setTtsPitch( pitch ) {
 		localStorage.setItem( 'gratisAiAgentTtsPitch', String( pitch ) );
 		return { type: 'SET_TTS_PITCH', pitch };
+	},
+
+	// ─── Sound notifications ──────────────────────────────────────
+
+	/**
+	 * Enable or disable the success "ding" sound and persist to localStorage.
+	 *
+	 * @param {boolean} enabled - Whether the ding sound should play on success.
+	 * @return {Object} Redux action.
+	 */
+	setSoundSuccessEnabled( enabled ) {
+		localStorage.setItem(
+			'gratisAiAgentSoundSuccess',
+			enabled ? 'true' : 'false'
+		);
+		return { type: 'SET_SOUND_SUCCESS_ENABLED', enabled };
+	},
+
+	/**
+	 * Enable or disable the error "dong" sound and persist to localStorage.
+	 *
+	 * @param {boolean} enabled - Whether the dong sound should play on error.
+	 * @return {Object} Redux action.
+	 */
+	setSoundErrorEnabled( enabled ) {
+		localStorage.setItem(
+			'gratisAiAgentSoundError',
+			enabled ? 'true' : 'false'
+		);
+		return { type: 'SET_SOUND_ERROR_ENABLED', enabled };
+	},
+
+	/**
+	 * Enable or disable the thinking tick sound and persist to localStorage.
+	 *
+	 * @param {boolean} enabled - Whether the tick should play on each tool action.
+	 * @return {Object} Redux action.
+	 */
+	setSoundThinkingEnabled( enabled ) {
+		localStorage.setItem(
+			'gratisAiAgentSoundThinking',
+			enabled ? 'true' : 'false'
+		);
+		return { type: 'SET_SOUND_THINKING_ENABLED', enabled };
 	},
 
 	/**
@@ -376,6 +428,32 @@ export const selectors = {
 	getTtsPitch( state ) {
 		return state.ttsPitch;
 	},
+
+	// Sound notifications
+
+	/**
+	 * @param {import('../../types').StoreState} state
+	 * @return {boolean} Whether the success "ding" sound is enabled.
+	 */
+	isSoundSuccessEnabled( state ) {
+		return state.soundSuccessEnabled;
+	},
+
+	/**
+	 * @param {import('../../types').StoreState} state
+	 * @return {boolean} Whether the error "dong" sound is enabled.
+	 */
+	isSoundErrorEnabled( state ) {
+		return state.soundErrorEnabled;
+	},
+
+	/**
+	 * @param {import('../../types').StoreState} state
+	 * @return {boolean} Whether the thinking tick sound is enabled.
+	 */
+	isSoundThinkingEnabled( state ) {
+		return state.soundThinkingEnabled;
+	},
 };
 
 /**
@@ -413,6 +491,12 @@ export function reducer( state, action ) {
 			return { ...state, ttsRate: action.rate };
 		case 'SET_TTS_PITCH':
 			return { ...state, ttsPitch: action.pitch };
+		case 'SET_SOUND_SUCCESS_ENABLED':
+			return { ...state, soundSuccessEnabled: action.enabled };
+		case 'SET_SOUND_ERROR_ENABLED':
+			return { ...state, soundErrorEnabled: action.enabled };
+		case 'SET_SOUND_THINKING_ENABLED':
+			return { ...state, soundThinkingEnabled: action.enabled };
 		default:
 			return state;
 	}
