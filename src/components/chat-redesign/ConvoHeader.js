@@ -152,26 +152,26 @@ export default function ConvoHeader( {
 						</button>
 					</span>
 				) }
-				{ isTTSSupported && (
-					<button
-						type="button"
-						className={ `gaa-cr-icon-btn${
-							ttsEnabled ? ' is-active' : ''
-						}` }
-						onClick={ () => setTtsEnabled( ! ttsEnabled ) }
-						aria-label={
-							ttsEnabled
-								? __( 'Disable read aloud', 'gratis-ai-agent' )
-								: __(
-										'Read responses aloud',
-										'gratis-ai-agent'
-								  )
-						}
-						aria-pressed={ ttsEnabled }
-					>
-						{ ttsEnabled ? <Speaker /> : <SpeakerMuted /> }
-					</button>
-				) }
+			{ isTTSSupported && (
+				<button
+					type="button"
+					className={ `gaa-cr-icon-btn gratis-ai-agent-tts-btn${
+						ttsEnabled ? ' is-active' : ''
+					}` }
+					onClick={ () => setTtsEnabled( ! ttsEnabled ) }
+					aria-label={
+						ttsEnabled
+							? __( 'Disable read aloud', 'gratis-ai-agent' )
+							: __(
+									'Read responses aloud',
+									'gratis-ai-agent'
+							  )
+					}
+					aria-pressed={ ttsEnabled }
+				>
+					{ ttsEnabled ? <Speaker /> : <SpeakerMuted /> }
+				</button>
+			) }
 				<div className="gaa-cr-convo-head-menu-wrap">
 					<button
 						type="button"

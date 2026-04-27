@@ -325,14 +325,13 @@ test.describe( 'TTS Toggle Button', () => {
 	} ) => {
 		// The button is only rendered when isTTSSupported is true.
 		// Our mock defines window.speechSynthesis, so the button should appear.
-		// Scope to the non-compact (admin page) chat panel to avoid matching
-		// the floating widget's hidden TTS button.
+		// The admin page now uses ChatRedesign (.gaa-cr); the TTS button is in
+		// ConvoHeader with class gratis-ai-agent-tts-btn. Scoping to .gaa-cr
+		// avoids matching the floating widget's button.
 		// Use 15 s timeout — the chat panel can be slow to render on CI runners
 		// under load, especially on WP trunk where the SPA mount is heavier.
 		const ttsBtn = page
-			.locator(
-				'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-tts-btn'
-			)
+			.locator( '.gaa-cr .gratis-ai-agent-tts-btn' )
 			.first();
 		await expect( ttsBtn ).toBeVisible( { timeout: 15_000 } );
 	} );
@@ -340,11 +339,9 @@ test.describe( 'TTS Toggle Button', () => {
 	test( 'clicking TTS toggle button enables TTS and adds is-active class', async ( {
 		page,
 	} ) => {
-		// Scope to the non-compact (admin page) chat panel.
+		// Scope to the ChatRedesign root (.gaa-cr) — admin page chat panel.
 		const ttsBtn = page
-			.locator(
-				'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-tts-btn'
-			)
+			.locator( '.gaa-cr .gratis-ai-agent-tts-btn' )
 			.first();
 		await expect( ttsBtn ).toBeVisible( { timeout: 15_000 } );
 
@@ -365,11 +362,9 @@ test.describe( 'TTS Toggle Button', () => {
 	test( 'clicking TTS toggle button a second time disables TTS', async ( {
 		page,
 	} ) => {
-		// Scope to the non-compact (admin page) chat panel.
+		// Scope to the ChatRedesign root (.gaa-cr) — admin page chat panel.
 		const ttsBtn = page
-			.locator(
-				'.gratis-ai-agent-chat-panel:not(.is-compact) .gratis-ai-agent-tts-btn'
-			)
+			.locator( '.gaa-cr .gratis-ai-agent-tts-btn' )
 			.first();
 		await expect( ttsBtn ).toBeVisible( { timeout: 15_000 } );
 
