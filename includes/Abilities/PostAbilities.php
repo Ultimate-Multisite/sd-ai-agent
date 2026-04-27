@@ -349,6 +349,114 @@ class PostAbilities {
 		);
 
 		wp_register_ability(
+			'ai-agent/batch-create-posts',
+			[
+				'label'               => __( 'Batch Create Posts', 'gratis-ai-agent' ),
+				'description'         => __( 'Create multiple WordPress posts or pages in a single call. Accepts an array of post definitions and returns an array of results. Use this instead of calling create-post repeatedly when building a full site — reduces ~7 sequential calls to 1.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
+				'input_schema'        => [
+					'type'       => 'object',
+					'properties' => [
+						'posts' => [
+							'type'        => 'array',
+							'description' => 'Array of post definitions to create.',
+							'items'       => [
+								'type'       => 'object',
+								'properties' => [
+									'title'             => [
+										'type'        => 'string',
+										'description' => 'The post title (required).',
+									],
+									'content'           => [
+										'type'        => 'string',
+										'description' => 'Post content. Markdown is auto-converted to Gutenberg blocks.',
+									],
+									'excerpt'           => [
+										'type'        => 'string',
+										'description' => 'Optional post excerpt.',
+									],
+									'status'            => [
+										'type'        => 'string',
+										'description' => 'Post status: "draft" (default), "publish", "pending", "private", or "future".',
+										'enum'        => [ 'draft', 'publish', 'pending', 'private', 'future' ],
+									],
+									'post_type'         => [
+										'type'        => 'string',
+										'description' => 'Post type (default: "post"). Use "page" for pages.',
+									],
+									'page_template'     => [
+										'type'        => 'string',
+										'description' => 'Page template file (e.g. "templates/blank.php"). Maps to _wp_page_template meta.',
+									],
+									'categories'        => [
+										'type'        => 'array',
+										'description' => 'Array of category IDs (integers) or names (strings).',
+										'items'       => [
+											'oneOf' => [
+												[ 'type' => 'string' ],
+												[ 'type' => 'integer' ],
+											],
+										],
+									],
+									'tags'              => [
+										'type'        => 'array',
+										'description' => 'Array of tag names.',
+										'items'       => [ 'type' => 'string' ],
+									],
+									'featured_image_id' => [
+										'type'        => 'integer',
+										'description' => 'Attachment ID to set as the featured image.',
+									],
+									'meta'              => [
+										'type'        => 'object',
+										'description' => 'Key-value pairs of post meta to set.',
+									],
+									'site_url'          => [
+										'type'        => 'string',
+										'description' => 'Subsite URL for multisite. Omit for the main site.',
+									],
+								],
+								'required'   => [ 'title' ],
+							],
+						],
+					],
+					'required'   => [ 'posts' ],
+				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'results'       => [
+							'type'  => 'array',
+							'items' => [
+								'type'       => 'object',
+								'properties' => [
+									'post_id'   => [ 'type' => 'integer' ],
+									'permalink' => [ 'type' => 'string' ],
+									'title'     => [ 'type' => 'string' ],
+									'status'    => [ 'type' => 'string' ],
+									'error'     => [ 'type' => 'string' ],
+								],
+							],
+						],
+						'created_count' => [ 'type' => 'integer' ],
+						'error_count'   => [ 'type' => 'integer' ],
+					],
+				],
+				'meta'                => [
+					'annotations'  => [
+						'readonly'    => false,
+						'destructive' => false,
+					],
+					'show_in_rest' => true,
+				],
+				'execute_callback'    => [ __CLASS__, 'handle_batch_create_posts' ],
+				'permission_callback' => function (): bool {
+					return current_user_can( 'edit_posts' );
+				},
+			]
+		);
+
+		wp_register_ability(
 			'ai-agent/delete-post',
 			[
 				'label'               => __( 'Delete Post', 'gratis-ai-agent' ),
@@ -687,6 +795,74 @@ class PostAbilities {
 			'permalink' => $permalink ?: '',
 			'status'    => $status,
 			'post_type' => $post_type,
+		];
+	}
+
+	/**
+	 * Handle the batch-create-posts ability.
+	 *
+	 * Iterates over the provided post definitions and calls handle_create_post()
+	 * for each one. Errors are captured per-item so partial success is possible —
+	 * the caller receives a results array alongside created_count and error_count
+	 * summary fields.
+	 *
+	 * @param array<string, mixed> $input Input with a 'posts' array of post definitions.
+	 * @return array<string, mixed>|WP_Error
+	 */
+	public static function handle_batch_create_posts( array $input ) {
+		$posts_input = $input['posts'] ?? [];
+
+		if ( ! is_array( $posts_input ) || empty( $posts_input ) ) {
+			return new WP_Error(
+				'ai_agent_batch_empty',
+				__( 'posts array is required and must not be empty.', 'gratis-ai-agent' )
+			);
+		}
+
+		$results       = [];
+		$created_count = 0;
+		$error_count   = 0;
+
+		foreach ( $posts_input as $post_def ) {
+			if ( ! is_array( $post_def ) ) {
+				++$error_count;
+				$results[] = [
+					'post_id'   => 0,
+					'permalink' => '',
+					'title'     => '',
+					'status'    => '',
+					'error'     => __( 'Post definition must be an object.', 'gratis-ai-agent' ),
+				];
+				continue;
+			}
+
+			$result = self::handle_create_post( $post_def );
+
+			if ( is_wp_error( $result ) ) {
+				++$error_count;
+				$results[] = [
+					'post_id'   => 0,
+					'permalink' => '',
+					'title'     => sanitize_text_field( (string) ( $post_def['title'] ?? '' ) ),
+					'status'    => '',
+					'error'     => $result->get_error_message(),
+				];
+			} else {
+				++$created_count;
+				$results[] = [
+					'post_id'   => $result['post_id'],
+					'permalink' => $result['permalink'],
+					'title'     => sanitize_text_field( (string) ( $post_def['title'] ?? '' ) ),
+					'status'    => $result['status'],
+					'error'     => '',
+				];
+			}
+		}
+
+		return [
+			'results'       => $results,
+			'created_count' => $created_count,
+			'error_count'   => $error_count,
 		];
 	}
 
