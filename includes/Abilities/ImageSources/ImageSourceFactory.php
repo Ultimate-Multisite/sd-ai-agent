@@ -212,6 +212,21 @@ class ImageSourceFactory {
 					sprintf( 'Image source "%s" is not available.', $source_id )
 				);
 			}
+
+			// Reject non-free sources here rather than silently dropping them
+			// from the free-source chain below. Paid sources that are not AI
+			// generation have no defined path in import_image(); rejecting early
+			// prevents the call from silently falling through to other sources
+			// in a way the caller did not intend.
+			if ( 'free' !== $requested->get_cost_type() ) {
+				return new WP_Error(
+					'non_free_source_not_supported',
+					sprintf(
+						'Image source "%s" is not a free source. Use source_id="generate" for AI generation.',
+						$source_id
+					)
+				);
+			}
 		}
 
 		// Build an ordered fallback chain of all available free sources.
@@ -282,7 +297,14 @@ class ImageSourceFactory {
 		if ( ! $no_generate ) {
 			$generate = self::get( 'generate' );
 			if ( $generate && $generate->is_available() ) {
-				return self::import_image( $keyword, 'generate', $width, $height, $options );
+				$ai_result = self::import_image( $keyword, 'generate', $width, $height, $options );
+
+				if ( ! is_wp_error( $ai_result ) ) {
+					return $ai_result;
+				}
+
+				// Record the AI failure so the final error lists all sources tried.
+				$tried['generate'] = sprintf( 'AI generation failed: %s', $ai_result->get_error_message() );
 			}
 		}
 
