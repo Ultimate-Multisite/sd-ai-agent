@@ -491,9 +491,8 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 		// waiting for `.first()` would resolve immediately and TTS polling
 		// would start before the new response is processed — causing a race
 		// where speak() is called after the 10 s window expires.
-		const assistantBubbleLocator = page.locator(
-			'.gratis-ai-agent-bubble.gratis-ai-agent-assistant'
-		);
+		// ChatRedesign renders model messages as .gaa-cr-msg-assistant rows.
+		const assistantBubbleLocator = page.locator( '.gaa-cr-msg-assistant' );
 		const initialBubbleCount = await assistantBubbleLocator.count();
 
 		// Send a message. Scope to the ChatRedesign root (.gaa-cr).
@@ -509,9 +508,8 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 		// response from THIS message is in the store.
 		await page.waitForFunction(
 			( count ) =>
-				document.querySelectorAll(
-					'.gratis-ai-agent-bubble.gratis-ai-agent-assistant'
-				).length > count,
+				document.querySelectorAll( '.gaa-cr-msg-assistant' ).length >
+				count,
 			initialBubbleCount,
 			{ timeout: 30_000 }
 		);
@@ -570,9 +568,8 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 
 		// Capture the current assistant-bubble count so we can wait for a
 		// genuinely NEW response (avoids matching a pre-existing bubble).
-		const assistantBubbleLocator = page.locator(
-			'.gratis-ai-agent-bubble.gratis-ai-agent-assistant'
-		);
+		// ChatRedesign renders model messages as .gaa-cr-msg-assistant rows.
+		const assistantBubbleLocator = page.locator( '.gaa-cr-msg-assistant' );
 		const initialBubbleCount = await assistantBubbleLocator.count();
 
 		// Send a message. Scope to the ChatRedesign root (.gaa-cr).
@@ -585,9 +582,8 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 		// Wait for a NEW assistant bubble (count must exceed the initial).
 		await page.waitForFunction(
 			( count ) =>
-				document.querySelectorAll(
-					'.gratis-ai-agent-bubble.gratis-ai-agent-assistant'
-				).length > count,
+				document.querySelectorAll( '.gaa-cr-msg-assistant' ).length >
+				count,
 			initialBubbleCount,
 			{ timeout: 30_000 }
 		);
