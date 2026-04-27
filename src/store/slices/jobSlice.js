@@ -323,8 +323,7 @@ export const actions = {
 
 						// POST results back to the server so the agent loop
 						// can continue with the screenshot/DOM data.
-						const currentSessionId =
-							select.getCurrentSessionId();
+						const currentSessionId = select.getCurrentSessionId();
 						try {
 							await apiFetch( {
 								path: '/gratis-ai-agent/v1/chat/tool-result',
@@ -351,7 +350,7 @@ export const actions = {
 													: __(
 															'Failed to submit client tool results.',
 															'gratis-ai-agent'
-														)
+													  )
 											}`,
 										},
 									],
