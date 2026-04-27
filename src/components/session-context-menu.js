@@ -147,42 +147,42 @@ export default function SessionContextMenu( {
 					{ __( 'Export', 'gratis-ai-agent' ) }
 				</button>
 			) }
-		{ isOwner && ! isTrashed && ! isShared && (
-			<button
-				type="button"
-				role="menuitem"
-				onClick={ () => {
-					shareSession( sessionId );
-					onClose();
-				} }
-			>
-				{ __( 'Share with Admins', 'gratis-ai-agent' ) }
-			</button>
-		) }
-		{ isOwner && ! isTrashed && isShared && (
-			<button
-				type="button"
-				role="menuitem"
-				onClick={ () => {
-					unshareSession( sessionId );
-					onClose();
-				} }
-			>
-				{ __( 'Unshare', 'gratis-ai-agent' ) }
-			</button>
-		) }
-		{ isOwner && ! isArchived && ! isTrashed && (
-			<button
-				type="button"
-				role="menuitem"
-				onClick={ () => {
-					archiveSession( sessionId );
-					onClose();
-				} }
-			>
-				{ __( 'Archive', 'gratis-ai-agent' ) }
-			</button>
-		) }
+			{ isOwner && ! isTrashed && ! isShared && (
+				<button
+					type="button"
+					role="menuitem"
+					onClick={ () => {
+						shareSession( sessionId );
+						onClose();
+					} }
+				>
+					{ __( 'Share with Admins', 'gratis-ai-agent' ) }
+				</button>
+			) }
+			{ isOwner && ! isTrashed && isShared && (
+				<button
+					type="button"
+					role="menuitem"
+					onClick={ () => {
+						unshareSession( sessionId );
+						onClose();
+					} }
+				>
+					{ __( 'Unshare', 'gratis-ai-agent' ) }
+				</button>
+			) }
+			{ isOwner && ! isArchived && ! isTrashed && (
+				<button
+					type="button"
+					role="menuitem"
+					onClick={ () => {
+						archiveSession( sessionId );
+						onClose();
+					} }
+				>
+					{ __( 'Archive', 'gratis-ai-agent' ) }
+				</button>
+			) }
 			{ isOwner && ( isArchived || isTrashed ) && (
 				<button
 					type="button"

@@ -87,8 +87,7 @@ function AdminPageApp() {
 			bootError: select( STORE_NAME ).getBootError(),
 			providers: select( STORE_NAME ).getProviders(),
 			providersLoaded: select( STORE_NAME ).getProvidersLoaded(),
-			showShortcuts:
-				select( STORE_NAME ).isShowingShortcutsHelp(),
+			showShortcuts: select( STORE_NAME ).isShowingShortcutsHelp(),
 		} ),
 		[]
 	);
@@ -144,8 +143,7 @@ function AdminPageApp() {
 					searchInput.focus();
 				}
 			},
-			'mod+/': () =>
-				setShowShortcutsHelp( ! showShortcuts ),
+			'mod+/': () => setShowShortcutsHelp( ! showShortcuts ),
 		} ),
 		[ clearCurrentSession, setShowShortcutsHelp, showShortcuts ]
 	);
