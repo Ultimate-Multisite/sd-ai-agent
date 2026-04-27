@@ -360,7 +360,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
 - [x] t239 Add batch-create-posts ability (Phase 4) #feature #auto-dispatch ~2.5h For #t233 logged:2026-04-26 pr:#1230 completed:2026-04-27
   - EDIT: includes/Abilities/PostAbilities.php — register ai-agent/batch-create-posts, schema: {posts: [{title, content, post_type, status, featured_image_id, page_template, ...}]}, returns [{post_id, permalink, title, status}]
   - Verify: `composer phpstan && composer phpcs`
-- [ ] t240 Add create-contact-form ability (Phase 5) #feature #auto-dispatch ~3h For #t233 logged:2026-04-26
+- [x] t240 Add create-contact-form ability (Phase 5) #feature #auto-dispatch ~3h For #t233 logged:2026-04-26 pr:#1232 completed:2026-04-27
   - EDIT: includes/Abilities/ContentAbilities.php or NEW: includes/Abilities/FormsAbilities.php
   - Fallback chain: Contact Form 7 (WPCF7_ContactForm::create() + shortcode) → raw HTML block page
   - Verify: `composer phpstan && composer phpcs`
