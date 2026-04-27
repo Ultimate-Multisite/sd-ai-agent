@@ -357,7 +357,7 @@ Goal: clean, minimal design that matches wp-admin conventions. Replace custom da
 - [ ] t238 Add set-featured-image standalone ability (Phase 3) #enhancement #auto-dispatch ~1h For #t233 logged:2026-04-26
   - EDIT: includes/Abilities/PostAbilities.php — register ai-agent/set-featured-image with {post_id, featured_image_id} schema + handle_set_featured_image handler
   - Verify: `composer phpstan && composer phpcs`
-- [ ] t239 Add batch-create-posts ability (Phase 4) #feature #auto-dispatch ~2.5h For #t233 logged:2026-04-26
+- [x] t239 Add batch-create-posts ability (Phase 4) #feature #auto-dispatch ~2.5h For #t233 logged:2026-04-26 pr:#1230 completed:2026-04-27
   - EDIT: includes/Abilities/PostAbilities.php — register ai-agent/batch-create-posts, schema: {posts: [{title, content, post_type, status, featured_image_id, page_template, ...}]}, returns [{post_id, permalink, title, status}]
   - Verify: `composer phpstan && composer phpcs`
 - [ ] t240 Add create-contact-form ability (Phase 5) #feature #auto-dispatch ~3h For #t233 logged:2026-04-26
