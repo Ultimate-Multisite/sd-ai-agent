@@ -1,6 +1,6 @@
 {
 	"name": "ai-agent-for-wp",
-	"version": "1.9.0",
+	"version": "1.9.1",
 	"private": true,
 	"license": "GPL-2.0-or-later",
 	"scripts": {

@@ -4,7 +4,7 @@ Tags: ai, chatbot, assistant, automation, tools
 Requires at least: 7.0
 Tested up to: 7.0
 Requires PHP: 8.2
-Stable tag: 1.9.0
+Stable tag: 1.9.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -173,6 +173,11 @@ Yes, the plugin works on both single-site and multisite WordPress installations.
 8. Settings page with 12 configuration tabs
 
 == Changelog ==
+
+= 1.9.1 - Released on 2026-04-28 =
+* Fix: update-post now includes post_type in its schema and response, preventing agents from calling create-post when the intent is to update an existing post
+* Fix: Retry client-side tool result submission on transient POST failures; show a recovery card with Retry/Cancel options if all attempts fail
+* Fix: Stop 409 polling loop — job transient now updated after client tool results are processed, preventing browsers from re-executing tools and re-posting results
 
 = 1.9.0 - Released on 2026-04-28 =
 * New: Add create-contact-form ability
