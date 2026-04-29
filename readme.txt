@@ -4,7 +4,7 @@ Tags: ai, chatbot, assistant, automation, tools
 Requires at least: 7.0
 Tested up to: 7.0
 Requires PHP: 8.2
-Stable tag: 1.8.2
+Stable tag: 1.9.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -174,15 +174,38 @@ Yes, the plugin works on both single-site and multisite WordPress installations.
 
 == Changelog ==
 
-<<<<<<< Updated upstream
+= 1.9.0 - Released on 2026-04-28 =
+* New: Add create-contact-form ability
+* New: Add set-featured-image ability
+* New: Add batch-create-posts ability
+* New: Add page_template parameter to create-post and update-post abilities
+* New: Add client-side screenshot abilities for visual page review
+* New: Five built-in agents with per-agent tools, prompts, and suggestions
+* New: Feature flags for access control and branding settings
+* New: Restore last session on chat load and widget open
+* New: Add plugin action links on plugins.php admin page
+* Improved: Retry all free image sources on download failure before AI fallback
+* Improved: Always show model info panel
+* Improved: Stop auto-scroll when user reads; show scroll-to-bottom button
+* Improved: Agent picker with icons and form-table layout
+* Improved: Lazy-load JS chunks — cut initial bundle sizes 75-90%
+* Improved: Redesign chat widget with unified AI icon
+* Improved: Linkify URLs in system and error message bubbles
+* Fix: Fix ability discoverability — descriptions, system prompt, and namespace alignment
+* Fix: Make providers cache site-wide via version counter
+* Fix: Resolve ability_invalid_output across 12 ability handlers
+* Fix: Wire up pending_client_tool_calls pipeline end-to-end
+* Fix: Exclude non-revertable changes from history drawer; fix View full history link
+* Fix: Five bugs in the changes/revert system and wire into unified admin
+* Fix: Show snackbar toast after Save Settings click
+* Fix: Add Delete Permanently option to Trash context menu
+* Fix: Edit & resend enters only the clicked message's edit mode
+* Fix: Adapt chat layout height to plugin-injected content above page
+
 = 1.8.2 - Released on 2026-04-23 =
 * Fix: Replace polyfill connectors page with official URL and one-click Gutenberg install
 * Fix: Add menu icon back
 * Fix: Use correct URL
-=======
-= 1.8.2 - Released on 2026-04-22 =
-* Fix: Replace polyfill connectors page with official URL and one-click Gutenberg install
->>>>>>> Stashed changes
 
 = 1.8.1 - Released on 2026-04-22 =
 * Fix: Connectors page showing WP 7.0 redirect on WP 6.9
