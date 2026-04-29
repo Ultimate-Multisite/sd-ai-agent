@@ -92,6 +92,9 @@
 
         <!-- Allow property names from external APIs -->
         <exclude name="WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase"/>
+
+        <!-- Allow flexible indentation in multi-line function call arguments -->
+        <exclude name="PEAR.Functions.FunctionCallSignature.Indent"/>
     </rule>
 
     <!-- Enforce output escaping: all dynamic output must pass through an escaping function.
