@@ -69,6 +69,66 @@ export default function ActionCard( { card, onConfirm, onCancel } ) {
 		}
 	}, [] );
 
+	// Retry card — shown when the POST to /chat/tool-result failed after all
+	// automatic retries.  The browser already ran the tools; this card lets
+	// the user resubmit the results without re-executing them.
+	if ( card?.type === 'retry_client_tools' ) {
+		const names = card.toolNames || [];
+		return (
+			<div
+				className="gratis-ai-agent-action-card gratis-ai-agent-action-card--retry"
+				role="region"
+				aria-label={ __( 'Retry tool submission', 'gratis-ai-agent' ) }
+			>
+				<div className="gratis-ai-agent-action-card-header">
+					<span
+						className="gratis-ai-agent-action-card-icon"
+						aria-hidden="true"
+					>
+						&#8635;
+					</span>
+					<span className="gratis-ai-agent-action-card-heading">
+						{ __(
+							'Submission failed — retry?',
+							'gratis-ai-agent'
+						) }
+					</span>
+				</div>
+				<div className="gratis-ai-agent-action-card-body">
+					<p>
+						{ __(
+							'The browser finished the tool calls but could not deliver the results to the server. Your work is preserved — click Retry to resubmit without re-running the tools.',
+							'gratis-ai-agent'
+						) }
+					</p>
+					{ names.length > 0 && (
+						<p className="gratis-ai-agent-action-card-tool-names">
+							{ __( 'Completed tools:', 'gratis-ai-agent' ) }{ ' ' }
+							<code>{ names.join( ', ' ) }</code>
+						</p>
+					) }
+				</div>
+				<div className="gratis-ai-agent-action-card-footer">
+					<button
+						type="button"
+						className="button gratis-ai-agent-action-card-btn-cancel"
+						onClick={ onCancel }
+					>
+						{ __( 'Cancel', 'gratis-ai-agent' ) }
+					</button>
+					<button
+						type="button"
+						ref={ confirmRef }
+						className="button button-primary gratis-ai-agent-action-card-btn-confirm"
+						onClick={ () => onConfirm() }
+					>
+						{ __( 'Retry', 'gratis-ai-agent' ) }
+					</button>
+				</div>
+			</div>
+		);
+	}
+
 	if ( ! card || ! card.tools?.length ) {
 		return null;
 	}

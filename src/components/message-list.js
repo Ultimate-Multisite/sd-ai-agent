@@ -332,6 +332,10 @@ export default function MessageList() {
 		retryLastMessage,
 		setInabilityReported,
 		setFeedbackBanner,
+		retryClientToolSubmission,
+		setPendingActionCard,
+		setPendingToolResultRetry,
+		setLiveToolCalls,
 	} = useDispatch( STORE_NAME );
 
 	// Local state: whether the feedback consent modal is open (t183).
@@ -508,14 +512,26 @@ export default function MessageList() {
 				<div className="gratis-ai-agent-message-row gratis-ai-agent-message-row-action-card">
 					<ActionCard
 						card={ pendingActionCard }
-						onConfirm={ ( alwaysAllow ) =>
-							confirmToolCall(
-								pendingActionCard.jobId,
-								alwaysAllow
-							)
+						onConfirm={
+							pendingActionCard.type === 'retry_client_tools'
+								? () => retryClientToolSubmission()
+								: ( alwaysAllow ) =>
+										confirmToolCall(
+											pendingActionCard.jobId,
+											alwaysAllow
+										)
 						}
-						onCancel={ () =>
-							rejectToolCall( pendingActionCard.jobId )
+						onCancel={
+							pendingActionCard.type === 'retry_client_tools'
+								? () => {
+										setPendingActionCard( null );
+										setPendingToolResultRetry( null );
+										setLiveToolCalls( [] );
+								  }
+								: () =>
+										rejectToolCall(
+											pendingActionCard.jobId
+										)
 						}
 					/>
 				</div>
