@@ -30,6 +30,11 @@ export const initialState = {
 
 	// Action card — inline confirmation rendered in the message list (t074).
 	pendingActionCard: null,
+
+	// Retry state for failed client tool result submissions.
+	// null | { sessionId: number, jobId: string, toolResults: Array, toolNames: string[] }
+	// Preserved so the retry action card can resubmit without re-executing the tools.
+	pendingToolResultRetry: null,
 };
 
 export const actions = {
@@ -83,6 +88,113 @@ export const actions = {
 	 */
 	setPendingActionCard( card ) {
 		return { type: 'SET_PENDING_ACTION_CARD', card };
+	},
+
+	/**
+	 * Store or clear the pending client tool result retry payload.
+	 *
+	 * Set when all POST retries to /chat/tool-result have been exhausted so the
+	 * user can trigger a manual retry via the action card without re-running the
+	 * browser-side tools.
+	 *
+	 * @param {Object|null} data - { sessionId, jobId, toolResults, toolNames } or null.
+	 * @return {Object} Redux action.
+	 */
+	setPendingToolResultRetry( data ) {
+		return { type: 'SET_PENDING_TOOL_RESULT_RETRY', data };
+	},
+
+	/**
+	 * Re-submit previously computed client tool results to the server.
+	 *
+	 * Called when the user clicks Retry on the retry action card.  Clears the
+	 * pending retry state, re-POSTs the stored tool results (up to 3 attempts),
+	 * and — on success — resumes polling the same job.  A 409 response means
+	 * the server already processed the results (the POST succeeded but the
+	 * response was lost), so we treat it as success and resume polling.
+	 *
+	 * @return {Function} Redux thunk.
+	 */
+	retryClientToolSubmission() {
+		return async ( { dispatch, select } ) => {
+			const retry = select.getPendingToolResultRetry();
+			if ( ! retry ) {
+				return;
+			}
+			const { sessionId, jobId, toolResults } = retry;
+
+			dispatch.setPendingToolResultRetry( null );
+			dispatch.setPendingActionCard( null );
+			dispatch.setSending( true );
+
+			let postSucceeded = false;
+			let lastErr = null;
+			for ( let attempt = 0; attempt < 3; attempt++ ) {
+				try {
+					await apiFetch( {
+						path: '/gratis-ai-agent/v1/chat/tool-result',
+						method: 'POST',
+						data: {
+							session_id: sessionId,
+							tool_results: toolResults,
+						},
+					} );
+					postSucceeded = true;
+					break;
+				} catch ( err ) {
+					// 409: server already processed results (POST got through
+					// on a prior attempt but the response was lost) — resume.
+					if (
+						err?.data?.status === 409 ||
+						err?.code === 'rest_gratis_ai_agent_no_paused_state'
+					) {
+						postSucceeded = true;
+						break;
+					}
+					lastErr = err;
+					if ( attempt < 2 ) {
+						await new Promise( ( r ) =>
+							setTimeout( r, 1000 * Math.pow( 2, attempt ) )
+						);
+					}
+				}
+			}
+
+			if ( postSucceeded ) {
+				// Re-register and resume polling the existing job.
+				setActiveJob( sessionId, jobId );
+				dispatch.setCurrentJobId( jobId );
+				dispatch.setSessionJob( sessionId, {
+					jobId,
+					toolCalls: [],
+					status: 'processing',
+				} );
+				dispatch.pollJob( jobId, sessionId );
+			} else {
+				// Still failing — restore retry state and surface the error.
+				dispatch.setPendingToolResultRetry( retry );
+				dispatch.setPendingActionCard( {
+					type: 'retry_client_tools',
+					toolNames: retry.toolNames,
+				} );
+				dispatch.appendMessage( {
+					role: 'system',
+					parts: [
+						{
+							text: `${ __( 'Error:', 'gratis-ai-agent' ) } ${
+								lastErr instanceof Error
+									? lastErr.message
+									: __(
+											'Failed to submit client tool results.',
+											'gratis-ai-agent'
+									  )
+							}`,
+						},
+					],
+				} );
+				dispatch.setSending( false );
+			}
+		};
 	},
 
 	/**
@@ -323,20 +435,66 @@ export const actions = {
 
 						// POST results back to the server so the agent loop
 						// can continue with the screenshot/DOM data.
+						// Retry up to 3 times (1 s → 2 s backoff) for transient
+						// network failures before surfacing an error to the user.
+						// A 409 response means the server already processed the
+						// results (POST succeeded but response was lost) — treat
+						// as success and resume polling.
 						const currentSessionId = select.getCurrentSessionId();
-						try {
-							await apiFetch( {
-								path: '/gratis-ai-agent/v1/chat/tool-result',
-								method: 'POST',
-								data: {
-									session_id: currentSessionId,
-									tool_results: toolResults,
-								},
-							} );
-						} catch ( postErr ) {
-							// Failed to post results — surface error to user
-							// and stop polling rather than hanging.
+						let postSucceeded = false;
+						let postErr = null;
+						for ( let attempt = 0; attempt < 3; attempt++ ) {
+							try {
+								await apiFetch( {
+									path: '/gratis-ai-agent/v1/chat/tool-result',
+									method: 'POST',
+									data: {
+										session_id: currentSessionId,
+										tool_results: toolResults,
+									},
+								} );
+								postSucceeded = true;
+								break;
+							} catch ( err ) {
+								if (
+									err?.data?.status === 409 ||
+									err?.code ===
+										'rest_gratis_ai_agent_no_paused_state'
+								) {
+									// Already processed on a prior attempt.
+									postSucceeded = true;
+									break;
+								}
+								postErr = err;
+								if ( attempt < 2 ) {
+									await new Promise( ( r ) =>
+										setTimeout(
+											r,
+											1000 * Math.pow( 2, attempt )
+										)
+									);
+								}
+							}
+						}
+
+						if ( ! postSucceeded ) {
+							// All retries exhausted — preserve the tool results so
+							// the user can retry via the action card without
+							// re-running the browser-side tools.
 							if ( currentSessionId === sessionId ) {
+								const toolNames = toolResults.map(
+									( r ) => r.name
+								);
+								dispatch.setPendingToolResultRetry( {
+									sessionId: currentSessionId,
+									jobId,
+									toolResults,
+									toolNames,
+								} );
+								dispatch.setPendingActionCard( {
+									type: 'retry_client_tools',
+									toolNames,
+								} );
 								dispatch.appendMessage( {
 									role: 'system',
 									parts: [
@@ -351,7 +509,10 @@ export const actions = {
 															'Failed to submit client tool results.',
 															'gratis-ai-agent'
 													  )
-											}`,
+											} ${ __(
+												'Use the Retry button to resubmit without re-running the tools.',
+												'gratis-ai-agent'
+											) }`,
 										},
 									],
 								} );
@@ -648,6 +809,16 @@ export const selectors = {
 	getPendingActionCard( state ) {
 		return state.pendingActionCard;
 	},
+
+	/**
+	 * Get the pending client tool result retry payload.
+	 *
+	 * @param {import('../../types').StoreState} state
+	 * @return {Object|null} Retry data { sessionId, jobId, toolResults, toolNames } or null.
+	 */
+	getPendingToolResultRetry( state ) {
+		return state.pendingToolResultRetry;
+	},
 };
 
 /**
@@ -679,6 +850,8 @@ export function reducer( state, action ) {
 			return { ...state, pendingConfirmation: action.confirmation };
 		case 'SET_PENDING_ACTION_CARD':
 			return { ...state, pendingActionCard: action.card };
+		case 'SET_PENDING_TOOL_RESULT_RETRY':
+			return { ...state, pendingToolResultRetry: action.data };
 		default:
 			return state;
 	}
