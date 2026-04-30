@@ -134,6 +134,10 @@ class InternetSearchAbilities {
 						],
 						'provider' => [ 'type' => 'string' ],
 						'query'    => [ 'type' => 'string' ],
+						'answer'   => [
+							'type'        => 'string',
+							'description' => 'AI-generated answer summarising the search results (Tavily only; omitted when not available).',
+						],
 						'error'    => [ 'type' => 'string' ],
 					],
 				],
