@@ -1,7 +1,7 @@
 === Superdav AI Agent ===
 Contributors: superdav42
 Tags: ai, chatbot, assistant, automation, tools
-Requires at least: 7.0
+Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.2
 Stable tag: 1.9.1
@@ -110,7 +110,7 @@ The Superdav AI Agent discovers abilities at runtime from any plugin that regist
 
 = Requirements =
 
-* WordPress 7.0 or higher
+* WordPress 6.9 or higher
 * PHP 8.2 or higher
 * An AI provider connector plugin registered through the WordPress Connectors API
 * An AI key from your chosen AI provider (OpenAI, Anthropic, etc.)
