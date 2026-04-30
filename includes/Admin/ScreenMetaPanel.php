@@ -59,7 +59,7 @@ class ScreenMetaPanel {
 			return;
 		}
 
-		$build_dir  = (string) apply_filters( 'sd_ai_agent_build_dir', SD_AI_AGENT_DIR . '/build' );
+		$build_dir  = (string) apply_filters( 'gratis_ai_agent_build_dir', SD_AI_AGENT_DIR . '/build' );
 		$asset_file = $build_dir . '/screen-meta.asset.php';
 
 		if ( ! file_exists( $asset_file ) ) {
@@ -70,27 +70,27 @@ class ScreenMetaPanel {
 		$asset = require $asset_file;
 
 		wp_enqueue_style(
-			'sd-ai-agent-screen-meta',
+			'gratis-ai-agent-screen-meta',
 			SD_AI_AGENT_URL . 'build/style-screen-meta.css',
 			[ 'wp-components' ],
 			$asset['version']
 		);
 
 		wp_enqueue_script(
-			'sd-ai-agent-screen-meta',
+			'gratis-ai-agent-screen-meta',
 			SD_AI_AGENT_URL . 'build/screen-meta.js',
 			$asset['dependencies'],
 			$asset['version'],
 			true
 		);
 
-		wp_set_script_translations( 'sd-ai-agent-screen-meta', 'sd-ai-agent' );
+		wp_set_script_translations( 'gratis-ai-agent-screen-meta', 'gratis-ai-agent' );
 
 		// WP 7.0+: enqueue the `@wordpress/abilities` script module so our
 		// client-side ability registry (src/abilities/*) can resolve the
 		// bare specifier via the document import map at runtime. Without
 		// this, the dynamic import() in registry.js throws a module
-		// resolution error and the sd-ai-agent-js/* abilities are never
+		// resolution error and the gratis-ai-agent-js/* abilities are never
 		// registered. (t165 — fixes the missing enqueue in #815.)
 		//
 		// Also enqueue `@wordpress/core-abilities` explicitly. Despite the
@@ -110,11 +110,11 @@ class ScreenMetaPanel {
 		$screen_context = self::get_screen_context();
 
 		wp_localize_script(
-			'sd-ai-agent-screen-meta',
+			'gratis-ai-agent-screen-meta',
 			'sdAiAgentScreenMeta',
 			[
 				'screenContext' => $screen_context,
-				'mountId'       => 'sd-ai-agent-screen-meta-root',
+				'mountId'       => 'gratis-ai-agent-screen-meta-root',
 			]
 		);
 	}
@@ -143,9 +143,9 @@ class ScreenMetaPanel {
 
 		$screen->add_help_tab(
 			[
-				'id'      => 'sd-ai-agent-help',
-				'title'   => __( 'AI Agent', 'sd-ai-agent' ),
-				'content' => '<div id="sd-ai-agent-screen-meta-root"></div>',
+				'id'      => 'gratis-ai-agent-help',
+				'title'   => __( 'AI Agent', 'gratis-ai-agent' ),
+				'content' => '<div id="gratis-ai-agent-screen-meta-root"></div>',
 			]
 		);
 	}

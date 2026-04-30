@@ -43,7 +43,7 @@ class AutomationRunner {
 		if ( ! isset( $schedules['weekly'] ) ) {
 			$schedules['weekly'] = [
 				'interval' => WEEK_IN_SECONDS,
-				'display'  => __( 'Once Weekly', 'sd-ai-agent' ),
+				'display'  => __( 'Once Weekly', 'gratis-ai-agent' ),
 			];
 		}
 		return $schedules;
@@ -153,7 +153,7 @@ class AutomationRunner {
 		 * @param array $log_data      The log data for this run.
 		 * @param array $automation    The automation definition.
 		 */
-		do_action( 'sd_ai_agent_automation_complete', $automation_id, $log_data, $automation );
+		do_action( 'gratis_ai_agent_automation_complete', $automation_id, $log_data, $automation );
 
 		return $log_data;
 	}

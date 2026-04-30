@@ -74,11 +74,11 @@ class CustomTaxonomyAbilities {
 		}
 
 		wp_register_ability(
-			'sd-ai-agent/register-taxonomy',
+			'gratis-ai-agent/register-taxonomy',
 			[
-				'label'               => __( 'Register Custom Taxonomy', 'sd-ai-agent' ),
-				'description'         => __( 'Register a new custom taxonomy and persist it in the database so it survives page reloads. Supports labels, public visibility, REST API support, hierarchical settings, and association with one or more post types.', 'sd-ai-agent' ),
-				'category'            => 'sd-ai-agent',
+				'label'               => __( 'Register Custom Taxonomy', 'gratis-ai-agent' ),
+				'description'         => __( 'Register a new custom taxonomy and persist it in the database so it survives page reloads. Supports labels, public visibility, REST API support, hierarchical settings, and association with one or more post types.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -146,11 +146,11 @@ class CustomTaxonomyAbilities {
 		);
 
 		wp_register_ability(
-			'sd-ai-agent/list-taxonomies',
+			'gratis-ai-agent/list-taxonomies',
 			[
-				'label'               => __( 'List Custom Taxonomies', 'sd-ai-agent' ),
-				'description'         => __( 'List all registered taxonomies, including those persisted by the AI agent. Returns slug, labels, public status, associated post types, and whether the taxonomy was registered by the AI agent.', 'sd-ai-agent' ),
-				'category'            => 'sd-ai-agent',
+				'label'               => __( 'List Custom Taxonomies', 'gratis-ai-agent' ),
+				'description'         => __( 'List all registered taxonomies, including those persisted by the AI agent. Returns slug, labels, public status, associated post types, and whether the taxonomy was registered by the AI agent.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -182,11 +182,11 @@ class CustomTaxonomyAbilities {
 		);
 
 		wp_register_ability(
-			'sd-ai-agent/delete-taxonomy',
+			'gratis-ai-agent/delete-taxonomy',
 			[
-				'label'               => __( 'Delete Custom Taxonomy', 'sd-ai-agent' ),
-				'description'         => __( 'Remove a custom taxonomy that was registered by the AI agent. This unregisters the taxonomy and removes it from the database so it will not be re-registered on future page loads. Only AI-registered taxonomies can be deleted via this ability.', 'sd-ai-agent' ),
-				'category'            => 'sd-ai-agent',
+				'label'               => __( 'Delete Custom Taxonomy', 'gratis-ai-agent' ),
+				'description'         => __( 'Remove a custom taxonomy that was registered by the AI agent. This unregisters the taxonomy and removes it from the database so it will not be re-registered on future page loads. Only AI-registered taxonomies can be deleted via this ability.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -244,18 +244,18 @@ class CustomTaxonomyAbilities {
 			: [];
 
 		if ( empty( $taxonomy ) ) {
-			return new WP_Error( 'sd_ai_agent_empty_taxonomy', __( 'taxonomy is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'sd_ai_agent_empty_taxonomy', __( 'taxonomy is required.', 'gratis-ai-agent' ) );
 		}
 
 		if ( strlen( $taxonomy ) > 32 ) {
 			return new WP_Error(
 				'sd_ai_agent_taxonomy_too_long',
-				__( 'taxonomy slug must be 32 characters or fewer.', 'sd-ai-agent' )
+				__( 'taxonomy slug must be 32 characters or fewer.', 'gratis-ai-agent' )
 			);
 		}
 
 		if ( empty( $singular ) || empty( $plural ) ) {
-			return new WP_Error( 'sd_ai_agent_empty_labels', __( 'singular and plural labels are required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'sd_ai_agent_empty_labels', __( 'singular and plural labels are required.', 'gratis-ai-agent' ) );
 		}
 
 		// Prevent overwriting built-in taxonomies.
@@ -264,7 +264,7 @@ class CustomTaxonomyAbilities {
 			return new WP_Error(
 				'sd_ai_agent_builtin_taxonomy',
 				/* translators: %s: taxonomy slug */
-				sprintf( __( '"%s" is a built-in WordPress taxonomy and cannot be overwritten.', 'sd-ai-agent' ), $taxonomy )
+				sprintf( __( '"%s" is a built-in WordPress taxonomy and cannot be overwritten.', 'gratis-ai-agent' ), $taxonomy )
 			);
 		}
 
@@ -272,28 +272,28 @@ class CustomTaxonomyAbilities {
 			'name'                  => $plural,
 			'singular_name'         => $singular,
 			/* translators: %s: singular label */
-			'search_items'          => sprintf( __( 'Search %s', 'sd-ai-agent' ), $plural ),
+			'search_items'          => sprintf( __( 'Search %s', 'gratis-ai-agent' ), $plural ),
 			/* translators: %s: plural label */
-			'all_items'             => sprintf( __( 'All %s', 'sd-ai-agent' ), $plural ),
+			'all_items'             => sprintf( __( 'All %s', 'gratis-ai-agent' ), $plural ),
 			/* translators: %s: singular label */
-			'edit_item'             => sprintf( __( 'Edit %s', 'sd-ai-agent' ), $singular ),
+			'edit_item'             => sprintf( __( 'Edit %s', 'gratis-ai-agent' ), $singular ),
 			/* translators: %s: singular label */
-			'view_item'             => sprintf( __( 'View %s', 'sd-ai-agent' ), $singular ),
+			'view_item'             => sprintf( __( 'View %s', 'gratis-ai-agent' ), $singular ),
 			/* translators: %s: singular label */
-			'update_item'           => sprintf( __( 'Update %s', 'sd-ai-agent' ), $singular ),
+			'update_item'           => sprintf( __( 'Update %s', 'gratis-ai-agent' ), $singular ),
 			/* translators: %s: singular label */
-			'add_new_item'          => sprintf( __( 'Add New %s', 'sd-ai-agent' ), $singular ),
+			'add_new_item'          => sprintf( __( 'Add New %s', 'gratis-ai-agent' ), $singular ),
 			/* translators: %s: singular label */
-			'new_item_name'         => sprintf( __( 'New %s Name', 'sd-ai-agent' ), $singular ),
+			'new_item_name'         => sprintf( __( 'New %s Name', 'gratis-ai-agent' ), $singular ),
 			'menu_name'             => $plural,
 			/* translators: %s: plural label */
-			'not_found'             => sprintf( __( 'No %s found.', 'sd-ai-agent' ), strtolower( $plural ) ),
+			'not_found'             => sprintf( __( 'No %s found.', 'gratis-ai-agent' ), strtolower( $plural ) ),
 			/* translators: %s: plural label */
-			'no_terms'              => sprintf( __( 'No %s', 'sd-ai-agent' ), strtolower( $plural ) ),
+			'no_terms'              => sprintf( __( 'No %s', 'gratis-ai-agent' ), strtolower( $plural ) ),
 			/* translators: %s: plural label */
-			'items_list'            => sprintf( __( '%s list', 'sd-ai-agent' ), $plural ),
+			'items_list'            => sprintf( __( '%s list', 'gratis-ai-agent' ), $plural ),
 			/* translators: %s: plural label */
-			'items_list_navigation' => sprintf( __( '%s list navigation', 'sd-ai-agent' ), $plural ),
+			'items_list_navigation' => sprintf( __( '%s list navigation', 'gratis-ai-agent' ), $plural ),
 		];
 
 		$args = [
@@ -383,7 +383,7 @@ class CustomTaxonomyAbilities {
 		$taxonomy = sanitize_key( $input['taxonomy'] ?? '' );
 
 		if ( empty( $taxonomy ) ) {
-			return new WP_Error( 'sd_ai_agent_empty_taxonomy', __( 'taxonomy is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'sd_ai_agent_empty_taxonomy', __( 'taxonomy is required.', 'gratis-ai-agent' ) );
 		}
 
 		$stored = get_option( self::OPTION_KEY, [] );
@@ -392,7 +392,7 @@ class CustomTaxonomyAbilities {
 			return new WP_Error(
 				'sd_ai_agent_taxonomy_not_found',
 				/* translators: %s: taxonomy slug */
-				sprintf( __( 'Taxonomy "%s" was not registered by the AI agent and cannot be deleted via this ability.', 'sd-ai-agent' ), $taxonomy )
+				sprintf( __( 'Taxonomy "%s" was not registered by the AI agent and cannot be deleted via this ability.', 'gratis-ai-agent' ), $taxonomy )
 			);
 		}
 

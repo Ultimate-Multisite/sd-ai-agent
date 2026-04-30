@@ -40,7 +40,7 @@ class AbilityUsageTracker {
 	 * Increments the counter and updates the timestamp. Prunes the map to
 	 * MAX_ENTRIES if it overflows.
 	 *
-	 * @param string $ability_name Fully qualified ability name (e.g. "sd-ai-agent/get-plugins").
+	 * @param string $ability_name Fully qualified ability name (e.g. "gratis-ai-agent/get-plugins").
 	 * @return void
 	 */
 	public static function record( string $ability_name ): void {

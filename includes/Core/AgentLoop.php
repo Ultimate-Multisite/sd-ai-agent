@@ -322,7 +322,7 @@ class AgentLoop {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
 			return new WP_Error(
 				'sd_ai_agent_missing_client',
-				__( 'The AI Client SDK is not available. WordPress 7.0+ is required.', 'sd-ai-agent' )
+				__( 'The AI Client SDK is not available. WordPress 7.0+ is required.', 'gratis-ai-agent' )
 			);
 		}
 
@@ -362,7 +362,7 @@ class AgentLoop {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
 			return new WP_Error(
 				'sd_ai_agent_missing_client',
-				__( 'wp_ai_client_prompt() is not available.', 'sd-ai-agent' )
+				__( 'wp_ai_client_prompt() is not available.', 'gratis-ai-agent' )
 			);
 		}
 
@@ -412,7 +412,7 @@ class AgentLoop {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
 			return new WP_Error(
 				'sd_ai_agent_missing_client',
-				__( 'wp_ai_client_prompt() is not available.', 'sd-ai-agent' )
+				__( 'wp_ai_client_prompt() is not available.', 'gratis-ai-agent' )
 			);
 		}
 
@@ -488,7 +488,7 @@ class AgentLoop {
 				return array(
 					'reply'           => __(
 						'This request took longer than expected and was stopped to protect your usage budget. You can continue the conversation to pick up where it left off.',
-						'sd-ai-agent'
+						'gratis-ai-agent'
 					),
 					'history'         => $this->serialize_history(),
 					'tool_calls'      => $this->tool_call_log,
@@ -554,7 +554,7 @@ class AgentLoop {
 							new MessagePart(
 								__(
 									'Please summarize the tool results for the user and provide your final response.',
-									'sd-ai-agent'
+									'gratis-ai-agent'
 								)
 							),
 						]
@@ -687,7 +687,7 @@ class AgentLoop {
 				return array(
 					'reply'           => __(
 						'I\'ve been repeating the same operations without making progress. Here\'s what I found so far. Try rephrasing your request or providing more specifics.',
-						'sd-ai-agent'
+						'gratis-ai-agent'
 					),
 					'history'         => $this->serialize_history(),
 					'tool_calls'      => $this->tool_call_log,
@@ -708,7 +708,7 @@ class AgentLoop {
 					new MessagePart(
 						__(
 							'You have reached the maximum number of tool calls. Please summarize what you accomplished and what failed, and provide your final response to the user.',
-							'sd-ai-agent'
+							'gratis-ai-agent'
 						)
 					),
 				]
@@ -747,7 +747,7 @@ class AgentLoop {
 			'sd_ai_agent_max_iterations',
 			sprintf(
 				/* translators: %d: max iterations */
-				__( 'Agent reached the maximum of %d iterations without completing.', 'sd-ai-agent' ),
+				__( 'Agent reached the maximum of %d iterations without completing.', 'gratis-ai-agent' ),
 				$this->max_iterations
 			),
 			array(
@@ -780,7 +780,7 @@ class AgentLoop {
 					'sd_ai_agent_provider_unavailable',
 					sprintf(
 						/* translators: %s: provider ID */
-						__( 'Provider "%s" is not available. Please select a different provider in the chat header.', 'sd-ai-agent' ),
+						__( 'Provider "%s" is not available. Please select a different provider in the chat header.', 'gratis-ai-agent' ),
 						$provider_id
 					)
 				);
@@ -788,7 +788,7 @@ class AgentLoop {
 		} catch ( \Throwable $e ) {
 			return new WP_Error(
 				'sd_ai_agent_registry_unavailable',
-				__( 'AI Client SDK registry is not available.', 'sd-ai-agent' )
+				__( 'AI Client SDK registry is not available.', 'gratis-ai-agent' )
 			);
 		}
 
@@ -931,7 +931,7 @@ class AgentLoop {
 	 *
 	 * Tier-2 abilities are NOT returned here — the model sees them as a
 	 * name-only manifest in the system prompt and reaches them via
-	 * sd-ai-agent/ability-search + ability-call.
+	 * gratis-ai-agent/ability-search + ability-call.
 	 *
 	 * @return \WP_Ability[]
 	 */
@@ -996,7 +996,7 @@ class AgentLoop {
 	 *
 	 *   • Two abilities are registered under different namespace prefixes but the
 	 *     same base name (e.g. "ai-agent/create-block-content" and
-	 *     "sd-ai-agent/create-block-content"). WP 7.0-RC2's native
+	 *     "gratis-ai-agent/create-block-content"). WP 7.0-RC2's native
 	 *     ability_name_to_function_name() may normalise these to the same string,
 	 *     whereas the compat polyfill preserves the full prefixed form.
 	 *
@@ -1036,7 +1036,7 @@ class AgentLoop {
 					esc_html(
 						sprintf(
 							/* translators: 1: duplicate ability name, 2: earlier ability name, 3: resolved function name */
-							__( 'Ability "%1$s" produces the same API tool name as "%2$s" (%3$s) and will be skipped to prevent a duplicate-tool-name API error. Register abilities under unique base names.', 'sd-ai-agent' ),
+							__( 'Ability "%1$s" produces the same API tool name as "%2$s" (%3$s) and will be skipped to prevent a duplicate-tool-name API error. Register abilities under unique base names.', 'gratis-ai-agent' ),
 							$ability->get_name(),
 							$seen[ $key ],
 							$fn_name

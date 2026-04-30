@@ -12,7 +12,7 @@ declare(strict_types=1);
  * {
  *   "editor": {
  *     "chat_access": true,
- *     "allowed_abilities": ["sd-ai-agent/content-analyze", ...]
+ *     "allowed_abilities": ["gratis-ai-agent/content-analyze", ...]
  *                          // empty array = all abilities allowed for this role
  *   },
  *   "author": {
@@ -227,7 +227,7 @@ class RolePermissions {
 	/**
 	 * Check whether the current user can invoke a specific ability.
 	 *
-	 * @param string $ability_name The ability name (e.g. 'sd-ai-agent/memory-save').
+	 * @param string $ability_name The ability name (e.g. 'gratis-ai-agent/memory-save').
 	 * @return bool
 	 */
 	public static function current_user_can_use_ability( string $ability_name ): bool {

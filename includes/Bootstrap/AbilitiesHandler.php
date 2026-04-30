@@ -3,7 +3,7 @@
  * DI handler that registers all WordPress Abilities.
  *
  * Replaces the 35 inline `XxxAbilities::register()` calls in
- * `sd-ai-agent.php` with a single DI-managed handler. Each ability
+ * `gratis-ai-agent.php` with a single DI-managed handler. Each ability
  * class's `register_abilities()` method is called on the
  * `wp_abilities_api_init` hook — bypassing the now-removed `register()`
  * stub layer since the DI system handles hook attachment directly.
@@ -72,7 +72,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * `plugins_loaded` — well before `init` or `wp_abilities_api_init` fires.
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	strategy: Handler::INIT_JUST_IN_TIME,
 )]
 final class AbilitiesHandler {

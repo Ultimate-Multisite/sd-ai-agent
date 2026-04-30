@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  * Register feedback-related WordPress abilities for the AI agent.
  *
- * Provides the `sd-ai-agent/report-inability` ability so the agent can
+ * Provides the `gratis-ai-agent/report-inability` ability so the agent can
  * self-flag when it cannot complete a task. The handler sets a static,
  * request-scoped flag that AgentLoop reads at loop-end and injects into the
  * REST response as `inability_reported`, which the frontend consumes to show
@@ -39,11 +39,11 @@ class FeedbackAbilities {
 		}
 
 		wp_register_ability(
-			'sd-ai-agent/report-inability',
+			'gratis-ai-agent/report-inability',
 			[
-				'label'               => __( 'Report Inability', 'sd-ai-agent' ),
-				'description'         => __( 'Call this ability when you cannot complete the user\'s request after genuinely trying. Provide a clear reason and list the steps you attempted. This helps the team improve the agent.', 'sd-ai-agent' ),
-				'category'            => 'sd-ai-agent',
+				'label'               => __( 'Report Inability', 'gratis-ai-agent' ),
+				'description'         => __( 'Call this ability when you cannot complete the user\'s request after genuinely trying. Provide a clear reason and list the steps you attempted. This helps the team improve the agent.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [

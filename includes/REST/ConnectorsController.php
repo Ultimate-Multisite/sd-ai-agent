@@ -37,15 +37,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Provides REST endpoints for the polyfill Connectors admin page.
  *
  * Endpoints:
- *   GET  /sd-ai-agent/v1/connectors           — list all providers with status
- *   POST /sd-ai-agent/v1/connectors/{id}/key  — set an API key
- *   DELETE /sd-ai-agent/v1/connectors/{id}/key — clear an API key
+ *   GET  /gratis-ai-agent/v1/connectors           — list all providers with status
+ *   POST /gratis-ai-agent/v1/connectors/{id}/key  — set an API key
+ *   DELETE /gratis-ai-agent/v1/connectors/{id}/key — clear an API key
  *
  * Plugin install and activation are handled client-side via the native
  * /wp/v2/plugins REST endpoint.
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	context: Handler::CTX_REST,
 	strategy: Handler::INIT_IMMEDIATELY,
 )]
@@ -140,7 +140,7 @@ final class ConnectorsController {
 	}
 
 	/**
-	 * GET /sd-ai-agent/v1/connectors
+	 * GET /gratis-ai-agent/v1/connectors
 	 *
 	 * Returns all known AI providers with their plugin install/activation status
 	 * and whether an API key is configured.
@@ -165,7 +165,7 @@ final class ConnectorsController {
 	}
 
 	/**
-	 * POST /sd-ai-agent/v1/connectors/{provider}/key
+	 * POST /gratis-ai-agent/v1/connectors/{provider}/key
 	 *
 	 * Stores the API key in the connectors_ai_{provider}_api_key option.
 	 * Empty string clears the key.
@@ -180,7 +180,7 @@ final class ConnectorsController {
 		if ( ! array_key_exists( $provider_id, self::PROVIDERS ) ) {
 			return new WP_Error(
 				'invalid_provider',
-				__( 'Unknown provider ID.', 'sd-ai-agent' ),
+				__( 'Unknown provider ID.', 'gratis-ai-agent' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -188,7 +188,7 @@ final class ConnectorsController {
 		if ( '' === $api_key ) {
 			return new WP_Error(
 				'empty_api_key',
-				__( 'API key cannot be empty. Use DELETE to clear.', 'sd-ai-agent' ),
+				__( 'API key cannot be empty. Use DELETE to clear.', 'gratis-ai-agent' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -211,7 +211,7 @@ final class ConnectorsController {
 	}
 
 	/**
-	 * DELETE /sd-ai-agent/v1/connectors/{provider}/key
+	 * DELETE /gratis-ai-agent/v1/connectors/{provider}/key
 	 *
 	 * Clears the stored API key for the given provider.
 	 *
@@ -224,7 +224,7 @@ final class ConnectorsController {
 		if ( ! array_key_exists( $provider_id, self::PROVIDERS ) ) {
 			return new WP_Error(
 				'invalid_provider',
-				__( 'Unknown provider ID.', 'sd-ai-agent' ),
+				__( 'Unknown provider ID.', 'gratis-ai-agent' ),
 				array( 'status' => 400 )
 			);
 		}

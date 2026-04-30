@@ -1044,7 +1044,7 @@ class Database {
 
 		// 3. Migrate cron hooks.
 		$old_cron_hook = 'wp_ai_agent_reindex';
-		$new_cron_hook = 'wp_sd_ai_agent_reindex';
+		$new_cron_hook = 'wp_gratis_ai_agent_reindex';
 		$timestamp     = wp_next_scheduled( $old_cron_hook );
 		if ( $timestamp ) {
 			wp_unschedule_event( $timestamp, $old_cron_hook );

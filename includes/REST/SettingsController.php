@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * basenames (/settings, /providers, /budget, /usage, /role-permissions, etc.).
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	context: Handler::CTX_REST,
 	strategy: Handler::INIT_IMMEDIATELY,
 )]
@@ -414,7 +414,7 @@ final class SettingsController {
 		// @phpstan-ignore-next-line
 		$settings['_defaults'] = array(
 			'system_prompt'    => SystemInstructionBuilder::default_system_instruction(),
-			'greeting_message' => __( 'Send a message to start a conversation.', 'sd-ai-agent' ),
+			'greeting_message' => __( 'Send a message to start a conversation.', 'gratis-ai-agent' ),
 		);
 
 		// Indicate whether a Claude Max token is stored without exposing the token itself.
@@ -498,7 +498,7 @@ final class SettingsController {
 		if ( ! is_array( $permissions ) ) {
 			return new WP_Error(
 				'invalid_permissions',
-				__( 'Invalid permissions data.', 'sd-ai-agent' ),
+				__( 'Invalid permissions data.', 'gratis-ai-agent' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -509,7 +509,7 @@ final class SettingsController {
 		if ( ! $success ) {
 			return new WP_Error(
 				'update_failed',
-				__( 'Failed to save role permissions.', 'sd-ai-agent' ),
+				__( 'Failed to save role permissions.', 'gratis-ai-agent' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -789,21 +789,21 @@ final class SettingsController {
 		// Validate property ID format (numeric string).
 		$property_id = preg_replace( '/[^0-9]/', '', $property_id );
 		if ( empty( $property_id ) ) {
-			return new WP_REST_Response( array( 'error' => __( 'property_id must be a numeric GA4 property ID.', 'sd-ai-agent' ) ), 400 );
+			return new WP_REST_Response( array( 'error' => __( 'property_id must be a numeric GA4 property ID.', 'gratis-ai-agent' ) ), 400 );
 		}
 
 		// Validate service account JSON structure.
 		$sa = json_decode( $service_account_json, true );
 		if ( ! is_array( $sa ) || empty( $sa['client_email'] ) || empty( $sa['private_key'] ) ) {
 			return new WP_REST_Response(
-				array( 'error' => __( 'service_account_json must be a valid Google service account JSON key containing client_email and private_key.', 'sd-ai-agent' ) ),
+				array( 'error' => __( 'service_account_json must be a valid Google service account JSON key containing client_email and private_key.', 'gratis-ai-agent' ) ),
 				400
 			);
 		}
 
 		$success = GoogleAnalyticsAbilities::set_credentials( $property_id, $service_account_json );
 		if ( ! $success ) {
-			return new WP_REST_Response( array( 'error' => __( 'Failed to save Google Analytics credentials.', 'sd-ai-agent' ) ), 500 );
+			return new WP_REST_Response( array( 'error' => __( 'Failed to save Google Analytics credentials.', 'gratis-ai-agent' ) ), 500 );
 		}
 
 		return new WP_REST_Response(
@@ -1231,7 +1231,7 @@ final class SettingsController {
 		if ( ! $has_provider ) {
 			$alerts[] = array(
 				'type'    => 'no_provider',
-				'message' => __( 'No AI provider configured. Add an API key in Settings.', 'sd-ai-agent' ),
+				'message' => __( 'No AI provider configured. Add an API key in Settings.', 'gratis-ai-agent' ),
 			);
 		}
 
@@ -1241,7 +1241,7 @@ final class SettingsController {
 		if ( ! empty( $settings['site_builder_mode'] ) ) {
 			$alerts[] = array(
 				'type'    => 'site_builder_mode',
-				'message' => __( 'Site builder mode is active. Open the chat to build your site.', 'sd-ai-agent' ),
+				'message' => __( 'Site builder mode is active. Open the chat to build your site.', 'gratis-ai-agent' ),
 			);
 		}
 

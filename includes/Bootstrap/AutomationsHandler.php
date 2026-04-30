@@ -4,7 +4,7 @@
  *
  * Replaces the `AutomationRunner::register()` and
  * `EventTriggerHandler::register()` calls in CoreServicesHandler, plus the
- * inline `add_action('sd_ai_agent_run_event_automation', ...)` that
+ * inline `add_action('gratis_ai_agent_run_event_automation', ...)` that
  * CoreServicesHandler wired directly.
  *
  * All hook registrations are now declared via `#[Action]` / `#[Filter]`
@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - `init` (for attaching event hooks) fires in all contexts.
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	context: Handler::CTX_GLOBAL,
 	strategy: Handler::INIT_IMMEDIATELY,
 )]

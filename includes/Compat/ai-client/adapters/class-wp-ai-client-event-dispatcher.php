@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- WP 7.0 core class polyfill; class names are dictated by WordPress core API.
 /**
  * WP AI Client bridge polyfill: WP_AI_Client_Event_Dispatcher class
  *

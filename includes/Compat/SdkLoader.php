@@ -20,7 +20,7 @@ declare(strict_types=1);
  * php-ai-client package.
  *
  * Lifecycle:
- *   1. register() is called from sd-ai-agent.php, after the Composer vendor
+ *   1. register() is called from gratis-ai-agent.php, after the Composer vendor
  *      autoloader, before AiBridgeLoader::maybe_load().
  *   2. When AiBridgeLoader checks class_exists('WordPress\AiClient\AiClient'),
  *      this autoloader resolves the class on WP 6.9.

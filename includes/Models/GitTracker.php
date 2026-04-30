@@ -132,7 +132,7 @@ class GitTracker {
 				'sd_ai_agent_git_tracker_file_not_found',
 				sprintf(
 					/* translators: %s: file path */
-					__( 'Cannot snapshot: file not found: %s', 'sd-ai-agent' ),
+					__( 'Cannot snapshot: file not found: %s', 'gratis-ai-agent' ),
 					$absolute_path
 				)
 			);
@@ -155,7 +155,7 @@ class GitTracker {
 				'sd_ai_agent_git_tracker_read_failed',
 				sprintf(
 					/* translators: %s: file path */
-					__( 'Cannot snapshot: failed to read file: %s', 'sd-ai-agent' ),
+					__( 'Cannot snapshot: failed to read file: %s', 'gratis-ai-agent' ),
 					$absolute_path
 				)
 			);
@@ -184,7 +184,7 @@ class GitTracker {
 				'sd_ai_agent_git_tracker_not_tracked',
 				sprintf(
 					/* translators: %s: file path */
-					__( 'Cannot record modification: file not tracked: %s', 'sd-ai-agent' ),
+					__( 'Cannot record modification: file not tracked: %s', 'gratis-ai-agent' ),
 					$relative_path
 				)
 			);
@@ -201,7 +201,7 @@ class GitTracker {
 				'sd_ai_agent_git_tracker_read_failed',
 				sprintf(
 					/* translators: %s: file path */
-					__( 'Cannot record modification: failed to read file: %s', 'sd-ai-agent' ),
+					__( 'Cannot record modification: failed to read file: %s', 'gratis-ai-agent' ),
 					$absolute_path
 				)
 			);
@@ -229,7 +229,7 @@ class GitTracker {
 				'sd_ai_agent_git_tracker_not_tracked',
 				sprintf(
 					/* translators: %s: file path */
-					__( 'Cannot revert: file not tracked: %s', 'sd-ai-agent' ),
+					__( 'Cannot revert: file not tracked: %s', 'gratis-ai-agent' ),
 					$relative_path
 				)
 			);
@@ -249,7 +249,7 @@ class GitTracker {
 				'sd_ai_agent_git_tracker_revert_failed',
 				sprintf(
 					/* translators: %s: file path */
-					__( 'Failed to revert file: %s', 'sd-ai-agent' ),
+					__( 'Failed to revert file: %s', 'gratis-ai-agent' ),
 					$absolute_path
 				)
 			);
@@ -279,7 +279,7 @@ class GitTracker {
 				'sd_ai_agent_git_tracker_not_tracked',
 				sprintf(
 					/* translators: %s: file path */
-					__( 'Cannot diff: file not tracked: %s', 'sd-ai-agent' ),
+					__( 'Cannot diff: file not tracked: %s', 'gratis-ai-agent' ),
 					$relative_path
 				)
 			);
@@ -306,7 +306,7 @@ class GitTracker {
 				'sd_ai_agent_git_tracker_read_failed',
 				sprintf(
 					/* translators: %s: file path */
-					__( 'Cannot diff: failed to read current file: %s', 'sd-ai-agent' ),
+					__( 'Cannot diff: failed to read current file: %s', 'gratis-ai-agent' ),
 					$absolute_path
 				)
 			);
@@ -415,7 +415,7 @@ class GitTracker {
 				'sd_ai_agent_git_tracker_invalid_package',
 				sprintf(
 					/* translators: %s: package path */
-					__( 'Package path does not exist: %s', 'sd-ai-agent' ),
+					__( 'Package path does not exist: %s', 'gratis-ai-agent' ),
 					$this->package_path
 				)
 			);
@@ -432,7 +432,7 @@ class GitTracker {
 				'sd_ai_agent_git_tracker_outside_package',
 				sprintf(
 					/* translators: 1: file path, 2: package path */
-					__( 'File %1$s is outside the package directory %2$s', 'sd-ai-agent' ),
+					__( 'File %1$s is outside the package directory %2$s', 'gratis-ai-agent' ),
 					$absolute_path,
 					$this->package_path
 				)
@@ -504,7 +504,7 @@ class GitTracker {
 				'sd_ai_agent_git_tracker_insert_failed',
 				sprintf(
 					/* translators: %s: file path */
-					__( 'Failed to insert tracking record for: %s', 'sd-ai-agent' ),
+					__( 'Failed to insert tracking record for: %s', 'gratis-ai-agent' ),
 					$relative_path
 				)
 			);
@@ -549,7 +549,7 @@ class GitTracker {
 				'sd_ai_agent_git_tracker_update_failed',
 				sprintf(
 					/* translators: %s: file path */
-					__( 'Failed to update tracking record for: %s', 'sd-ai-agent' ),
+					__( 'Failed to update tracking record for: %s', 'gratis-ai-agent' ),
 					$relative_path
 				)
 			);
@@ -592,7 +592,7 @@ class GitTracker {
 				'sd_ai_agent_git_tracker_update_failed',
 				sprintf(
 					/* translators: %s: file path */
-					__( 'Failed to update status for: %s', 'sd-ai-agent' ),
+					__( 'Failed to update status for: %s', 'gratis-ai-agent' ),
 					$relative_path
 				)
 			);

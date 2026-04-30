@@ -3,7 +3,7 @@
  * DI handler for frontend asset enqueuing.
  *
  * Replaces the inline `FloatingWidget::register()` call in
- * `sd-ai-agent.php` for the frontend (non-admin) widget.
+ * `gratis-ai-agent.php` for the frontend (non-admin) widget.
  *
  * @package SdAiAgent\Bootstrap
  * @license GPL-2.0-or-later
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * pages — not admin, REST, CLI, or cron requests.
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	context: Handler::CTX_FRONTEND,
 	strategy: Handler::INIT_IMMEDIATELY,
 )]

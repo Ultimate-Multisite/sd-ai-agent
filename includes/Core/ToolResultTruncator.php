@@ -80,7 +80,7 @@ class ToolResultTruncator {
 	private static function apply_tool_strategy( array $result, string $tool_name ): array {
 		switch ( $tool_name ) {
 			// Plugin list: keep name + active status + file, drop description/version details.
-			case 'sd-ai-agent/get-plugins':
+			case 'gratis-ai-agent/get-plugins':
 				if ( isset( $result['plugins'] ) && is_array( $result['plugins'] ) ) {
 					$total                = count( $result['plugins'] );
 					$result['plugins']    = array_map(
@@ -120,7 +120,7 @@ class ToolResultTruncator {
 				break;
 
 			// Database queries: truncate row data.
-			case 'sd-ai-agent/db-query':
+			case 'gratis-ai-agent/db-query':
 				if ( isset( $result['rows'] ) && is_array( $result['rows'] ) ) {
 					$total             = count( $result['rows'] );
 					$result['rows']    = array_slice( $result['rows'], 0, self::MAX_ARRAY_ITEMS );
@@ -151,8 +151,8 @@ class ToolResultTruncator {
 				break;
 
 			// Navigation / page HTML: truncate the HTML body.
-			case 'sd-ai-agent/navigate':
-			case 'sd-ai-agent/get-page-html':
+			case 'gratis-ai-agent/navigate':
+			case 'gratis-ai-agent/get-page-html':
 				if ( isset( $result['html'] ) && is_string( $result['html'] ) && strlen( $result['html'] ) > self::MAX_STRING_LENGTH ) {
 					$result['html']       = substr( $result['html'], 0, self::MAX_STRING_LENGTH ) . '... [truncated]';
 					$result['_truncated'] = true;

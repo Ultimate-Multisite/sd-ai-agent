@@ -1,6 +1,6 @@
 <?php
 /**
- * Handler: register the `sd-ai-agent` ability category.
+ * Handler: register the `gratis-ai-agent` ability category.
  *
  * @package SdAiAgent
  * @license GPL-2.0-or-later
@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * {@see wp_register_ability_category()} is defined when we call it.
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	context: Handler::CTX_GLOBAL,
 	strategy: Handler::INIT_IMMEDIATELY,
 )]
@@ -43,10 +43,10 @@ final class AbilityCategoryRegistrar {
 		}
 
 		wp_register_ability_category(
-			'sd-ai-agent',
+			'gratis-ai-agent',
 			array(
-				'label'       => __( 'Superdav AI Agent', 'sd-ai-agent' ),
-				'description' => __( 'Superdav AI Agent memory and skill abilities.', 'sd-ai-agent' ),
+				'label'       => __( 'Superdav AI Agent', 'gratis-ai-agent' ),
+				'description' => __( 'Superdav AI Agent memory and skill abilities.', 'gratis-ai-agent' ),
 			)
 		);
 	}

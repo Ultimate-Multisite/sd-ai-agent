@@ -39,7 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * happens on production sites where WP_DEBUG is false or undefined.
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	context: Handler::CTX_GLOBAL,
 	strategy: Handler::INIT_IMMEDIATELY,
 )]

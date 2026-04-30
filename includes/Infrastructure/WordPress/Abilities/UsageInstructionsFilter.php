@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * categories the consumer hasn't already populated.
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	context: Handler::CTX_GLOBAL,
 	strategy: Handler::INIT_IMMEDIATELY,
 )]
@@ -39,7 +39,7 @@ final class UsageInstructionsFilter {
 	 * @var array<string,string>
 	 */
 	private const DEFAULTS = array(
-		'sd-ai-agent'        => 'Built-in agent abilities — memory, knowledge, file ops, image/SEO/analytics helpers, WP/site management, and the discovery meta-tools (`ability-search`, `ability-call`).',
+		'gratis-ai-agent'        => 'Built-in agent abilities — memory, knowledge, file ops, image/SEO/analytics helpers, WP/site management, and the discovery meta-tools (`ability-search`, `ability-call`).',
 		'multisite-ultimate' => 'CRUD for the Multisite Ultimate WaaS platform: subsites, customers, memberships, products, payments, domains, broadcasts, and webhooks. **Prefer these abilities over `db-query`/`run-php` when creating or managing subsites and related entities.**',
 		'site'               => 'Built-in WordPress core abilities for posts, pages, media, options, taxonomies, and site information.',
 		'user'               => 'Built-in WordPress core abilities for user lookup and management.',

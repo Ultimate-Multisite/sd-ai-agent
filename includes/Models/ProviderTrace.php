@@ -111,7 +111,7 @@ class ProviderTrace {
 		 *
 		 * @param bool|null $enabled Null to defer to the option, true/false to override.
 		 */
-		$filter_value = apply_filters( 'sd_ai_agent_provider_trace_enabled', null );
+		$filter_value = apply_filters( 'gratis_ai_agent_provider_trace_enabled', null );
 
 		if ( is_bool( $filter_value ) ) {
 			return $filter_value;

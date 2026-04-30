@@ -468,7 +468,7 @@ class Settings {
 	 *
 	 * Example — override the default model from a theme or mu-plugin:
 	 *
-	 *   add_filter( 'sd_ai_agent_default_model', function ( string $model ): string {
+	 *   add_filter( 'gratis_ai_agent_default_model', function ( string $model ): string {
 	 *       return 'gpt-4o';
 	 *   } );
 	 *
@@ -487,7 +487,7 @@ class Settings {
 			 *
 			 * @param string $model The built-in fallback model ID (SD_AI_AGENT_DEFAULT_MODEL).
 			 */
-			$model = (string) apply_filters( 'sd_ai_agent_default_model', $builtin );
+			$model = (string) apply_filters( 'gratis_ai_agent_default_model', $builtin );
 		}
 
 		return $model;
@@ -547,12 +547,12 @@ class Settings {
 	 * @var string[]
 	 */
 	const WOO_ABILITY_IDS = array(
-		'sd-ai-agent/woo-get-products',
-		'sd-ai-agent/woo-create-product',
-		'sd-ai-agent/woo-update-product',
-		'sd-ai-agent/woo-delete-product',
-		'sd-ai-agent/woo-get-orders',
-		'sd-ai-agent/woo-get-store-stats',
+		'gratis-ai-agent/woo-get-products',
+		'gratis-ai-agent/woo-create-product',
+		'gratis-ai-agent/woo-update-product',
+		'gratis-ai-agent/woo-delete-product',
+		'gratis-ai-agent/woo-get-orders',
+		'gratis-ai-agent/woo-get-store-stats',
 	);
 
 	/**

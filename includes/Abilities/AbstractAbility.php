@@ -15,7 +15,7 @@ declare(strict_types=1);
  * Usage:
  *
  *     class MyAbility extends AbstractAbility {
- *         protected function category(): string { return 'sd-ai-agent'; }
+ *         protected function category(): string { return 'gratis-ai-agent'; }
  *         protected function input_schema(): array { return [...]; }
  *         protected function output_schema(): array { return [...]; }
  *         protected function execute_callback( $input ) { ... }
@@ -24,9 +24,9 @@ declare(strict_types=1);
  *     }
  *
  *     // Register via wp_register_ability() with ability_class:
- *     wp_register_ability( 'sd-ai-agent/my-ability', [
- *         'label'         => __( 'My Ability', 'sd-ai-agent' ),
- *         'description'   => __( 'Does something.', 'sd-ai-agent' ),
+ *     wp_register_ability( 'gratis-ai-agent/my-ability', [
+ *         'label'         => __( 'My Ability', 'gratis-ai-agent' ),
+ *         'description'   => __( 'Does something.', 'gratis-ai-agent' ),
  *         'ability_class' => MyAbility::class,
  *     ] );
  *
@@ -65,7 +65,7 @@ abstract class AbstractAbility extends \WP_Ability {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string              $name       The namespaced ability name (e.g. 'sd-ai-agent/memory-save').
+	 * @param string              $name       The namespaced ability name (e.g. 'gratis-ai-agent/memory-save').
 	 * @param array<string,mixed> $properties Optional overrides. Supports 'label' and 'description'.
 	 */
 	public function __construct( string $name, array $properties = array() ) {
@@ -133,7 +133,7 @@ abstract class AbstractAbility extends \WP_Ability {
 	 * @return string The category slug (must be registered via wp_register_ability_category()).
 	 */
 	protected function category(): string {
-		return 'sd-ai-agent';
+		return 'gratis-ai-agent';
 	}
 
 	/**
@@ -260,7 +260,7 @@ abstract class AbstractAbility extends \WP_Ability {
 				'ability_callback_exception',
 				sprintf(
 					/* translators: 1: Ability name, 2: Exception message. */
-					__( 'Ability "%1$s" threw an error: %2$s', 'sd-ai-agent' ),
+					__( 'Ability "%1$s" threw an error: %2$s', 'gratis-ai-agent' ),
 					$this->get_name(),
 					$e->getMessage()
 				),

@@ -34,7 +34,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * from any of them.
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	context: Handler::CTX_GLOBAL,
 	strategy: Handler::INIT_IMMEDIATELY,
 )]

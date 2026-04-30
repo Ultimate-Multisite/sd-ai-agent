@@ -32,10 +32,10 @@
     <arg value="ps"/>
 
     <!-- WordPress version -->
-    <config name="minimum_supported_wp_version" value="6.9"/>
+    <config name="minimum_supported_wp_version" value="7.0"/>
 
     <!-- Text domain -->
-    <config name="text_domain" value="sd-ai-agent"/>
+    <config name="text_domain" value="gratis-ai-agent"/>
 
     <!-- Use WordPress Coding Standards -->
     <rule ref="WordPress">
@@ -110,11 +110,32 @@
          permission callbacks at the framework level. -->
     <rule ref="WordPress.Security.NonceVerification"/>
 
-    <!-- Verify text domain usage -->
+    <!-- Verify text domain usage.
+         Every __(), _e(), esc_html__() etc. call must use 'gratis-ai-agent'.
+         This catches TextDomainMismatch and MissingArgDomain before WP.org review. -->
     <rule ref="WordPress.WP.I18n">
         <properties>
             <property name="text_domain" type="array">
-                <element value="sd-ai-agent"/>
+                <element value="gratis-ai-agent"/>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- Enforce plugin prefix on all globals (hooks, functions, classes, constants).
+         The WP.org Plugin Check tool derives the expected prefix from the plugin slug.
+         Declaring it explicitly here catches regressions locally before submission.
+         Compat and lib/ directories are excluded above — they use WP core / PSR naming. -->
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array">
+                <element value="gratis_ai_agent"/>
+                <element value="GratisAiAgent"/>
+                <element value="GRATIS_AI_AGENT"/>
+                <!-- SdAiAgent PHP namespace is the internal namespace (not a global) — kept for BC -->
+                <element value="SdAiAgent"/>
+                <element value="sd_ai_agent"/>
+                <!-- SD_AI_AGENT_ constants and SD-AI-AGENT option keys — kept for BC -->
+                <element value="SD_AI_AGENT"/>
             </property>
         </properties>
     </rule>

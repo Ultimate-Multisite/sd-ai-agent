@@ -70,7 +70,7 @@ final class SkillService {
 		if ( $existing ) {
 			return new WP_Error(
 				'sd_ai_agent_skill_slug_exists',
-				__( 'A skill with this slug already exists.', 'sd-ai-agent' ),
+				__( 'A skill with this slug already exists.', 'gratis-ai-agent' ),
 				array( 'status' => 409 )
 			);
 		}
@@ -89,7 +89,7 @@ final class SkillService {
 		if ( false === $id ) {
 			return new WP_Error(
 				'sd_ai_agent_skill_create_failed',
-				__( 'Failed to create skill.', 'sd-ai-agent' ),
+				__( 'Failed to create skill.', 'gratis-ai-agent' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -109,7 +109,7 @@ final class SkillService {
 		if ( $result === 'builtin' ) {
 			return new WP_Error(
 				'sd_ai_agent_skill_builtin_delete',
-				__( 'Built-in skills cannot be deleted. You can disable them instead.', 'sd-ai-agent' ),
+				__( 'Built-in skills cannot be deleted. You can disable them instead.', 'gratis-ai-agent' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -117,7 +117,7 @@ final class SkillService {
 		if ( ! $result ) {
 			return new WP_Error(
 				'sd_ai_agent_skill_delete_failed',
-				__( 'Failed to delete skill or skill not found.', 'sd-ai-agent' ),
+				__( 'Failed to delete skill or skill not found.', 'gratis-ai-agent' ),
 				array( 'status' => 500 )
 			);
 		}

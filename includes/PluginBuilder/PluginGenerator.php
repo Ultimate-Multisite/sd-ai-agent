@@ -47,14 +47,14 @@ class PluginGenerator {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
 			return new WP_Error(
 				'ai_client_unavailable',
-				__( 'wp_ai_client_prompt() is not available.', 'sd-ai-agent' )
+				__( 'wp_ai_client_prompt() is not available.', 'gratis-ai-agent' )
 			);
 		}
 
 		if ( empty( trim( $description ) ) ) {
 			return new WP_Error(
 				'sd_ai_agent_empty_description',
-				__( 'Plugin description must not be empty.', 'sd-ai-agent' )
+				__( 'Plugin description must not be empty.', 'gratis-ai-agent' )
 			);
 		}
 
@@ -116,7 +116,7 @@ INSTRUCTION;
 		if ( ! is_array( $plan ) || empty( $plan['slug'] ) || empty( $plan['files'] ) ) {
 			return new WP_Error(
 				'sd_ai_agent_invalid_plan',
-				__( 'AI returned an invalid plan. Try again with a more detailed description.', 'sd-ai-agent' ),
+				__( 'AI returned an invalid plan. Try again with a more detailed description.', 'gratis-ai-agent' ),
 				array( 'raw' => (string) $raw )
 			);
 		}
@@ -140,7 +140,7 @@ INSTRUCTION;
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
 			return new WP_Error(
 				'ai_client_unavailable',
-				__( 'wp_ai_client_prompt() is not available.', 'sd-ai-agent' )
+				__( 'wp_ai_client_prompt() is not available.', 'gratis-ai-agent' )
 			);
 		}
 
@@ -148,7 +148,7 @@ INSTRUCTION;
 		if ( empty( $raw_file_specs ) ) {
 			return new WP_Error(
 				'sd_ai_agent_empty_plan',
-				__( 'Plan contains no files to generate.', 'sd-ai-agent' )
+				__( 'Plan contains no files to generate.', 'gratis-ai-agent' )
 			);
 		}
 
@@ -187,7 +187,7 @@ INSTRUCTION;
 		if ( empty( $generated_files ) ) {
 			return new WP_Error(
 				'sd_ai_agent_no_files_generated',
-				__( 'AI did not produce any files. Try again with a more detailed description.', 'sd-ai-agent' )
+				__( 'AI did not produce any files. Try again with a more detailed description.', 'gratis-ai-agent' )
 			);
 		}
 
@@ -212,7 +212,7 @@ INSTRUCTION;
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
 			return new WP_Error(
 				'ai_client_unavailable',
-				__( 'wp_ai_client_prompt() is not available.', 'sd-ai-agent' )
+				__( 'wp_ai_client_prompt() is not available.', 'gratis-ai-agent' )
 			);
 		}
 
@@ -293,14 +293,14 @@ INSTRUCTION;
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
 			return new WP_Error(
 				'ai_client_unavailable',
-				__( 'wp_ai_client_prompt() is not available.', 'sd-ai-agent' )
+				__( 'wp_ai_client_prompt() is not available.', 'gratis-ai-agent' )
 			);
 		}
 
 		if ( empty( $files ) ) {
 			return new WP_Error(
 				'sd_ai_agent_empty_files',
-				__( 'No files provided for review.', 'sd-ai-agent' )
+				__( 'No files provided for review.', 'gratis-ai-agent' )
 			);
 		}
 

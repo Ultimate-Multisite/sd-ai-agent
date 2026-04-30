@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 #[REST_Handler(
 	namespace: RestController::NAMESPACE,
 	basename: 'feedback',
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 )]
 final class FeedbackController extends XWP_REST_Controller {
 
@@ -68,7 +68,7 @@ final class FeedbackController extends XWP_REST_Controller {
 		if ( null === $summary ) {
 			return new WP_Error(
 				'feedback_session_not_found',
-				__( 'Session not found or access denied.', 'sd-ai-agent' ),
+				__( 'Session not found or access denied.', 'gratis-ai-agent' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -84,7 +84,7 @@ final class FeedbackController extends XWP_REST_Controller {
 		if ( null === $raw_payload ) {
 			return new WP_Error(
 				'feedback_build_error',
-				__( 'Could not build report payload.', 'sd-ai-agent' ),
+				__( 'Could not build report payload.', 'gratis-ai-agent' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -134,7 +134,7 @@ final class FeedbackController extends XWP_REST_Controller {
 			if ( null === $payload ) {
 				return new WP_Error(
 					'feedback_session_not_found',
-					__( 'Session not found or access denied.', 'sd-ai-agent' ),
+					__( 'Session not found or access denied.', 'gratis-ai-agent' ),
 					array( 'status' => 404 )
 				);
 			}

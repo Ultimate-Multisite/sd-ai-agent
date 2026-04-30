@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * because file operations can originate from any request context.
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	context: Handler::CTX_GLOBAL,
 	strategy: Handler::INIT_IMMEDIATELY,
 )]

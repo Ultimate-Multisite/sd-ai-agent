@@ -19,7 +19,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 global $wpdb;
 
 // ── 1. Drop all plugin database tables ──────────────────────────────────────
-$sd_ai_agent_tables = [
+$gratis_ai_agent_tables = [
 	$wpdb->prefix . 'sd_ai_agent_sessions',
 	$wpdb->prefix . 'sd_ai_agent_usage',
 	$wpdb->prefix . 'sd_ai_agent_memories',
@@ -38,13 +38,13 @@ $sd_ai_agent_tables = [
 	$wpdb->prefix . 'sd_ai_agent_benchmark_results',
 ];
 
-foreach ( $sd_ai_agent_tables as $sd_ai_agent_table ) {
+foreach ( $gratis_ai_agent_tables as $gratis_ai_agent_table ) {
 	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Uninstall handler must drop tables; names are from $wpdb->prefix only, caching is irrelevant on uninstall.
-	$wpdb->query( "DROP TABLE IF EXISTS `{$sd_ai_agent_table}`" );
+	$wpdb->query( "DROP TABLE IF EXISTS `{$gratis_ai_agent_table}`" );
 }
 
 // ── 2. Delete all plugin options ─────────────────────────────────────────────
-$sd_ai_agent_options = [
+$gratis_ai_agent_options = [
 	'sd_ai_agent_settings',
 	'sd_ai_agent_db_version',
 	'sd_ai_agent_claude_max_token',
@@ -55,8 +55,8 @@ $sd_ai_agent_options = [
 	'sd_ai_agent_migrated_from_ai_agent',
 ];
 
-foreach ( $sd_ai_agent_options as $sd_ai_agent_option ) {
-	delete_option( $sd_ai_agent_option );
+foreach ( $gratis_ai_agent_options as $gratis_ai_agent_option ) {
+	delete_option( $gratis_ai_agent_option );
 }
 
 // ── 3. Delete user meta with plugin prefix ───────────────────────────────────
@@ -69,13 +69,13 @@ $wpdb->query(
 );
 
 // ── 4. Clear scheduled cron events ───────────────────────────────────────────
-$sd_ai_agent_cron_hooks = [
+$gratis_ai_agent_cron_hooks = [
 	'sd_ai_agent_run_automation',
 	'sd_ai_agent_run_event_automation',
 	'sd_ai_agent_site_scan',
 	'wp_sd_ai_agent_reindex',
 ];
 
-foreach ( $sd_ai_agent_cron_hooks as $sd_ai_agent_hook ) {
-	wp_clear_scheduled_hook( $sd_ai_agent_hook );
+foreach ( $gratis_ai_agent_cron_hooks as $gratis_ai_agent_hook ) {
+	wp_clear_scheduled_hook( $gratis_ai_agent_hook );
 }

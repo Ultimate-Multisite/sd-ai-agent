@@ -43,7 +43,7 @@ class EventTriggerHandler {
 		add_action( 'init', [ __CLASS__, 'attach_hooks' ], 99 );
 
 		// Register the cron action that executes an event automation run.
-		add_action( 'sd_ai_agent_run_event_automation', [ __CLASS__, 'execute_event_run' ] );
+		add_action( 'gratis_ai_agent_run_event_automation', [ __CLASS__, 'execute_event_run' ] );
 	}
 
 	/**
@@ -200,7 +200,7 @@ class EventTriggerHandler {
 		 * @param string $hook_name The hook that triggered it.
 		 * @param bool   $is_error  Whether the run failed.
 		 */
-		do_action( 'sd_ai_agent_event_automation_complete', $event_id, $hook_name, $is_error );
+		do_action( 'gratis_ai_agent_event_automation_complete', $event_id, $hook_name, $is_error );
 
 		self::$executing = false;
 	}

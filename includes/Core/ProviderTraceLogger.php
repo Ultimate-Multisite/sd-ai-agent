@@ -202,7 +202,7 @@ class ProviderTraceLogger {
 		 * @param string $url         The request URL.
 		 * @param string $host        The parsed hostname.
 		 */
-		return (string) apply_filters( 'sd_ai_agent_trace_match_provider', '', $url, $host );
+		return (string) apply_filters( 'gratis_ai_agent_trace_match_provider', '', $url, $host );
 	}
 
 	/**

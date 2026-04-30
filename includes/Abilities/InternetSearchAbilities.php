@@ -58,11 +58,11 @@ class InternetSearchAbilities {
 		}
 
 		wp_register_ability(
-			'sd-ai-agent/internet-search',
+			'gratis-ai-agent/internet-search',
 			[
-				'label'               => __( 'Internet Search', 'sd-ai-agent' ),
-				'description'         => __( 'Search the internet for current information. Returns a list of relevant results with titles, URLs, and snippets. Use this to research topics before writing blog posts or answering questions about recent events.', 'sd-ai-agent' ),
-				'category'            => 'sd-ai-agent',
+				'label'               => __( 'Internet Search', 'gratis-ai-agent' ),
+				'description'         => __( 'Search the internet for current information. Returns a list of relevant results with titles, URLs, and snippets. Use this to research topics before writing blog posts or answering questions about recent events.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -266,7 +266,7 @@ class InternetSearchAbilities {
 			$url,
 			[
 				'timeout'    => 15,
-				'user-agent' => 'SdAiAgent/1.0 (WordPress plugin; +https://wordpress.org/plugins/sd-ai-agent)',
+				'user-agent' => 'SdAiAgent/1.0 (WordPress plugin; +https://wordpress.org/plugins/gratis-ai-agent)',
 			]
 		);
 

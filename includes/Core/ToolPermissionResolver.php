@@ -147,7 +147,7 @@ class ToolPermissionResolver {
 	/**
 	 * Persist an "always allow" permission for a specific ability.
 	 *
-	 * @param string $ability_name The ability name (e.g. 'sd-ai-agent/memory-save').
+	 * @param string $ability_name The ability name (e.g. 'gratis-ai-agent/memory-save').
 	 */
 	public static function set_always_allow( string $ability_name ): void {
 		$all   = Settings::instance()->get();

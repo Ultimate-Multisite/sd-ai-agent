@@ -30,10 +30,10 @@ class NavigationAbilities {
 	 */
 	public static function handle_navigate( array $input = [] ) {
 		$ability = new NavigateAbility(
-			'sd-ai-agent/navigate',
+			'gratis-ai-agent/navigate',
 			[
-				'label'       => __( 'Navigate', 'sd-ai-agent' ),
-				'description' => __( 'Navigate the user to a URL within the WordPress site. The URL must be within the current site. This will reload the page.', 'sd-ai-agent' ),
+				'label'       => __( 'Navigate', 'gratis-ai-agent' ),
+				'description' => __( 'Navigate the user to a URL within the WordPress site. The URL must be within the current site. This will reload the page.', 'gratis-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -48,10 +48,10 @@ class NavigationAbilities {
 	 */
 	public static function handle_get_page_html( array $input = [] ) {
 		$ability = new GetPageHtmlAbility(
-			'sd-ai-agent/get-page-html',
+			'gratis-ai-agent/get-page-html',
 			[
-				'label'       => __( 'Get Page HTML', 'sd-ai-agent' ),
-				'description' => __( 'Get the HTML content of elements on the current page the user is viewing. Use CSS selectors to query specific elements. Returns the outer HTML of matched elements.', 'sd-ai-agent' ),
+				'label'       => __( 'Get Page HTML', 'gratis-ai-agent' ),
+				'description' => __( 'Get the HTML content of elements on the current page the user is viewing. Use CSS selectors to query specific elements. Returns the outer HTML of matched elements.', 'gratis-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -67,19 +67,19 @@ class NavigationAbilities {
 		}
 
 		wp_register_ability(
-			'sd-ai-agent/navigate',
+			'gratis-ai-agent/navigate',
 			[
-				'label'         => __( 'Navigate', 'sd-ai-agent' ),
-				'description'   => __( 'Navigate the user to a URL within the WordPress site. The URL must be within the current site. This will reload the page.', 'sd-ai-agent' ),
+				'label'         => __( 'Navigate', 'gratis-ai-agent' ),
+				'description'   => __( 'Navigate the user to a URL within the WordPress site. The URL must be within the current site. This will reload the page.', 'gratis-ai-agent' ),
 				'ability_class' => NavigateAbility::class,
 			]
 		);
 
 		wp_register_ability(
-			'sd-ai-agent/get-page-html',
+			'gratis-ai-agent/get-page-html',
 			[
-				'label'         => __( 'Get Page HTML', 'sd-ai-agent' ),
-				'description'   => __( 'Get the HTML content of elements on the current page the user is viewing. Use CSS selectors to query specific elements. Returns the outer HTML of matched elements.', 'sd-ai-agent' ),
+				'label'         => __( 'Get Page HTML', 'gratis-ai-agent' ),
+				'description'   => __( 'Get the HTML content of elements on the current page the user is viewing. Use CSS selectors to query specific elements. Returns the outer HTML of matched elements.', 'gratis-ai-agent' ),
 				'ability_class' => GetPageHtmlAbility::class,
 			]
 		);

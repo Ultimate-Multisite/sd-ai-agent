@@ -116,7 +116,7 @@ final class ClientAbilityRouter {
 				array(
 					'label'        => (string) ( $descriptor['label'] ?? $name ),
 					'description'  => (string) ( $descriptor['description'] ?? '' ),
-					'category'     => 'sd-ai-agent-js',
+					'category'     => 'gratis-ai-agent-js',
 					'callback'     => static function ( array $args ): array {
 						// No-op: client-side abilities are never executed server-side.
 						return array( 'error' => 'Client-side ability cannot be executed server-side.' );

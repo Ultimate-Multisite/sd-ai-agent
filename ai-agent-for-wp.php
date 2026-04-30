@@ -1,15 +1,15 @@
 <?php
 /**
  * Plugin Name: Superdav AI Agent
- * Plugin URI:  https://github.com/Ultimate-Multisite/sd-ai-agent
+ * Plugin URI:  https://github.com/Ultimate-Multisite/gratis-ai-agent
  * Description: Agentic AI loop for WordPress — chat with an AI that can call WordPress abilities (tools) autonomously.
  * Version:     1.9.1
  * Author:      superdav42
  * Author URI:  https://github.com/superdav42
  * License:     GPL-2.0-or-later
- * Requires at least: 6.9
+ * Requires at least: 7.0
  * Requires PHP: 8.2
- * Text Domain: sd-ai-agent
+ * Text Domain: gratis-ai-agent
  *
  * @package SdAiAgent
  */
@@ -65,7 +65,7 @@ if ( file_exists( SD_AI_AGENT_DIR . '/vendor/autoload_packages.php' ) ) {
 				'<div class="notice notice-error"><p>%s</p></div>',
 				esc_html__(
 					'Superdav AI Agent is missing its vendor dependencies. Please run "composer install" in the plugin directory.',
-					'sd-ai-agent',
+					'gratis-ai-agent',
 				),
 			);
 		},
@@ -112,7 +112,7 @@ register_deactivation_hook( __FILE__, [ LifecycleHandler::class, 'deactivate' ] 
 // `SdAiAgent\Plugin::$handlers`. Nothing else needs to live in this file.
 xwp_load_app(
 	[
-		'id'            => 'sd-ai-agent',
+		'id'            => 'gratis-ai-agent',
 		'module'        => Plugin::class,
 		'autowiring'    => true,
 		'compile'       => true,

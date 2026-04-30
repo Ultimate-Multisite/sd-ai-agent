@@ -29,11 +29,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 class GeneratePluginAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'Generate Plugin', 'sd-ai-agent' );
+		return __( 'Generate Plugin', 'gratis-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Generate a WordPress plugin from a natural-language description. Returns the implementation plan and complete PHP source code.', 'sd-ai-agent' );
+		return __( 'Generate a WordPress plugin from a natural-language description. Returns the implementation plan and complete PHP source code.', 'gratis-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -79,7 +79,7 @@ class GeneratePluginAbility extends AbstractAbility {
 		if ( empty( $description ) ) {
 			return new WP_Error(
 				'sd_ai_agent_empty_description',
-				__( 'description is required.', 'sd-ai-agent' )
+				__( 'description is required.', 'gratis-ai-agent' )
 			);
 		}
 

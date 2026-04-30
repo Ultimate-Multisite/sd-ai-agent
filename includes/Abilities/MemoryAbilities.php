@@ -29,9 +29,9 @@ class MemoryAbilities {
 		wp_register_ability(
 			'ai-agent/memory-save',
 			[
-				'label'               => __( 'Save Memory', 'sd-ai-agent' ),
-				'description'         => __( 'Save a piece of information to persistent memory. Use this to remember facts, preferences, or context for future conversations.', 'sd-ai-agent' ),
-				'category'            => 'sd-ai-agent',
+				'label'               => __( 'Save Memory', 'gratis-ai-agent' ),
+				'description'         => __( 'Save a piece of information to persistent memory. Use this to remember facts, preferences, or context for future conversations.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -72,9 +72,9 @@ class MemoryAbilities {
 		wp_register_ability(
 			'ai-agent/memory-list',
 			[
-				'label'               => __( 'List Memories', 'sd-ai-agent' ),
-				'description'         => __( 'List all stored memories, grouped by category.', 'sd-ai-agent' ),
-				'category'            => 'sd-ai-agent',
+				'label'               => __( 'List Memories', 'gratis-ai-agent' ),
+				'description'         => __( 'List all stored memories, grouped by category.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => (object) [],
@@ -102,9 +102,9 @@ class MemoryAbilities {
 		wp_register_ability(
 			'ai-agent/memory-delete',
 			[
-				'label'               => __( 'Delete Memory', 'sd-ai-agent' ),
-				'description'         => __( 'Delete a specific memory by its ID.', 'sd-ai-agent' ),
-				'category'            => 'sd-ai-agent',
+				'label'               => __( 'Delete Memory', 'gratis-ai-agent' ),
+				'description'         => __( 'Delete a specific memory by its ID.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [

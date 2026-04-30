@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- WP 7.0 core class polyfill; class names are dictated by WordPress core API.
 /**
  * WP AI Client bridge polyfill: WP_AI_Client_Ability_Function_Resolver class
  *
@@ -114,7 +115,7 @@ class WP_AI_Client_Ability_Function_Resolver {
 				$function_id,
 				$function_name,
 				array(
-					'error' => __( 'Not an ability function call' ),
+					'error' => __( 'Not an ability function call', 'gratis-ai-agent' ),
 					'code'  => 'invalid_ability_call',
 				)
 			);
@@ -128,7 +129,7 @@ class WP_AI_Client_Ability_Function_Resolver {
 				$function_name,
 				array(
 					/* translators: %s: ability name */
-					'error' => sprintf( __( 'Ability "%s" was not specified in the allowed abilities list.' ), $ability_name ),
+					'error' => sprintf( __( 'Ability "%s" was not specified in the allowed abilities list.', 'gratis-ai-agent' ), $ability_name ),
 					'code'  => 'ability_not_allowed',
 				)
 			);
@@ -142,7 +143,7 @@ class WP_AI_Client_Ability_Function_Resolver {
 				$function_name,
 				array(
 					/* translators: %s: ability name */
-					'error' => sprintf( __( 'Ability "%s" not found' ), $ability_name ),
+					'error' => sprintf( __( 'Ability "%s" not found', 'gratis-ai-agent' ), $ability_name ),
 					'code'  => 'ability_not_found',
 				)
 			);

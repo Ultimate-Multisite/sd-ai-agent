@@ -36,10 +36,10 @@ class StockImageAbility extends \SdAiAgent\Abilities\AbstractAbility {
 		}
 
 		wp_register_ability(
-			'sd-ai-agent/stock-image',
+			'gratis-ai-agent/stock-image',
 			[
-				'label'         => __( 'Stock Image', 'sd-ai-agent' ),
-				'description'   => __( 'Search for a free stock photo by keyword (Openverse CC0 or Pixabay) and import it into the media library. Returns attachment ID and URL. Use this when you need a real photograph or illustration from existing stock libraries.', 'sd-ai-agent' ),
+				'label'         => __( 'Stock Image', 'gratis-ai-agent' ),
+				'description'   => __( 'Search for a free stock photo by keyword (Openverse CC0 or Pixabay) and import it into the media library. Returns attachment ID and URL. Use this when you need a real photograph or illustration from existing stock libraries.', 'gratis-ai-agent' ),
 				'ability_class' => self::class,
 			]
 		);
@@ -49,14 +49,14 @@ class StockImageAbility extends \SdAiAgent\Abilities\AbstractAbility {
 	 * {@inheritdoc}
 	 */
 	protected function label(): string {
-		return __( 'Stock Image', 'sd-ai-agent' );
+		return __( 'Stock Image', 'gratis-ai-agent' );
 	}
 
 	/**
 	 * {@inheritdoc}
 	 */
 	protected function description(): string {
-		return __( 'Search for a free stock photo by keyword (Openverse CC0 or Pixabay) and import it into the media library. Returns attachment ID and URL. Use this when you need a real photograph or illustration from existing stock libraries.', 'sd-ai-agent' );
+		return __( 'Search for a free stock photo by keyword (Openverse CC0 or Pixabay) and import it into the media library. Returns attachment ID and URL. Use this when you need a real photograph or illustration from existing stock libraries.', 'gratis-ai-agent' );
 	}
 
 	/**
@@ -166,7 +166,7 @@ class StockImageAbility extends \SdAiAgent\Abilities\AbstractAbility {
 				'title'         => '',
 				'source'        => '',
 				'error'         => 'No free stock image source is available. Configure Openverse or Pixabay.',
-				'tip'           => 'Use sd-ai-agent/generate-image to create an AI-generated image instead.',
+				'tip'           => 'Use gratis-ai-agent/generate-image to create an AI-generated image instead.',
 			];
 		}
 
@@ -189,7 +189,7 @@ class StockImageAbility extends \SdAiAgent\Abilities\AbstractAbility {
 				'source'        => '',
 				// Error message from the factory lists each source tried and why it failed.
 				'error'         => $result->get_error_message(),
-				'tip'           => 'Use sd-ai-agent/generate-image to create an AI-generated image instead.',
+				'tip'           => 'Use gratis-ai-agent/generate-image to create an AI-generated image instead.',
 			];
 		}
 

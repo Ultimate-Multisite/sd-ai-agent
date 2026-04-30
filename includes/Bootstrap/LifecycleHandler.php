@@ -10,7 +10,7 @@
  * the plugin bootstrap file registers directly.
  *
  * This class consolidates the handful of static calls that used to live in
- * `sd-ai-agent.php` so the root file stays thin and responsibilities are
+ * `gratis-ai-agent.php` so the root file stays thin and responsibilities are
  * grouped by lifecycle stage.
  *
  * @package SdAiAgent

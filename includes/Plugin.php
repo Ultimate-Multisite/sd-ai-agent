@@ -67,16 +67,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Root application module for the DI container.
  *
  * The `#[Module]` attribute is consumed by `x-wp/di` when the plugin calls
- * {@see xwp_load_app()} in `sd-ai-agent.php`. The container ID
- * `sd-ai-agent` matches the plugin slug and is the key used by the rest of
+ * {@see xwp_load_app()} in `gratis-ai-agent.php`. The container ID
+ * `gratis-ai-agent` matches the plugin slug and is the key used by the rest of
  * the codebase to resolve the container through {@see xwp_app()}.
  *
- * `extendable: true` publishes the `xwp_extend_import_sd-ai-agent` filter so
+ * `extendable: true` publishes the `xwp_extend_import_gratis-ai-agent` filter so
  * companion plugins (e.g. Ultimate Multisite add-ons) can register additional
  * modules against our container without having to patch this class.
  */
 #[Module(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	hook: 'plugins_loaded',
 	priority: 1,
 	imports: array(),
@@ -134,7 +134,7 @@ final class Plugin {
 	public static function configure(): array {
 		return array(
 			// Note: Using factory() instead of value() ensures these resolve at runtime
-			// from the constants defined in sd-ai-agent.php, not at compile-time.
+			// from the constants defined in gratis-ai-agent.php, not at compile-time.
 			// This allows the compiled container to ship in distributions
 			// while still resolving to the correct paths on each installation.
 			'plugin.version'                  => \DI\factory( static fn(): string => defined( 'SD_AI_AGENT_VERSION' ) ? (string) constant( 'SD_AI_AGENT_VERSION' ) : '' ),

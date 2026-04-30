@@ -480,9 +480,9 @@ class SiteScanner {
 
 		return KnowledgeDatabase::create_collection(
 			[
-				'name'          => __( 'Site Content', 'sd-ai-agent' ),
+				'name'          => __( 'Site Content', 'gratis-ai-agent' ),
 				'slug'          => 'onboarding-site-content',
-				'description'   => __( 'Auto-indexed during onboarding scan.', 'sd-ai-agent' ),
+				'description'   => __( 'Auto-indexed during onboarding scan.', 'gratis-ai-agent' ),
 				'auto_index'    => true,
 				'source_config' => [
 					'post_types' => $post_types,

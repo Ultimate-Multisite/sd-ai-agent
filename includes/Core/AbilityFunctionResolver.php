@@ -6,7 +6,7 @@ declare(strict_types=1);
  *
  * Subclasses the WordPress core resolver to fix one paper cut: when the model
  * issues a tool call with no arguments (e.g. for a parameterless ability like
- * `sd-ai-agent/get-plugins`), the parent resolver passes `null` to
+ * `gratis-ai-agent/get-plugins`), the parent resolver passes `null` to
  * `WP_Ability::execute()`, which fails schema validation with
  * `input is not of type object`. We pass an empty associative array instead
  * so object-typed schemas with no required properties accept the call.
@@ -67,7 +67,7 @@ class AbilityFunctionResolver extends \WP_AI_Client_Ability_Function_Resolver {
 				$function_id,
 				$function_name,
 				array(
-					'error' => __( 'Not an ability function call', 'sd-ai-agent' ),
+					'error' => __( 'Not an ability function call', 'gratis-ai-agent' ),
 					'code'  => 'invalid_ability_call',
 				)
 			);
@@ -82,7 +82,7 @@ class AbilityFunctionResolver extends \WP_AI_Client_Ability_Function_Resolver {
 				array(
 					'error' => sprintf(
 						/* translators: %s: ability name */
-						__( 'Ability "%s" was not specified in the allowed abilities list.', 'sd-ai-agent' ),
+						__( 'Ability "%s" was not specified in the allowed abilities list.', 'gratis-ai-agent' ),
 						$ability_name
 					),
 					'code'  => 'ability_not_allowed',
@@ -98,7 +98,7 @@ class AbilityFunctionResolver extends \WP_AI_Client_Ability_Function_Resolver {
 				array(
 					'error' => sprintf(
 						/* translators: %s: ability name */
-						__( 'Ability "%s" not found', 'sd-ai-agent' ),
+						__( 'Ability "%s" not found', 'gratis-ai-agent' ),
 						$ability_name
 					),
 					'code'  => 'ability_not_found',

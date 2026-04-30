@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * instantiates the {@see \WP_Ability} object.
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	context: Handler::CTX_GLOBAL,
 	strategy: Handler::INIT_IMMEDIATELY,
 )]

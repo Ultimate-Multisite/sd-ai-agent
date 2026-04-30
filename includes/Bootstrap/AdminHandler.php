@@ -36,7 +36,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * saving hook registration overhead on frontend/REST/CLI requests.
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	context: Handler::CTX_ADMIN,
 	strategy: Handler::INIT_IMMEDIATELY,
 )]
@@ -133,18 +133,18 @@ final class AdminHandler {
 			? admin_url( 'options-connectors.php' )
 			: admin_url( 'options-general.php?page=options-connectors-wp-admin' );
 
-		$chat_url = admin_url( 'admin.php?page=sd-ai-agent#chat' );
+		$chat_url = admin_url( 'admin.php?page=gratis-ai-agent#chat' );
 
 		$actions['sd_chat'] = sprintf(
 			'<a href="%s">%s</a>',
 			esc_url( $chat_url ),
-			esc_html__( 'Start Chat', 'sd-ai-agent' )
+			esc_html__( 'Start Chat', 'gratis-ai-agent' )
 		);
 
 		$actions['sd_connections'] = sprintf(
 			'<a href="%s">%s</a>',
 			esc_url( $connectors_url ),
-			esc_html__( 'Configure Connections', 'sd-ai-agent' )
+			esc_html__( 'Configure Connections', 'gratis-ai-agent' )
 		);
 
 		return $actions;

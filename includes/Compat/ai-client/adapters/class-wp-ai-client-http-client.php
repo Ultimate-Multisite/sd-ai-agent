@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- WP 7.0 core class polyfill; class names are dictated by WordPress core API.
 /**
  * WP AI Client bridge polyfill: WP_AI_Client_HTTP_Client class
  *
@@ -91,7 +92,7 @@ class WP_AI_Client_HTTP_Client implements ClientInterface, ClientWithOptionsInte
 		if ( is_wp_error( $response ) ) {
 			$message = sprintf(
 				/* translators: 1: HTTP method (e.g. GET, POST). 2: Request URL. 3: Error message. */
-				__( 'Network error occurred while sending %1$s request to %2$s: %3$s' ),
+				__( 'Network error occurred while sending %1$s request to %2$s: %3$s', 'gratis-ai-agent' ),
 				$request->getMethod(),
 				$url,
 				$response->get_error_message()
@@ -122,7 +123,7 @@ class WP_AI_Client_HTTP_Client implements ClientInterface, ClientWithOptionsInte
 		if ( is_wp_error( $response ) ) {
 			$message = sprintf(
 				/* translators: 1: Request URL. 2: Error message. */
-				__( 'Network error occurred while sending request to %1$s: %2$s' ),
+				__( 'Network error occurred while sending request to %1$s: %2$s', 'gratis-ai-agent' ),
 				$url,
 				$response->get_error_message()
 			);

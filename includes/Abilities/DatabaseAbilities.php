@@ -31,10 +31,10 @@ class DatabaseAbilities {
 	 */
 	public static function handle_db_query( array $input = [] ) {
 		$ability = new DatabaseQueryAbility(
-			'sd-ai-agent/db-query',
+			'gratis-ai-agent/db-query',
 			[
-				'label'       => __( 'Database Query', 'sd-ai-agent' ),
-				'description' => __( 'Execute a SELECT query on the WordPress database. Only SELECT queries are allowed. Use {prefix} as placeholder for the table prefix.', 'sd-ai-agent' ),
+				'label'       => __( 'Database Query', 'gratis-ai-agent' ),
+				'description' => __( 'Execute a SELECT query on the WordPress database. Only SELECT queries are allowed. Use {prefix} as placeholder for the table prefix.', 'gratis-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -50,10 +50,10 @@ class DatabaseAbilities {
 		}
 
 		wp_register_ability(
-			'sd-ai-agent/db-query',
+			'gratis-ai-agent/db-query',
 			[
-				'label'         => __( 'Database Query', 'sd-ai-agent' ),
-				'description'   => __( 'Execute a SELECT query on the WordPress database. Only SELECT queries are allowed. Use {prefix} as placeholder for the table prefix.', 'sd-ai-agent' ),
+				'label'         => __( 'Database Query', 'gratis-ai-agent' ),
+				'description'   => __( 'Execute a SELECT query on the WordPress database. Only SELECT queries are allowed. Use {prefix} as placeholder for the table prefix.', 'gratis-ai-agent' ),
 				'ability_class' => DatabaseQueryAbility::class,
 			]
 		);
@@ -68,11 +68,11 @@ class DatabaseAbilities {
 class DatabaseQueryAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'Database Query', 'sd-ai-agent' );
+		return __( 'Database Query', 'gratis-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Execute a SELECT query on the WordPress database. Only SELECT queries are allowed. Use {prefix} as placeholder for the table prefix.', 'sd-ai-agent' );
+		return __( 'Execute a SELECT query on the WordPress database. Only SELECT queries are allowed. Use {prefix} as placeholder for the table prefix.', 'gratis-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -109,14 +109,14 @@ class DatabaseQueryAbility extends AbstractAbility {
 		$sql = trim( $input['sql'] ?? '' );
 
 		if ( empty( $sql ) ) {
-			return new WP_Error( 'sd_ai_agent_empty_sql', __( 'SQL query cannot be empty.', 'sd-ai-agent' ) );
+			return new WP_Error( 'sd_ai_agent_empty_sql', __( 'SQL query cannot be empty.', 'gratis-ai-agent' ) );
 		}
 
 		// Only allow SELECT queries.
 		if ( stripos( $sql, 'SELECT' ) !== 0 ) {
 			return new WP_Error(
 				'sd_ai_agent_sql_not_select',
-				__( 'Only SELECT queries are allowed. Use WordPress functions for data modification.', 'sd-ai-agent' )
+				__( 'Only SELECT queries are allowed. Use WordPress functions for data modification.', 'gratis-ai-agent' )
 			);
 		}
 

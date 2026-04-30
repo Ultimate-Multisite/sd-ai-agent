@@ -7,10 +7,10 @@ declare(strict_types=1);
  * Connects to the Google Analytics Data API v1 using a service account JSON
  * key stored in WordPress options. Provides three abilities:
  *
- *   - sd-ai-agent/ga-traffic-summary  — sessions, pageviews, bounce rate,
+ *   - gratis-ai-agent/ga-traffic-summary  — sessions, pageviews, bounce rate,
  *                                           avg session duration for a date range
- *   - sd-ai-agent/ga-top-pages        — top N pages by pageviews
- *   - sd-ai-agent/ga-realtime         — active users right now
+ *   - gratis-ai-agent/ga-top-pages        — top N pages by pageviews
+ *   - gratis-ai-agent/ga-realtime         — active users right now
  *
  * Authentication: Google service account JSON key (downloaded from Google Cloud
  * Console). The key is stored in a dedicated WordPress option and never exposed
@@ -53,10 +53,10 @@ class GoogleAnalyticsAbilities {
 	 */
 	public static function handle_traffic_summary( array $input = [] ) {
 		$ability = new GaTrafficSummaryAbility(
-			'sd-ai-agent/ga-traffic-summary',
+			'gratis-ai-agent/ga-traffic-summary',
 			[
-				'label'       => __( 'GA Traffic Summary', 'sd-ai-agent' ),
-				'description' => __( 'Fetch Google Analytics 4 traffic metrics (sessions, pageviews, bounce rate, avg session duration) for a date range.', 'sd-ai-agent' ),
+				'label'       => __( 'GA Traffic Summary', 'gratis-ai-agent' ),
+				'description' => __( 'Fetch Google Analytics 4 traffic metrics (sessions, pageviews, bounce rate, avg session duration) for a date range.', 'gratis-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -71,10 +71,10 @@ class GoogleAnalyticsAbilities {
 	 */
 	public static function handle_top_pages( array $input = [] ) {
 		$ability = new GaTopPagesAbility(
-			'sd-ai-agent/ga-top-pages',
+			'gratis-ai-agent/ga-top-pages',
 			[
-				'label'       => __( 'GA Top Pages', 'sd-ai-agent' ),
-				'description' => __( 'Fetch the top pages by pageviews from Google Analytics 4 for a date range.', 'sd-ai-agent' ),
+				'label'       => __( 'GA Top Pages', 'gratis-ai-agent' ),
+				'description' => __( 'Fetch the top pages by pageviews from Google Analytics 4 for a date range.', 'gratis-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -89,10 +89,10 @@ class GoogleAnalyticsAbilities {
 	 */
 	public static function handle_realtime( array $input = [] ) {
 		$ability = new GaRealtimeAbility(
-			'sd-ai-agent/ga-realtime',
+			'gratis-ai-agent/ga-realtime',
 			[
-				'label'       => __( 'GA Realtime Users', 'sd-ai-agent' ),
-				'description' => __( 'Fetch the number of active users on the site right now from Google Analytics 4.', 'sd-ai-agent' ),
+				'label'       => __( 'GA Realtime Users', 'gratis-ai-agent' ),
+				'description' => __( 'Fetch the number of active users on the site right now from Google Analytics 4.', 'gratis-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -108,30 +108,30 @@ class GoogleAnalyticsAbilities {
 		}
 
 		wp_register_ability(
-			'sd-ai-agent/ga-traffic-summary',
+			'gratis-ai-agent/ga-traffic-summary',
 			[
-				'label'         => __( 'GA Traffic Summary', 'sd-ai-agent' ),
-				'description'   => __( 'Fetch Google Analytics 4 traffic metrics (sessions, pageviews, bounce rate, avg session duration) for a date range.', 'sd-ai-agent' ),
+				'label'         => __( 'GA Traffic Summary', 'gratis-ai-agent' ),
+				'description'   => __( 'Fetch Google Analytics 4 traffic metrics (sessions, pageviews, bounce rate, avg session duration) for a date range.', 'gratis-ai-agent' ),
 				'ability_class' => GaTrafficSummaryAbility::class,
 				'show_in_rest'  => true,
 			]
 		);
 
 		wp_register_ability(
-			'sd-ai-agent/ga-top-pages',
+			'gratis-ai-agent/ga-top-pages',
 			[
-				'label'         => __( 'GA Top Pages', 'sd-ai-agent' ),
-				'description'   => __( 'Fetch the top pages by pageviews from Google Analytics 4 for a date range.', 'sd-ai-agent' ),
+				'label'         => __( 'GA Top Pages', 'gratis-ai-agent' ),
+				'description'   => __( 'Fetch the top pages by pageviews from Google Analytics 4 for a date range.', 'gratis-ai-agent' ),
 				'ability_class' => GaTopPagesAbility::class,
 				'show_in_rest'  => true,
 			]
 		);
 
 		wp_register_ability(
-			'sd-ai-agent/ga-realtime',
+			'gratis-ai-agent/ga-realtime',
 			[
-				'label'         => __( 'GA Realtime Users', 'sd-ai-agent' ),
-				'description'   => __( 'Fetch the number of active users on the site right now from Google Analytics 4.', 'sd-ai-agent' ),
+				'label'         => __( 'GA Realtime Users', 'gratis-ai-agent' ),
+				'description'   => __( 'Fetch the number of active users on the site right now from Google Analytics 4.', 'gratis-ai-agent' ),
 				'ability_class' => GaRealtimeAbility::class,
 				'show_in_rest'  => true,
 			]
@@ -236,7 +236,7 @@ trait GaApiClient {
 		$private_key   = $sa['private_key'] ?? '';
 
 		if ( empty( $private_key ) ) {
-			return new WP_Error( 'ga_no_private_key', __( 'Service account JSON is missing private_key.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ga_no_private_key', __( 'Service account JSON is missing private_key.', 'gratis-ai-agent' ) );
 		}
 
 		// @phpstan-ignore-next-line
@@ -244,7 +244,7 @@ trait GaApiClient {
 		// @phpstan-ignore-next-line
 		if ( ! function_exists( 'openssl_sign' ) ) {
 			// @phpstan-ignore-next-line
-			return new WP_Error( 'ga_no_openssl', __( 'OpenSSL extension is required for Google Analytics authentication.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ga_no_openssl', __( 'OpenSSL extension is required for Google Analytics authentication.', 'gratis-ai-agent' ) );
 			// @phpstan-ignore-next-line
 		}
 
@@ -253,13 +253,13 @@ trait GaApiClient {
 		// @phpstan-ignore-next-line
 		$pkey = openssl_pkey_get_private( $private_key );
 		if ( false === $pkey ) {
-			return new WP_Error( 'ga_invalid_key', __( 'Could not load service account private key. Verify the JSON is correct.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ga_invalid_key', __( 'Could not load service account private key. Verify the JSON is correct.', 'gratis-ai-agent' ) );
 		}
 
 		$signature = '';
 		$signed    = openssl_sign( $signing_input, $signature, $pkey, OPENSSL_ALGO_SHA256 );
 		if ( ! $signed ) {
-			return new WP_Error( 'ga_sign_failed', __( 'Failed to sign JWT for Google Analytics authentication.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ga_sign_failed', __( 'Failed to sign JWT for Google Analytics authentication.', 'gratis-ai-agent' ) );
 		}
 
 		$jwt = $signing_input . '.' . $this->base64url_encode( $signature );
@@ -301,7 +301,7 @@ trait GaApiClient {
 			$err     = $body['error_description'] ?? $body['error'] ?? 'Unknown error';
 			$err_str = is_scalar( $err ) ? (string) $err : 'Unknown error';
 			// translators: %s: OAuth error message returned by Google.
-			$error_message = sprintf( __( 'Google OAuth error: %s', 'sd-ai-agent' ), $err_str );
+			$error_message = sprintf( __( 'Google OAuth error: %s', 'gratis-ai-agent' ), $err_str );
 			return new WP_Error( 'ga_token_error', $error_message );
 		}
 
@@ -349,7 +349,7 @@ trait GaApiClient {
 		// @phpstan-ignore-next-line
 		if ( ! is_array( $data ) ) {
 			// @phpstan-ignore-next-line
-			return new WP_Error( 'ga_api_invalid_response', __( 'Google Analytics API returned an invalid response.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ga_api_invalid_response', __( 'Google Analytics API returned an invalid response.', 'gratis-ai-agent' ) );
 			// @phpstan-ignore-next-line
 			// @phpstan-ignore-next-line
 		}
@@ -358,11 +358,11 @@ trait GaApiClient {
 		// @phpstan-ignore-next-line
 		if ( $code >= 400 ) {
 			// @phpstan-ignore-next-line
-			$msg      = $data['error']['message'] ?? __( 'Unknown API error.', 'sd-ai-agent' );
+			$msg      = $data['error']['message'] ?? __( 'Unknown API error.', 'gratis-ai-agent' );
 			$code_int = is_numeric( $code ) ? (int) $code : 0;
 			$msg_str  = is_scalar( $msg ) ? (string) $msg : 'Unknown API error.';
 			// translators: %1$d: HTTP status code, %2$s: error message from Google Analytics API.
-			$error_message = sprintf( __( 'Google Analytics API error (%1$d): %2$s', 'sd-ai-agent' ), $code_int, $msg_str );
+			$error_message = sprintf( __( 'Google Analytics API error (%1$d): %2$s', 'gratis-ai-agent' ), $code_int, $msg_str );
 			return new WP_Error( 'ga_api_error', $error_message );
 		}
 
@@ -407,7 +407,7 @@ trait GaApiClient {
 
 		if ( ! is_array( $data ) ) {
 			// @phpstan-ignore-next-line
-			return new WP_Error( 'ga_api_invalid_response', __( 'Google Analytics API returned an invalid response.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ga_api_invalid_response', __( 'Google Analytics API returned an invalid response.', 'gratis-ai-agent' ) );
 			// @phpstan-ignore-next-line
 		}
 
@@ -417,11 +417,11 @@ trait GaApiClient {
 		if ( $code >= 400 ) {
 			// @phpstan-ignore-next-line
 			// @phpstan-ignore-next-line
-			$msg      = $data['error']['message'] ?? __( 'Unknown API error.', 'sd-ai-agent' );
+			$msg      = $data['error']['message'] ?? __( 'Unknown API error.', 'gratis-ai-agent' );
 			$code_int = is_numeric( $code ) ? (int) $code : 0;
 			$msg_str  = is_scalar( $msg ) ? (string) $msg : 'Unknown API error.';
 			// translators: %1$d: HTTP status code, %2$s: error message from Google Analytics API.
-			$error_message = sprintf( __( 'Google Analytics API error (%1$d): %2$s', 'sd-ai-agent' ), $code_int, $msg_str );
+			$error_message = sprintf( __( 'Google Analytics API error (%1$d): %2$s', 'gratis-ai-agent' ), $code_int, $msg_str );
 			return new WP_Error( 'ga_api_error', $error_message );
 		}
 
@@ -440,14 +440,14 @@ trait GaApiClient {
 		if ( empty( $creds['property_id'] ) ) {
 			return new WP_Error(
 				'ga_no_property_id',
-				__( 'Google Analytics property ID is not configured. Go to Settings > Superdav AI Agent Settings > Integrations to add your GA4 property ID and service account key.', 'sd-ai-agent' )
+				__( 'Google Analytics property ID is not configured. Go to Settings > Superdav AI Agent Settings > Integrations to add your GA4 property ID and service account key.', 'gratis-ai-agent' )
 			);
 		}
 
 		if ( empty( $creds['service_account_json'] ) ) {
 			return new WP_Error(
 				'ga_no_credentials',
-				__( 'Google Analytics service account JSON is not configured. Go to Settings > Superdav AI Agent Settings > Integrations to add your service account key.', 'sd-ai-agent' )
+				__( 'Google Analytics service account JSON is not configured. Go to Settings > Superdav AI Agent Settings > Integrations to add your service account key.', 'gratis-ai-agent' )
 			);
 		}
 
@@ -455,7 +455,7 @@ trait GaApiClient {
 		if ( ! is_array( $sa ) || empty( $sa['client_email'] ) || empty( $sa['private_key'] ) ) {
 			return new WP_Error(
 				'ga_invalid_credentials',
-				__( 'Google Analytics service account JSON is invalid. It must contain client_email and private_key fields.', 'sd-ai-agent' )
+				__( 'Google Analytics service account JSON is invalid. It must contain client_email and private_key fields.', 'gratis-ai-agent' )
 			);
 		}
 
@@ -524,11 +524,11 @@ class GaTrafficSummaryAbility extends AbstractAbility {
 	use GaApiClient;
 
 	protected function label(): string {
-		return __( 'GA Traffic Summary', 'sd-ai-agent' );
+		return __( 'GA Traffic Summary', 'gratis-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Fetch Google Analytics 4 traffic metrics (sessions, pageviews, bounce rate, avg session duration) for a date range.', 'sd-ai-agent' );
+		return __( 'Fetch Google Analytics 4 traffic metrics (sessions, pageviews, bounce rate, avg session duration) for a date range.', 'gratis-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -625,7 +625,7 @@ class GaTrafficSummaryAbility extends AbstractAbility {
 				'avg_session_duration_s' => 0.0,
 				'new_users'              => 0,
 				'total_users'            => 0,
-				'note'                   => __( 'No data found for the specified date range.', 'sd-ai-agent' ),
+				'note'                   => __( 'No data found for the specified date range.', 'gratis-ai-agent' ),
 			];
 		}
 
@@ -678,11 +678,11 @@ class GaTopPagesAbility extends AbstractAbility {
 	use GaApiClient;
 
 	protected function label(): string {
-		return __( 'GA Top Pages', 'sd-ai-agent' );
+		return __( 'GA Top Pages', 'gratis-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Fetch the top pages by pageviews from Google Analytics 4 for a date range.', 'sd-ai-agent' );
+		return __( 'Fetch the top pages by pageviews from Google Analytics 4 for a date range.', 'gratis-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -837,11 +837,11 @@ class GaRealtimeAbility extends AbstractAbility {
 	use GaApiClient;
 
 	protected function label(): string {
-		return __( 'GA Realtime Users', 'sd-ai-agent' );
+		return __( 'GA Realtime Users', 'gratis-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Fetch the number of active users on the site right now from Google Analytics 4.', 'sd-ai-agent' );
+		return __( 'Fetch the number of active users on the site right now from Google Analytics 4.', 'gratis-ai-agent' );
 	}
 
 	protected function input_schema(): array {

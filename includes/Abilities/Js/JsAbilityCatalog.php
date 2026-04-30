@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * Catalog of client-side (browser-executed) abilities in the sd-ai-agent-js namespace.
+ * Catalog of client-side (browser-executed) abilities in the gratis-ai-agent-js namespace.
  *
  * This class is the single source of truth for the metadata of abilities that
  * run in the browser. The JS registry (src/abilities/registry.js) mirrors these
@@ -37,10 +37,10 @@ class JsAbilityCatalog {
 	public static function get_descriptors(): array {
 		return array(
 			array(
-				'name'          => 'sd-ai-agent-js/navigate-to',
+				'name'          => 'gratis-ai-agent-js/navigate-to',
 				'label'         => 'Navigate to Admin Page',
 				'description'   => 'Navigate to a WordPress admin page without a full page reload when inside the admin SPA.',
-				'category'      => 'sd-ai-agent-js',
+				'category'      => 'gratis-ai-agent-js',
 				'input_schema'  => array(
 					'type'       => 'object',
 					'properties' => array(
@@ -64,10 +64,10 @@ class JsAbilityCatalog {
 				'screens'       => array( 'all' ),
 			),
 			array(
-				'name'          => 'sd-ai-agent-js/insert-block',
+				'name'          => 'gratis-ai-agent-js/insert-block',
 				'label'         => 'Insert Block',
 				'description'   => 'Insert a Gutenberg block into the active block editor. Only available on editor screens.',
-				'category'      => 'sd-ai-agent-js',
+				'category'      => 'gratis-ai-agent-js',
 				'input_schema'  => array(
 					'type'       => 'object',
 					'properties' => array(
@@ -100,10 +100,10 @@ class JsAbilityCatalog {
 				'screens'       => array( 'editor' ),
 			),
 			array(
-				'name'          => 'sd-ai-agent-js/capture-screenshot',
+				'name'          => 'gratis-ai-agent-js/capture-screenshot',
 				'label'         => 'Capture Screenshot',
 				'description'   => 'Capture a screenshot of the current page the user is viewing. Optionally target a specific element with a CSS selector. Returns a base64 JPEG image for visual review by the AI.',
-				'category'      => 'sd-ai-agent-js',
+				'category'      => 'gratis-ai-agent-js',
 				'input_schema'  => array(
 					'type'       => 'object',
 					'properties' => array(
@@ -142,10 +142,10 @@ class JsAbilityCatalog {
 				'screens'       => array( 'all' ),
 			),
 			array(
-				'name'          => 'sd-ai-agent-js/screenshot-url',
+				'name'          => 'gratis-ai-agent-js/screenshot-url',
 				'label'         => 'Screenshot URL',
 				'description'   => 'Load any page on this WordPress site in a hidden iframe and capture a screenshot. Use this to visually review frontend pages without navigating the user away from wp-admin. The URL must be on the same site. Returns a base64 JPEG image for visual review by the AI.',
-				'category'      => 'sd-ai-agent-js',
+				'category'      => 'gratis-ai-agent-js',
 				'input_schema'  => array(
 					'type'       => 'object',
 					'properties' => array(

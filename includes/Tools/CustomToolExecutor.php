@@ -40,7 +40,7 @@ class CustomToolExecutor {
 
 		foreach ( $tools as $tool ) {
 			// @phpstan-ignore-next-line
-			$ability_name = 'sd-ai-agent-custom/' . $tool['slug'];
+			$ability_name = 'gratis-ai-agent-custom/' . $tool['slug'];
 
 			wp_register_ability(
 				$ability_name,
@@ -48,11 +48,11 @@ class CustomToolExecutor {
 					'label'               => $tool['name'],
 					'description'         => $tool['description'] ?: sprintf(
 						/* translators: %s: tool type */
-						__( 'Custom %s tool', 'sd-ai-agent' ),
+						__( 'Custom %s tool', 'gratis-ai-agent' ),
 						// @phpstan-ignore-next-line
 						strtoupper( $tool['type'] )
 					),
-					'category'            => 'sd-ai-agent',
+					'category'            => 'gratis-ai-agent',
 					'input_schema'        => ! empty( $tool['input_schema'] ) ? $tool['input_schema'] : [
 						'type'       => 'object',
 						'properties' => new \stdClass(),
@@ -94,7 +94,7 @@ class CustomToolExecutor {
 					'unknown_tool_type',
 					sprintf(
 						/* translators: %s: tool type */
-						__( 'Unknown tool type: %s', 'sd-ai-agent' ),
+						__( 'Unknown tool type: %s', 'gratis-ai-agent' ),
 						// @phpstan-ignore-next-line
 						$tool['type']
 					)
@@ -193,13 +193,13 @@ class CustomToolExecutor {
 		$hook_name = $config['hook_name'] ?? '';
 
 		if ( empty( $hook_name ) ) {
-			return new WP_Error( 'missing_config', __( 'No hook_name configured.', 'sd-ai-agent' ) );
+			return new WP_Error( 'missing_config', __( 'No hook_name configured.', 'gratis-ai-agent' ) );
 		}
 
 		// Sanitize hook name — only allow valid hook characters.
 		// @phpstan-ignore-next-line
 		if ( ! preg_match( '/^[a-zA-Z0-9_]+$/', $hook_name ) ) {
-			return new WP_Error( 'invalid_hook_name', __( 'Invalid hook name.', 'sd-ai-agent' ) );
+			return new WP_Error( 'invalid_hook_name', __( 'Invalid hook name.', 'gratis-ai-agent' ) );
 		}
 
 		// Ensure the hook name is prefixed to comply with WP.org plugin guidelines.
@@ -228,7 +228,7 @@ class CustomToolExecutor {
 
 		try {
 			// @phpstan-ignore-next-line
-			do_action( $hook_name, ...$args ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Hook name is forced to sd_ai_agent_ prefix above.
+			do_action( $hook_name, ...$args ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Hook name is forced to gratis_ai_agent_ prefix above.
 			$output = ob_get_clean();
 
 			return [
@@ -256,7 +256,7 @@ class CustomToolExecutor {
 		$command = $config['command'] ?? '';
 
 		if ( empty( $command ) ) {
-			return new WP_Error( 'missing_config', __( 'No command configured.', 'sd-ai-agent' ) );
+			return new WP_Error( 'missing_config', __( 'No command configured.', 'gratis-ai-agent' ) );
 		}
 
 		// Replace {{placeholders}} in the command, escaping each substituted

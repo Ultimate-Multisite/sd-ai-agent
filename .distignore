@@ -72,6 +72,8 @@ stubs
 
 # AI agent / automation tooling
 .agents
+.aidevops.json
+.beads
 .claude
 .husky
 AGENTS.md
@@ -86,6 +88,7 @@ SECURITY.md
 CHANGELOG.md
 PLANS-AI-AGENT-MASTERPLAN.md
 MODELS.md
+DESIGN.md
 
 # Task management
 TODO.md
@@ -99,6 +102,10 @@ screenshots
 # PHPUnit cache
 .phpunit.result.cache
 .phpunit.cache
+
+# Playwright / E2E test results
+test-results
+playwright-report
 
 # Vendor dev-only packages (safety net — prefer composer install --no-dev)
 # These are require-dev packages that should not ship in a production zip.

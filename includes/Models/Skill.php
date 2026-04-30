@@ -531,7 +531,7 @@ class Skill {
 
 		return "## Available Skills\n"
 			. "You have access to specialized skill guides. When a user's request matches a skill topic,\n"
-			. "use the sd-ai-agent/skill-load tool to load the full instructions before proceeding.\n\n"
+			. "use the gratis-ai-agent/skill-load tool to load the full instructions before proceeding.\n\n"
 			. "Available skills:\n"
 			. implode( "\n", $lines );
 	}

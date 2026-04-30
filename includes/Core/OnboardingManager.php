@@ -11,9 +11,9 @@ declare(strict_types=1);
  *    memories, and presents findings + starter prompts to the site owner.
  *
  * REST endpoints:
- *   GET  /sd-ai-agent/v1/onboarding/status    — scan status + completion flag
- *   POST /sd-ai-agent/v1/onboarding/rescan    — reset and schedule a new scan
- *   POST /sd-ai-agent/v1/onboarding/bootstrap — create the bootstrap discovery session
+ *   GET  /gratis-ai-agent/v1/onboarding/status    — scan status + completion flag
+ *   POST /gratis-ai-agent/v1/onboarding/rescan    — reset and schedule a new scan
+ *   POST /gratis-ai-agent/v1/onboarding/bootstrap — create the bootstrap discovery session
  *
  * @package SdAiAgent
  * @license GPL-2.0-or-later
@@ -154,7 +154,7 @@ class OnboardingManager {
 	 */
 	public static function register_rest_routes(): void {
 		register_rest_route(
-			'sd-ai-agent/v1',
+			'gratis-ai-agent/v1',
 			'/onboarding/status',
 			[
 				'methods'             => 'GET',
@@ -164,7 +164,7 @@ class OnboardingManager {
 		);
 
 		register_rest_route(
-			'sd-ai-agent/v1',
+			'gratis-ai-agent/v1',
 			'/onboarding/rescan',
 			[
 				'methods'             => 'POST',
@@ -174,7 +174,7 @@ class OnboardingManager {
 		);
 
 		register_rest_route(
-			'sd-ai-agent/v1',
+			'gratis-ai-agent/v1',
 			'/onboarding/bootstrap',
 			[
 				'methods'             => 'POST',
@@ -184,7 +184,7 @@ class OnboardingManager {
 		);
 
 		register_rest_route(
-			'sd-ai-agent/v1',
+			'gratis-ai-agent/v1',
 			'/onboarding/bootstrap-start',
 			[
 				'methods'             => 'POST',
@@ -203,7 +203,7 @@ class OnboardingManager {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return new \WP_Error(
 				'rest_forbidden',
-				__( 'You do not have permission to access this endpoint.', 'sd-ai-agent' ),
+				__( 'You do not have permission to access this endpoint.', 'gratis-ai-agent' ),
 				[ 'status' => 403 ]
 			);
 		}
@@ -211,7 +211,7 @@ class OnboardingManager {
 	}
 
 	/**
-	 * GET /sd-ai-agent/v1/onboarding/status
+	 * GET /gratis-ai-agent/v1/onboarding/status
 	 *
 	 * Returns the current onboarding state:
 	 *  - triggered:           whether the background site scan was triggered
@@ -236,7 +236,7 @@ class OnboardingManager {
 	}
 
 	/**
-	 * POST /sd-ai-agent/v1/onboarding/rescan
+	 * POST /gratis-ai-agent/v1/onboarding/rescan
 	 *
 	 * Resets onboarding state and schedules a fresh scan.
 	 *
@@ -249,14 +249,14 @@ class OnboardingManager {
 		return new \WP_REST_Response(
 			[
 				'success' => true,
-				'message' => __( 'Site scan scheduled. Results will be available shortly.', 'sd-ai-agent' ),
+				'message' => __( 'Site scan scheduled. Results will be available shortly.', 'gratis-ai-agent' ),
 			],
 			200
 		);
 	}
 
 	/**
-	 * POST /sd-ai-agent/v1/onboarding/bootstrap
+	 * POST /gratis-ai-agent/v1/onboarding/bootstrap
 	 *
 	 * Creates a new session and dispatches the AI-driven auto-discovery job.
 	 *
@@ -274,14 +274,14 @@ class OnboardingManager {
 		$session_id = Database::create_session(
 			[
 				'user_id' => $user_id,
-				'title'   => __( 'Site Discovery', 'sd-ai-agent' ),
+				'title'   => __( 'Site Discovery', 'gratis-ai-agent' ),
 			]
 		);
 
 		if ( ! $session_id ) {
 			return new \WP_Error(
 				'bootstrap_session_failed',
-				__( 'Failed to create bootstrap session.', 'sd-ai-agent' ),
+				__( 'Failed to create bootstrap session.', 'gratis-ai-agent' ),
 				[ 'status' => 500 ]
 			);
 		}
@@ -297,7 +297,7 @@ class OnboardingManager {
 			'params'     => [
 				'message'          => __(
 					'Please explore this WordPress site and present your findings.',
-					'sd-ai-agent'
+					'gratis-ai-agent'
 				),
 				'session_id'       => $session_id,
 				'bootstrap_prompt' => BootstrapPrompt::generate(),
@@ -341,7 +341,7 @@ class OnboardingManager {
 	// ── Bootstrap-start REST handler (onboarding v2) ──────────────────────
 
 	/**
-	 * POST /sd-ai-agent/v1/onboarding/bootstrap-start
+	 * POST /gratis-ai-agent/v1/onboarding/bootstrap-start
 	 *
 	 * Called by the frontend when a provider is available and onboarding has
 	 * not yet completed. This handler:
@@ -379,7 +379,7 @@ class OnboardingManager {
 			$bootstrap_prompt = SystemInstructionBuilder::get_onboarding_bootstrap_prompt();
 			$kickoff_message  = __(
 				"Hi! I just set up this plugin and I'm ready to get started.",
-				'sd-ai-agent'
+				'gratis-ai-agent'
 			);
 
 			return new \WP_REST_Response(
@@ -398,12 +398,12 @@ class OnboardingManager {
 		// Auto-detect WooCommerce and save a context memory silently.
 		$woo_active = class_exists( 'WooCommerce' );
 		if ( $woo_active ) {
-			$woo_version = defined( 'WC_VERSION' ) ? (string) WC_VERSION : __( '(unknown version)', 'sd-ai-agent' );
+			$woo_version = defined( 'WC_VERSION' ) ? (string) WC_VERSION : __( '(unknown version)', 'gratis-ai-agent' );
 			Memory::create(
 				'site_info',
 				sprintf(
 					/* translators: %s: WooCommerce version */
-					__( 'WooCommerce %s is active on this site.', 'sd-ai-agent' ),
+					__( 'WooCommerce %s is active on this site.', 'gratis-ai-agent' ),
 					$woo_version
 				)
 			);
@@ -413,7 +413,7 @@ class OnboardingManager {
 		$session_id = Database::create_session(
 			[
 				'user_id'     => get_current_user_id(),
-				'title'       => __( 'Getting started', 'sd-ai-agent' ),
+				'title'       => __( 'Getting started', 'gratis-ai-agent' ),
 				'provider_id' => $all['default_provider'] ?? '',
 				'model_id'    => $all['default_model'] ?? '',
 			]
@@ -422,7 +422,7 @@ class OnboardingManager {
 		if ( ! $session_id ) {
 			return new \WP_Error(
 				'bootstrap_session_failed',
-				__( 'Failed to create bootstrap session.', 'sd-ai-agent' ),
+				__( 'Failed to create bootstrap session.', 'gratis-ai-agent' ),
 				[ 'status' => 500 ]
 			);
 		}
@@ -439,7 +439,7 @@ class OnboardingManager {
 		// Keeping it short and natural — the system prompt handles exploration.
 		$kickoff_message = __(
 			"Hi! I just set up this plugin and I'm ready to get started.",
-			'sd-ai-agent'
+			'gratis-ai-agent'
 		);
 
 		return new \WP_REST_Response(

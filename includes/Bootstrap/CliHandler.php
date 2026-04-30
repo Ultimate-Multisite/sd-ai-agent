@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Registers the plugin's WP-CLI subcommands under both the canonical
- * `ai-agent` namespace and the legacy `sd-ai-agent` alias.
+ * `ai-agent` namespace and the legacy `gratis-ai-agent` alias.
  *
  * Uses the `#[Handler(context: CTX_CLI)]` guard so the container skips
  * loading this class outside of WP-CLI requests. Each subcommand class
@@ -38,7 +38,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * wiring out of the plugin root file.
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	context: Handler::CTX_CLI,
 	strategy: Handler::INIT_IMMEDIATELY,
 )]
@@ -68,7 +68,7 @@ final class CliHandler {
 	 *
 	 * @var list<string>
 	 */
-	private const NAMESPACES = array( 'ai-agent', 'sd-ai-agent' );
+	private const NAMESPACES = array( 'ai-agent', 'gratis-ai-agent' );
 
 	/**
 	 * Register every subcommand with WP-CLI.

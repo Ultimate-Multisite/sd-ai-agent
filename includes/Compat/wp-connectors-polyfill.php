@@ -16,6 +16,12 @@
  * @since   1.8.0
  */
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+// These are polyfills for private WP Connectors API functions introduced in WP 7.0.
+// They use the exact names from wp-includes/connectors.php (_wp_connectors_*) so that
+// WP 7.0+ core definitions silently win via function_exists() guards.
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -55,7 +61,7 @@ if ( ! function_exists( '_wp_connectors_get_provider_settings' ) ) {
 		 *
 		 * @param array<string, string> $providers Map of provider_id => sanitized_id.
 		 */
-		$providers = (array) apply_filters( 'sd_ai_agent_connector_providers', $providers );
+		$providers = (array) apply_filters( 'gratis_ai_agent_connector_providers', $providers );
 
 		$settings = [];
 		foreach ( $providers as $provider_id => $sanitized_id ) {

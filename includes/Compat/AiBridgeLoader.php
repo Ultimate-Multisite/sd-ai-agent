@@ -68,7 +68,7 @@ final class AiBridgeLoader {
 	/**
 	 * Loads the AI Client bridge polyfill if necessary.
 	 *
-	 * Called once from sd-ai-agent.php after the Composer autoloader.
+	 * Called once from gratis-ai-agent.php after the Composer autoloader.
 	 *
 	 * Safe to call multiple times — subsequent calls are no-ops.
 	 *

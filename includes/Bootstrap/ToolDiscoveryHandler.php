@@ -33,13 +33,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * queued during `plugins_loaded` — before `init` fires the hook.
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	strategy: Handler::INIT_IMMEDIATELY,
 )]
 final class ToolDiscoveryHandler {
 
 	/**
-	 * Register the sd-ai-agent-js ability category server-side.
+	 * Register the gratis-ai-agent-js ability category server-side.
 	 *
 	 * Must run on wp_abilities_api_categories_init (which fires inside
 	 * WP_Ability_Categories_Registry::get_instance(), before

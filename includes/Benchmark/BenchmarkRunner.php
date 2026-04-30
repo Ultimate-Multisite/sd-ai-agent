@@ -185,7 +185,7 @@ class BenchmarkRunner {
 			// Try to reconstruct from database.
 			return new \WP_Error(
 				'benchmark_expired',
-				__( 'Benchmark run configuration has expired. Please create a new run.', 'sd-ai-agent' ),
+				__( 'Benchmark run configuration has expired. Please create a new run.', 'gratis-ai-agent' ),
 				array( 'status' => 410 )
 			);
 		}
@@ -435,7 +435,7 @@ class BenchmarkRunner {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
 			return new \WP_Error(
 				'benchmark_no_ai_client',
-				__( 'WordPress AI Client not available. WordPress 7.0+ is required.', 'sd-ai-agent' )
+				__( 'WordPress AI Client not available. WordPress 7.0+ is required.', 'gratis-ai-agent' )
 			);
 		}
 
@@ -453,7 +453,7 @@ class BenchmarkRunner {
 						'benchmark_invalid_provider',
 						sprintf(
 							/* translators: %s is the provider ID. */
-							__( 'Provider "%s" not found.', 'sd-ai-agent' ),
+							__( 'Provider "%s" not found.', 'gratis-ai-agent' ),
 							$provider_id
 						)
 					);
@@ -468,7 +468,7 @@ class BenchmarkRunner {
 							'benchmark_invalid_model',
 							sprintf(
 								/* translators: %1$s is the model ID, %2$s is the provider ID. */
-								__( 'Model "%1$s" not found for provider "%2$s".', 'sd-ai-agent' ),
+								__( 'Model "%1$s" not found for provider "%2$s".', 'gratis-ai-agent' ),
 								$model_id,
 								$provider_id
 							)

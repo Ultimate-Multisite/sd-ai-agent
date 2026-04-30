@@ -44,7 +44,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.3.0
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	strategy: Handler::INIT_JUST_IN_TIME,
 )]
 final class WooCommerceIntegrationHandler {
@@ -78,7 +78,7 @@ final class WooCommerceIntegrationHandler {
 		}
 
 		/**
-		 * Controls whether sd-ai-agent automatically enables the WooCommerce
+		 * Controls whether gratis-ai-agent automatically enables the WooCommerce
 		 * MCP integration feature flag when WooCommerce is active.
 		 *
 		 * Return false to manage the feature flag yourself via WooCommerce settings.
@@ -86,7 +86,7 @@ final class WooCommerceIntegrationHandler {
 		 * @since 1.3.0
 		 * @param bool $auto_enable Default true.
 		 */
-		if ( ! apply_filters( 'sd_ai_agent_auto_enable_woo_mcp', true ) ) {
+		if ( ! apply_filters( 'gratis_ai_agent_auto_enable_woo_mcp', true ) ) {
 			return;
 		}
 
@@ -125,8 +125,8 @@ final class WooCommerceIntegrationHandler {
 			wp_register_ability_category(
 				'woocommerce-rest',
 				array(
-					'label'       => __( 'WooCommerce REST API', 'sd-ai-agent' ),
-					'description' => __( 'REST API operations for WooCommerce resources including products, orders, and other store data.', 'sd-ai-agent' ),
+					'label'       => __( 'WooCommerce REST API', 'gratis-ai-agent' ),
+					'description' => __( 'REST API operations for WooCommerce resources including products, orders, and other store data.', 'gratis-ai-agent' ),
 				)
 			);
 		}
@@ -179,10 +179,10 @@ final class WooCommerceIntegrationHandler {
 			// won't be available via the WP AI Client SDK for this version.
 			if ( function_exists( 'wc_get_logger' ) ) {
 				wc_get_logger()->warning(
-				'sd-ai-agent: Could not reflect on WooCommerce AbilitiesRestBridge::get_configurations(). ' .
+				'gratis-ai-agent: Could not reflect on WooCommerce AbilitiesRestBridge::get_configurations(). ' .
 				'WooCommerce product/order abilities may not be available via wp_ai_client_prompt(). ' .
 				'Error: ' . $e->getMessage(),
-					array( 'source' => 'sd-ai-agent-woo-integration' )
+					array( 'source' => 'gratis-ai-agent-woo-integration' )
 				);
 			}
 		}

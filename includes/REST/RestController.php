@@ -54,7 +54,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * and self-register via their own #[Handler] / #[REST_Handler] attributes.
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	context: Handler::CTX_REST,
 	strategy: Handler::INIT_IMMEDIATELY,
 )]
@@ -62,7 +62,7 @@ final class RestController {
 
 	use PermissionTrait;
 
-	const NAMESPACE = 'sd-ai-agent/v1';
+	const NAMESPACE = 'gratis-ai-agent/v1';
 
 	/**
 	 * Transient prefix for job data.
@@ -251,7 +251,7 @@ final class RestController {
 	public static function handle_chat( WP_REST_Request $request ) {
 		return new WP_Error(
 			'sd_ai_agent_endpoint_removed',
-			__( 'The /chat endpoint has been removed. Use /run instead.', 'sd-ai-agent' ),
+			__( 'The /chat endpoint has been removed. Use /run instead.', 'gratis-ai-agent' ),
 			array( 'status' => 410 )
 		);
 	}
@@ -360,7 +360,7 @@ Assistant: %s',
 		if ( ! $session_id ) {
 			return new WP_Error(
 				'sd_ai_agent_missing_session',
-				__( 'session_id is required.', 'sd-ai-agent' ),
+				__( 'session_id is required.', 'gratis-ai-agent' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -368,7 +368,7 @@ Assistant: %s',
 		if ( ! is_array( $tool_results ) || empty( $tool_results ) ) {
 			return new WP_Error(
 				'sd_ai_agent_missing_results',
-				__( 'tool_results must be a non-empty array.', 'sd-ai-agent' ),
+				__( 'tool_results must be a non-empty array.', 'gratis-ai-agent' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -379,7 +379,7 @@ Assistant: %s',
 		if ( null === $paused_state ) {
 			return new WP_Error(
 				'sd_ai_agent_no_paused_state',
-				__( 'No paused agent state found for this session. The session may have already been resumed or expired.', 'sd-ai-agent' ),
+				__( 'No paused agent state found for this session. The session may have already been resumed or expired.', 'gratis-ai-agent' ),
 				array( 'status' => 409 )
 			);
 		}

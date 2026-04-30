@@ -14,6 +14,12 @@
  * @since   1.8.0
  */
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+// These are polyfill implementations of WP 7.0 core functions. They MUST use the
+// exact names defined in WP core (wp_supports_ai, wp_ai_client_prompt). Prefixing
+// them would break the polyfill — core defines these names and plugins call them.
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

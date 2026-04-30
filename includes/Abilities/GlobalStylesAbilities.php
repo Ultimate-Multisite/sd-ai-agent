@@ -31,9 +31,9 @@ class GlobalStylesAbilities {
 		wp_register_ability(
 			'ai-agent/get-global-styles',
 			[
-				'label'               => __( 'Get Global Styles', 'sd-ai-agent' ),
-				'description'         => __( 'Read the current WordPress global styles (theme.json) including colors, typography, spacing, and layout settings. Returns the merged result of theme defaults and any user customizations.', 'sd-ai-agent' ),
-				'category'            => 'sd-ai-agent',
+				'label'               => __( 'Get Global Styles', 'gratis-ai-agent' ),
+				'description'         => __( 'Read the current WordPress global styles (theme.json) including colors, typography, spacing, and layout settings. Returns the merged result of theme defaults and any user customizations.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -73,9 +73,9 @@ class GlobalStylesAbilities {
 		wp_register_ability(
 			'ai-agent/update-global-styles',
 			[
-				'label'               => __( 'Update Global Styles', 'sd-ai-agent' ),
-				'description'         => __( 'Update WordPress global styles (theme.json customizations). Merges the provided styles into the existing user customizations. Supports color palette, typography, spacing, and layout settings.', 'sd-ai-agent' ),
-				'category'            => 'sd-ai-agent',
+				'label'               => __( 'Update Global Styles', 'gratis-ai-agent' ),
+				'description'         => __( 'Update WordPress global styles (theme.json customizations). Merges the provided styles into the existing user customizations. Supports color palette, typography, spacing, and layout settings.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -120,9 +120,9 @@ class GlobalStylesAbilities {
 		wp_register_ability(
 			'ai-agent/get-theme-json',
 			[
-				'label'               => __( 'Get Theme JSON', 'sd-ai-agent' ),
-				'description'         => __( 'Retrieve the active theme\'s theme.json configuration as a structured object. Returns the full theme.json data including version, settings, styles, and custom templates.', 'sd-ai-agent' ),
-				'category'            => 'sd-ai-agent',
+				'label'               => __( 'Get Theme JSON', 'gratis-ai-agent' ),
+				'description'         => __( 'Retrieve the active theme\'s theme.json configuration as a structured object. Returns the full theme.json data including version, settings, styles, and custom templates.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -158,9 +158,9 @@ class GlobalStylesAbilities {
 		wp_register_ability(
 			'ai-agent/reset-global-styles',
 			[
-				'label'               => __( 'Reset Global Styles', 'sd-ai-agent' ),
-				'description'         => __( 'Reset WordPress global style customizations back to the theme defaults by deleting the wp_global_styles custom post. This removes all user-applied style overrides.', 'sd-ai-agent' ),
-				'category'            => 'sd-ai-agent',
+				'label'               => __( 'Reset Global Styles', 'gratis-ai-agent' ),
+				'description'         => __( 'Reset WordPress global style customizations back to the theme defaults by deleting the wp_global_styles custom post. This removes all user-applied style overrides.', 'gratis-ai-agent' ),
+				'category'            => 'gratis-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
@@ -307,7 +307,7 @@ class GlobalStylesAbilities {
 		return [
 			'success' => true,
 			'post_id' => $post_id,
-			'message' => __( 'Global styles updated successfully.', 'sd-ai-agent' ),
+			'message' => __( 'Global styles updated successfully.', 'gratis-ai-agent' ),
 		];
 	}
 
@@ -350,7 +350,7 @@ class GlobalStylesAbilities {
 			return [
 				'theme_json' => [],
 				'theme_name' => $theme_name,
-				'message'    => __( 'No theme.json found for the active theme.', 'sd-ai-agent' ),
+				'message'    => __( 'No theme.json found for the active theme.', 'gratis-ai-agent' ),
 			];
 		}
 
@@ -382,7 +382,7 @@ class GlobalStylesAbilities {
 			}
 			return [
 				'success' => true,
-				'message' => __( 'No global style customizations found — already at theme defaults.', 'sd-ai-agent' ),
+				'message' => __( 'No global style customizations found — already at theme defaults.', 'gratis-ai-agent' ),
 			];
 		}
 
@@ -398,7 +398,7 @@ class GlobalStylesAbilities {
 
 		return [
 			'success' => true,
-			'message' => __( 'Global styles reset to theme defaults.', 'sd-ai-agent' ),
+			'message' => __( 'Global styles reset to theme defaults.', 'gratis-ai-agent' ),
 		];
 	}
 

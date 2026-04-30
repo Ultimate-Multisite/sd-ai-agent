@@ -93,7 +93,7 @@ class FloatingWidget {
 	 * Shared asset enqueueing logic for both admin and frontend contexts.
 	 */
 	private static function enqueue_widget_assets(): void {
-		$build_dir  = (string) apply_filters( 'sd_ai_agent_build_dir', SD_AI_AGENT_DIR . '/build' );
+		$build_dir  = (string) apply_filters( 'gratis_ai_agent_build_dir', SD_AI_AGENT_DIR . '/build' );
 		$asset_file = $build_dir . '/floating-widget.asset.php';
 
 		if ( ! file_exists( $asset_file ) ) {
@@ -104,29 +104,29 @@ class FloatingWidget {
 		$asset = require $asset_file;
 
 		wp_enqueue_style(
-			'sd-ai-agent-floating-widget',
+			'gratis-ai-agent-floating-widget',
 			SD_AI_AGENT_URL . 'build/floating-widget.css',
 			[ 'wp-components' ],
 			$asset['version']
 		);
 
-		wp_style_add_data( 'sd-ai-agent-floating-widget', 'rtl', 'replace' );
+		wp_style_add_data( 'gratis-ai-agent-floating-widget', 'rtl', 'replace' );
 
 		wp_enqueue_script(
-			'sd-ai-agent-floating-widget',
+			'gratis-ai-agent-floating-widget',
 			SD_AI_AGENT_URL . 'build/floating-widget.js',
 			$asset['dependencies'],
 			$asset['version'],
 			true
 		);
 
-		wp_set_script_translations( 'sd-ai-agent-floating-widget', 'sd-ai-agent' );
+		wp_set_script_translations( 'gratis-ai-agent-floating-widget', 'gratis-ai-agent' );
 
 		// WP 7.0+: enqueue the `@wordpress/abilities` script module so our
 		// client-side ability registry (src/abilities/*) can resolve the
 		// bare specifier via the document import map at runtime. Without
 		// this, the dynamic import() in registry.js throws a module
-		// resolution error and the sd-ai-agent-js/* abilities are never
+		// resolution error and the gratis-ai-agent-js/* abilities are never
 		// registered. (t165 — fixes the missing enqueue in #815.)
 		//
 		// Also enqueue `@wordpress/core-abilities` explicitly. Despite the
@@ -153,7 +153,7 @@ class FloatingWidget {
 		}
 
 		wp_localize_script(
-			'sd-ai-agent-floating-widget',
+			'gratis-ai-agent-floating-widget',
 			'sdAiAgentSiteBuilder',
 			[
 				'isFreshInstall'  => $is_fresh,
@@ -166,7 +166,7 @@ class FloatingWidget {
 		if ( Features::is_enabled( Features::BRANDING ) ) {
 			$branding = Settings::instance()->get();
 			wp_localize_script(
-				'sd-ai-agent-floating-widget',
+				'gratis-ai-agent-floating-widget',
 				'sdAiAgentBranding',
 				array(
 					// @phpstan-ignore-next-line
@@ -184,12 +184,12 @@ class FloatingWidget {
 		}
 
 		wp_localize_script(
-			'sd-ai-agent-floating-widget',
+			'gratis-ai-agent-floating-widget',
 			'sdAiAgentData',
 			[
 				'currentUserId'       => get_current_user_id(),
 				'onboarding_complete' => OnboardingManager::is_complete(),
-				'changesPageUrl'      => admin_url( 'admin.php?page=sd-ai-agent#/changes' ),
+				'changesPageUrl'      => admin_url( 'admin.php?page=gratis-ai-agent#/changes' ),
 			]
 		);
 	}

@@ -26,11 +26,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 class NavigateAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'Navigate', 'sd-ai-agent' );
+		return __( 'Navigate', 'gratis-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Navigate the user to a URL within the WordPress site. The URL must be within the current site. This will reload the page.', 'sd-ai-agent' );
+		return __( 'Navigate the user to a URL within the WordPress site. The URL must be within the current site. This will reload the page.', 'gratis-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -63,7 +63,7 @@ class NavigateAbility extends AbstractAbility {
 		$home_url = home_url();
 
 		if ( empty( $url ) ) {
-			return new WP_Error( 'sd_ai_agent_empty_url', __( 'URL is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'sd_ai_agent_empty_url', __( 'URL is required.', 'gratis-ai-agent' ) );
 		}
 
 		$validated_url = null;
@@ -96,7 +96,7 @@ class NavigateAbility extends AbstractAbility {
 					'sd_ai_agent_invalid_url',
 					sprintf(
 						/* translators: %s: home URL */
-						__( 'Invalid URL: must be within the WordPress site (start with "%s" or be a relative path).', 'sd-ai-agent' ),
+						__( 'Invalid URL: must be within the WordPress site (start with "%s" or be a relative path).', 'gratis-ai-agent' ),
 						$home_url
 					)
 				);
@@ -108,7 +108,7 @@ class NavigateAbility extends AbstractAbility {
 		if ( strpos( $validated_url, 'TB_iframe=true' ) !== false ) {
 			return new WP_Error(
 				'sd_ai_agent_iframe_url',
-				__( 'Cannot navigate to modal/iframe URLs. Navigate to the main page instead.', 'sd-ai-agent' )
+				__( 'Cannot navigate to modal/iframe URLs. Navigate to the main page instead.', 'gratis-ai-agent' )
 			);
 		}
 

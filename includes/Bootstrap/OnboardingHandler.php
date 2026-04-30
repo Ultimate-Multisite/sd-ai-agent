@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - The site-scanner cron hook fires in CTX_CRON.
  */
 #[Handler(
-	container: 'sd-ai-agent',
+	container: 'gratis-ai-agent',
 	context: Handler::CTX_GLOBAL,
 	strategy: Handler::INIT_IMMEDIATELY,
 )]

@@ -30,7 +30,7 @@ class AiImageAbilities {
 	 * @return array<string,mixed>|\WP_Error
 	 */
 	public static function handle_generate( array $input = [] ) {
-		$ability = new GenerateImageAbility( 'sd-ai-agent/generate-image' );
+		$ability = new GenerateImageAbility( 'gratis-ai-agent/generate-image' );
 		// @phpstan-ignore-next-line
 		return $ability->run( $input );
 	}
