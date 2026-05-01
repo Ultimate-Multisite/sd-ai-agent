@@ -1,124 +1,130 @@
 {
-	"name": "ultimate-multisite/ai-agent-for-wp",
-	"description": "Agentic AI loop for WordPress — chat with an AI that can call WordPress abilities (tools) autonomously.",
-	"type": "wordpress-plugin",
-	"license": "GPL-2.0-or-later",
-	"authors": [
-		{
-			"name": "Ultimate Multisite Community",
-			"homepage": "https://ultimatemultisite.com"
-		}
-	],
-	"require": {
-		"php": ">=8.2",
-		"automattic/jetpack-autoloader": "^3.0 || ^4.0 || ^5.0",
-		"pondermatic/composer-archive-project": "^1.1",
-		"psr/simple-cache": "^1.0 || ^2.0 || ^3.0",
-		"smalot/pdfparser": "^2.0",
-		"x-wp/di": "dev-fix/rest-context-plain-permalink-support as 1.9.99"
-	},
-	"repositories": [
-		{
-			"type": "vcs",
-			"url": "https://github.com/superdav42/di"
-		}
-	],
-	"require-dev": {
-		"dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-		"php-stubs/woocommerce-stubs": "^3.0",
-		"php-stubs/wordpress-stubs": "^6.0",
-		"phpcompatibility/phpcompatibility-wp": "^2.1",
-		"phpstan/phpstan": "^2.0",
-		"phpunit/phpunit": "^9.6 || ^10.0",
-		"squizlabs/php_codesniffer": "^3.7",
-		"szepeviktor/phpstan-wordpress": "^2.0",
-		"wp-coding-standards/wpcs": "^3.0",
-		"yoast/phpunit-polyfills": "^3.0"
-	},
-	"autoload": {
-		"psr-4": {
-			"SdAiAgent\\": "includes/"
-		}
-	},
-	"autoload-dev": {
-		"psr-4": {
-			"SdAiAgent\\Tests\\": "tests/SdAiAgent/"
-		}
-	},
-	"archive": {
-		"exclude": [
-			"tests",
-			".wp-env.json",
-			"phpunit.xml.dist",
-			"composer.lock",
-			"phpcs.xml",
-			"phpstan.neon",
-			".idea",
-			"node_modules",
-			".gitignore",
-			".phpunit.result.cache",
-			"package.json",
-			"package-lock.json",
-			".github",
-			"codecov.yml",
-			"playwright.config.js",
-			"webpack.config.js",
-			"stubs",
-			"scripts",
-			"todo",
-			"bin",
-			"TODO.md",
-			"AGENTS.md",
-			"CHANGELOG.md",
-			"CODE_OF_CONDUCT.md",
-			"CONTRIBUTING.md",
-			"DESIGN.md",
-			"MODELS.md",
-			"ROADMAP.md",
-			"SECURITY.md",
-			".distignore",
-			".vscode",
-			"playground",
-			".aidevops.json",
-			".beads",
-			".clinerules",
-			".cursorrules",
-			".windsurfrules",
-			".opencode.json",
-			".husky",
-			".claude",
-			".agents",
-			".gitattributes",
-			".task-counter",
-			".wordpress-org",
-			".stylelintrc.json",
-			".eslintrc.json",
-			"wp-cli.yml",
-			"*.zip"
-		]
-	},
-	"config": {
-		"allow-plugins": {
-			"automattic/jetpack-autoloader": true,
-			"dealerdirect/phpcodesniffer-composer-installer": true,
-			"pondermatic/composer-archive-project": true
-		},
-		"platform": {
-			"php": "8.2.0"
-		},
-		"preferred-install": "dist",
-		"sort-packages": true
-	},
-	"scripts": {
-		"phpcs": "vendor/bin/phpcs",
-		"phpcbf": "vendor/bin/phpcbf",
-		"phpstan": "vendor/bin/phpstan analyse",
-		"test": "vendor/bin/phpunit",
-		"lint": ["@phpcs", "@phpstan"]
-	},
-	"homepage": "https://github.com/Ultimate-Multisite/sd-ai-agent",
-	"support": {
-		"issues": "https://github.com/Ultimate-Multisite/sd-ai-agent/issues",
-		"source": "https://github.com/Ultimate-Multisite/sd-ai-agent"
-	}
+  "name": "ultimate-multisite/ai-agent-for-wp",
+  "description": "Agentic AI loop for WordPress \u2014 chat with an AI that can call WordPress abilities (tools) autonomously.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Ultimate Multisite Community",
+      "homepage": "https://ultimatemultisite.com"
+    }
+  ],
+  "require": {
+    "php": ">=8.2",
+    "automattic/jetpack-autoloader": "^3.0 || ^4.0 || ^5.0",
+    "pondermatic/composer-archive-project": "^1.1",
+    "psr/simple-cache": "^1.0 || ^2.0 || ^3.0",
+    "smalot/pdfparser": "^2.0",
+    "x-wp/di": "dev-fix/rest-context-plain-permalink-support as 1.9.99"
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/superdav42/di"
+    }
+  ],
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+    "php-stubs/woocommerce-stubs": "^3.0",
+    "php-stubs/wordpress-stubs": "^6.0",
+    "phpcompatibility/phpcompatibility-wp": "^2.1",
+    "phpstan/phpstan": "^2.0",
+    "phpunit/phpunit": "^9.6 || ^10.0",
+    "squizlabs/php_codesniffer": "^3.7",
+    "szepeviktor/phpstan-wordpress": "^2.0",
+    "wp-coding-standards/wpcs": "^3.0",
+    "yoast/phpunit-polyfills": "^3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "SdAiAgent\\": "includes/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "SdAiAgent\\Tests\\": "tests/SdAiAgent/"
+    },
+    "files": [
+      "vendor/php-stubs/wordpress-stubs/wordpress-stubs.php"
+    ]
+  },
+  "archive": {
+    "exclude": [
+      "tests",
+      ".wp-env.json",
+      "phpunit.xml.dist",
+      "composer.lock",
+      "phpcs.xml",
+      "phpstan.neon",
+      ".idea",
+      "node_modules",
+      ".gitignore",
+      ".phpunit.result.cache",
+      "package.json",
+      "package-lock.json",
+      ".github",
+      "codecov.yml",
+      "playwright.config.js",
+      "webpack.config.js",
+      "stubs",
+      "scripts",
+      "todo",
+      "bin",
+      "TODO.md",
+      "AGENTS.md",
+      "CHANGELOG.md",
+      "CODE_OF_CONDUCT.md",
+      "CONTRIBUTING.md",
+      "DESIGN.md",
+      "MODELS.md",
+      "ROADMAP.md",
+      "SECURITY.md",
+      ".distignore",
+      ".vscode",
+      "playground",
+      ".aidevops.json",
+      ".beads",
+      ".clinerules",
+      ".cursorrules",
+      ".windsurfrules",
+      ".opencode.json",
+      ".husky",
+      ".claude",
+      ".agents",
+      ".gitattributes",
+      ".task-counter",
+      ".wordpress-org",
+      ".stylelintrc.json",
+      ".eslintrc.json",
+      "wp-cli.yml",
+      "*.zip"
+    ]
+  },
+  "config": {
+    "allow-plugins": {
+      "automattic/jetpack-autoloader": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "pondermatic/composer-archive-project": true
+    },
+    "platform": {
+      "php": "8.2.0"
+    },
+    "preferred-install": "dist",
+    "sort-packages": true
+  },
+  "scripts": {
+    "phpcs": "vendor/bin/phpcs",
+    "phpcbf": "vendor/bin/phpcbf",
+    "phpstan": "vendor/bin/phpstan analyse",
+    "test": "vendor/bin/phpunit",
+    "lint": [
+      "@phpcs",
+      "@phpstan"
+    ]
+  },
+  "homepage": "https://github.com/Ultimate-Multisite/sd-ai-agent",
+  "support": {
+    "issues": "https://github.com/Ultimate-Multisite/sd-ai-agent/issues",
+    "source": "https://github.com/Ultimate-Multisite/sd-ai-agent"
+  }
 }
