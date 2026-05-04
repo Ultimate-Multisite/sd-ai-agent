@@ -22,6 +22,7 @@ parameters:
 	scanFiles:
 		- vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
 		- stubs/wordpress-7-runtime.php
+		- stubs/woocommerce-abilities-internals.php
 	treatPhpDocTypesAsCertain: false
 	reportUnmatchedIgnoredErrors: false
 	ignoreErrors:

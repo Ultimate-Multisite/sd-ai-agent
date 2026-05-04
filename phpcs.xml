@@ -24,6 +24,9 @@
     <!-- lib/ contains bundled WP 7.0 SDK files and PSR-compliant third-party code
          that follows PSR-2/PSR-12 coding standards rather than WordPress coding standards. -->
     <exclude-pattern>*/lib/*</exclude-pattern>
+    <!-- stubs/ contains PHPStan type stubs for external classes unavailable at analysis time.
+         They use stub-file conventions (empty function bodies) rather than WordPress coding standards. -->
+    <exclude-pattern>*/stubs/*</exclude-pattern>
 
     <!-- Arguments -->
     <arg name="extensions" value="php"/>
