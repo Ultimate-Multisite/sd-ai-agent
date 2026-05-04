@@ -211,7 +211,7 @@ Configuration: `phpcs.xml`. Key rules in effect:
 - Output escaping enforced (`WordPress.Security.EscapeOutput`)
 - Nonce verification enforced (`WordPress.Security.NonceVerification`)
 - PHP 8.2+ compatibility via `PHPCompatibilityWP`
-- Text domain must be `ai-agent`
+- Text domain must be `superdav-ai-agent`
 
 ### PHPStan (static analysis)
 
@@ -409,7 +409,7 @@ CI runs on GitHub Actions (`.github/workflows/tests.yml` and `.github/workflows/
 - **Type declarations**: required on all parameters and return types
 - **Error handling**: return `WP_Error` objects; never throw exceptions in hook callbacks
 - **Hooks**: `add_action()` / `add_filter()` with priority 10 by default
-- **i18n**: wrap all user-facing strings in `__( 'text', 'ai-agent' )`
+- **i18n**: wrap all user-facing strings in `__( 'text', 'superdav-ai-agent' )`
 - **Output escaping**: always escape output — `esc_html()`, `esc_attr()`, `esc_url()`, `wp_kses_post()`
 - **Nonces**: verify nonces before processing any form submission
 
@@ -439,7 +439,7 @@ class MyClass {
 - **Framework**: React 18 with `@wordpress/element` and `@wordpress/components`
 - **State**: `@wordpress/data` Redux store — use `useSelect` / `useDispatch`
 - **Imports**: WordPress packages first, then internal
-- **i18n**: `__( 'text', 'ai-agent' )` from `@wordpress/i18n`
+- **i18n**: `__( 'text', 'superdav-ai-agent' )` from `@wordpress/i18n`
 - **Components**: PascalCase filenames and component names
 
 ```js
@@ -449,12 +449,12 @@ import { Button } from '@wordpress/components';
 
 export function MyComponent() {
     const value = useSelect( ( select ) =>
-        select( 'ai-agent/store' ).getValue()
+        select( 'sd-ai-agent' ).getValue()
     );
 
     return (
         <Button variant="primary">
-            { __( 'Click me', 'ai-agent' ) }
+            { __( 'Click me', 'superdav-ai-agent' ) }
         </Button>
     );
 }
