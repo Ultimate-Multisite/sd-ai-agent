@@ -194,22 +194,22 @@ export default function ProviderTraceViewer() {
 	const StatusBadge = ( { code } ) => {
 		const isError = code < 200 || code >= 300;
 		const className = isError
-			? 'sd-ai-agent-trace-status-error'
-			: 'sd-ai-agent-trace-status-ok';
+			? 'sdaa-trace-status-error'
+			: 'sdaa-trace-status-ok';
 		return <span className={ className }>{ code }</span>;
 	};
 
 	if ( ! traceSettings ) {
 		return (
-			<div className="sd-ai-agent-settings-loading">
+			<div className="sdaa-settings-loading">
 				<Spinner />
 			</div>
 		);
 	}
 
 	return (
-		<div className="sd-ai-agent-provider-trace">
-			<h3 className="sd-ai-agent-settings-section-title">
+		<div className="sdaa-provider-trace">
+			<h3 className="sdaa-settings-section-title">
 				{ __( 'Provider Trace', 'sd-ai-agent' ) }
 			</h3>
 			<p className="description">
@@ -230,7 +230,7 @@ export default function ProviderTraceViewer() {
 			) }
 
 			{ /* Settings */ }
-			<div className="sd-ai-agent-trace-settings">
+			<div className="sdaa-trace-settings">
 				<ToggleControl
 					label={ __(
 						'Enable provider trace logging',
@@ -258,7 +258,7 @@ export default function ProviderTraceViewer() {
 					</Notice>
 				) }
 
-				<div className="sd-ai-agent-trace-settings-row">
+				<div className="sdaa-trace-settings-row">
 					<TextControl
 						label={ __( 'Max stored rows', 'sd-ai-agent' ) }
 						type="number"
@@ -280,7 +280,7 @@ export default function ProviderTraceViewer() {
 			</div>
 
 			{ /* Filters */ }
-			<div className="sd-ai-agent-trace-filters">
+			<div className="sdaa-trace-filters">
 				<SelectControl
 					label={ __( 'Provider', 'sd-ai-agent' ) }
 					value={ filters.provider }
@@ -332,7 +332,7 @@ export default function ProviderTraceViewer() {
 			{ /* Trace List */ }
 			{ loading && <Spinner /> }
 			{ ! loading && traces.length === 0 && (
-				<p className="sd-ai-agent-trace-empty">
+				<p className="sdaa-trace-empty">
 					{ traceSettings.enabled
 						? __(
 								'No trace records yet. Make an AI request to start capturing traffic.',
@@ -346,7 +346,7 @@ export default function ProviderTraceViewer() {
 			) }
 			{ ! loading && traces.length > 0 && (
 				<>
-					<table className="widefat sd-ai-agent-trace-table">
+					<table className="widefat sdaa-trace-table">
 						<thead>
 							<tr>
 								<th>{ __( 'ID', 'sd-ai-agent' ) }</th>
@@ -365,7 +365,7 @@ export default function ProviderTraceViewer() {
 									key={ trace.id }
 									className={
 										trace.error
-											? 'sd-ai-agent-trace-row-error'
+											? 'sdaa-trace-row-error'
 											: ''
 									}
 								>
@@ -384,7 +384,7 @@ export default function ProviderTraceViewer() {
 									</td>
 									<td>{ trace.duration_ms }ms</td>
 									<td
-										className="sd-ai-agent-trace-error-cell"
+										className="sdaa-trace-error-cell"
 										title={ trace.error || '' }
 									>
 										{ trace.error
@@ -418,7 +418,7 @@ export default function ProviderTraceViewer() {
 					</table>
 
 					{ /* Pagination */ }
-					<div className="sd-ai-agent-trace-pagination">
+					<div className="sdaa-trace-pagination">
 						<span>
 							{ __( 'Showing', 'sd-ai-agent' ) }{ ' ' }
 							{ filters.offset + 1 }–
@@ -468,14 +468,14 @@ export default function ProviderTraceViewer() {
 						selectedTrace.id
 					}` }
 					onRequestClose={ () => setSelectedTrace( null ) }
-					className="sd-ai-agent-trace-modal"
+					className="sdaa-trace-modal"
 					isFullScreen
 				>
 					{ detailLoading ? (
 						<Spinner />
 					) : (
-						<div className="sd-ai-agent-trace-detail">
-							<div className="sd-ai-agent-trace-detail-meta">
+						<div className="sdaa-trace-detail">
+							<div className="sdaa-trace-detail-meta">
 								<table className="widefat">
 									<tbody>
 										<tr>
@@ -547,28 +547,28 @@ export default function ProviderTraceViewer() {
 								</table>
 							</div>
 
-							<div className="sd-ai-agent-trace-detail-panels">
-								<div className="sd-ai-agent-trace-detail-panel">
+							<div className="sdaa-trace-detail-panels">
+								<div className="sdaa-trace-detail-panel">
 									<h4>
 										{ __(
 											'Request Headers',
 											'sd-ai-agent'
 										) }
 									</h4>
-									<pre className="sd-ai-agent-trace-json">
+									<pre className="sdaa-trace-json">
 										{ formatJson(
 											selectedTrace.request_headers
 										) }
 									</pre>
 								</div>
-								<div className="sd-ai-agent-trace-detail-panel">
+								<div className="sdaa-trace-detail-panel">
 									<h4>
 										{ __(
 											'Response Headers',
 											'sd-ai-agent'
 										) }
 									</h4>
-									<pre className="sd-ai-agent-trace-json">
+									<pre className="sdaa-trace-json">
 										{ formatJson(
 											selectedTrace.response_headers
 										) }
@@ -576,22 +576,22 @@ export default function ProviderTraceViewer() {
 								</div>
 							</div>
 
-							<div className="sd-ai-agent-trace-detail-panels">
-								<div className="sd-ai-agent-trace-detail-panel">
+							<div className="sdaa-trace-detail-panels">
+								<div className="sdaa-trace-detail-panel">
 									<h4>
 										{ __( 'Request Body', 'sd-ai-agent' ) }
 									</h4>
-									<pre className="sd-ai-agent-trace-json">
+									<pre className="sdaa-trace-json">
 										{ formatJson(
 											selectedTrace.request_body
 										) }
 									</pre>
 								</div>
-								<div className="sd-ai-agent-trace-detail-panel">
+								<div className="sdaa-trace-detail-panel">
 									<h4>
 										{ __( 'Response Body', 'sd-ai-agent' ) }
 									</h4>
-									<pre className="sd-ai-agent-trace-json">
+									<pre className="sdaa-trace-json">
 										{ formatJson(
 											selectedTrace.response_body
 										) }
@@ -599,7 +599,7 @@ export default function ProviderTraceViewer() {
 								</div>
 							</div>
 
-							<div className="sd-ai-agent-trace-detail-actions">
+							<div className="sdaa-trace-detail-actions">
 								<Button
 									variant="secondary"
 									onClick={ () =>

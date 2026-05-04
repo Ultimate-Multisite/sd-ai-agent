@@ -83,9 +83,9 @@ export default function ImportDialog( { onClose } ) {
 	}, [ fileData, importSession, onClose ] );
 
 	return (
-		<div className="sd-ai-agent-shortcuts-overlay">
-			<div className="sd-ai-agent-export-dialog" ref={ dialogRef }>
-				<div className="sd-ai-agent-export-header">
+		<div className="sdaa-shortcuts-overlay">
+			<div className="sdaa-export-dialog" ref={ dialogRef }>
+				<div className="sdaa-export-header">
 					<h3>
 						{ __( 'Import Conversation', 'superdav-ai-agent' ) }
 					</h3>
@@ -93,10 +93,10 @@ export default function ImportDialog( { onClose } ) {
 						&times;
 					</button>
 				</div>
-				<div className="sd-ai-agent-export-body">
+				<div className="sdaa-export-body">
 					<div
 						ref={ dropRef }
-						className="sd-ai-agent-import-dropzone"
+						className="sdaa-import-dropzone"
 						role="button"
 						tabIndex={ 0 }
 						onDragOver={ ( e ) => e.preventDefault() }
@@ -130,7 +130,7 @@ export default function ImportDialog( { onClose } ) {
 						} }
 					>
 						{ fileName ? (
-							<div className="sd-ai-agent-import-file">
+							<div className="sdaa-import-file">
 								<strong>{ fileName }</strong>
 								{ fileData && (
 									<p>
@@ -157,11 +157,9 @@ export default function ImportDialog( { onClose } ) {
 							</p>
 						) }
 					</div>
-					{ error && (
-						<p className="sd-ai-agent-import-error">{ error }</p>
-					) }
+					{ error && <p className="sdaa-import-error">{ error }</p> }
 				</div>
-				<div className="sd-ai-agent-export-footer">
+				<div className="sdaa-export-footer">
 					<button
 						type="button"
 						className="button"

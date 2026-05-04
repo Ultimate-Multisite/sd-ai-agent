@@ -93,16 +93,16 @@ function Tier1ToolsEditor( { tools, onChange, allAbilities } ) {
 	);
 
 	return (
-		<div className="sd-ai-agent-tier1-editor">
-			<div className="sd-ai-agent-tier1-list">
+		<div className="sdaa-tier1-editor">
+			<div className="sdaa-tier1-list">
 				{ tools.map( ( toolId ) => (
-					<span key={ toolId } className="sd-ai-agent-tier1-chip">
-						<span className="sd-ai-agent-tier1-chip-label">
+					<span key={ toolId } className="sdaa-tier1-chip">
+						<span className="sdaa-tier1-chip-label">
 							{ getLabel( toolId ) }
 						</span>
 						<button
 							type="button"
-							className="sd-ai-agent-tier1-chip-remove"
+							className="sdaa-tier1-chip-remove"
 							onClick={ () => handleRemove( toolId ) }
 							aria-label={ sprintf(
 								/* translators: %s: tool name */
@@ -116,14 +116,14 @@ function Tier1ToolsEditor( { tools, onChange, allAbilities } ) {
 				) ) }
 			</div>
 			{ tools.length > 10 && (
-				<p className="sd-ai-agent-tier1-warning">
+				<p className="sdaa-tier1-warning">
 					{ __(
 						'Tip: Keep tier 1 tools to around 10 to minimize context size and cost.',
 						'sd-ai-agent'
 					) }
 				</p>
 			) }
-			<div className="sd-ai-agent-tier1-add">
+			<div className="sdaa-tier1-add">
 				<TextControl
 					placeholder={ __(
 						'Search abilities to add…',
@@ -142,18 +142,18 @@ function Tier1ToolsEditor( { tools, onChange, allAbilities } ) {
 					__nextHasNoMarginBottom
 				/>
 				{ showResults && filtered.length > 0 && (
-					<ul className="sd-ai-agent-tier1-results">
+					<ul className="sdaa-tier1-results">
 						{ filtered.slice( 0, 10 ).map( ( ability ) => (
 							<li key={ ability.id }>
 								<button
 									type="button"
-									className="sd-ai-agent-tier1-result-item"
+									className="sdaa-tier1-result-item"
 									onClick={ () => handleAdd( ability.id ) }
 								>
-									<span className="sd-ai-agent-tier1-result-name">
+									<span className="sdaa-tier1-result-name">
 										{ ability.label }
 									</span>
-									<span className="sd-ai-agent-tier1-result-id">
+									<span className="sdaa-tier1-result-id">
 										{ ability.id }
 									</span>
 								</button>
@@ -162,7 +162,7 @@ function Tier1ToolsEditor( { tools, onChange, allAbilities } ) {
 					</ul>
 				) }
 				{ showResults && search.trim() && filtered.length === 0 && (
-					<p className="sd-ai-agent-tier1-no-results">
+					<p className="sdaa-tier1-no-results">
 						{ __( 'No matching abilities found.', 'sd-ai-agent' ) }
 					</p>
 				) }
@@ -437,14 +437,14 @@ export default function AgentBuilder() {
 
 	if ( ! agentsLoaded ) {
 		return (
-			<div className="sd-ai-agent-loading">
+			<div className="sdaa-loading">
 				<Spinner />
 			</div>
 		);
 	}
 
 	return (
-		<div className="sd-ai-agent-builder">
+		<div className="sdaa-builder">
 			{ notice && (
 				<Notice
 					status={ notice.status }
@@ -465,21 +465,21 @@ export default function AgentBuilder() {
 					</p>
 
 					{ agents.map( ( agent ) => (
-						<Card key={ agent.id } className="sd-ai-agent-card">
+						<Card key={ agent.id } className="sdaa-card">
 							<CardHeader>
-								<div className="sd-ai-agent-card-header">
-									<div className="sd-ai-agent-card-title">
-										<div className="sd-ai-agent-card-title-row">
+								<div className="sdaa-card-header">
+									<div className="sdaa-card-title">
+										<div className="sdaa-card-title-row">
 											<strong>{ agent.name }</strong>
 											{ agent.is_builtin && (
-												<span className="sd-ai-agent-card-badge">
+												<span className="sdaa-card-badge">
 													{ __(
 														'Built-in',
 														'sd-ai-agent'
 													) }
 												</span>
 											) }
-											<div className="sd-ai-agent-card-actions">
+											<div className="sdaa-card-actions">
 												<Button
 													icon={ pencil }
 													label={ __(
@@ -510,7 +510,7 @@ export default function AgentBuilder() {
 											</div>
 										</div>
 										{ agent.description && (
-											<p className="sd-ai-agent-card-desc">
+											<p className="sdaa-card-desc">
 												{ agent.description }
 											</p>
 										) }
@@ -518,7 +518,7 @@ export default function AgentBuilder() {
 								</div>
 							</CardHeader>
 							<CardBody>
-								<div className="sd-ai-agent-card-meta">
+								<div className="sdaa-card-meta">
 									{ agent.provider_id && (
 										<span>
 											<strong>
@@ -554,7 +554,7 @@ export default function AgentBuilder() {
 									) }
 								</div>
 								{ agent.system_prompt && (
-									<p className="sd-ai-agent-prompt-preview">
+									<p className="sdaa-prompt-preview">
 										{ agent.system_prompt.length > 120
 											? agent.system_prompt.slice(
 													0,
@@ -567,7 +567,7 @@ export default function AgentBuilder() {
 						</Card>
 					) ) }
 
-					<div className="sd-ai-agent-builder-actions">
+					<div className="sdaa-builder-actions">
 						<Button
 							variant="secondary"
 							icon={ plus }
@@ -593,14 +593,14 @@ export default function AgentBuilder() {
 			) }
 
 			{ showForm && (
-				<div className="sd-ai-agent-form">
+				<div className="sdaa-form">
 					<h3>
 						{ editId
 							? __( 'Edit Agent', 'sd-ai-agent' )
 							: __( 'New Agent', 'sd-ai-agent' ) }
 					</h3>
 
-					<table className="form-table sd-ai-agent-form-table">
+					<table className="form-table sdaa-form-table">
 						<tbody>
 							{ ! editId && (
 								<tr>
@@ -870,23 +870,23 @@ export default function AgentBuilder() {
 										__nextHasNoMarginBottom
 									/>
 									{ form.avatar_icon && (
-										<div className="sd-ai-agent-icon-preview">
+										<div className="sdaa-icon-preview">
 											{ form.avatar_icon.startsWith(
 												'dashicons-'
 											) ? (
 												<span
-													className={ `dashicons ${ form.avatar_icon } sd-ai-agent-icon-preview-dash` }
+													className={ `dashicons ${ form.avatar_icon } sdaa-icon-preview-dash` }
 													aria-hidden="true"
 												/>
 											) : (
 												<span
-													className="sd-ai-agent-icon-preview-emoji"
+													className="sdaa-icon-preview-emoji"
 													aria-hidden="true"
 												>
 													{ form.avatar_icon }
 												</span>
 											) }
-											<span className="sd-ai-agent-icon-preview-label">
+											<span className="sdaa-icon-preview-label">
 												{ __(
 													'Preview',
 													'sd-ai-agent'
@@ -905,7 +905,7 @@ export default function AgentBuilder() {
 						</tbody>
 					</table>
 
-					<div className="sd-ai-agent-form-actions">
+					<div className="sdaa-form-actions">
 						<Button
 							variant="primary"
 							onClick={ handleSubmit }

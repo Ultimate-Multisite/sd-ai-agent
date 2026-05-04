@@ -405,13 +405,13 @@ export function ModelPricingHint( { modelId } ) {
 	const sessionCost = estimateSessionCost( modelId );
 
 	return (
-		<p className="sd-ai-agent-model-pricing-hint">
+		<p className="sdaa-model-pricing-hint">
 			<span
-				className={ `sd-ai-agent-model-pricing-hint__tier sd-ai-agent-model-pricing-hint__tier--${ tier.id }` }
+				className={ `sdaa-model-pricing-hint__tier sdaa-model-pricing-hint__tier--${ tier.id }` }
 			>
 				{ tier.label }
 			</span>{ ' ' }
-			<span className="sd-ai-agent-model-pricing-hint__prices">
+			<span className="sdaa-model-pricing-hint__prices">
 				{ formatPrice( inputPrice ) } { __( 'input', 'sd-ai-agent' ) }
 				{ ' / ' }
 				{ formatPrice( outputPrice ) } { __( 'output', 'sd-ai-agent' ) }
@@ -419,7 +419,7 @@ export function ModelPricingHint( { modelId } ) {
 			{ sessionCost && (
 				<>
 					{ ' · ' }
-					<span className="sd-ai-agent-model-pricing-hint__session">
+					<span className="sdaa-model-pricing-hint__session">
 						{ sessionCost }{ ' ' }
 						{ __( '(avg. session estimate)', 'sd-ai-agent' ) }
 					</span>
@@ -468,7 +468,7 @@ export default function ModelPricingSelector( {
 	};
 
 	return (
-		<div className="sd-ai-agent-model-pricing-selector">
+		<div className="sdaa-model-pricing-selector">
 			<SelectControl
 				id={ id }
 				label={ label }

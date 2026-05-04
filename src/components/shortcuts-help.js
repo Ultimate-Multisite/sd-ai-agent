@@ -52,24 +52,21 @@ export default function ShortcutsHelp( { onClose } ) {
 	const modKey = isMac ? '\u2318' : 'Ctrl';
 
 	return (
-		<div className="sd-ai-agent-shortcuts-overlay">
-			<div className="sd-ai-agent-shortcuts-dialog" ref={ dialogRef }>
-				<div className="sd-ai-agent-shortcuts-header">
+		<div className="sdaa-shortcuts-overlay">
+			<div className="sdaa-shortcuts-dialog" ref={ dialogRef }>
+				<div className="sdaa-shortcuts-header">
 					<h3>{ __( 'Keyboard Shortcuts', 'sd-ai-agent' ) }</h3>
 					<button type="button" onClick={ onClose }>
 						&times;
 					</button>
 				</div>
-				<div className="sd-ai-agent-shortcuts-list">
+				<div className="sdaa-shortcuts-list">
 					{ SHORTCUTS.map( ( s ) => (
-						<div
-							key={ s.combo }
-							className="sd-ai-agent-shortcut-row"
-						>
-							<span className="sd-ai-agent-shortcut-label">
+						<div key={ s.combo } className="sdaa-shortcut-row">
+							<span className="sdaa-shortcut-label">
 								{ s.label }
 							</span>
-							<kbd className="sd-ai-agent-shortcut-key">
+							<kbd className="sdaa-shortcut-key">
 								{ s.combo
 									.replace( /mod/i, modKey )
 									.replace( /\+/g, ' + ' ) }
@@ -77,35 +74,35 @@ export default function ShortcutsHelp( { onClose } ) {
 						</div>
 					) ) }
 				</div>
-				<div className="sd-ai-agent-shortcuts-footer">
+				<div className="sdaa-shortcuts-footer">
 					<h4>{ __( 'Slash Commands', 'sd-ai-agent' ) }</h4>
-					<div className="sd-ai-agent-shortcut-row">
+					<div className="sdaa-shortcut-row">
 						<span>/new</span>
 						<span>{ __( 'New chat', 'sd-ai-agent' ) }</span>
 					</div>
-					<div className="sd-ai-agent-shortcut-row">
+					<div className="sdaa-shortcut-row">
 						<span>/model</span>
 						<span>{ __( 'Switch model', 'sd-ai-agent' ) }</span>
 					</div>
-					<div className="sd-ai-agent-shortcut-row">
+					<div className="sdaa-shortcut-row">
 						<span>/clear</span>
 						<span>
 							{ __( 'Clear conversation', 'sd-ai-agent' ) }
 						</span>
 					</div>
-					<div className="sd-ai-agent-shortcut-row">
+					<div className="sdaa-shortcut-row">
 						<span>/export</span>
 						<span>
 							{ __( 'Export conversation', 'sd-ai-agent' ) }
 						</span>
 					</div>
-					<div className="sd-ai-agent-shortcut-row">
+					<div className="sdaa-shortcut-row">
 						<span>/compact</span>
 						<span>
 							{ __( 'Compact conversation', 'sd-ai-agent' ) }
 						</span>
 					</div>
-					<div className="sd-ai-agent-shortcut-row">
+					<div className="sdaa-shortcut-row">
 						<span>/help</span>
 						<span>{ __( 'Show shortcuts', 'sd-ai-agent' ) }</span>
 					</div>

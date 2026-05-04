@@ -43,7 +43,7 @@ export default function ProviderSelector( { compact = false } ) {
 
 	if ( ! providers.length ) {
 		return (
-			<div className="sd-ai-agent-provider-selector">
+			<div className="sdaa-provider-selector">
 				<p>
 					<a
 						href={
@@ -82,11 +82,11 @@ export default function ProviderSelector( { compact = false } ) {
 
 	return (
 		<div
-			className={ `sd-ai-agent-provider-selector ${
+			className={ `sdaa-provider-selector ${
 				compact ? 'is-compact' : ''
 			}` }
 		>
-			<div className="sd-ai-agent-provider-selector__row">
+			<div className="sdaa-provider-selector__row">
 				<SelectControl
 					label={
 						compact ? null : __( 'Provider', 'superdav-ai-agent' )
@@ -101,7 +101,7 @@ export default function ProviderSelector( { compact = false } ) {
 					variant="tertiary"
 					onClick={ onRefresh }
 					disabled={ loading }
-					className="sd-ai-agent-provider-selector__refresh"
+					className="sdaa-provider-selector__refresh"
 					icon="update"
 					label={ __( 'Refresh providers', 'superdav-ai-agent' ) }
 					showTooltip

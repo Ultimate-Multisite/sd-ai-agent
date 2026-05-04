@@ -244,7 +244,7 @@ async function mockSpendingLimitsRoutes( page, overrides = {} ) {
 async function goToGeneralTab( page ) {
 	// UnifiedAdminMenu uses hash-based routing. The settings route is at
 	// admin.php?page=sd-ai-agent#/settings. The old URL
-	// (tools.php?page=sd-ai-agent-settings) triggers a wp_safe_redirect()
+	// (tools.php?page=sdaa-settings) triggers a wp_safe_redirect()
 	// which causes Playwright to hang — use the canonical hash URL directly.
 	await page.goto( '/wp-admin/admin.php?page=sd-ai-agent#/settings' );
 	await page.waitForLoadState( 'domcontentloaded' );
@@ -252,16 +252,16 @@ async function goToGeneralTab( page ) {
 	// Use 30 s to match the Playwright test timeout — the unified admin SPA
 	// can be slow to render on CI runners under load with 3 parallel workers.
 	await page
-		.locator( '.sd-ai-agent-route-settings' )
+		.locator( '.sdaa-route-settings' )
 		.waitFor( { state: 'visible', timeout: 30_000 } );
 
-	// The SettingsRoute outer TabPanel (inside .sd-ai-agent-route-settings) has
+	// The SettingsRoute outer TabPanel (inside .sdaa-route-settings) has
 	// General/Providers/Advanced tabs. The outer "General" tab is active by
 	// default (initialTabName='general'), so SettingsApp renders immediately.
 	//
 	// SettingsApp itself renders an inner TabPanel with tabs:
 	// providers, general, system-prompt, memory, skills, etc.
-	// The inner tabs have className='sd-ai-agent-settings-tab'.
+	// The inner tabs have className='sdaa-settings-tab'.
 	// The inner "General" tab contains the Spending Limits section.
 	// The inner TabPanel defaults to the first tab ("providers"), so we must
 	// explicitly click the inner "General" tab.
@@ -269,25 +269,25 @@ async function goToGeneralTab( page ) {
 	// Wait for SettingsApp to finish loading (settingsLoaded=true) before
 	// clicking the inner tab — SettingsApp renders a spinner until then.
 	await page
-		.locator( '.sd-ai-agent-settings-loading' )
+		.locator( '.sdaa-settings-loading' )
 		.waitFor( { state: 'hidden', timeout: 15_000 } )
 		.catch( () => {} ); // Non-fatal: spinner may not appear if settings load instantly.
 
 	// Click the inner "General" tab inside SettingsApp.
 	// The inner SettingsApp TabPanel tab buttons have className
-	// 'sd-ai-agent-settings-tab'. The outer SettingsRoute TabPanel tabs
+	// 'sdaa-settings-tab'. The outer SettingsRoute TabPanel tabs
 	// do NOT have this class. Filtering by this class uniquely identifies the
 	// inner tabs and avoids matching the outer "General" tab or the floating
 	// widget's "General" tab.
 	const innerGeneralTab = page
 		.locator(
-			'.sd-ai-agent-route-settings .sd-ai-agent-settings-tab'
+			'.sdaa-route-settings .sdaa-settings-tab'
 		)
 		.filter( { hasText: /^general$/i } );
 	await innerGeneralTab.click();
 
 	// Wait for the settings section container to confirm the tab content has rendered.
-	const section = page.locator( '.sd-ai-agent-settings-section' );
+	const section = page.locator( '.sdaa-settings-section' );
 	await section.waitFor( { state: 'visible', timeout: 15_000 } );
 }
 
@@ -534,9 +534,9 @@ test.describe( 'Spending Limits — Settings UI (GH#651)', () => {
 // ---------------------------------------------------------------------------
 // Spending Limits — Budget Indicator in Chat Header
 // ---------------------------------------------------------------------------
-// FIXME: BudgetIndicator was in ChatPanel (.sd-ai-agent-chat-panel) which
+// FIXME: BudgetIndicator was in ChatPanel (.sdaa-chat-panel) which
 // is no longer rendered in the admin page. The admin page now uses ChatRedesign
-// (.gaa-cr) which does not yet include BudgetIndicator. Re-enable this describe
+// (.sdaa-cr) which does not yet include BudgetIndicator. Re-enable this describe
 // block once BudgetIndicator is added to the ChatRedesign layout.
 // ---------------------------------------------------------------------------
 
@@ -548,13 +548,13 @@ test.describe.fixme( 'Spending Limits — Budget Indicator (GH#651)', () => {
 
 	/**
 	 * Navigate to the admin page and wait for the AdminPageApp to mount inside
-	 * #sd-ai-agent-chat-container. The unified admin's ChatRoute calls
+	 * #sdaa-chat-container. The unified admin's ChatRoute calls
 	 * window.sdAiAgentChat.mount() which renders AdminPageApp. AdminPageApp
 	 * returns null until settingsLoaded=true, then renders ChatRedesign.
-	 * Wait for .gaa-cr (the ChatRedesign root) to confirm hydration.
+	 * Wait for .sdaa-cr (the ChatRedesign root) to confirm hydration.
 	 *
-	 * NOTE: The old admin page rendered ChatPanel (.sd-ai-agent-chat-panel).
-	 * The redesigned admin page renders ChatRedesign (.gaa-cr). BudgetIndicator
+	 * NOTE: The old admin page rendered ChatPanel (.sdaa-chat-panel).
+	 * The redesigned admin page renders ChatRedesign (.sdaa-cr). BudgetIndicator
 	 * is no longer part of the ChatRedesign layout — the budget indicator tests
 	 * below are marked test.fixme until BudgetIndicator is added to ChatRedesign.
 	 *
@@ -565,13 +565,13 @@ test.describe.fixme( 'Spending Limits — Budget Indicator (GH#651)', () => {
 		await page.waitForLoadState( 'domcontentloaded' );
 		// Wait for the unified admin SPA to render.
 		await page
-			.locator( '.sd-ai-agent-unified-admin' )
+			.locator( '.sdaa-unified-admin' )
 			.waitFor( { state: 'visible', timeout: 15_000 } );
-		// Wait for the ChatRedesign root element (.gaa-cr) to confirm the
+		// Wait for the ChatRedesign root element (.sdaa-cr) to confirm the
 		// AdminPageApp has hydrated past the settingsLoaded=false null-return guard.
-		// Old selector was .sd-ai-agent-chat-panel:not(.is-compact).
+		// Old selector was .sdaa-chat-panel:not(.is-compact).
 		await page
-			.locator( '.gaa-cr' )
+			.locator( '.sdaa-cr' )
 			.waitFor( { state: 'visible', timeout: 15_000 } );
 	}
 
@@ -593,7 +593,7 @@ test.describe.fixme( 'Spending Limits — Budget Indicator (GH#651)', () => {
 		// widget's hidden budget indicator (which also returns null when no caps).
 		await expect(
 			page.locator(
-				'.sd-ai-agent-chat-panel:not(.is-compact) .sd-ai-agent-budget-indicator'
+				'.sdaa-chat-panel:not(.is-compact) .sdaa-budget-indicator'
 			)
 		).toHaveCount( 0 );
 	} );
@@ -615,7 +615,7 @@ test.describe.fixme( 'Spending Limits — Budget Indicator (GH#651)', () => {
 		// the floating widget's hidden budget indicator.
 		const indicator = page
 			.locator(
-				'.sd-ai-agent-chat-panel:not(.is-compact) .sd-ai-agent-budget-indicator'
+				'.sdaa-chat-panel:not(.is-compact) .sdaa-budget-indicator'
 			)
 			.first();
 		await expect( indicator ).toBeVisible( { timeout: 10_000 } );
@@ -644,7 +644,7 @@ test.describe.fixme( 'Spending Limits — Budget Indicator (GH#651)', () => {
 		// Scope to the non-compact (admin page) chat panel.
 		const indicator = page
 			.locator(
-				'.sd-ai-agent-chat-panel:not(.is-compact) .sd-ai-agent-budget-indicator'
+				'.sdaa-chat-panel:not(.is-compact) .sdaa-budget-indicator'
 			)
 			.first();
 		await expect( indicator ).toBeVisible( { timeout: 10_000 } );
@@ -673,7 +673,7 @@ test.describe.fixme( 'Spending Limits — Budget Indicator (GH#651)', () => {
 		// Scope to the non-compact (admin page) chat panel.
 		const indicator = page
 			.locator(
-				'.sd-ai-agent-chat-panel:not(.is-compact) .sd-ai-agent-budget-indicator'
+				'.sdaa-chat-panel:not(.is-compact) .sdaa-budget-indicator'
 			)
 			.first();
 		await expect( indicator ).toBeVisible( { timeout: 10_000 } );
@@ -703,7 +703,7 @@ test.describe.fixme( 'Spending Limits — Budget Indicator (GH#651)', () => {
 		// Scope to the non-compact (admin page) chat panel.
 		const indicator = page
 			.locator(
-				'.sd-ai-agent-chat-panel:not(.is-compact) .sd-ai-agent-budget-indicator'
+				'.sdaa-chat-panel:not(.is-compact) .sdaa-budget-indicator'
 			)
 			.first();
 		await expect( indicator ).toBeVisible( { timeout: 10_000 } );

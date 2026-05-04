@@ -89,12 +89,12 @@ class ModelBenchmarkPage {
 	 */
 	public static function render(): void {
 		?>
-		<div class="wrap sd-ai-agent-benchmark-wrap">
+		<div class="wrap sdaa-benchmark-wrap">
 			<h1><?php esc_html_e( 'Model Benchmark', 'superdav-ai-agent' ); ?></h1>
 			<p class="description">
 				<?php esc_html_e( 'Benchmark AI models against WordPress knowledge and coding tasks. Compare performance, accuracy, and cost across different providers.', 'superdav-ai-agent' ); ?>
 			</p>
-			<div id="sd-ai-agent-benchmark-root"></div>
+			<div id="sdaa-benchmark-root"></div>
 		</div>
 		<?php
 	}

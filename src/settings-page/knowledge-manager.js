@@ -300,7 +300,7 @@ export default function KnowledgeManager() {
 	}
 
 	return (
-		<div className="sd-ai-agent-knowledge-manager">
+		<div className="sdaa-knowledge-manager">
 			{ notice && (
 				<Notice
 					status={ notice.status }
@@ -363,7 +363,7 @@ export default function KnowledgeManager() {
 							<div>
 								<strong>{ col.name }</strong>
 								<span
-									className="sd-ai-agent-text-muted"
+									className="sdaa-text-muted"
 									style={ { marginLeft: '8px' } }
 								>
 									{ col.slug }
@@ -376,12 +376,12 @@ export default function KnowledgeManager() {
 									alignItems: 'center',
 								} }
 							>
-								<span className="sd-ai-agent-text-muted">
+								<span className="sdaa-text-muted">
 									{ col.chunk_count }{ ' ' }
 									{ __( 'chunks', 'sd-ai-agent' ) }
 								</span>
 								{ col.auto_index && (
-									<span className="sd-ai-agent-badge">
+									<span className="sdaa-badge">
 										{ __( 'Auto', 'sd-ai-agent' ) }
 									</span>
 								) }
@@ -530,7 +530,7 @@ export default function KnowledgeManager() {
 															</td>
 															<td>
 																<span
-																	className={ `sd-ai-agent-status-badge is-${ src.status }` }
+																	className={ `sdaa-status-badge is-${ src.status }` }
 																>
 																	{
 																		src.status
@@ -622,7 +622,7 @@ export default function KnowledgeManager() {
 					</Button>
 				</div>
 				{ searchResults.length > 0 && (
-					<div className="sd-ai-agent-search-results">
+					<div className="sdaa-search-results">
 						{ searchResults.map( ( result, i ) => (
 							<Card key={ i } style={ { marginBottom: '8px' } }>
 								<CardBody>
@@ -633,7 +633,7 @@ export default function KnowledgeManager() {
 											marginBottom: '4px',
 										} }
 									>
-										<span className="sd-ai-agent-text-muted">
+										<span className="sdaa-text-muted">
 											<strong>
 												{ result.source_title }
 											</strong>
@@ -641,7 +641,7 @@ export default function KnowledgeManager() {
 												` — ${ result.collection_name }` }
 										</span>
 										{ result.score && (
-											<span className="sd-ai-agent-text-muted">
+											<span className="sdaa-text-muted">
 												{ __(
 													'Score:',
 													'sd-ai-agent'

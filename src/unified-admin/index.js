@@ -112,7 +112,7 @@ function UnifiedAdminApp() {
 
 	return (
 		<AppProvider value={ appContext }>
-			<div className="sd-ai-agent-unified-admin">
+			<div className="sdaa-unified-admin">
 				{ notice && (
 					<Notice
 						status={ notice.status }
@@ -136,7 +136,7 @@ function UnifiedAdminApp() {
 	);
 }
 
-const container = document.getElementById( 'sd-ai-agent-root' );
+const container = document.getElementById( 'sdaa-root' );
 if ( container ) {
 	const root = createRoot( container );
 	root.render( <UnifiedAdminApp /> );

@@ -56,9 +56,9 @@ async function goToDashboard( page ) {
 	await page.waitForLoadState( 'domcontentloaded' );
 	// Wait for the launcher button — it renders once React has mounted and the
 	// floating-widget bundle has executed (triggering ensureRegistered()).
-	// The redesign (#1157) renamed .sd-ai-agent-fab to .gaa-w-launcher.
+	// The redesign (#1157) renamed .sdaa-fab to .sdaa-w-launcher.
 	await page
-		.locator( '.gaa-w-launcher' )
+		.locator( '.sdaa-w-launcher' )
 		.waitFor( { state: 'visible', timeout: 30_000 } );
 }
 
@@ -632,7 +632,7 @@ test.describe( 'client-abilities — no relevant console errors', () => {
 		await page.goto( '/wp-admin/admin.php?page=sd-ai-agent' );
 		await page.waitForLoadState( 'domcontentloaded' );
 		await page
-			.locator( '.sd-ai-agent-unified-admin' )
+			.locator( '.sdaa-unified-admin' )
 			.waitFor( { state: 'visible', timeout: 45_000 } );
 		await skipIfNoAbilitiesApi( page );
 		await waitForAbilitiesRegistered( page );

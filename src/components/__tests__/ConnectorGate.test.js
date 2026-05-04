@@ -55,7 +55,7 @@ describe( 'ConnectorGate', () => {
 
 	test( 'renders the gate wrapper', () => {
 		const html = renderToStaticMarkup( createElement( ConnectorGate, {} ) );
-		expect( html ).toContain( 'sd-ai-agent-connector-gate' );
+		expect( html ).toContain( 'sdaa-connector-gate' );
 	} );
 
 	test( 'renders the title', () => {

@@ -329,8 +329,8 @@ class UnifiedAdminMenu {
 	 */
 	public static function render(): void {
 		?>
-		<div class="wrap sd-ai-agent-wrap">
-			<div id="sd-ai-agent-root" class="sd-ai-agent-app"></div>
+		<div class="wrap sdaa-wrap">
+			<div id="sdaa-root" class="sdaa-app"></div>
 		</div>
 		<?php
 	}

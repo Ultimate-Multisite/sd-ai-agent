@@ -133,13 +133,13 @@ export default function SessionChangesBar() {
 				  );
 
 		return (
-			<div className="sd-ai-agent-changes-bar sd-ai-agent-changes-bar--reverted">
-				<span className="sd-ai-agent-changes-bar__text">
+			<div className="sdaa-changes-bar sdaa-changes-bar--reverted">
+				<span className="sdaa-changes-bar__text">
 					{ revertedLabel }
 				</span>
 				<Button
 					variant="link"
-					className="sd-ai-agent-changes-bar__dismiss"
+					className="sdaa-changes-bar__dismiss"
 					onClick={ () => setDismissed( true ) }
 					size="small"
 				>
@@ -179,11 +179,9 @@ export default function SessionChangesBar() {
 	}
 
 	return (
-		<div className="sd-ai-agent-changes-bar">
-			<span className="sd-ai-agent-changes-bar__text">
-				{ changesLabel }
-			</span>
-			<div className="sd-ai-agent-changes-bar__actions">
+		<div className="sdaa-changes-bar">
+			<span className="sdaa-changes-bar__text">{ changesLabel }</span>
+			<div className="sdaa-changes-bar__actions">
 				<Button
 					variant="secondary"
 					isDestructive
@@ -197,7 +195,7 @@ export default function SessionChangesBar() {
 				<Button
 					variant="link"
 					href={ changesUrl }
-					className="sd-ai-agent-changes-bar__view-link"
+					className="sdaa-changes-bar__view-link"
 					size="small"
 				>
 					{ __( 'View changes \u2197', 'sd-ai-agent' ) }

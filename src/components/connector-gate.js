@@ -75,13 +75,13 @@ export default function ConnectorGate() {
 	}, [] );
 
 	return (
-		<div className="sd-ai-agent-connector-gate">
-			<div className="sd-ai-agent-connector-gate__inner">
-				<h2 className="sd-ai-agent-connector-gate__title">
+		<div className="sdaa-connector-gate">
+			<div className="sdaa-connector-gate__inner">
+				<h2 className="sdaa-connector-gate__title">
 					{ __( 'Set Up an AI Provider', 'sd-ai-agent' ) }
 				</h2>
 
-				<p className="sd-ai-agent-connector-gate__description">
+				<p className="sdaa-connector-gate__description">
 					{ __(
 						'Superdav AI Agent needs an AI provider to work. Configure an API key for OpenAI, Anthropic, or Google AI on the Connectors page to get started.',
 						'sd-ai-agent'
@@ -97,11 +97,11 @@ export default function ConnectorGate() {
 							) }
 						</Notice>
 
-						<div className="sd-ai-agent-connector-gate__actions">
+						<div className="sdaa-connector-gate__actions">
 							<Button
 								variant="primary"
 								href={ getConnectorsUrl() }
-								className="sd-ai-agent-connector-gate__cta"
+								className="sdaa-connector-gate__cta"
 							>
 								{ __(
 									'Configure a Connector →',
@@ -125,13 +125,13 @@ export default function ConnectorGate() {
 							</Notice>
 						) }
 
-						<div className="sd-ai-agent-connector-gate__actions">
+						<div className="sdaa-connector-gate__actions">
 							<Button
 								variant="primary"
 								onClick={ handleInstallGutenberg }
 								isBusy={ installing }
 								disabled={ installing }
-								className="sd-ai-agent-connector-gate__cta"
+								className="sdaa-connector-gate__cta"
 							>
 								{ installing ? (
 									<>

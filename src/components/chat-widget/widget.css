@@ -1,38 +1,38 @@
 /*
  * Floating chat widget — redesign styles.
- * Scoped under .gaa-w-* so nothing leaks into the surrounding wp-admin.
+ * Scoped under .sdaa-w-* so nothing leaks into the surrounding wp-admin.
  * All colour tokens resolve against the chat-redesign variables when
  * chat-redesign.css has loaded on the page; for admin pages that only
  * load the widget bundle, we re-declare the subset we need below.
  */
 
 :root {
-	--gaa-w-primary: var(--wp-admin-theme-color, #2271b1);
-	--gaa-w-primary-dark: var(--wp-admin-theme-color-darker-10, #135e96);
-	--gaa-w-text-primary: #1d2327;
-	--gaa-w-text-secondary: #50575e;
-	--gaa-w-text-muted: #787c82;
-	--gaa-w-border-strong: #c3c4c7;
-	--gaa-w-border-subtle: #dcdcde;
-	--gaa-w-bubble-user-border: #c5d9ed;
-	--gaa-w-surface: #f6f7f7;
-	--gaa-w-surface-hover: #f0f0f1;
-	--gaa-w-surface-active: #f0f6fc;
-	--gaa-w-success: #00a32a;
-	--gaa-w-warning: #dba617;
-	--gaa-w-error: #d63638;
-	--gaa-w-radius-xs: 4px;
-	--gaa-w-radius-sm: 6px;
-	--gaa-w-radius-md: 8px;
-	--gaa-w-radius-lg: 12px;
-	--gaa-w-radius-pill: 9999px;
-	--gaa-w-duration: 150ms;
-	--gaa-w-shadow-overlay: 0 8px 32px rgb(0 0 0 / 20%);
-	--gaa-w-shadow-elevated: 0 4px 16px rgb(0 0 0 / 14%);
-	--gaa-w-font-ui:
+	--sdaa-w-primary: var(--wp-admin-theme-color, #2271b1);
+	--sdaa-w-primary-dark: var(--wp-admin-theme-color-darker-10, #135e96);
+	--sdaa-w-text-primary: #1d2327;
+	--sdaa-w-text-secondary: #50575e;
+	--sdaa-w-text-muted: #787c82;
+	--sdaa-w-border-strong: #c3c4c7;
+	--sdaa-w-border-subtle: #dcdcde;
+	--sdaa-w-bubble-user-border: #c5d9ed;
+	--sdaa-w-surface: #f6f7f7;
+	--sdaa-w-surface-hover: #f0f0f1;
+	--sdaa-w-surface-active: #f0f6fc;
+	--sdaa-w-success: #00a32a;
+	--sdaa-w-warning: #dba617;
+	--sdaa-w-error: #d63638;
+	--sdaa-w-radius-xs: 4px;
+	--sdaa-w-radius-sm: 6px;
+	--sdaa-w-radius-md: 8px;
+	--sdaa-w-radius-lg: 12px;
+	--sdaa-w-radius-pill: 9999px;
+	--sdaa-w-duration: 150ms;
+	--sdaa-w-shadow-overlay: 0 8px 32px rgb(0 0 0 / 20%);
+	--sdaa-w-shadow-elevated: 0 4px 16px rgb(0 0 0 / 14%);
+	--sdaa-w-font-ui:
 		-apple-system, blinkmacsystemfont, "Segoe UI", Roboto, Oxygen-Sans,
 		Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-	--gaa-w-font-mono:
+	--sdaa-w-font-mono:
 		ui-monospace, sfmono-regular, "SF Mono", Menlo, Consolas, monospace;
 }
 
@@ -40,7 +40,7 @@
    Launcher (FAB)
    ================================================================= */
 
-.gaa-w-launcher {
+.sdaa-w-launcher {
 	position: fixed;
 	right: 36px;
 	bottom: 28px;
@@ -52,34 +52,34 @@
 	justify-content: center;
 	border: 0;
 	border-radius: 50%;
-	background: var(--gaa-w-primary);
+	background: var(--sdaa-w-primary);
 	color: #fff;
 	box-shadow:
 		0 4px 16px rgb(0 0 0 / 18%),
 		0 2px 4px rgb(0 0 0 / 10%);
 	cursor: pointer;
-	transition: transform var(--gaa-w-duration), background var(--gaa-w-duration);
+	transition: transform var(--sdaa-w-duration), background var(--sdaa-w-duration);
 }
 
-.gaa-w-launcher:hover {
-	background: var(--gaa-w-primary-dark);
+.sdaa-w-launcher:hover {
+	background: var(--sdaa-w-primary-dark);
 	transform: translateY(-1px);
 }
 
-.gaa-w-launcher svg {
+.sdaa-w-launcher svg {
 	width: 24px;
 	height: 24px;
 	fill: currentcolor;
 }
 
-.gaa-w-launcher-logo {
+.sdaa-w-launcher-logo {
 	width: 26px;
 	height: 26px;
 	border-radius: 3px;
 	object-fit: contain;
 }
 
-.gaa-w-launcher-pulse {
+.sdaa-w-launcher-pulse {
 	position: absolute;
 	top: -2px;
 	right: -2px;
@@ -87,11 +87,11 @@
 	height: 10px;
 	border: 2px solid #fff;
 	border-radius: 50%;
-	background: var(--gaa-w-success);
-	animation: gaa-w-pulse 1.5s ease-in-out infinite;
+	background: var(--sdaa-w-success);
+	animation: sdaa-w-pulse 1.5s ease-in-out infinite;
 }
 
-.gaa-w-launcher-badge {
+.sdaa-w-launcher-badge {
 	position: absolute;
 	top: -4px;
 	right: -4px;
@@ -103,7 +103,7 @@
 	padding: 0 4px;
 	border: 2px solid #fff;
 	border-radius: 9px;
-	background: var(--gaa-w-error);
+	background: var(--sdaa-w-error);
 	color: #fff;
 	font-size: 10px;
 	font-weight: 700;
@@ -116,7 +116,7 @@
    Panel shell
    ================================================================= */
 
-.gaa-w-panel {
+.sdaa-w-panel {
 	position: fixed;
 	right: 36px;
 	bottom: 28px;
@@ -128,16 +128,16 @@
 	max-height: calc(100vh - 56px);
 	flex-direction: column;
 	overflow: hidden;
-	border-radius: var(--gaa-w-radius-lg);
+	border-radius: var(--sdaa-w-radius-lg);
 	background: #fff;
-	box-shadow: var(--gaa-w-shadow-overlay);
-	font-family: var(--gaa-w-font-ui);
+	box-shadow: var(--sdaa-w-shadow-overlay);
+	font-family: var(--sdaa-w-font-ui);
 	font-size: 13px;
-	color: var(--gaa-w-text-primary);
-	animation: gaa-w-panel-in 180ms ease;
+	color: var(--sdaa-w-text-primary);
+	animation: sdaa-w-panel-in 180ms ease;
 }
 
-.gaa-w-panel.is-minimized {
+.sdaa-w-panel.is-minimized {
 	width: 320px;
 	height: auto;
 	cursor: pointer;
@@ -145,8 +145,8 @@
 
 /* Suppress the panel-in entrance animation while the user is moving or
    resizing — otherwise every state update replays the fade-in. */
-.gaa-w-panel.is-dragging,
-.gaa-w-panel.is-resizing {
+.sdaa-w-panel.is-dragging,
+.sdaa-w-panel.is-resizing {
 	animation: none;
 	transition: none;
 }
@@ -155,12 +155,12 @@
    Resize handles
    ================================================================= */
 
-.gaa-w-resize-handle {
+.sdaa-w-resize-handle {
 	position: absolute;
 	z-index: 20;
 }
 
-.gaa-w-resize-handle--right {
+.sdaa-w-resize-handle--right {
 	top: 0;
 	right: 0;
 	width: 6px;
@@ -168,7 +168,7 @@
 	cursor: ew-resize;
 }
 
-.gaa-w-resize-handle--bottom {
+.sdaa-w-resize-handle--bottom {
 	bottom: 0;
 	left: 0;
 	width: 100%;
@@ -176,7 +176,7 @@
 	cursor: ns-resize;
 }
 
-.gaa-w-resize-handle--corner {
+.sdaa-w-resize-handle--corner {
 	bottom: 0;
 	right: 0;
 	width: 16px;
@@ -184,19 +184,19 @@
 	cursor: nwse-resize;
 }
 
-.gaa-w-resize-handle--corner::after {
+.sdaa-w-resize-handle--corner::after {
 	content: "";
 	position: absolute;
 	right: 3px;
 	bottom: 3px;
 	width: 8px;
 	height: 8px;
-	border-right: 2px solid var(--gaa-w-border-strong);
-	border-bottom: 2px solid var(--gaa-w-border-strong);
+	border-right: 2px solid var(--sdaa-w-border-strong);
+	border-bottom: 2px solid var(--sdaa-w-border-strong);
 	border-radius: 1px;
 }
 
-@keyframes gaa-w-panel-in {
+@keyframes sdaa-w-panel-in {
 	from {
 		opacity: 0;
 		transform: translateY(8px);
@@ -208,7 +208,7 @@
 	}
 }
 
-@keyframes gaa-w-pulse {
+@keyframes sdaa-w-pulse {
 	0%, 100% {
 		opacity: 1;
 	}
@@ -218,7 +218,7 @@
 	}
 }
 
-@keyframes gaa-w-spin {
+@keyframes sdaa-w-spin {
 	to {
 		transform: rotate(360deg);
 	}
@@ -228,38 +228,38 @@
    Header
    ================================================================= */
 
-.gaa-w-head {
+.sdaa-w-head {
 	display: flex;
 	min-height: 54px;
 	flex-shrink: 0;
 	align-items: center;
 	gap: 6px;
 	padding: 8px 10px;
-	border-bottom: 1px solid var(--gaa-w-border-subtle);
+	border-bottom: 1px solid var(--sdaa-w-border-subtle);
 	background: #fff;
 	cursor: grab;
 	user-select: none;
 }
 
-.gaa-w-panel.is-dragging .gaa-w-head {
+.sdaa-w-panel.is-dragging .sdaa-w-head {
 	cursor: grabbing;
 }
 
-.gaa-w-panel.is-minimized .gaa-w-head {
+.sdaa-w-panel.is-minimized .sdaa-w-head {
 	border-bottom: 0;
 }
 
 /* Title-wrap hugs its content so the "new chat" button sits directly
    after the title. min-width: 0 still lets the title ellipsis when a
    single conversation title is too long to fit. */
-.gaa-w-head-title-wrap {
+.sdaa-w-head-title-wrap {
 	position: relative;
 	display: flex;
 	flex: 0 1 auto;
 	min-width: 0;
 }
 
-.gaa-w-head-session {
+.sdaa-w-head-session {
 	display: inline-flex;
 	min-width: 0;
 	max-width: 100%;
@@ -267,21 +267,21 @@
 	gap: 10px;
 	padding: 4px 8px 4px 6px;
 	border: 0;
-	border-radius: var(--gaa-w-radius-sm);
+	border-radius: var(--sdaa-w-radius-sm);
 	background: transparent;
 	color: inherit;
 	font: inherit;
 	text-align: left;
 	cursor: pointer;
-	transition: background var(--gaa-w-duration);
+	transition: background var(--sdaa-w-duration);
 }
 
-.gaa-w-head-session:hover,
-.gaa-w-head-session.is-open {
-	background: var(--gaa-w-surface-hover);
+.sdaa-w-head-session:hover,
+.sdaa-w-head-session.is-open {
+	background: var(--sdaa-w-surface-hover);
 }
 
-.gaa-w-avatar {
+.sdaa-w-avatar {
 	display: inline-flex;
 	width: 26px;
 	height: 26px;
@@ -289,24 +289,24 @@
 	align-items: center;
 	justify-content: center;
 	border-radius: 50%;
-	background: var(--gaa-w-primary);
+	background: var(--sdaa-w-primary);
 	color: #fff;
 }
 
-.gaa-w-avatar svg {
+.sdaa-w-avatar svg {
 	width: 14px;
 	height: 14px;
 	fill: currentcolor;
 }
 
-.gaa-w-avatar-logo {
+.sdaa-w-avatar-logo {
 	width: 18px;
 	height: 18px;
 	object-fit: contain;
 	border-radius: 3px;
 }
 
-.gaa-w-head-titles {
+.sdaa-w-head-titles {
 	display: flex;
 	flex: 1;
 	flex-direction: column;
@@ -314,7 +314,7 @@
 	text-align: left;
 }
 
-.gaa-w-head-name {
+.sdaa-w-head-name {
 	display: flex;
 	align-items: center;
 	gap: 4px;
@@ -322,69 +322,69 @@
 	font-size: 13.5px;
 	font-weight: 600;
 	line-height: 1.2;
-	color: var(--gaa-w-text-primary);
+	color: var(--sdaa-w-text-primary);
 }
 
-.gaa-w-head-name-text {
+.sdaa-w-head-name-text {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	min-width: 0;
 }
 
-.gaa-w-head-caret {
+.sdaa-w-head-caret {
 	display: inline-flex;
 	width: 14px;
 	height: 14px;
 	flex-shrink: 0;
-	color: var(--gaa-w-text-muted);
-	transition: transform var(--gaa-w-duration);
+	color: var(--sdaa-w-text-muted);
+	transition: transform var(--sdaa-w-duration);
 }
 
-.gaa-w-head-caret svg {
+.sdaa-w-head-caret svg {
 	width: 14px;
 	height: 14px;
 	fill: currentcolor;
 }
 
-.gaa-w-head-session.is-open .gaa-w-head-caret {
+.sdaa-w-head-session.is-open .sdaa-w-head-caret {
 	transform: rotate(180deg);
 }
 
-.gaa-w-head-status {
+.sdaa-w-head-status {
 	display: flex;
 	align-items: center;
 	gap: 4px;
 	margin-top: 1px;
 	font-size: 11px;
-	color: var(--gaa-w-text-muted);
+	color: var(--sdaa-w-text-muted);
 }
 
-.gaa-w-head-status.is-running {
-	color: var(--gaa-w-success);
+.sdaa-w-head-status.is-running {
+	color: var(--sdaa-w-success);
 }
 
-.gaa-w-head-status-dot {
+.sdaa-w-head-status-dot {
 	display: inline-block;
 	width: 6px;
 	height: 6px;
 	flex-shrink: 0;
 	border-radius: 50%;
-	background: var(--gaa-w-success);
+	background: var(--sdaa-w-success);
 }
 
-.gaa-w-head-status.is-running .gaa-w-head-status-dot,
-.gaa-w-head-status-dot.is-running {
-	animation: gaa-w-pulse 1.5s ease-in-out infinite;
+.sdaa-w-head-status.is-running .sdaa-w-head-status-dot,
+.sdaa-w-head-status-dot.is-running {
+	animation: sdaa-w-pulse 1.5s ease-in-out infinite;
 }
 
-.gaa-w-head-status-text {
+.sdaa-w-head-status-text {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.gaa-w-new-btn {
+.sdaa-w-new-btn {
 	display: inline-flex;
 	width: 34px;
 	height: 34px;
@@ -392,29 +392,29 @@
 	align-items: center;
 	justify-content: center;
 	border: 1px solid transparent;
-	border-radius: var(--gaa-w-radius-sm);
+	border-radius: var(--sdaa-w-radius-sm);
 	background: transparent;
-	color: var(--gaa-w-text-muted);
+	color: var(--sdaa-w-text-muted);
 	cursor: pointer;
 	transition:
-		background var(--gaa-w-duration),
-		border-color var(--gaa-w-duration),
-		color var(--gaa-w-duration);
+		background var(--sdaa-w-duration),
+		border-color var(--sdaa-w-duration),
+		color var(--sdaa-w-duration);
 }
 
-.gaa-w-new-btn:hover {
-	border-color: var(--gaa-w-border-subtle);
-	background: var(--gaa-w-surface-hover);
-	color: var(--gaa-w-primary);
+.sdaa-w-new-btn:hover {
+	border-color: var(--sdaa-w-border-subtle);
+	background: var(--sdaa-w-surface-hover);
+	color: var(--sdaa-w-primary);
 }
 
-.gaa-w-new-btn svg {
+.sdaa-w-new-btn svg {
 	width: 20px;
 	height: 20px;
 	fill: currentcolor;
 }
 
-.gaa-w-head-actions {
+.sdaa-w-head-actions {
 	display: flex;
 	flex-shrink: 0;
 	align-items: center;
@@ -424,7 +424,7 @@
 
 /* ─── Session drawer (dropdown under title) ───────────────────────── */
 
-.gaa-w-session-drawer {
+.sdaa-w-session-drawer {
 	position: absolute;
 	z-index: 80;
 	top: calc(100% + 6px);
@@ -436,82 +436,82 @@
 	max-height: 360px;
 	flex-direction: column;
 	overflow: hidden;
-	border: 1px solid var(--gaa-w-border-subtle);
-	border-radius: var(--gaa-w-radius-md);
+	border: 1px solid var(--sdaa-w-border-subtle);
+	border-radius: var(--sdaa-w-radius-md);
 	background: #fff;
-	box-shadow: var(--gaa-w-shadow-elevated);
-	animation: gaa-w-panel-in 150ms ease;
+	box-shadow: var(--sdaa-w-shadow-elevated);
+	animation: sdaa-w-panel-in 150ms ease;
 }
 
-.gaa-w-session-drawer-item-title {
+.sdaa-w-session-drawer-item-title {
 
 	/* Give the max-content width of the drawer room to grow with the
 	   longest title, while still ellipsising the outliers. */
 	max-width: 320px;
 }
 
-.gaa-w-session-drawer-head {
+.sdaa-w-session-drawer-head {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	padding: 8px 10px;
-	border-bottom: 1px solid var(--gaa-w-border-subtle);
-	color: var(--gaa-w-text-muted);
+	border-bottom: 1px solid var(--sdaa-w-border-subtle);
+	color: var(--sdaa-w-text-muted);
 	font-size: 11px;
 	font-weight: 600;
 	letter-spacing: 0.4px;
 	text-transform: uppercase;
 }
 
-.gaa-w-session-drawer-list {
+.sdaa-w-session-drawer-list {
 	flex: 1;
 	overflow-y: auto;
 	padding: 4px;
 }
 
-.gaa-w-session-drawer-item {
+.sdaa-w-session-drawer-item {
 	display: flex;
 	width: 100%;
 	align-items: center;
 	gap: 8px;
 	padding: 8px 10px;
 	border: 0;
-	border-radius: var(--gaa-w-radius-sm);
+	border-radius: var(--sdaa-w-radius-sm);
 	background: transparent;
-	color: var(--gaa-w-text-primary);
+	color: var(--sdaa-w-text-primary);
 	font: inherit;
 	font-size: 12.5px;
 	text-align: left;
 	cursor: pointer;
 }
 
-.gaa-w-session-drawer-item:hover {
-	background: var(--gaa-w-surface-hover);
+.sdaa-w-session-drawer-item:hover {
+	background: var(--sdaa-w-surface-hover);
 }
 
-.gaa-w-session-drawer-item.is-active {
-	background: var(--gaa-w-surface-active);
-	color: var(--gaa-w-primary);
+.sdaa-w-session-drawer-item.is-active {
+	background: var(--sdaa-w-surface-active);
+	color: var(--sdaa-w-primary);
 	font-weight: 500;
 }
 
-.gaa-w-session-drawer-item-icon {
+.sdaa-w-session-drawer-item-icon {
 	display: inline-flex;
 	width: 12px;
 	height: 12px;
 	flex-shrink: 0;
 	align-items: center;
 	justify-content: center;
-	color: var(--gaa-w-text-muted);
+	color: var(--sdaa-w-text-muted);
 }
 
-.gaa-w-session-drawer-item-icon svg {
+.sdaa-w-session-drawer-item-icon svg {
 	width: 12px;
 	height: 12px;
 	fill: currentcolor;
 }
 
-.gaa-w-session-drawer-item-title {
+.sdaa-w-session-drawer-item-title {
 	overflow: hidden;
 	min-width: 0;
 	flex: 1;
@@ -519,20 +519,20 @@
 	white-space: nowrap;
 }
 
-.gaa-w-session-drawer-item-time {
+.sdaa-w-session-drawer-item-time {
 	flex-shrink: 0;
-	color: var(--gaa-w-text-muted);
+	color: var(--sdaa-w-text-muted);
 	font-size: 10.5px;
 }
 
-.gaa-w-session-drawer-item.is-active .gaa-w-session-drawer-item-time {
-	color: var(--gaa-w-primary);
+.sdaa-w-session-drawer-item.is-active .sdaa-w-session-drawer-item-time {
+	color: var(--sdaa-w-primary);
 	opacity: 0.7;
 }
 
-.gaa-w-session-drawer-empty {
+.sdaa-w-session-drawer-empty {
 	padding: 16px 12px;
-	color: var(--gaa-w-text-muted);
+	color: var(--sdaa-w-text-muted);
 	font-size: 12px;
 	text-align: center;
 }
@@ -541,7 +541,7 @@
    Body + empty state
    ================================================================= */
 
-.gaa-w-body {
+.sdaa-w-body {
 	flex: 1;
 	min-height: 0;
 	overflow-y: auto;
@@ -549,111 +549,111 @@
 	scroll-behavior: smooth;
 }
 
-.gaa-w-body-inner {
+.sdaa-w-body-inner {
 	padding: 0 14px;
 }
 
-.gaa-w-empty {
+.sdaa-w-empty {
 	flex: 1;
 	min-height: 0;
 	overflow-y: auto;
 	padding: 24px 14px 8px;
 }
 
-.gaa-w-empty-greeting {
+.sdaa-w-empty-greeting {
 	margin: 0 0 4px;
-	color: var(--gaa-w-text-primary);
+	color: var(--sdaa-w-text-primary);
 	font-size: 16px;
 	font-weight: 600;
 }
 
-.gaa-w-empty-sub {
+.sdaa-w-empty-sub {
 	margin: 0 0 16px;
-	color: var(--gaa-w-text-secondary);
+	color: var(--sdaa-w-text-secondary);
 	font-size: 12.5px;
 	line-height: 1.5;
 }
 
-.gaa-w-empty-label {
+.sdaa-w-empty-label {
 	margin: 0 0 8px;
-	color: var(--gaa-w-text-muted);
+	color: var(--sdaa-w-text-muted);
 	font-size: 10.5px;
 	font-weight: 600;
 	letter-spacing: 0.4px;
 	text-transform: uppercase;
 }
 
-.gaa-w-suggestion-list {
+.sdaa-w-suggestion-list {
 	display: grid;
 	gap: 6px;
 }
 
-.gaa-w-suggestion-card {
+.sdaa-w-suggestion-card {
 	display: flex;
 	align-items: center;
 	gap: 10px;
 	padding: 10px 12px;
-	border: 1px solid var(--gaa-w-border-subtle);
-	border-radius: var(--gaa-w-radius-md);
+	border: 1px solid var(--sdaa-w-border-subtle);
+	border-radius: var(--sdaa-w-radius-md);
 	background: #fff;
-	color: var(--gaa-w-text-primary);
+	color: var(--sdaa-w-text-primary);
 	font: inherit;
 	font-size: 12.5px;
 	text-align: left;
 	cursor: pointer;
 	transition:
-		border-color var(--gaa-w-duration),
-		background var(--gaa-w-duration);
+		border-color var(--sdaa-w-duration),
+		background var(--sdaa-w-duration);
 }
 
-.gaa-w-suggestion-card:hover {
-	border-color: var(--gaa-w-primary);
-	background: var(--gaa-w-surface-active);
+.sdaa-w-suggestion-card:hover {
+	border-color: var(--sdaa-w-primary);
+	background: var(--sdaa-w-surface-active);
 }
 
-.gaa-w-suggestion-card-icon {
+.sdaa-w-suggestion-card-icon {
 	display: inline-flex;
 	width: 28px;
 	height: 28px;
 	flex-shrink: 0;
 	align-items: center;
 	justify-content: center;
-	border-radius: var(--gaa-w-radius-sm);
-	background: var(--gaa-w-surface);
-	color: var(--gaa-w-text-secondary);
+	border-radius: var(--sdaa-w-radius-sm);
+	background: var(--sdaa-w-surface);
+	color: var(--sdaa-w-text-secondary);
 }
 
-.gaa-w-suggestion-card-icon svg {
+.sdaa-w-suggestion-card-icon svg {
 	width: 16px;
 	height: 16px;
 	fill: currentcolor;
 }
 
-.gaa-w-suggestion-card-body {
+.sdaa-w-suggestion-card-body {
 	display: flex;
 	min-width: 0;
 	flex: 1;
 	flex-direction: column;
 }
 
-.gaa-w-suggestion-card-title {
+.sdaa-w-suggestion-card-title {
 	font-weight: 500;
 	line-height: 1.3;
 }
 
-.gaa-w-suggestion-card-sub {
+.sdaa-w-suggestion-card-sub {
 	overflow: hidden;
 	margin-top: 2px;
-	color: var(--gaa-w-text-muted);
+	color: var(--sdaa-w-text-muted);
 	font-size: 11px;
 	line-height: 1.3;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.gaa-w-empty-foot {
+.sdaa-w-empty-foot {
 	margin: 16px 0 0;
-	color: var(--gaa-w-text-muted);
+	color: var(--sdaa-w-text-muted);
 	font-size: 11px;
 	text-align: center;
 	opacity: 0.6;
@@ -663,50 +663,50 @@
    Messages
    ================================================================= */
 
-.gaa-w-msg-row {
+.sdaa-w-msg-row {
 	position: relative;
 	margin-bottom: 16px;
 }
 
-.gaa-w-msg-user {
+.sdaa-w-msg-user {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-end;
 }
 
-.gaa-w-bubble-user {
+.sdaa-w-bubble-user {
 	max-width: 88%;
 	padding: 8px 12px;
-	border: 1px solid var(--gaa-w-bubble-user-border);
-	border-radius: var(--gaa-w-radius-md);
+	border: 1px solid var(--sdaa-w-bubble-user-border);
+	border-radius: var(--sdaa-w-radius-md);
 	border-bottom-right-radius: 4px;
-	background: var(--gaa-w-surface-active);
-	color: var(--gaa-w-text-primary);
+	background: var(--sdaa-w-surface-active);
+	color: var(--sdaa-w-text-primary);
 	font-size: 13px;
 	line-height: 1.55;
 	white-space: pre-wrap;
 }
 
-.gaa-w-bubble-attachments {
+.sdaa-w-bubble-attachments {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 6px;
 	margin-bottom: 6px;
 }
 
-.gaa-w-bubble-attachments img {
+.sdaa-w-bubble-attachments img {
 	max-width: 120px;
 	max-height: 120px;
-	border-radius: var(--gaa-w-radius-sm);
+	border-radius: var(--sdaa-w-radius-sm);
 	object-fit: cover;
 }
 
-.gaa-w-msg-assistant {
+.sdaa-w-msg-assistant {
 	display: flex;
 	gap: 8px;
 }
 
-.gaa-w-msg-avatar {
+.sdaa-w-msg-avatar {
 	display: inline-flex;
 	width: 22px;
 	height: 22px;
@@ -715,168 +715,168 @@
 	justify-content: center;
 	margin-top: 1px;
 	border-radius: 50%;
-	background: var(--gaa-w-primary);
+	background: var(--sdaa-w-primary);
 	color: #fff;
 }
 
-.gaa-w-msg-avatar svg {
+.sdaa-w-msg-avatar svg {
 	width: 12px;
 	height: 12px;
 	fill: currentcolor;
 }
 
-.gaa-w-msg-body {
+.sdaa-w-msg-body {
 	min-width: 0;
 	flex: 1;
-	color: var(--gaa-w-text-primary);
+	color: var(--sdaa-w-text-primary);
 	font-size: 13px;
 	line-height: 1.55;
 }
 
-.gaa-w-msg-body p {
+.sdaa-w-msg-body p {
 	margin: 0 0 6px;
 }
 
-.gaa-w-msg-body p:last-child {
+.sdaa-w-msg-body p:last-child {
 	margin-bottom: 0;
 }
 
-.gaa-w-msg-body strong {
+.sdaa-w-msg-body strong {
 	font-weight: 600;
 }
 
-.gaa-w-msg-body ol,
-.gaa-w-msg-body ul {
+.sdaa-w-msg-body ol,
+.sdaa-w-msg-body ul {
 	margin: 0 0 6px;
 	padding-left: 20px;
 }
 
-.gaa-w-msg-body li {
+.sdaa-w-msg-body li {
 	margin-bottom: 4px;
 }
 
-.gaa-w-msg-body li::marker {
-	color: var(--gaa-w-text-muted);
+.sdaa-w-msg-body li::marker {
+	color: var(--sdaa-w-text-muted);
 }
 
-.gaa-w-msg-body code {
+.sdaa-w-msg-body code {
 	padding: 1px 5px;
-	border: 1px solid var(--gaa-w-border-subtle);
-	border-radius: var(--gaa-w-radius-xs);
-	background: var(--gaa-w-surface);
-	font-family: var(--gaa-w-font-mono);
+	border: 1px solid var(--sdaa-w-border-subtle);
+	border-radius: var(--sdaa-w-radius-xs);
+	background: var(--sdaa-w-surface);
+	font-family: var(--sdaa-w-font-mono);
 	font-size: 0.88em;
 }
 
 /* Dark code blocks for markdown fences — excluded for tool card
    argument/result panels which use the chat-redesign light style. */
-.gaa-w-msg-body pre:not(.gaa-cr-tool-detail-value) {
+.sdaa-w-msg-body pre:not(.sdaa-cr-tool-detail-value) {
 	margin: 0.4em 0;
 	padding: 8px 10px;
 	overflow-x: auto;
-	border-radius: var(--gaa-w-radius-sm);
+	border-radius: var(--sdaa-w-radius-sm);
 	background: #1d2327;
 	color: #e0e0e0;
 	font-size: 0.8em;
 	line-height: 1.4;
 }
 
-.gaa-w-msg-body pre:not(.gaa-cr-tool-detail-value) code {
+.sdaa-w-msg-body pre:not(.sdaa-cr-tool-detail-value) code {
 	padding: 0;
 	border: 0;
 	background: transparent;
 	color: inherit;
 }
 
-.gaa-w-msg-system {
+.sdaa-w-msg-system {
 	padding: 8px 12px;
-	border: 1px solid var(--gaa-w-error);
-	border-radius: var(--gaa-w-radius-sm);
+	border: 1px solid var(--sdaa-w-error);
+	border-radius: var(--sdaa-w-radius-sm);
 	background: #fcf0f1;
 	color: #8a2424;
 	font-size: 12px;
 }
 
-.gaa-w-msg-meta {
+.sdaa-w-msg-meta {
 	display: flex;
 	min-height: 22px;
 	align-items: center;
 	gap: 8px;
 	margin-top: 4px;
-	color: var(--gaa-w-text-muted);
+	color: var(--sdaa-w-text-muted);
 	font-size: 10.5px;
 	opacity: 0;
-	transition: opacity var(--gaa-w-duration);
+	transition: opacity var(--sdaa-w-duration);
 }
 
-.gaa-w-msg-row:hover .gaa-w-msg-meta,
-.gaa-w-msg-row:focus-within .gaa-w-msg-meta {
+.sdaa-w-msg-row:hover .sdaa-w-msg-meta,
+.sdaa-w-msg-row:focus-within .sdaa-w-msg-meta {
 	opacity: 1;
 }
 
-.gaa-w-msg-meta-assistant {
+.sdaa-w-msg-meta-assistant {
 	padding-left: 0;
 	justify-content: flex-start;
 }
 
-.gaa-w-followups {
+.sdaa-w-followups {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 6px;
 	margin-top: 10px;
 }
 
-.gaa-w-followup-chip {
+.sdaa-w-followup-chip {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
 	padding: 5px 10px;
-	border: 1px solid var(--gaa-w-border-subtle);
-	border-radius: var(--gaa-w-radius-pill);
+	border: 1px solid var(--sdaa-w-border-subtle);
+	border-radius: var(--sdaa-w-radius-pill);
 	background: #fff;
-	color: var(--gaa-w-text-primary);
+	color: var(--sdaa-w-text-primary);
 	font: inherit;
 	font-size: 11.5px;
 	cursor: pointer;
 	transition:
-		border-color var(--gaa-w-duration),
-		background var(--gaa-w-duration),
-		color var(--gaa-w-duration);
+		border-color var(--sdaa-w-duration),
+		background var(--sdaa-w-duration),
+		color var(--sdaa-w-duration);
 }
 
-.gaa-w-followup-chip:hover {
-	border-color: var(--gaa-w-primary);
-	background: var(--gaa-w-surface-active);
-	color: var(--gaa-w-primary);
+.sdaa-w-followup-chip:hover {
+	border-color: var(--sdaa-w-primary);
+	background: var(--sdaa-w-surface-active);
+	color: var(--sdaa-w-primary);
 }
 
-.gaa-w-followup-chip svg {
+.sdaa-w-followup-chip svg {
 	width: 12px;
 	height: 12px;
 	fill: currentcolor;
-	color: var(--gaa-w-text-muted);
+	color: var(--sdaa-w-text-muted);
 }
 
-.gaa-w-followup-chip:hover svg {
-	color: var(--gaa-w-primary);
+.sdaa-w-followup-chip:hover svg {
+	color: var(--sdaa-w-primary);
 }
 
-.gaa-w-running-line {
+.sdaa-w-running-line {
 	display: flex;
 	align-items: center;
 	gap: 6px;
 	margin-top: 6px;
-	color: var(--gaa-w-text-secondary);
+	color: var(--sdaa-w-text-secondary);
 	font-size: 12px;
 }
 
-.gaa-w-running-dot {
+.sdaa-w-running-dot {
 	display: inline-block;
 	width: 6px;
 	height: 6px;
 	border-radius: 50%;
-	background: var(--gaa-w-primary);
-	animation: gaa-w-pulse 1.2s ease-in-out infinite;
+	background: var(--sdaa-w-primary);
+	animation: sdaa-w-pulse 1.2s ease-in-out infinite;
 }
 
 /* Tool card reuses the chat-redesign styling verbatim so the widget
@@ -886,28 +886,28 @@
    Running banner + changes strip (between body and input)
    ================================================================= */
 
-.gaa-w-running-banner {
+.sdaa-w-running-banner {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 	padding: 8px 12px;
 	border-top: 1px solid #c5d9ed;
 	background: #f7fbfe;
-	color: var(--gaa-w-text-secondary);
+	color: var(--sdaa-w-text-secondary);
 	font-size: 11.5px;
 }
 
-.gaa-w-spin {
+.sdaa-w-spin {
 	width: 10px;
 	height: 10px;
 	flex-shrink: 0;
 	border: 2px solid rgb(34 113 177 / 25%);
-	border-top-color: var(--gaa-w-primary);
+	border-top-color: var(--sdaa-w-primary);
 	border-radius: 50%;
-	animation: gaa-w-spin 0.7s linear infinite;
+	animation: sdaa-w-spin 0.7s linear infinite;
 }
 
-.gaa-w-running-banner-text {
+.sdaa-w-running-banner-text {
 	overflow: hidden;
 	min-width: 0;
 	flex: 1;
@@ -915,32 +915,32 @@
 	white-space: nowrap;
 }
 
-.gaa-w-running-banner-text strong {
-	color: var(--gaa-w-text-primary);
+.sdaa-w-running-banner-text strong {
+	color: var(--sdaa-w-text-primary);
 	font-weight: 600;
 }
 
-.gaa-w-stop-btn {
+.sdaa-w-stop-btn {
 	display: inline-flex;
 	height: 24px;
 	align-items: center;
 	gap: 4px;
 	padding: 0 8px;
-	border: 1px solid var(--gaa-w-border-strong);
-	border-radius: var(--gaa-w-radius-sm);
+	border: 1px solid var(--sdaa-w-border-strong);
+	border-radius: var(--sdaa-w-radius-sm);
 	background: #fff;
-	color: var(--gaa-w-text-primary);
+	color: var(--sdaa-w-text-primary);
 	font: inherit;
 	font-size: 11.5px;
 	cursor: pointer;
 }
 
-.gaa-w-stop-btn:hover {
-	border-color: var(--gaa-w-error);
-	color: var(--gaa-w-error);
+.sdaa-w-stop-btn:hover {
+	border-color: var(--sdaa-w-error);
+	color: var(--sdaa-w-error);
 }
 
-.gaa-w-stop-btn svg {
+.sdaa-w-stop-btn svg {
 	width: 10px;
 	height: 10px;
 	fill: currentcolor;
@@ -948,7 +948,7 @@
 
 /* Full-width changes strip below the header */
 
-.gaa-w-changes-strip {
+.sdaa-w-changes-strip {
 	display: flex;
 	flex-shrink: 0;
 	align-items: center;
@@ -961,13 +961,13 @@
 	font-size: 11.5px;
 }
 
-.gaa-w-changes-strip-text {
+.sdaa-w-changes-strip-text {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
 }
 
-.gaa-w-changes-count {
+.sdaa-w-changes-count {
 	display: inline-flex;
 	min-width: 18px;
 	height: 18px;
@@ -975,17 +975,17 @@
 	justify-content: center;
 	padding: 0 5px;
 	margin-right: 4px;
-	border-radius: var(--gaa-w-radius-pill);
+	border-radius: var(--sdaa-w-radius-pill);
 	background: #e4c880;
 	color: #5a4208;
 	font-size: 10.5px;
 	font-weight: 700;
 }
 
-.gaa-w-changes-strip-btn {
+.sdaa-w-changes-strip-btn {
 	padding: 2px 8px;
 	border: 0;
-	border-radius: var(--gaa-w-radius-sm);
+	border-radius: var(--sdaa-w-radius-sm);
 	background: transparent;
 	color: #7a5a10;
 	font: inherit;
@@ -994,13 +994,13 @@
 	cursor: pointer;
 }
 
-.gaa-w-changes-strip-btn:hover {
+.sdaa-w-changes-strip-btn:hover {
 	background: rgb(122 90 16 / 10%);
 }
 
 /* Body wrap hosts both the message list and the changes drawer overlay. */
 
-.gaa-w-body-wrap {
+.sdaa-w-body-wrap {
 	position: relative;
 	display: flex;
 	flex: 1;
@@ -1010,20 +1010,20 @@
 
 /* Wrap is a positioning context only — no backdrop, no forced size.
    The drawer inside auto-sizes to its content. */
-.gaa-w-changes-drawer-wrap {
+.sdaa-w-changes-drawer-wrap {
 	position: absolute;
 	top: 0;
 	right: 0;
 	left: 0;
 	z-index: 15;
 	pointer-events: none;
-	animation: gaa-w-panel-in 120ms ease;
+	animation: sdaa-w-panel-in 120ms ease;
 }
 
 /* Override the chat-redesign drawer's absolute positioning so it anchors
    to the top of the widget body area, inherits the widget's width, and
    shrinks to fit its content (capped at the available height). */
-.gaa-w-changes-drawer-wrap .gaa-cr-changes-drawer {
+.sdaa-w-changes-drawer-wrap .sdaa-cr-changes-drawer {
 	position: relative;
 	top: 0;
 	right: 0;
@@ -1033,11 +1033,11 @@
 	pointer-events: auto;
 }
 
-.gaa-w-queue-indicator {
+.sdaa-w-queue-indicator {
 	padding: 4px 12px;
-	border-top: 1px solid var(--gaa-w-border-subtle);
-	background: var(--gaa-w-surface);
-	color: var(--gaa-w-text-muted);
+	border-top: 1px solid var(--sdaa-w-border-subtle);
+	background: var(--sdaa-w-surface);
+	color: var(--sdaa-w-text-muted);
 	font-size: 11px;
 }
 
@@ -1045,29 +1045,29 @@
    Input
    ================================================================= */
 
-.gaa-w-input {
+.sdaa-w-input {
 	flex-shrink: 0;
 	padding: 10px 12px;
-	border-top: 1px solid var(--gaa-w-border-subtle);
+	border-top: 1px solid var(--sdaa-w-border-subtle);
 	background: #fff;
 }
 
-.gaa-w-input-frame {
+.sdaa-w-input-frame {
 	padding: 8px 10px 6px;
-	border: 1px solid var(--gaa-w-border-strong);
+	border: 1px solid var(--sdaa-w-border-strong);
 	border-radius: 12px;
 	background: #fff;
 	transition:
-		border-color var(--gaa-w-duration),
-		box-shadow var(--gaa-w-duration);
+		border-color var(--sdaa-w-duration),
+		box-shadow var(--sdaa-w-duration);
 }
 
-.gaa-w-input-frame:focus-within {
-	border-color: var(--gaa-w-primary);
-	box-shadow: 0 0 0 1px var(--gaa-w-primary);
+.sdaa-w-input-frame:focus-within {
+	border-color: var(--sdaa-w-primary);
+	box-shadow: 0 0 0 1px var(--sdaa-w-primary);
 }
 
-.gaa-w-input-textarea {
+.sdaa-w-input-textarea {
 	display: block;
 	width: 100%;
 	min-height: 22px;
@@ -1076,7 +1076,7 @@
 	border: 0;
 	outline: 0;
 	background: transparent;
-	color: var(--gaa-w-text-primary);
+	color: var(--sdaa-w-text-primary);
 	font: inherit;
 	font-size: 13px;
 	line-height: 1.5;
@@ -1084,26 +1084,26 @@
 	box-shadow: none;
 }
 
-/* Kill wp-components' default focus ring — the outer .gaa-w-input-frame
+/* Kill wp-components' default focus ring — the outer .sdaa-w-input-frame
    already handles the focused state via its own border + box-shadow. */
-.gaa-w-input-textarea:focus,
-.gaa-w-input-textarea:focus-visible {
+.sdaa-w-input-textarea:focus,
+.sdaa-w-input-textarea:focus-visible {
 	outline: 0;
 	box-shadow: none;
 }
 
-.gaa-w-input-textarea::placeholder {
-	color: var(--gaa-w-text-muted);
+.sdaa-w-input-textarea::placeholder {
+	color: var(--sdaa-w-text-muted);
 }
 
-.gaa-w-input-toolbar {
+.sdaa-w-input-toolbar {
 	display: flex;
 	align-items: center;
 	gap: 4px;
 	padding-top: 4px;
 }
 
-.gaa-w-input-toolbar-left {
+.sdaa-w-input-toolbar-left {
 	display: flex;
 	min-width: 0;
 	flex: 1;
@@ -1111,20 +1111,20 @@
 	gap: 2px;
 }
 
-.gaa-w-input-toolbar-right {
+.sdaa-w-input-toolbar-right {
 	display: flex;
 	align-items: center;
 	gap: 2px;
 }
 
-.gaa-w-attachments {
+.sdaa-w-attachments {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 6px;
 	margin-bottom: 6px;
 }
 
-.gaa-w-attachment-thumb {
+.sdaa-w-attachment-thumb {
 	position: relative;
 	display: inline-flex;
 	width: 48px;
@@ -1132,21 +1132,21 @@
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
-	border: 1px solid var(--gaa-w-border-subtle);
-	border-radius: var(--gaa-w-radius-sm);
-	background: var(--gaa-w-surface);
+	border: 1px solid var(--sdaa-w-border-subtle);
+	border-radius: var(--sdaa-w-radius-sm);
+	background: var(--sdaa-w-surface);
 	font-size: 10px;
 	font-weight: 600;
-	color: var(--gaa-w-text-secondary);
+	color: var(--sdaa-w-text-secondary);
 }
 
-.gaa-w-attachment-thumb img {
+.sdaa-w-attachment-thumb img {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
 }
 
-.gaa-w-attachment-thumb-remove {
+.sdaa-w-attachment-thumb-remove {
 	position: absolute;
 	top: 1px;
 	right: 1px;
@@ -1164,56 +1164,56 @@
 	cursor: pointer;
 }
 
-/* Model chip + send button reuse the chat-redesign (.gaa-cr-*) styles
+/* Model chip + send button reuse the chat-redesign (.sdaa-cr-*) styles
    so the widget input toolbar matches the main chat sizing exactly. */
 
 /* =================================================================
    Icon buttons (widget-specific — used in header + session drawer)
    ================================================================= */
 
-.gaa-w-icon-btn {
+.sdaa-w-icon-btn {
 	display: inline-flex;
 	width: 26px;
 	height: 26px;
 	align-items: center;
 	justify-content: center;
 	border: 1px solid transparent;
-	border-radius: var(--gaa-w-radius-sm);
+	border-radius: var(--sdaa-w-radius-sm);
 	background: transparent;
-	color: var(--gaa-w-text-muted);
+	color: var(--sdaa-w-text-muted);
 	cursor: pointer;
 	transition:
-		background var(--gaa-w-duration),
-		color var(--gaa-w-duration);
+		background var(--sdaa-w-duration),
+		color var(--sdaa-w-duration);
 }
 
-.gaa-w-icon-btn:hover:not(:disabled) {
-	background: var(--gaa-w-surface-hover);
-	color: var(--gaa-w-text-primary);
+.sdaa-w-icon-btn:hover:not(:disabled) {
+	background: var(--sdaa-w-surface-hover);
+	color: var(--sdaa-w-text-primary);
 }
 
-.gaa-w-icon-btn:disabled {
+.sdaa-w-icon-btn:disabled {
 	opacity: 0.4;
 	cursor: not-allowed;
 }
 
-.gaa-w-icon-btn.is-active {
-	background: var(--gaa-w-surface-active);
-	color: var(--gaa-w-primary);
+.sdaa-w-icon-btn.is-active {
+	background: var(--sdaa-w-surface-active);
+	color: var(--sdaa-w-primary);
 }
 
-.gaa-w-icon-btn.is-small {
+.sdaa-w-icon-btn.is-small {
 	width: 22px;
 	height: 22px;
 }
 
-.gaa-w-icon-btn svg {
+.sdaa-w-icon-btn svg {
 	width: 14px;
 	height: 14px;
 	fill: currentcolor;
 }
 
-.gaa-w-icon-btn.is-small svg {
+.sdaa-w-icon-btn.is-small svg {
 	width: 12px;
 	height: 12px;
 }
@@ -1223,7 +1223,7 @@
    ================================================================= */
 
 @media (max-width: 500px) {
-	.gaa-w-panel {
+	.sdaa-w-panel {
 		right: 8px;
 		bottom: 8px;
 		left: 8px;
@@ -1232,20 +1232,20 @@
 		max-width: none;
 	}
 
-	.gaa-w-panel.is-minimized {
+	.sdaa-w-panel.is-minimized {
 		left: auto;
 		width: 280px;
 		height: auto;
 	}
 
-	.gaa-w-launcher {
+	.sdaa-w-launcher {
 		right: 16px;
 		bottom: 16px;
 		width: 44px;
 		height: 44px;
 	}
 
-	.gaa-w-launcher svg {
+	.sdaa-w-launcher svg {
 		width: 20px;
 		height: 20px;
 	}
@@ -1255,21 +1255,21 @@
    Body scrollbars
    ================================================================= */
 
-.gaa-w-body::-webkit-scrollbar,
-.gaa-w-empty::-webkit-scrollbar {
+.sdaa-w-body::-webkit-scrollbar,
+.sdaa-w-empty::-webkit-scrollbar {
 	width: 8px;
 }
 
-.gaa-w-body::-webkit-scrollbar-thumb,
-.gaa-w-empty::-webkit-scrollbar-thumb {
+.sdaa-w-body::-webkit-scrollbar-thumb,
+.sdaa-w-empty::-webkit-scrollbar-thumb {
 	border: 2px solid transparent;
 	border-radius: 10px;
 	background: transparent;
 	background-clip: padding-box;
 }
 
-.gaa-w-body:hover::-webkit-scrollbar-thumb,
-.gaa-w-empty:hover::-webkit-scrollbar-thumb {
+.sdaa-w-body:hover::-webkit-scrollbar-thumb,
+.sdaa-w-empty:hover::-webkit-scrollbar-thumb {
 	background: rgb(0 0 0 / 15%);
 	background-clip: padding-box;
 }
@@ -1277,11 +1277,11 @@
 /* =================================================================
    Scroll-to-bottom button
    Shown when the user has scrolled up and new messages arrive.
-   Positioned absolute inside .gaa-w-body-wrap (position: relative)
+   Positioned absolute inside .sdaa-w-body-wrap (position: relative)
    so it floats at the bottom of the message area.
    ================================================================= */
 
-.gaa-w-scroll-to-bottom {
+.sdaa-w-scroll-to-bottom {
 	position: absolute;
 	right: 12px;
 	bottom: 12px;
@@ -1289,50 +1289,50 @@
 	pointer-events: none;
 }
 
-.gaa-w-scroll-btn {
+.sdaa-w-scroll-btn {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
 	height: 28px;
 	padding: 0 8px 0 6px;
-	border: 1px solid var(--gaa-w-border-strong);
-	border-radius: var(--gaa-w-radius-pill);
+	border: 1px solid var(--sdaa-w-border-strong);
+	border-radius: var(--sdaa-w-radius-pill);
 	background: #fff;
-	box-shadow: var(--gaa-w-shadow-elevated);
-	color: var(--gaa-w-text-secondary);
+	box-shadow: var(--sdaa-w-shadow-elevated);
+	color: var(--sdaa-w-text-secondary);
 	font: inherit;
 	font-size: 11px;
 	cursor: pointer;
 	pointer-events: auto;
 	transition:
-		background var(--gaa-w-duration),
-		box-shadow var(--gaa-w-duration),
-		color var(--gaa-w-duration);
-	animation: gaa-w-panel-in 150ms ease;
+		background var(--sdaa-w-duration),
+		box-shadow var(--sdaa-w-duration),
+		color var(--sdaa-w-duration);
+	animation: sdaa-w-panel-in 150ms ease;
 }
 
-.gaa-w-scroll-btn:hover {
-	background: var(--gaa-w-surface-hover);
-	box-shadow: var(--gaa-w-shadow-elevated);
-	color: var(--gaa-w-text-primary);
+.sdaa-w-scroll-btn:hover {
+	background: var(--sdaa-w-surface-hover);
+	box-shadow: var(--sdaa-w-shadow-elevated);
+	color: var(--sdaa-w-text-primary);
 }
 
-.gaa-w-scroll-btn svg {
+.sdaa-w-scroll-btn svg {
 	width: 12px;
 	height: 12px;
 	fill: currentcolor;
 	flex-shrink: 0;
 }
 
-.gaa-w-scroll-btn-badge {
+.sdaa-w-scroll-btn-badge {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	min-width: 16px;
 	height: 16px;
 	padding: 0 4px;
-	border-radius: var(--gaa-w-radius-pill);
-	background: var(--gaa-w-primary);
+	border-radius: var(--sdaa-w-radius-pill);
+	background: var(--sdaa-w-primary);
 	color: #fff;
 	font-size: 10px;
 	font-weight: 700;

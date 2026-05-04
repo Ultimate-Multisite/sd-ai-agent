@@ -12,17 +12,17 @@
  * Tests run against the admin page at /wp-admin/admin.php?page=sd-ai-agent.
  * No live AI provider is required — file attachment state is purely client-side.
  *
- * Selector mapping (ChatRedesign gaa-cr-* classes replace old ChatPanel classes):
- *   .sd-ai-agent-chat-panel:not(.is-compact)         → .gaa-cr
- *   .sd-ai-agent-upload-btn                          → .gaa-cr-icon-btn[aria-label="Attach file"]
- *   .sd-ai-agent-file-input                          → .gaa-cr-input-toolbar-left input[type="file"]
- *   .sd-ai-agent-attachment-previews                 → .gaa-cr-attachments
- *   .sd-ai-agent-attachment-thumb                    → .gaa-cr-attachment-thumb
- *   .sd-ai-agent-input-area (drag-drop target)       → .gaa-cr-input-frame
- *   .sd-ai-agent-attachment-thumb__img               → .gaa-cr-attachment-thumb img
- *   .sd-ai-agent-attachment-thumb__ext               → .gaa-cr-attachment-thumb span:first-child
- *   .sd-ai-agent-attachment-thumb__name              → .gaa-cr-attachment-thumb-name
- *   .sd-ai-agent-attachment-thumb__remove            → .gaa-cr-attachment-thumb-remove
+ * Selector mapping (ChatRedesign sdaa-cr-* classes replace old ChatPanel classes):
+ *   .sdaa-chat-panel:not(.is-compact)         → .sdaa-cr
+ *   .sdaa-upload-btn                          → .sdaa-cr-icon-btn[aria-label="Attach file"]
+ *   .sdaa-file-input                          → .sdaa-cr-input-toolbar-left input[type="file"]
+ *   .sdaa-attachment-previews                 → .sdaa-cr-attachments
+ *   .sdaa-attachment-thumb                    → .sdaa-cr-attachment-thumb
+ *   .sdaa-input-area (drag-drop target)       → .sdaa-cr-input-frame
+ *   .sdaa-attachment-thumb__img               → .sdaa-cr-attachment-thumb img
+ *   .sdaa-attachment-thumb__ext               → .sdaa-cr-attachment-thumb span:first-child
+ *   .sdaa-attachment-thumb__name              → .sdaa-cr-attachment-thumb-name
+ *   .sdaa-attachment-thumb__remove            → .sdaa-cr-attachment-thumb-remove
  *
  * Run: npm run test:e2e:playwright
  */
@@ -43,22 +43,22 @@ const {
 /**
  * Get the paperclip upload button locator.
  *
- * ChatRedesign InputArea renders the upload button as a .gaa-cr-icon-btn with
- * aria-label "Attach file" inside .gaa-cr-input-toolbar-left.
+ * ChatRedesign InputArea renders the upload button as a .sdaa-cr-icon-btn with
+ * aria-label "Attach file" inside .sdaa-cr-input-toolbar-left.
  *
  * @param {import('@playwright/test').Page} page
  * @return {import('@playwright/test').Locator}
  */
 function getUploadButton( page ) {
 	return page
-		.locator( '.gaa-cr .gaa-cr-icon-btn[aria-label="Attach file"]' )
+		.locator( '.sdaa-cr .sdaa-cr-icon-btn[aria-label="Attach file"]' )
 		.first();
 }
 
 /**
  * Get the hidden file input locator.
  *
- * ChatRedesign InputArea renders the file input inside .gaa-cr-input-toolbar-left.
+ * ChatRedesign InputArea renders the file input inside .sdaa-cr-input-toolbar-left.
  * It has no dedicated CSS class — scoped by container and type to stay precise.
  *
  * @param {import('@playwright/test').Page} page
@@ -67,7 +67,7 @@ function getUploadButton( page ) {
 function getFileInput( page ) {
 	return page
 		.locator(
-			'.gaa-cr .gaa-cr-input-toolbar-left input[type="file"]'
+			'.sdaa-cr .sdaa-cr-input-toolbar-left input[type="file"]'
 		)
 		.first();
 }
@@ -75,33 +75,33 @@ function getFileInput( page ) {
 /**
  * Get the attachment preview strip locator.
  *
- * ChatRedesign InputArea renders .gaa-cr-attachments when attachments > 0.
+ * ChatRedesign InputArea renders .sdaa-cr-attachments when attachments > 0.
  *
  * @param {import('@playwright/test').Page} page
  * @return {import('@playwright/test').Locator}
  */
 function getAttachmentPreviews( page ) {
 	return page
-		.locator( '.gaa-cr .gaa-cr-attachments' )
+		.locator( '.sdaa-cr .sdaa-cr-attachments' )
 		.first();
 }
 
 /**
  * Get all attachment thumbnail locators.
  *
- * ChatRedesign InputArea renders .gaa-cr-attachment-thumb per attached file.
+ * ChatRedesign InputArea renders .sdaa-cr-attachment-thumb per attached file.
  *
  * @param {import('@playwright/test').Page} page
  * @return {import('@playwright/test').Locator}
  */
 function getAttachmentThumbs( page ) {
-	return page.locator( '.gaa-cr .gaa-cr-attachment-thumb' );
+	return page.locator( '.sdaa-cr .sdaa-cr-attachment-thumb' );
 }
 
 /**
  * Get the input frame (drag-drop target).
  *
- * ChatRedesign InputArea uses .gaa-cr-input-frame as the drag-drop zone.
+ * ChatRedesign InputArea uses .sdaa-cr-input-frame as the drag-drop zone.
  * It receives `is-drag-over` on dragover and loses it on dragleave/drop.
  *
  * @param {import('@playwright/test').Page} page
@@ -109,7 +109,7 @@ function getAttachmentThumbs( page ) {
  */
 function getInputArea( page ) {
 	return page
-		.locator( '.gaa-cr .gaa-cr-input-frame' )
+		.locator( '.sdaa-cr .sdaa-cr-input-frame' )
 		.first();
 }
 
@@ -205,10 +205,10 @@ test.describe( 'Chat Upload - Upload Button (t122)', () => {
 		await loginToWordPress( page );
 		await goToAgentPage( page );
 		// Wait for ChatRedesign to mount. ChatRoute polls for window.sdAiAgentChat
-		// (exposed by admin-page.js), so the .gaa-cr root may appear after a short
-		// delay. Both .gaa-cr and the file input must be visible before interacting.
+		// (exposed by admin-page.js), so the .sdaa-cr root may appear after a short
+		// delay. Both .sdaa-cr and the file input must be visible before interacting.
 		await page
-			.locator( '.gaa-cr' )
+			.locator( '.sdaa-cr' )
 			.waitFor( { state: 'visible', timeout: 30_000 } );
 	} );
 
@@ -291,7 +291,7 @@ test.describe( 'Chat Upload - Drag-Drop Zone (t122)', () => {
 		await goToAgentPage( page );
 		// Wait for ChatRedesign InputArea to be ready before dispatching drag events.
 		await page
-			.locator( '.gaa-cr .gaa-cr-input-frame' )
+			.locator( '.sdaa-cr .sdaa-cr-input-frame' )
 			.waitFor( { state: 'visible', timeout: 30_000 } );
 	} );
 
@@ -328,8 +328,8 @@ test.describe( 'Chat Upload - Drag-Drop Zone (t122)', () => {
 			await dispatchDragEvent( page, inputArea, 'dragover' );
 
 			// The drop overlay renders "Drop files here" text.
-			// TODO: Add .gaa-cr-drop-overlay element to InputArea and update selector.
-			const dropOverlay = page.locator( '.gaa-cr-drop-overlay' );
+			// TODO: Add .sdaa-cr-drop-overlay element to InputArea and update selector.
+			const dropOverlay = page.locator( '.sdaa-cr-drop-overlay' );
 			await expect( dropOverlay ).toBeVisible();
 			await expect( dropOverlay ).toContainText( 'Drop files here' );
 		}
@@ -350,14 +350,14 @@ test.describe( 'Chat Upload - Thumbnail Preview (t122)', () => {
 		await goToAgentPage( page );
 		// Wait for ChatRedesign InputArea to be ready before attaching files.
 		await page
-			.locator( '.gaa-cr' )
+			.locator( '.sdaa-cr' )
 			.waitFor( { state: 'visible', timeout: 30_000 } );
 	} );
 
 	test( 'attachment preview strip is hidden before any file is attached', async ( {
 		page,
 	} ) => {
-		// .gaa-cr-attachments only renders when attachments.length > 0.
+		// .sdaa-cr-attachments only renders when attachments.length > 0.
 		const previews = getAttachmentPreviews( page );
 		await expect( previews ).not.toBeVisible();
 	} );
@@ -381,10 +381,10 @@ test.describe( 'Chat Upload - Thumbnail Preview (t122)', () => {
 	} ) => {
 		await attachPngViaInput( page );
 
-		// ChatRedesign InputArea renders <img> inside .gaa-cr-attachment-thumb
+		// ChatRedesign InputArea renders <img> inside .sdaa-cr-attachment-thumb
 		// for image attachments.
 		const thumbImg = page.locator(
-			'.gaa-cr-attachment-thumb img'
+			'.sdaa-cr-attachment-thumb img'
 		);
 		await expect( thumbImg ).toBeVisible( { timeout: 5_000 } );
 
@@ -399,9 +399,9 @@ test.describe( 'Chat Upload - Thumbnail Preview (t122)', () => {
 		await attachTextViaInput( page );
 
 		// ChatRedesign InputArea renders a <span> with the extension text as
-		// the first child of .gaa-cr-attachment-thumb for non-image files.
+		// the first child of .sdaa-cr-attachment-thumb for non-image files.
 		const extBadge = page.locator(
-			'.gaa-cr-attachment-thumb span:first-child'
+			'.sdaa-cr-attachment-thumb span:first-child'
 		);
 		await expect( extBadge ).toBeVisible( { timeout: 5_000 } );
 		await expect( extBadge ).toContainText( 'TXT' );
@@ -410,10 +410,10 @@ test.describe( 'Chat Upload - Thumbnail Preview (t122)', () => {
 	test( 'thumbnail shows the file name', async ( { page } ) => {
 		await attachPngViaInput( page, 'my-screenshot.png' );
 
-		// ChatRedesign InputArea renders .gaa-cr-attachment-thumb-name for the
+		// ChatRedesign InputArea renders .sdaa-cr-attachment-thumb-name for the
 		// file name label.
 		const thumbName = page.locator(
-			'.gaa-cr-attachment-thumb-name'
+			'.sdaa-cr-attachment-thumb-name'
 		);
 		await expect( thumbName ).toBeVisible( { timeout: 5_000 } );
 		await expect( thumbName ).toContainText( 'my-screenshot.png' );
@@ -446,16 +446,16 @@ test.describe( 'Chat Upload - Remove Button (t122)', () => {
 		await goToAgentPage( page );
 		// Wait for ChatRedesign InputArea to be ready before attaching files.
 		await page
-			.locator( '.gaa-cr' )
+			.locator( '.sdaa-cr' )
 			.waitFor( { state: 'visible', timeout: 30_000 } );
 	} );
 
 	test( 'each thumbnail has a remove button', async ( { page } ) => {
 		await attachPngViaInput( page );
 
-		// ChatRedesign InputArea renders .gaa-cr-attachment-thumb-remove per thumb.
+		// ChatRedesign InputArea renders .sdaa-cr-attachment-thumb-remove per thumb.
 		const removeBtn = page.locator(
-			'.gaa-cr-attachment-thumb-remove'
+			'.sdaa-cr-attachment-thumb-remove'
 		);
 		await expect( removeBtn ).toBeVisible( { timeout: 5_000 } );
 	} );
@@ -464,7 +464,7 @@ test.describe( 'Chat Upload - Remove Button (t122)', () => {
 		await attachPngViaInput( page );
 
 		const removeBtn = page.locator(
-			'.gaa-cr-attachment-thumb-remove'
+			'.sdaa-cr-attachment-thumb-remove'
 		);
 		await expect( removeBtn ).toBeVisible( { timeout: 5_000 } );
 
@@ -482,14 +482,14 @@ test.describe( 'Chat Upload - Remove Button (t122)', () => {
 
 		// Click the remove button.
 		const removeBtn = page.locator(
-			'.gaa-cr-attachment-thumb-remove'
+			'.sdaa-cr-attachment-thumb-remove'
 		);
 		await removeBtn.click();
 
 		// Thumbnail should be gone.
 		await expect( thumbs ).toHaveCount( 0, { timeout: 5_000 } );
 
-		// Preview strip should also disappear (.gaa-cr-attachments not rendered when empty).
+		// Preview strip should also disappear (.sdaa-cr-attachments not rendered when empty).
 		const previews = getAttachmentPreviews( page );
 		await expect( previews ).not.toBeVisible();
 	} );
@@ -517,7 +517,7 @@ test.describe( 'Chat Upload - Remove Button (t122)', () => {
 
 		// Remove the first thumbnail.
 		const firstRemoveBtn = page
-			.locator( '.gaa-cr-attachment-thumb-remove' )
+			.locator( '.sdaa-cr-attachment-thumb-remove' )
 			.first();
 		await firstRemoveBtn.click();
 
@@ -532,7 +532,7 @@ test.describe( 'Chat Upload - Send Button State (t122)', () => {
 		await goToAgentPage( page );
 		// Wait for ChatRedesign InputArea to be ready before attaching files.
 		await page
-			.locator( '.gaa-cr' )
+			.locator( '.sdaa-cr' )
 			.waitFor( { state: 'visible', timeout: 30_000 } );
 	} );
 
@@ -560,7 +560,7 @@ test.describe( 'Chat Upload - Send Button State (t122)', () => {
 
 		// Remove the attachment.
 		const removeBtn = page.locator(
-			'.gaa-cr-attachment-thumb-remove'
+			'.sdaa-cr-attachment-thumb-remove'
 		);
 		await removeBtn.click();
 

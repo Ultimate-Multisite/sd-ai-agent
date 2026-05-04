@@ -246,7 +246,7 @@ export async function registerClientAbility( def ) {
  * explicit `wp_enqueue_script_module('@wordpress/core-abilities')` call,
  * the REST fetch that populates the `core/abilities` wp.data store never
  * runs, so `wp.data.select('core/abilities').getAbilities()` returns 0
- * items. Our PHP enqueue (FloatingWidget, ScreenMetaPanel, UnifiedAdminMenu)
+ * items. Our PHP enqueue (FloatingWidget, UnifiedAdminMenu)
  * now explicitly enqueues `@wordpress/core-abilities` to fix this.
  *
  * The `wp.abilities.getAbilities()` call below reads from the same Redux

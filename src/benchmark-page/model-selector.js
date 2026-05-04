@@ -134,7 +134,7 @@ export default function ModelSelector( {
 	};
 
 	return (
-		<div className="sd-ai-agent-model-selector">
+		<div className="sdaa-model-selector">
 			<SearchControl
 				value={ searchTerm }
 				onChange={ setSearchTerm }
@@ -142,7 +142,7 @@ export default function ModelSelector( {
 			/>
 
 			<div
-				className="sd-ai-agent-model-selector-actions"
+				className="sdaa-model-selector-actions"
 				style={ { margin: '12px 0' } }
 			>
 				<Button
@@ -170,16 +170,13 @@ export default function ModelSelector( {
 
 			{ Object.entries( groupedModels ).map(
 				( [ providerName, models ] ) => (
-					<div
-						key={ providerName }
-						className="sd-ai-agent-model-provider"
-					>
+					<div key={ providerName } className="sdaa-model-provider">
 						<h4>{ providerName }</h4>
-						<div className="sd-ai-agent-model-list">
+						<div className="sdaa-model-list">
 							{ models.map( ( model ) => (
 								<div
 									key={ `${ model.provider_id }-${ model.model_id }` }
-									className="sd-ai-agent-model-item"
+									className="sdaa-model-item"
 								>
 									<CheckboxControl
 										label={ model.model_name }

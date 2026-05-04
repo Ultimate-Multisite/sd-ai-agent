@@ -145,7 +145,7 @@ async function mockSettingsApi( page, initialSettings = DEFAULT_SETTINGS ) {
 async function goToBrandingTab( page ) {
 	// UnifiedAdminMenu uses hash-based routing. The settings route is at
 	// admin.php?page=sd-ai-agent#/settings. The old URL
-	// (tools.php?page=sd-ai-agent-settings) triggers a wp_safe_redirect()
+	// (tools.php?page=sdaa-settings) triggers a wp_safe_redirect()
 	// which causes Playwright to hang — use the canonical hash URL directly.
 	await page.goto( '/wp-admin/admin.php?page=sd-ai-agent#/settings' );
 	await page.waitForLoadState( 'domcontentloaded' );
@@ -153,13 +153,13 @@ async function goToBrandingTab( page ) {
 	// Use 30 s to match the Playwright test timeout — the unified admin SPA
 	// can be slow to render on CI runners under load with 3 parallel workers.
 	await page
-		.locator( '.sd-ai-agent-route-settings' )
+		.locator( '.sdaa-route-settings' )
 		.waitFor( { state: 'visible', timeout: 30_000 } );
 	// Click the Branding tab (present in the unified settings route).
 	const tab = page.getByRole( 'tab', { name: /branding/i } );
 	await tab.click();
 	await page
-		.locator( '.sd-ai-agent-branding-manager' )
+		.locator( '.sdaa-branding-manager' )
 		.waitFor( { state: 'visible', timeout: 15_000 } );
 }
 
@@ -174,7 +174,7 @@ async function goToBrandingTab( page ) {
  * @return {import('@playwright/test').Locator}
  */
 function getBrandingManager( page ) {
-	return page.locator( '.sd-ai-agent-branding-manager' );
+	return page.locator( '.sdaa-branding-manager' );
 }
 
 /**
@@ -190,7 +190,7 @@ function getBrandingManager( page ) {
  */
 function getBrandingPreview( page ) {
 	return getBrandingManager( page ).locator(
-		'.sd-ai-agent-branding-preview'
+		'.sdaa-branding-preview'
 	);
 }
 
@@ -204,7 +204,7 @@ function getBrandingPreview( page ) {
  */
 function getPreviewTitleBar( page ) {
 	return getBrandingManager( page ).locator(
-		'.sd-ai-agent-branding-preview__titlebar'
+		'.sdaa-branding-preview__titlebar'
 	);
 }
 
@@ -218,7 +218,7 @@ function getPreviewTitleBar( page ) {
  */
 function getPreviewFab( page ) {
 	return getBrandingManager( page ).locator(
-		'.sd-ai-agent-branding-preview__fab'
+		'.sdaa-branding-preview__fab'
 	);
 }
 
@@ -265,9 +265,9 @@ test.describe( 'White-Label Branding - Settings Fields', () => {
 		page,
 	} ) => {
 		const manager = getBrandingManager( page );
-		// The primary color TextControl has id="sd-ai-agent-brand-primary-color".
+		// The primary color TextControl has id="sdaa-brand-primary-color".
 		const colorField = manager.locator(
-			'#sd-ai-agent-brand-primary-color'
+			'#sdaa-brand-primary-color'
 		);
 		await expect( colorField ).toBeVisible();
 		await colorField.fill( '#e63946' );
@@ -331,7 +331,7 @@ test.describe( 'White-Label Branding - Live Preview', () => {
 	} ) => {
 		const manager = getBrandingManager( page );
 		const colorField = manager.locator(
-			'#sd-ai-agent-brand-primary-color'
+			'#sdaa-brand-primary-color'
 		);
 
 		await colorField.fill( '#e63946' );
@@ -364,7 +364,7 @@ test.describe( 'White-Label Branding - Live Preview', () => {
 		// img is inside an aria-hidden container that some environments treat
 		// as visually hidden.
 		const previewLogo = getBrandingPreview( page ).locator(
-			'.sd-ai-agent-branding-preview__logo'
+			'.sdaa-branding-preview__logo'
 		);
 		await expect( previewLogo ).toBeAttached();
 		await expect( previewLogo ).toHaveAttribute(
@@ -406,7 +406,7 @@ test.describe( 'White-Label Branding - Save and Persist', () => {
 			.getByLabel( /Agent Display Name/i )
 			.fill( BRANDED_SETTINGS.agent_name );
 		await manager
-			.locator( '#sd-ai-agent-brand-primary-color' )
+			.locator( '#sdaa-brand-primary-color' )
 			.fill( BRANDED_SETTINGS.brand_primary_color );
 
 		await getSaveButton( page ).click();

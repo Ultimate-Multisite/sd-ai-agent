@@ -19,7 +19,7 @@
  * Cross-bundle deduplication (GH#990):
  * Each webpack entry-point bundle has its own module scope and therefore its
  * own `registrationPromise`. When multiple bundles (e.g. floating-widget.js
- * and screen-meta.js) are enqueued on the same admin page, each bundle
+ * and admin-page.js) are enqueued on the same admin page, each bundle
  * previously ran the full registration pipeline independently. This caused
  * `wp.abilities.registerAbilityCategory()` to be called once per bundle,
  * which in WP 7.0-RC2 triggers a REST fetch to `/wp-json/wp-abilities/v1/abilities`

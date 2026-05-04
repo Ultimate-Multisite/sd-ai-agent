@@ -21,7 +21,7 @@ import { check, closeSmall, arrowLeft } from '@wordpress/icons';
  */
 function StatCard( { label, value } ) {
 	return (
-		<Card className="sd-ai-agent-benchmark-stat-card">
+		<Card className="sdaa-benchmark-stat-card">
 			<CardBody>
 				<h4>{ label }</h4>
 				<div className="stat-value">{ value }</div>
@@ -107,7 +107,7 @@ export default function RunDetails( { run, onBack } ) {
 	} );
 
 	return (
-		<div className="sd-ai-agent-benchmark-run-details">
+		<div className="sdaa-benchmark-run-details">
 			<Button
 				variant="tertiary"
 				onClick={ onBack }
@@ -142,7 +142,7 @@ export default function RunDetails( { run, onBack } ) {
 				</CardBody>
 			</Card>
 
-			<div className="sd-ai-agent-benchmark-summary">
+			<div className="sdaa-benchmark-summary">
 				<StatCard
 					label={ __( 'Total Questions', 'sd-ai-agent' ) }
 					value={ results.length }
@@ -248,7 +248,7 @@ export default function RunDetails( { run, onBack } ) {
 					<h3>{ __( 'Detailed Results', 'sd-ai-agent' ) }</h3>
 				</CardHeader>
 				<CardBody>
-					<div className="sd-ai-agent-benchmark-results-table">
+					<div className="sdaa-benchmark-results-table">
 						<table className="wp-list-table widefat fixed striped">
 							<thead>
 								<tr>

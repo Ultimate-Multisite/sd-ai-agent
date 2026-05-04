@@ -80,9 +80,9 @@ function RoleRow( { roleSlug, roleLabel, config, abilities, onChange } ) {
 	);
 
 	return (
-		<div className="sd-ai-agent-role-row">
-			<div className="sd-ai-agent-role-header">
-				<h3 className="sd-ai-agent-role-name">{ roleLabel }</h3>
+		<div className="sdaa-role-row">
+			<div className="sdaa-role-header">
+				<h3 className="sdaa-role-name">{ roleLabel }</h3>
 				<ToggleControl
 					label={ __( 'Chat Access', 'sd-ai-agent' ) }
 					checked={ chatAccess }
@@ -96,7 +96,7 @@ function RoleRow( { roleSlug, roleLabel, config, abilities, onChange } ) {
 			</div>
 
 			{ chatAccess && (
-				<div className="sd-ai-agent-role-abilities">
+				<div className="sdaa-role-abilities">
 					<ToggleControl
 						label={ __(
 							'All abilities (unrestricted)',
@@ -112,7 +112,7 @@ function RoleRow( { roleSlug, roleLabel, config, abilities, onChange } ) {
 					/>
 
 					{ ! allAllowed && abilities.length > 0 && (
-						<div className="sd-ai-agent-ability-list">
+						<div className="sdaa-ability-list">
 							<p className="description">
 								{ __(
 									'Select which abilities this role can use:',
@@ -214,14 +214,14 @@ export default function RolePermissionsManager() {
 
 	if ( loading ) {
 		return (
-			<div className="sd-ai-agent-role-permissions-loading">
+			<div className="sdaa-role-permissions-loading">
 				<Spinner />
 			</div>
 		);
 	}
 
 	return (
-		<div className="sd-ai-agent-role-permissions">
+		<div className="sdaa-role-permissions">
 			{ notice && (
 				<Notice
 					status={ notice.status }
@@ -251,7 +251,7 @@ export default function RolePermissionsManager() {
 				</p>
 			) }
 
-			<div className="sd-ai-agent-role-list">
+			<div className="sdaa-role-list">
 				{ Object.entries( roles )
 					.filter( ( [ slug ] ) => ! alwaysAllowed.includes( slug ) )
 					.map( ( [ slug, label ] ) => (
@@ -266,7 +266,7 @@ export default function RolePermissionsManager() {
 					) ) }
 			</div>
 
-			<div className="sd-ai-agent-role-permissions-actions">
+			<div className="sdaa-role-permissions-actions">
 				<Button
 					variant="primary"
 					onClick={ handleSave }

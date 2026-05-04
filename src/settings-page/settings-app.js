@@ -401,7 +401,7 @@ export default function SettingsApp() {
 			createNotice( 'success', __( 'Settings saved.', 'sd-ai-agent' ), {
 				type: 'snackbar',
 				isDismissible: true,
-				id: 'sd-ai-agent-settings-save',
+				id: 'sdaa-settings-save',
 			} );
 		} catch {
 			createNotice(
@@ -410,7 +410,7 @@ export default function SettingsApp() {
 				{
 					type: 'snackbar',
 					isDismissible: true,
-					id: 'sd-ai-agent-settings-save',
+					id: 'sdaa-settings-save',
 				}
 			);
 		}
@@ -419,7 +419,7 @@ export default function SettingsApp() {
 
 	if ( ! settingsLoaded || ! local ) {
 		return (
-			<div className="sd-ai-agent-settings-loading">
+			<div className="sdaa-settings-loading">
 				<Spinner />
 			</div>
 		);
@@ -453,44 +453,44 @@ export default function SettingsApp() {
 		{
 			name: 'general',
 			title: __( 'General', 'sd-ai-agent' ),
-			className: 'sd-ai-agent-settings-tab',
+			className: 'sdaa-settings-tab',
 		},
 		{
 			name: 'memory-knowledge',
 			title: __( 'Memory & Knowledge', 'sd-ai-agent' ),
-			className: 'sd-ai-agent-settings-tab',
+			className: 'sdaa-settings-tab',
 		},
 		{
 			name: 'skills',
 			title: __( 'Skills', 'sd-ai-agent' ),
-			className: 'sd-ai-agent-settings-tab',
+			className: 'sdaa-settings-tab',
 		},
 		{
 			name: 'tools',
 			title: __( 'Tools', 'sd-ai-agent' ),
-			className: 'sd-ai-agent-settings-tab',
+			className: 'sdaa-settings-tab',
 		},
 		{
 			name: 'automations',
 			title: __( 'Automations', 'sd-ai-agent' ),
-			className: 'sd-ai-agent-settings-tab',
+			className: 'sdaa-settings-tab',
 		},
 		{
 			name: 'agents',
 			title: __( 'Agents', 'sd-ai-agent' ),
-			className: 'sd-ai-agent-settings-tab',
+			className: 'sdaa-settings-tab',
 		},
 		{
 			name: 'access-branding',
 			title: __( 'Access & Branding', 'sd-ai-agent' ),
-			className: 'sd-ai-agent-settings-tab',
+			className: 'sdaa-settings-tab',
 			// Hide when both constituent features are disabled.
 			hidden: ! features.access_control && ! features.branding,
 		},
 		{
 			name: 'usage',
 			title: __( 'Usage', 'sd-ai-agent' ),
-			className: 'sd-ai-agent-settings-tab',
+			className: 'sdaa-settings-tab',
 		},
 		// Only visible when WP_DEBUG is active.
 		...( isWpDebug
@@ -498,21 +498,21 @@ export default function SettingsApp() {
 					{
 						name: 'provider-trace',
 						title: __( 'Provider Trace', 'sd-ai-agent' ),
-						className: 'sd-ai-agent-settings-tab',
+						className: 'sdaa-settings-tab',
 					},
 			  ]
 			: [] ),
 		{
 			name: 'advanced',
 			title: __( 'Advanced', 'sd-ai-agent' ),
-			className: 'sd-ai-agent-settings-tab',
+			className: 'sdaa-settings-tab',
 		},
 	];
 
 	const tabs = allTabs.filter( ( tab ) => ! tab.hidden );
 
 	const scrollWrapperClasses = [
-		'sd-ai-agent-tabs-scroll-wrapper',
+		'sdaa-tabs-scroll-wrapper',
 		hasScrollLeft ? 'has-scroll-left' : '',
 		hasScrollRight ? 'has-scroll-right' : '',
 	]
@@ -520,11 +520,11 @@ export default function SettingsApp() {
 		.join( ' ' );
 
 	return (
-		<div className="sd-ai-agent-settings">
+		<div className="sdaa-settings">
 			<Notice
 				status="info"
 				isDismissible={ false }
-				className="sd-ai-agent-providers-link-notice"
+				className="sdaa-providers-link-notice"
 			>
 				{ __(
 					'Provider API keys are configured on the Connectors page.',
@@ -545,11 +545,11 @@ export default function SettingsApp() {
 						switch ( tab.name ) {
 							case 'general':
 								return (
-									<div className="sd-ai-agent-settings-section">
-										<h3 className="sd-ai-agent-settings-section-title">
+									<div className="sdaa-settings-section">
+										<h3 className="sdaa-settings-section-title">
 											{ __( 'Model', 'sd-ai-agent' ) }
 										</h3>
-										<table className="form-table sd-ai-agent-form-table">
+										<table className="form-table sdaa-form-table">
 											<tbody>
 												<tr>
 													<th scope="row">
@@ -649,13 +649,13 @@ export default function SettingsApp() {
 											</tbody>
 										</table>
 
-										<h3 className="sd-ai-agent-settings-section-title">
+										<h3 className="sdaa-settings-section-title">
 											{ __(
 												'Chat Behaviour',
 												'sd-ai-agent'
 											) }
 										</h3>
-										<table className="form-table sd-ai-agent-form-table">
+										<table className="form-table sdaa-form-table">
 											<tbody>
 												<tr>
 													<th scope="row">
@@ -731,7 +731,7 @@ export default function SettingsApp() {
 														) }
 													</th>
 													<td>
-														<div className="sd-ai-agent-settings-yolo-section">
+														<div className="sdaa-settings-yolo-section">
 															<ToggleControl
 																label={ __(
 																	'Skip all confirmation dialogs',
@@ -755,7 +755,7 @@ export default function SettingsApp() {
 																__nextHasNoMarginBottom
 															/>
 															{ local.yolo_mode && (
-																<div className="sd-ai-agent-yolo-warning">
+																<div className="sdaa-yolo-warning">
 																	{ __(
 																		'Warning: YOLO mode is active. All tool confirmations are skipped automatically. Destructive operations will execute without asking.',
 																		'sd-ai-agent'
@@ -829,7 +829,7 @@ export default function SettingsApp() {
 											</tbody>
 										</table>
 
-										<h3 className="sd-ai-agent-settings-section-title">
+										<h3 className="sdaa-settings-section-title">
 											{ __(
 												'AI Image Generation',
 												'sd-ai-agent'
@@ -841,7 +841,7 @@ export default function SettingsApp() {
 												'sd-ai-agent'
 											) }
 										</p>
-										<table className="form-table sd-ai-agent-form-table">
+										<table className="form-table sdaa-form-table">
 											<tbody>
 												<tr>
 													<th scope="row">
@@ -991,7 +991,7 @@ export default function SettingsApp() {
 											</tbody>
 										</table>
 
-										<h3 className="sd-ai-agent-settings-section-title">
+										<h3 className="sdaa-settings-section-title">
 											{ __(
 												'Spending Limits',
 												'sd-ai-agent'
@@ -1003,7 +1003,7 @@ export default function SettingsApp() {
 												'sd-ai-agent'
 											) }
 										</p>
-										<table className="form-table sd-ai-agent-form-table">
+										<table className="form-table sdaa-form-table">
 											<tbody>
 												<tr>
 													<th scope="row">
@@ -1166,7 +1166,7 @@ export default function SettingsApp() {
 											</tbody>
 										</table>
 
-										<h3 className="sd-ai-agent-settings-section-title">
+										<h3 className="sdaa-settings-section-title">
 											{ __(
 												'Text-to-Speech',
 												'sd-ai-agent'
@@ -1181,7 +1181,7 @@ export default function SettingsApp() {
 											</p>
 										) }
 										{ isTTSSupported && (
-											<table className="form-table sd-ai-agent-form-table">
+											<table className="form-table sdaa-form-table">
 												<tbody>
 													<tr>
 														<th scope="row">
@@ -1315,7 +1315,7 @@ export default function SettingsApp() {
 											</table>
 										) }
 
-										<h3 className="sd-ai-agent-settings-section-title">
+										<h3 className="sdaa-settings-section-title">
 											{ __(
 												'Sound Notifications',
 												'sd-ai-agent'
@@ -1330,7 +1330,7 @@ export default function SettingsApp() {
 											</p>
 										) }
 										{ isSoundSupported && (
-											<table className="form-table sd-ai-agent-form-table">
+											<table className="form-table sdaa-form-table">
 												<tbody>
 													<tr>
 														<th scope="row">
@@ -1421,11 +1421,11 @@ export default function SettingsApp() {
 
 							case 'memory-knowledge':
 								return (
-									<div className="sd-ai-agent-settings-section">
-										<h3 className="sd-ai-agent-settings-section-title">
+									<div className="sdaa-settings-section">
+										<h3 className="sdaa-settings-section-title">
 											{ __( 'Memory', 'sd-ai-agent' ) }
 										</h3>
-										<table className="form-table sd-ai-agent-form-table">
+										<table className="form-table sdaa-form-table">
 											<tbody>
 												<tr>
 													<th scope="row">
@@ -1468,13 +1468,13 @@ export default function SettingsApp() {
 											<MemoryManager />
 										</ErrorBoundary>
 
-										<h3 className="sd-ai-agent-settings-section-title">
+										<h3 className="sdaa-settings-section-title">
 											{ __(
 												'Knowledge Base',
 												'sd-ai-agent'
 											) }
 										</h3>
-										<table className="form-table sd-ai-agent-form-table">
+										<table className="form-table sdaa-form-table">
 											<tbody>
 												<tr>
 													<th scope="row">
@@ -1551,8 +1551,8 @@ export default function SettingsApp() {
 
 							case 'skills':
 								return (
-									<div className="sd-ai-agent-settings-section">
-										<h3 className="sd-ai-agent-settings-section-title">
+									<div className="sdaa-settings-section">
+										<h3 className="sdaa-settings-section-title">
 											{ __( 'Skills', 'sd-ai-agent' ) }
 										</h3>
 										<ErrorBoundary
@@ -1564,7 +1564,7 @@ export default function SettingsApp() {
 											<SkillManager />
 										</ErrorBoundary>
 
-										<h3 className="sd-ai-agent-settings-section-title">
+										<h3 className="sdaa-settings-section-title">
 											{ __( 'Abilities', 'sd-ai-agent' ) }
 										</h3>
 										<p className="description">
@@ -1599,8 +1599,8 @@ export default function SettingsApp() {
 
 							case 'tools':
 								return (
-									<div className="sd-ai-agent-settings-section">
-										<h3 className="sd-ai-agent-settings-section-title">
+									<div className="sdaa-settings-section">
+										<h3 className="sdaa-settings-section-title">
 											{ __(
 												'Custom Tools',
 												'sd-ai-agent'
@@ -1619,8 +1619,8 @@ export default function SettingsApp() {
 
 							case 'automations':
 								return (
-									<div className="sd-ai-agent-settings-section">
-										<h3 className="sd-ai-agent-settings-section-title">
+									<div className="sdaa-settings-section">
+										<h3 className="sdaa-settings-section-title">
 											{ __(
 												'Automations',
 												'sd-ai-agent'
@@ -1635,7 +1635,7 @@ export default function SettingsApp() {
 											<AutomationsManager />
 										</ErrorBoundary>
 
-										<h3 className="sd-ai-agent-settings-section-title">
+										<h3 className="sdaa-settings-section-title">
 											{ __( 'Events', 'sd-ai-agent' ) }
 										</h3>
 										<ErrorBoundary
@@ -1651,7 +1651,7 @@ export default function SettingsApp() {
 
 							case 'agents':
 								return (
-									<div className="sd-ai-agent-settings-section">
+									<div className="sdaa-settings-section">
 										<ErrorBoundary
 											label={ __(
 												'Agent builder',
@@ -1665,10 +1665,10 @@ export default function SettingsApp() {
 
 							case 'access-branding':
 								return (
-									<div className="sd-ai-agent-settings-section">
+									<div className="sdaa-settings-section">
 										{ features.access_control && (
 											<>
-												<h3 className="sd-ai-agent-settings-section-title">
+												<h3 className="sdaa-settings-section-title">
 													{ __(
 														'Role Permissions',
 														'sd-ai-agent'
@@ -1687,7 +1687,7 @@ export default function SettingsApp() {
 
 										{ features.branding && (
 											<>
-												<h3 className="sd-ai-agent-settings-section-title">
+												<h3 className="sdaa-settings-section-title">
 													{ __(
 														'Branding',
 														'sd-ai-agent'
@@ -1704,7 +1704,7 @@ export default function SettingsApp() {
 
 							case 'usage':
 								return (
-									<div className="sd-ai-agent-settings-section">
+									<div className="sdaa-settings-section">
 										<ErrorBoundary
 											label={ __(
 												'Usage dashboard',
@@ -1718,7 +1718,7 @@ export default function SettingsApp() {
 
 							case 'provider-trace':
 								return (
-									<div className="sd-ai-agent-settings-section">
+									<div className="sdaa-settings-section">
 										<ErrorBoundary
 											label={ __(
 												'Provider trace viewer',
@@ -1732,14 +1732,14 @@ export default function SettingsApp() {
 
 							case 'advanced':
 								return (
-									<div className="sd-ai-agent-settings-section">
-										<h3 className="sd-ai-agent-settings-section-title">
+									<div className="sdaa-settings-section">
+										<h3 className="sdaa-settings-section-title">
 											{ __(
 												'Model Parameters',
 												'sd-ai-agent'
 											) }
 										</h3>
-										<table className="form-table sd-ai-agent-form-table">
+										<table className="form-table sdaa-form-table">
 											<tbody>
 												<tr>
 													<th scope="row">
@@ -1841,13 +1841,13 @@ export default function SettingsApp() {
 											</tbody>
 										</table>
 
-										<h3 className="sd-ai-agent-settings-section-title">
+										<h3 className="sdaa-settings-section-title">
 											{ __(
 												'Integrations',
 												'sd-ai-agent'
 											) }
 										</h3>
-										<h4 className="sd-ai-agent-settings-subsection-title">
+										<h4 className="sdaa-settings-subsection-title">
 											{ __(
 												'Google Analytics 4',
 												'sd-ai-agent'
@@ -1890,7 +1890,7 @@ export default function SettingsApp() {
 												{ gaNotice.message }
 											</Notice>
 										) }
-										<table className="form-table sd-ai-agent-form-table">
+										<table className="form-table sdaa-form-table">
 											<tbody>
 												<tr>
 													<th scope="row">
@@ -1951,7 +1951,7 @@ export default function SettingsApp() {
 												</tr>
 											</tbody>
 										</table>
-										<div className="sd-ai-agent-settings-row-actions">
+										<div className="sdaa-settings-row-actions">
 											<Button
 												variant="primary"
 												onClick={ handleGaSave }
@@ -1982,7 +1982,7 @@ export default function SettingsApp() {
 											) }
 										</div>
 
-										<h4 className="sd-ai-agent-settings-subsection-title">
+										<h4 className="sdaa-settings-subsection-title">
 											{ __(
 												'Internet Search',
 												'sd-ai-agent'
@@ -2020,7 +2020,7 @@ export default function SettingsApp() {
 										</Notice>
 
 										{ /* ── Tavily ── */ }
-										<h5 className="sd-ai-agent-settings-subsection-title">
+										<h5 className="sdaa-settings-subsection-title">
 											{ __( 'Tavily', 'sd-ai-agent' ) }
 											{ tavilyConfigured && ' \u2713' }
 										</h5>
@@ -2048,7 +2048,7 @@ export default function SettingsApp() {
 												{ tavilyNotice.message }
 											</Notice>
 										) }
-										<table className="form-table sd-ai-agent-form-table">
+										<table className="form-table sdaa-form-table">
 											<tbody>
 												<tr>
 													<th scope="row">
@@ -2087,7 +2087,7 @@ export default function SettingsApp() {
 												</tr>
 											</tbody>
 										</table>
-										<div className="sd-ai-agent-settings-row-actions">
+										<div className="sdaa-settings-row-actions">
 											<Button
 												variant="primary"
 												onClick={ handleTavilySave }
@@ -2120,7 +2120,7 @@ export default function SettingsApp() {
 										</div>
 
 										{ /* ── Brave Search ── */ }
-										<h5 className="sd-ai-agent-settings-subsection-title">
+										<h5 className="sdaa-settings-subsection-title">
 											{ __(
 												'Brave Search',
 												'sd-ai-agent'
@@ -2151,7 +2151,7 @@ export default function SettingsApp() {
 												{ braveNotice.message }
 											</Notice>
 										) }
-										<table className="form-table sd-ai-agent-form-table">
+										<table className="form-table sdaa-form-table">
 											<tbody>
 												<tr>
 													<th scope="row">
@@ -2190,7 +2190,7 @@ export default function SettingsApp() {
 												</tr>
 											</tbody>
 										</table>
-										<div className="sd-ai-agent-settings-row-actions">
+										<div className="sdaa-settings-row-actions">
 											<Button
 												variant="primary"
 												onClick={ handleBraveSave }
@@ -2228,7 +2228,7 @@ export default function SettingsApp() {
 				</TabPanel>
 			</div>
 			{ ! selfSavingTabs.includes( activeTab ) && (
-				<div className="sd-ai-agent-settings-actions">
+				<div className="sdaa-settings-actions">
 					<Button
 						variant="primary"
 						onClick={ handleSave }
@@ -2241,7 +2241,7 @@ export default function SettingsApp() {
 			) }
 			<SnackbarList
 				notices={ snackbarNotices }
-				className="sd-ai-agent-snackbar-list"
+				className="sdaa-snackbar-list"
 				onRemove={ removeNotice }
 			/>
 		</div>

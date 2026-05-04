@@ -71,11 +71,11 @@ export default function ConvoHeader( {
 	}, [ session, draft, renameSession ] );
 
 	return (
-		<div className="gaa-cr-convo-head">
+		<div className="sdaa-cr-convo-head">
 			{ sidebarCollapsed && (
 				<button
 					type="button"
-					className="gaa-cr-icon-btn"
+					className="sdaa-cr-icon-btn"
 					onClick={ onExpandSidebar }
 					aria-label={ __( 'Expand sidebar', 'sd-ai-agent' ) }
 				>
@@ -86,7 +86,7 @@ export default function ConvoHeader( {
 			{ editing ? (
 				<input
 					ref={ inputRef }
-					className="gaa-cr-convo-head-title-input"
+					className="sdaa-cr-convo-head-title-input"
 					value={ draft }
 					onChange={ ( e ) => setDraft( e.target.value ) }
 					onBlur={ commitRename }
@@ -102,50 +102,50 @@ export default function ConvoHeader( {
 			) : (
 				<button
 					type="button"
-					className="gaa-cr-convo-head-title"
+					className="sdaa-cr-convo-head-title"
 					onClick={ session ? startRename : undefined }
 					disabled={ ! session }
 					title={ title }
 				>
-					<span className="gaa-cr-convo-head-title-text">
+					<span className="sdaa-cr-convo-head-title-text">
 						{ title }
 					</span>
 					{ isRunning && (
 						<span
-							className="gaa-cr-dot"
+							className="sdaa-cr-dot"
 							title={ __( 'Agent running', 'sd-ai-agent' ) }
 						/>
 					) }
 					{ session && (
-						<span className="gaa-cr-convo-head-rename-hint">
+						<span className="sdaa-cr-convo-head-rename-hint">
 							{ __( 'Click to rename', 'sd-ai-agent' ) }
 						</span>
 					) }
 				</button>
 			) }
 
-			<div className="gaa-cr-convo-head-actions">
+			<div className="sdaa-cr-convo-head-actions">
 				<span
-					className="gaa-cr-convo-head-ai-avatar"
+					className="sdaa-cr-convo-head-ai-avatar"
 					aria-hidden="true"
 				>
 					<AiIcon thinking={ isRunning } size={ 16 } />
 				</span>
 				{ changesCount > 0 && (
 					<span
-						className="gaa-cr-changes-pill"
+						className="sdaa-cr-changes-pill"
 						title={ __(
 							'Changes made in this session',
 							'sd-ai-agent'
 						) }
 					>
-						<span className="gaa-cr-changes-pill-count">
+						<span className="sdaa-cr-changes-pill-count">
 							{ changesCount }
 						</span>
 						<span>{ __( 'changes', 'sd-ai-agent' ) }</span>
 						<button
 							type="button"
-							className="gaa-cr-changes-pill-btn"
+							className="sdaa-cr-changes-pill-btn"
 							onClick={ onShowChanges }
 						>
 							{ __( 'View', 'sd-ai-agent' ) }
@@ -155,7 +155,7 @@ export default function ConvoHeader( {
 				{ isTTSSupported && (
 					<button
 						type="button"
-						className={ `gaa-cr-icon-btn sd-ai-agent-tts-btn${
+						className={ `sdaa-cr-icon-btn sdaa-tts-btn${
 							ttsEnabled ? ' is-active' : ''
 						}` }
 						onClick={ () => setTtsEnabled( ! ttsEnabled ) }
@@ -169,10 +169,10 @@ export default function ConvoHeader( {
 						{ ttsEnabled ? <Speaker /> : <SpeakerMuted /> }
 					</button>
 				) }
-				<div className="gaa-cr-convo-head-menu-wrap">
+				<div className="sdaa-cr-convo-head-menu-wrap">
 					<button
 						type="button"
-						className="gaa-cr-icon-btn"
+						className="sdaa-cr-icon-btn"
 						aria-label={ __( 'More options', 'sd-ai-agent' ) }
 						aria-haspopup="menu"
 						aria-expanded={ showMenu }
@@ -182,7 +182,7 @@ export default function ConvoHeader( {
 						<Icon icon={ moreHorizontal } size={ 16 } />
 					</button>
 					{ showMenu && session && (
-						<div className="gaa-cr-context-menu gaa-cr-context-menu--header">
+						<div className="sdaa-cr-context-menu sdaa-cr-context-menu--header">
 							<SessionContextMenu
 								session={ session }
 								onClose={ () => setShowMenu( false ) }

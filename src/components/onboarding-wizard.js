@@ -81,7 +81,7 @@ function GutenbergInstallButton() {
 				onClick={ handleInstall }
 				isBusy={ busy }
 				disabled={ busy }
-				className="sd-ai-agent-wizard-connectors-link"
+				className="sdaa-wizard-connectors-link"
 			>
 				{ busy
 					? __( 'Installing Gutenberg…', 'sd-ai-agent' )
@@ -168,7 +168,7 @@ export default function OnboardingWizard( { onComplete } ) {
 	const renderWooCommerceStep = () => {
 		if ( wooLoading ) {
 			return (
-				<div className="sd-ai-agent-wizard-woo">
+				<div className="sdaa-wizard-woo">
 					<Spinner />
 					<p>{ __( 'Checking for WooCommerce…', 'sd-ai-agent' ) }</p>
 				</div>
@@ -177,7 +177,7 @@ export default function OnboardingWizard( { onComplete } ) {
 
 		if ( ! wooStatus || ! wooStatus.active ) {
 			return (
-				<div className="sd-ai-agent-wizard-woo">
+				<div className="sdaa-wizard-woo">
 					<p>
 						{ __(
 							'WooCommerce is not active on this site. You can skip this step.',
@@ -204,12 +204,12 @@ export default function OnboardingWizard( { onComplete } ) {
 		} = wooStatus;
 
 		return (
-			<div className="sd-ai-agent-wizard-woo">
+			<div className="sdaa-wizard-woo">
 				<Notice status="success" isDismissible={ false }>
 					{ __( 'WooCommerce store detected!', 'sd-ai-agent' ) }
 				</Notice>
 
-				<div className="sd-ai-agent-wizard-woo-stats">
+				<div className="sdaa-wizard-woo-stats">
 					<p>
 						<strong>
 							{ __( 'Store overview:', 'sd-ai-agent' ) }
@@ -268,7 +268,7 @@ export default function OnboardingWizard( { onComplete } ) {
 					</ul>
 				</div>
 
-				<div className="sd-ai-agent-wizard-woo-offer">
+				<div className="sdaa-wizard-woo-offer">
 					<p>
 						{ __(
 							'The AI agent can help you manage your store:',
@@ -328,7 +328,7 @@ export default function OnboardingWizard( { onComplete } ) {
 		{
 			title: __( 'Welcome to Superdav AI Agent', 'sd-ai-agent' ),
 			content: (
-				<div className="sd-ai-agent-wizard-welcome">
+				<div className="sdaa-wizard-welcome">
 					<p>
 						{ __(
 							'Superdav AI Agent is an intelligent assistant that can interact with your WordPress site using registered abilities (tools).',
@@ -348,7 +348,7 @@ export default function OnboardingWizard( { onComplete } ) {
 		{
 			title: __( 'Set Up an AI Provider', 'sd-ai-agent' ),
 			content: (
-				<div className="sd-ai-agent-wizard-provider">
+				<div className="sdaa-wizard-provider">
 					<p>
 						{ __(
 							'The AI agent needs an API key for at least one AI provider (OpenAI, Anthropic, or Google AI). API keys are managed on the Connectors page.',
@@ -360,7 +360,7 @@ export default function OnboardingWizard( { onComplete } ) {
 						<Notice status="info" isDismissible={ false }>
 							<a
 								href={ getConnectorsUrl() }
-								className="sd-ai-agent-wizard-connectors-link"
+								className="sdaa-wizard-connectors-link"
 							>
 								{ __(
 									'Open Connectors page to configure a provider →',
@@ -388,8 +388,8 @@ export default function OnboardingWizard( { onComplete } ) {
 					</p>
 
 					{ hasAnyProvider && (
-						<div className="sd-ai-agent-wizard-provider-selector">
-							<p className="sd-ai-agent-wizard-provider-selector__label">
+						<div className="sdaa-wizard-provider-selector">
+							<p className="sdaa-wizard-provider-selector__label">
 								{ __(
 									'Choose your default provider and model:',
 									'sd-ai-agent'
@@ -405,7 +405,7 @@ export default function OnboardingWizard( { onComplete } ) {
 		{
 			title: __( 'Abilities', 'sd-ai-agent' ),
 			content: (
-				<div className="sd-ai-agent-wizard-abilities">
+				<div className="sdaa-wizard-abilities">
 					<p>
 						{ __(
 							'The agent will automatically discover and use any ability registered by your installed plugins. You do not need to curate them — frequently-used abilities are loaded directly each turn, and the rest are reachable via the built-in ability search.',
@@ -436,7 +436,7 @@ export default function OnboardingWizard( { onComplete } ) {
 		{
 			title: __( 'All Set!', 'sd-ai-agent' ),
 			content: (
-				<div className="sd-ai-agent-wizard-done">
+				<div className="sdaa-wizard-done">
 					<p>
 						{ __(
 							"You're all set! Superdav AI Agent is ready to help you manage your WordPress site.",
@@ -466,22 +466,22 @@ export default function OnboardingWizard( { onComplete } ) {
 	const isLast = step === steps.length - 1;
 
 	return (
-		<div className="sd-ai-agent-wizard">
-			<div className="sd-ai-agent-wizard-header">
+		<div className="sdaa-wizard">
+			<div className="sdaa-wizard-header">
 				<h2>{ current.title }</h2>
-				<div className="sd-ai-agent-wizard-progress">
+				<div className="sdaa-wizard-progress">
 					{ steps.map( ( _, i ) => (
 						<span
 							key={ i }
-							className={ `sd-ai-agent-wizard-dot ${
+							className={ `sdaa-wizard-dot ${
 								i === step ? 'is-active' : ''
 							} ${ i < step ? 'is-complete' : '' }` }
 						/>
 					) ) }
 				</div>
 			</div>
-			<div className="sd-ai-agent-wizard-body">{ current.content }</div>
-			<div className="sd-ai-agent-wizard-footer">
+			<div className="sdaa-wizard-body">{ current.content }</div>
+			<div className="sdaa-wizard-footer">
 				{ step > 0 && (
 					<Button
 						variant="tertiary"
@@ -493,7 +493,7 @@ export default function OnboardingWizard( { onComplete } ) {
 				<Button
 					variant="link"
 					onClick={ handleFinish }
-					className="sd-ai-agent-wizard-skip"
+					className="sdaa-wizard-skip"
 				>
 					{ __( 'Skip', 'sd-ai-agent' ) }
 				</Button>

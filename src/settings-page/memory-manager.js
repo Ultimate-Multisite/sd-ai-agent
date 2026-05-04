@@ -96,8 +96,8 @@ export default function MemoryManager() {
 	}, [] );
 
 	return (
-		<div className="sd-ai-agent-memory-manager">
-			<div className="sd-ai-agent-memory-header">
+		<div className="sdaa-memory-manager">
+			<div className="sdaa-memory-header">
 				<h3>{ __( 'Stored Memories', 'sd-ai-agent' ) }</h3>
 				{ ! showForm && (
 					<Button
@@ -112,7 +112,7 @@ export default function MemoryManager() {
 			</div>
 
 			{ showForm && (
-				<div className="sd-ai-agent-memory-form">
+				<div className="sdaa-memory-form">
 					<SelectControl
 						label={ __( 'Category', 'sd-ai-agent' ) }
 						value={ formCategory }
@@ -126,7 +126,7 @@ export default function MemoryManager() {
 						onChange={ setFormContent }
 						rows={ 3 }
 					/>
-					<div className="sd-ai-agent-memory-form-actions">
+					<div className="sdaa-memory-form-actions">
 						<Button
 							variant="primary"
 							onClick={ handleSubmit }
@@ -164,7 +164,7 @@ export default function MemoryManager() {
 			) }
 
 			{ memories.length > 0 && (
-				<table className="sd-ai-agent-memory-table widefat striped">
+				<table className="sdaa-memory-table widefat striped">
 					<thead>
 						<tr>
 							<th>{ __( 'Category', 'sd-ai-agent' ) }</th>
@@ -176,13 +176,13 @@ export default function MemoryManager() {
 						{ memories.map( ( memory ) => (
 							<tr key={ memory.id }>
 								<td>
-									<span className="sd-ai-agent-memory-category">
+									<span className="sdaa-memory-category">
 										{ memory.category.replace( /_/g, ' ' ) }
 									</span>
 								</td>
 								<td>{ memory.content }</td>
 								<td>
-									<div className="sd-ai-agent-memory-actions">
+									<div className="sdaa-memory-actions">
 										<Button
 											icon={ pencil }
 											size="small"

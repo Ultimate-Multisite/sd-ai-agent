@@ -64,7 +64,7 @@ export default function RunList( { runs, onViewRun, onDeleteRun, isLoading } ) {
 
 	if ( isLoading && runs.length === 0 ) {
 		return (
-			<div className="sd-ai-agent-benchmark-loading">
+			<div className="sdaa-benchmark-loading">
 				<Spinner />
 			</div>
 		);
@@ -74,7 +74,7 @@ export default function RunList( { runs, onViewRun, onDeleteRun, isLoading } ) {
 		return (
 			<Card>
 				<CardBody>
-					<div className="sd-ai-agent-benchmark-empty">
+					<div className="sdaa-benchmark-empty">
 						<p>{ __( 'No benchmark runs yet.', 'sd-ai-agent' ) }</p>
 						<p>
 							{ __(
@@ -89,7 +89,7 @@ export default function RunList( { runs, onViewRun, onDeleteRun, isLoading } ) {
 	}
 
 	return (
-		<div className="sd-ai-agent-benchmark-run-list">
+		<div className="sdaa-benchmark-run-list">
 			<Card>
 				<CardHeader>
 					<h2>{ __( 'Benchmark History', 'sd-ai-agent' ) }</h2>
@@ -124,7 +124,7 @@ export default function RunList( { runs, onViewRun, onDeleteRun, isLoading } ) {
 									<td>{ run.test_suite }</td>
 									<td>
 										<span
-											className={ `sd-ai-agent-benchmark-status ${ getStatusClass(
+											className={ `sdaa-benchmark-status ${ getStatusClass(
 												run.status
 											) }` }
 										>

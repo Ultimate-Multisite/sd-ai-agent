@@ -4,20 +4,20 @@
  * Provides login, navigation, and common assertion utilities
  * for testing the Superdav AI Agent plugin in a wp-env environment.
  *
- * Selector reference — chat redesign (gaa-cr-* classes)
+ * Selector reference — chat redesign (sdaa-cr-* classes)
  * -------------------------------------------------------
- * The admin page chat UI was redesigned. Old sd-ai-agent-chat-panel
+ * The admin page chat UI was redesigned. Old sdaa-chat-panel
  * selectors no longer apply. Mapping used throughout this file:
  *
  *   Old selector                                     → New selector
- *   .sd-ai-agent-chat-panel:not(.is-compact)     → .gaa-cr
- *   …chat-panel .sd-ai-agent-input               → .gaa-cr .gaa-cr-input-textarea
- *   …chat-panel .sd-ai-agent-send-btn            → .gaa-cr .gaa-cr-send-btn:not(.is-stop)
- *   …chat-panel .sd-ai-agent-stop-btn            → .gaa-cr .gaa-cr-send-btn.is-stop
- *   …chat-panel .sd-ai-agent-messages            → .gaa-cr .gaa-cr-messages
- *   …chat-panel .sd-ai-agent-message-row         → .gaa-cr .gaa-cr-msg-row
- *   .sd-ai-agent-session-item                    → .gaa-cr-session-row
- *   .sd-ai-agent-session-empty                   → .gaa-cr-session-empty
+ *   .sdaa-chat-panel:not(.is-compact)     → .sdaa-cr
+ *   …chat-panel .sdaa-input               → .sdaa-cr .sdaa-cr-input-textarea
+ *   …chat-panel .sdaa-send-btn            → .sdaa-cr .sdaa-cr-send-btn:not(.is-stop)
+ *   …chat-panel .sdaa-stop-btn            → .sdaa-cr .sdaa-cr-send-btn.is-stop
+ *   …chat-panel .sdaa-messages            → .sdaa-cr .sdaa-cr-messages
+ *   …chat-panel .sdaa-message-row         → .sdaa-cr .sdaa-cr-msg-row
+ *   .sdaa-session-item                    → .sdaa-cr-session-row
+ *   .sdaa-session-empty                   → .sdaa-cr-session-empty
  */
 
 const WP_ADMIN_USER = process.env.WP_ADMIN_USER || 'admin';
@@ -108,21 +108,21 @@ async function goToAgentPage( page ) {
 	await Promise.all( [ sessionsResponsePromise, sharedSessionsResponsePromise ] );
 
 	// Wait for the unified admin app root to be present. The SPA mounts into
-	// #sd-ai-agent-root and renders .sd-ai-agent-unified-admin once React
+	// #sdaa-root and renders .sdaa-unified-admin once React
 	// has hydrated. Use 30 s — WP 6.9 CI runners can be slow to render the SPA
 	// even with 2 parallel workers.
 	await page
-		.locator( '.sd-ai-agent-unified-admin' )
+		.locator( '.sdaa-unified-admin' )
 		.waitFor( { state: 'visible', timeout: 30_000 } )
 		.catch( () => {} ); // Non-fatal: some tests navigate away before app renders.
 
 	// Wait for the chat container or a visible session row/empty state.
-	// ChatRoute mounts the chat app into #sd-ai-agent-chat-container.
-	// The redesigned sidebar uses gaa-cr-session-row (was sd-ai-agent-session-item)
-	// and gaa-cr-session-empty (was sd-ai-agent-session-empty).
+	// ChatRoute mounts the chat app into #sdaa-chat-container.
+	// The redesigned sidebar uses sdaa-cr-session-row (was sdaa-session-item)
+	// and sdaa-cr-session-empty (was sdaa-session-empty).
 	await page
 		.locator(
-			'#sd-ai-agent-chat-container, .gaa-cr-session-row, .gaa-cr-session-empty'
+			'#sdaa-chat-container, .sdaa-cr-session-row, .sdaa-cr-session-empty'
 		)
 		.first()
 		.waitFor( { state: 'visible', timeout: 10_000 } )
@@ -144,9 +144,9 @@ async function goToAdminDashboard( page ) {
 	// The launcher (FAB) renders after FloatingWidget mounts and fetchSettings()
 	// resolves. Without this wait, tests that immediately click the launcher can
 	// time out when the CI runner is under load.
-	// The redesign (#1157) renamed .sd-ai-agent-fab to .gaa-w-launcher.
+	// The redesign (#1157) renamed .sdaa-fab to .sdaa-w-launcher.
 	await page
-		.locator( '.gaa-w-launcher' )
+		.locator( '.sdaa-w-launcher' )
 		.waitFor( { state: 'visible', timeout: 15_000 } )
 		.catch( () => {} ); // Non-fatal: some tests may not need the launcher.
 }
@@ -154,46 +154,46 @@ async function goToAdminDashboard( page ) {
 /**
  * Wait for the floating action button (launcher) to be visible.
  *
- * The redesign (#1157) replaced the legacy .sd-ai-agent-fab class with
- * .gaa-w-launcher in the new WidgetLauncher component.
+ * The redesign (#1157) replaced the legacy .sdaa-fab class with
+ * .sdaa-w-launcher in the new WidgetLauncher component.
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  * @return {import('@playwright/test').Locator} The launcher locator.
  */
 function getFloatingButton( page ) {
-	return page.locator( '.gaa-w-launcher' );
+	return page.locator( '.sdaa-w-launcher' );
 }
 
 /**
  * Get the floating widget panel.
  *
- * The redesign (#1157) replaced the legacy .sd-ai-agent-floating-panel
- * class with .gaa-w-panel in the new WidgetPanel component.
+ * The redesign (#1157) replaced the legacy .sdaa-floating-panel
+ * class with .sdaa-w-panel in the new WidgetPanel component.
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  * @return {import('@playwright/test').Locator} The floating panel locator.
  */
 function getFloatingPanel( page ) {
-	return page.locator( '.gaa-w-panel' );
+	return page.locator( '.sdaa-w-panel' );
 }
 
 /**
  * Get the chat message input textarea.
  *
  * The admin page chat UI uses the redesigned ChatRedesign component with
- * gaa-cr-* CSS classes. The textarea is .gaa-cr-input-textarea inside .gaa-cr.
+ * sdaa-cr-* CSS classes. The textarea is .sdaa-cr-input-textarea inside .sdaa-cr.
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  * @return {import('@playwright/test').Locator} The textarea locator.
  */
 function getMessageInput( page ) {
-	return page.locator( '.gaa-cr .gaa-cr-input-textarea' ).first();
+	return page.locator( '.sdaa-cr .sdaa-cr-input-textarea' ).first();
 }
 
 /**
  * Get the send message button.
  *
- * In the ChatRedesign InputArea, the send button has class gaa-cr-send-btn.
+ * In the ChatRedesign InputArea, the send button has class sdaa-cr-send-btn.
  * When generating, the same position gets class is-stop. The :not(.is-stop)
  * guard targets the send button only.
  *
@@ -201,7 +201,7 @@ function getMessageInput( page ) {
  * @return {import('@playwright/test').Locator} The send button locator.
  */
 function getSendButton( page ) {
-	return page.locator( '.gaa-cr .gaa-cr-send-btn:not(.is-stop)' ).first();
+	return page.locator( '.sdaa-cr .sdaa-cr-send-btn:not(.is-stop)' ).first();
 }
 
 /**
@@ -214,46 +214,46 @@ function getSendButton( page ) {
  * @return {import('@playwright/test').Locator} The stop button locator.
  */
 function getStopButton( page ) {
-	return page.locator( '.gaa-cr .gaa-cr-send-btn.is-stop' ).first();
+	return page.locator( '.sdaa-cr .sdaa-cr-send-btn.is-stop' ).first();
 }
 
 /**
  * Get the message list container.
  *
- * In the ChatRedesign MessageList, the scroll container has class gaa-cr-messages.
+ * In the ChatRedesign MessageList, the scroll container has class sdaa-cr-messages.
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  * @return {import('@playwright/test').Locator} The message list locator.
  */
 function getMessageList( page ) {
-	return page.locator( '.gaa-cr .gaa-cr-messages' ).first();
+	return page.locator( '.sdaa-cr .sdaa-cr-messages' ).first();
 }
 
 /**
  * Get all message rows in the chat.
  *
  * In the ChatRedesign message-items, every rendered message row has class
- * gaa-cr-msg-row (was sd-ai-agent-message-row in the old ChatPanel).
+ * sdaa-cr-msg-row (was sdaa-message-row in the old ChatPanel).
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  * @return {import('@playwright/test').Locator} The message rows locator.
  */
 function getMessageRows( page ) {
-	return page.locator( '.gaa-cr .gaa-cr-msg-row' );
+	return page.locator( '.sdaa-cr .sdaa-cr-msg-row' );
 }
 
 /**
- * Get the admin page chat root (the ChatRedesign .gaa-cr element).
+ * Get the admin page chat root (the ChatRedesign .sdaa-cr element).
  *
- * The admin page now renders ChatRedesign with root class .gaa-cr instead of
- * the old ChatPanel (.sd-ai-agent-chat-panel). The floating widget and
+ * The admin page now renders ChatRedesign with root class .sdaa-cr instead of
+ * the old ChatPanel (.sdaa-chat-panel). The floating widget and
  * compact panels do not render the ChatRedesign root, so this is unambiguous.
  *
  * @param {import('@playwright/test').Page} page - Playwright page object.
  * @return {import('@playwright/test').Locator} The chat redesign root locator.
  */
 function getChatPanel( page ) {
-	return page.locator( '.gaa-cr' ).first();
+	return page.locator( '.sdaa-cr' ).first();
 }
 
 /**
@@ -261,7 +261,7 @@ function getChatPanel( page ) {
  *
  * The UnifiedAdminMenu uses hash-based routing. The changes route is at
  * admin.php?page=sd-ai-agent#/changes. The old URL
- * (tools.php?page=sd-ai-agent-changes) triggers a wp_safe_redirect()
+ * (tools.php?page=sdaa-changes) triggers a wp_safe_redirect()
  * which causes Playwright to hang waiting for networkidle on the redirect
  * target — use the canonical hash URL directly to avoid the redirect.
  *
@@ -276,7 +276,7 @@ async function goToChangesPage( page ) {
 	// under load. CI currently uses 2 parallel workers for both WP 6.9 and
 	// trunk to reduce resource contention, but a generous timeout is still needed.
 	await page
-		.locator( '.sd-ai-agent-route-changes' )
+		.locator( '.sdaa-route-changes' )
 		.waitFor( { state: 'visible', timeout: 45_000 } );
 }
 
@@ -285,7 +285,7 @@ async function goToChangesPage( page ) {
  *
  * The UnifiedAdminMenu uses hash-based routing. The settings route is at
  * admin.php?page=sd-ai-agent#/settings. The old URL
- * (tools.php?page=sd-ai-agent-settings) triggers a wp_safe_redirect()
+ * (tools.php?page=sdaa-settings) triggers a wp_safe_redirect()
  * which causes Playwright to hang — use the canonical hash URL directly.
  *
  * The settings route renders a TabPanel with tabs: general, providers, advanced.
@@ -303,7 +303,7 @@ async function goToSettingsPage( page, tabName ) {
 	// under load. CI currently uses 2 parallel workers for both WP 6.9 and
 	// trunk to reduce resource contention, but a generous timeout is still needed.
 	await page
-		.locator( '.sd-ai-agent-route-settings' )
+		.locator( '.sdaa-route-settings' )
 		.waitFor( { state: 'visible', timeout: 45_000 } );
 
 	if ( tabName ) {
@@ -314,9 +314,9 @@ async function goToSettingsPage( page, tabName ) {
 		} );
 		await tabButton.click();
 		// Wait for the tab panel content to render after clicking.
-		// The settings route wraps tabs in .sd-ai-agent-route-settings.
+		// The settings route wraps tabs in .sdaa-route-settings.
 		await page
-			.locator( '.sd-ai-agent-route-settings [role="tabpanel"]' )
+			.locator( '.sdaa-route-settings [role="tabpanel"]' )
 			.waitFor( { state: 'visible', timeout: 10_000 } )
 			.catch( () => {} );
 	}
@@ -336,13 +336,13 @@ async function goToAbilitiesPage( page ) {
 	await page.waitForLoadState( 'domcontentloaded' );
 
 	// Wait for AbilitiesExplorerApp to finish loading abilities.
-	// .sd-ai-agent-abilities-manager is the outer wrapper rendered by
+	// .sdaa-abilities-manager is the outer wrapper rendered by
 	// AbilitiesExplorerApp once the REST fetch completes.
 	// Use 45 s — the abilities REST fetch can be slow on CI runners under
 	// load. CI currently uses 2 parallel workers for both WP 6.9 and trunk
 	// to reduce resource contention, but a generous timeout is still needed.
 	await page
-		.locator( '.sd-ai-agent-abilities-manager' )
+		.locator( '.sdaa-abilities-manager' )
 		.waitFor( { state: 'visible', timeout: 45_000 } );
 }
 
@@ -350,8 +350,8 @@ async function goToAbilitiesPage( page ) {
  * Navigate to the Superdav AI Agent Model Benchmark admin page.
  *
  * The benchmark page is a standalone React SPA registered under Tools:
- * tools.php?page=sd-ai-agent-benchmark. It renders BenchmarkPageApp
- * inside #sd-ai-agent-benchmark-root once the bundle loads.
+ * tools.php?page=sdaa-benchmark. It renders BenchmarkPageApp
+ * inside #sdaa-benchmark-root once the bundle loads.
  *
  * Waits for the benchmark page root element to be present before returning
  * so that tests can immediately assert on page content.
@@ -359,14 +359,14 @@ async function goToAbilitiesPage( page ) {
  * @param {import('@playwright/test').Page} page - Playwright page object.
  */
 async function goToBenchmarkPage( page ) {
-	await page.goto( '/wp-admin/tools.php?page=sd-ai-agent-benchmark' );
+	await page.goto( '/wp-admin/tools.php?page=sdaa-benchmark' );
 	await page.waitForLoadState( 'domcontentloaded' );
 
 	// Wait for the React app to mount into the benchmark root container.
 	// Use 30 s to match the Playwright test timeout — the benchmark bundle
 	// can be slow to mount on CI runners under load.
 	await page
-		.locator( '#sd-ai-agent-benchmark-root, .sd-ai-agent-benchmark-page' )
+		.locator( '#sdaa-benchmark-root, .sdaa-benchmark-page' )
 		.first()
 		.waitFor( { state: 'visible', timeout: 30_000 } )
 		.catch( () => {} ); // Non-fatal: some tests may assert on the wrap before React mounts.
@@ -379,8 +379,8 @@ async function goToBenchmarkPage( page ) {
  * message row is appended synchronously (before any async REST calls), so it
  * persists regardless of whether the backend job succeeds or fails quickly.
  *
- * In the ChatRedesign, message rows use class gaa-cr-msg-row
- * (was sd-ai-agent-message-row in the old ChatPanel).
+ * In the ChatRedesign, message rows use class sdaa-cr-msg-row
+ * (was sdaa-message-row in the old ChatPanel).
  *
  * @param {import('@playwright/test').Page} page    - Playwright page object.
  * @param {number}                          timeout - Max wait in ms (default 5 000).
@@ -388,7 +388,7 @@ async function goToBenchmarkPage( page ) {
  */
 async function waitForMessageSubmitted( page, timeout = 5_000 ) {
 	await page
-		.locator( '.gaa-cr .gaa-cr-msg-row' )
+		.locator( '.sdaa-cr .sdaa-cr-msg-row' )
 		.first()
 		.waitFor( { state: 'visible', timeout } );
 }

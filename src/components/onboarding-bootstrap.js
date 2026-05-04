@@ -10,7 +10,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import STORE_NAME from '../store';
-import ChatPanel from './ChatPanel';
+import ChatRedesign from './chat-redesign';
 
 /**
  * Onboarding bootstrap component — shown after a connector is configured
@@ -24,7 +24,7 @@ import ChatPanel from './ChatPanel';
  * Once the session is ready the component auto-sends a kickoff message so
  * the agent begins exploring the site immediately — no form, no wizard.
  *
- * The user sees the normal ChatPanel throughout. The only difference from
+ * The user sees the normal ChatRedesign throughout. The only difference from
  * a regular session is the locked onboarding system prompt (injected via
  * the system_instruction option in the first message).
  *
@@ -48,7 +48,7 @@ export default function OnboardingBootstrap() {
 			.then( ( data ) => {
 				if ( ! data?.session_id ) {
 					// Fallback: if the endpoint doesn't return a session, the
-					// ChatPanel will create one on the first message.
+					// ChatRedesign will allow the user to start chatting manually.
 					return;
 				}
 
@@ -73,14 +73,9 @@ export default function OnboardingBootstrap() {
 				} );
 			} )
 			.catch( () => {
-				// Non-fatal: fall through to the normal ChatPanel without
-				// the auto-discovery kickoff. The user can start chatting manually.
+				// Non-fatal: the user can start chatting manually.
 			} );
 	}, [ openSession, sendMessage ] );
 
-	return (
-		<div className="sd-ai-agent-onboarding-bootstrap">
-			<ChatPanel />
-		</div>
-	);
+	return <ChatRedesign />;
 }

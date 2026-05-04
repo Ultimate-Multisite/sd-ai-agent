@@ -35,8 +35,8 @@ export default function BootError() {
 	const is403 = bootError.status === 403;
 
 	return (
-		<div className="sd-ai-agent-boot-error">
-			<div className="sd-ai-agent-boot-error__card">
+		<div className="sdaa-boot-error">
+			<div className="sdaa-boot-error__card">
 				<h2>
 					{ is403
 						? __( 'Access Denied', 'sd-ai-agent' )
@@ -53,7 +53,7 @@ export default function BootError() {
 								'sd-ai-agent'
 						  ) }
 				</p>
-				<div className="sd-ai-agent-boot-error__actions">
+				<div className="sdaa-boot-error__actions">
 					<Button
 						variant="primary"
 						onClick={ () => window.location.reload() }
@@ -64,7 +64,7 @@ export default function BootError() {
 						{ __( 'Try Again', 'sd-ai-agent' ) }
 					</Button>
 				</div>
-				<p className="sd-ai-agent-boot-error__hint">
+				<p className="sdaa-boot-error__hint">
 					{ __(
 						'Reloading the page refreshes your session. If the error persists, try logging out and back in.',
 						'sd-ai-agent'
