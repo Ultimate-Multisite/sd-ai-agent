@@ -94,7 +94,7 @@ final class MemoryController extends XWP_REST_Controller {
 		$id = Memory::create( $category, $content );
 
 		if ( false === $id ) {
-			return new WP_Error( 'sd_ai_agent_memory_create_failed', __( 'Failed to create memory.', 'sd-ai-agent' ), array( 'status' => 500 ) );
+			return new WP_Error( 'sd_ai_agent_memory_create_failed', __( 'Failed to create memory.', 'superdav-ai-agent' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response(
@@ -133,7 +133,7 @@ final class MemoryController extends XWP_REST_Controller {
 		$updated = Memory::update( $id, $data );
 
 		if ( ! $updated ) {
-			return new WP_Error( 'sd_ai_agent_memory_update_failed', __( 'Failed to update memory.', 'sd-ai-agent' ), array( 'status' => 500 ) );
+			return new WP_Error( 'sd_ai_agent_memory_update_failed', __( 'Failed to update memory.', 'superdav-ai-agent' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response(
@@ -162,7 +162,7 @@ final class MemoryController extends XWP_REST_Controller {
 		$deleted = Memory::delete( $id );
 
 		if ( ! $deleted ) {
-			return new WP_Error( 'sd_ai_agent_memory_delete_failed', __( 'Failed to delete memory.', 'sd-ai-agent' ), array( 'status' => 500 ) );
+			return new WP_Error( 'sd_ai_agent_memory_delete_failed', __( 'Failed to delete memory.', 'superdav-ai-agent' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response( array( 'deleted' => true ), 200 );

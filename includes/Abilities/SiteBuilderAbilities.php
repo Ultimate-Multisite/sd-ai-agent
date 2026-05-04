@@ -36,8 +36,8 @@ class SiteBuilderAbilities {
 		$ability = new DetectFreshInstallAbility(
 			'sd-ai-agent/detect-fresh-install',
 			[
-				'label'       => __( 'Detect Fresh Install', 'sd-ai-agent' ),
-				'description' => __( 'Check whether this WordPress site is a fresh install with no real content. Returns a boolean and a summary of site state.', 'sd-ai-agent' ),
+				'label'       => __( 'Detect Fresh Install', 'superdav-ai-agent' ),
+				'description' => __( 'Check whether this WordPress site is a fresh install with no real content. Returns a boolean and a summary of site state.', 'superdav-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -54,8 +54,8 @@ class SiteBuilderAbilities {
 		$ability = new SetSiteBuilderModeAbility(
 			'sd-ai-agent/set-site-builder-mode',
 			[
-				'label'       => __( 'Set Site Builder Mode', 'sd-ai-agent' ),
-				'description' => __( 'Enable or disable site builder mode. When enabled, the floating widget opens automatically and the agent uses the site builder interview system prompt.', 'sd-ai-agent' ),
+				'label'       => __( 'Set Site Builder Mode', 'superdav-ai-agent' ),
+				'description' => __( 'Enable or disable site builder mode. When enabled, the floating widget opens automatically and the agent uses the site builder interview system prompt.', 'superdav-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -72,8 +72,8 @@ class SiteBuilderAbilities {
 		$ability = new GetSiteBuilderStatusAbility(
 			'sd-ai-agent/get-site-builder-status',
 			[
-				'label'       => __( 'Get Site Builder Status', 'sd-ai-agent' ),
-				'description' => __( 'Get the current site builder mode status and any collected site information.', 'sd-ai-agent' ),
+				'label'       => __( 'Get Site Builder Status', 'superdav-ai-agent' ),
+				'description' => __( 'Get the current site builder mode status and any collected site information.', 'superdav-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -90,8 +90,8 @@ class SiteBuilderAbilities {
 		$ability = new CompleteSiteBuilderAbility(
 			'sd-ai-agent/complete-site-builder',
 			[
-				'label'       => __( 'Complete Site Builder', 'sd-ai-agent' ),
-				'description' => __( 'Mark the site builder conversation as complete. Disables site builder mode and marks onboarding as done.', 'sd-ai-agent' ),
+				'label'       => __( 'Complete Site Builder', 'superdav-ai-agent' ),
+				'description' => __( 'Mark the site builder conversation as complete. Disables site builder mode and marks onboarding as done.', 'superdav-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -109,8 +109,8 @@ class SiteBuilderAbilities {
 		wp_register_ability(
 			'sd-ai-agent/detect-fresh-install',
 			[
-				'label'         => __( 'Detect Fresh Install', 'sd-ai-agent' ),
-				'description'   => __( 'Check whether this WordPress site is a fresh install with no real content. Returns a boolean and a summary of site state.', 'sd-ai-agent' ),
+				'label'         => __( 'Detect Fresh Install', 'superdav-ai-agent' ),
+				'description'   => __( 'Check whether this WordPress site is a fresh install with no real content. Returns a boolean and a summary of site state.', 'superdav-ai-agent' ),
 				'ability_class' => DetectFreshInstallAbility::class,
 			]
 		);
@@ -118,8 +118,8 @@ class SiteBuilderAbilities {
 		wp_register_ability(
 			'sd-ai-agent/set-site-builder-mode',
 			[
-				'label'         => __( 'Set Site Builder Mode', 'sd-ai-agent' ),
-				'description'   => __( 'Enable or disable site builder mode. When enabled, the floating widget opens automatically and the agent uses the site builder interview system prompt.', 'sd-ai-agent' ),
+				'label'         => __( 'Set Site Builder Mode', 'superdav-ai-agent' ),
+				'description'   => __( 'Enable or disable site builder mode. When enabled, the floating widget opens automatically and the agent uses the site builder interview system prompt.', 'superdav-ai-agent' ),
 				'ability_class' => SetSiteBuilderModeAbility::class,
 			]
 		);
@@ -127,8 +127,8 @@ class SiteBuilderAbilities {
 		wp_register_ability(
 			'sd-ai-agent/get-site-builder-status',
 			[
-				'label'         => __( 'Get Site Builder Status', 'sd-ai-agent' ),
-				'description'   => __( 'Get the current site builder mode status and any collected site information.', 'sd-ai-agent' ),
+				'label'         => __( 'Get Site Builder Status', 'superdav-ai-agent' ),
+				'description'   => __( 'Get the current site builder mode status and any collected site information.', 'superdav-ai-agent' ),
 				'ability_class' => GetSiteBuilderStatusAbility::class,
 			]
 		);
@@ -136,8 +136,8 @@ class SiteBuilderAbilities {
 		wp_register_ability(
 			'sd-ai-agent/complete-site-builder',
 			[
-				'label'         => __( 'Complete Site Builder', 'sd-ai-agent' ),
-				'description'   => __( 'Mark the site builder conversation as complete. Disables site builder mode and marks onboarding as done.', 'sd-ai-agent' ),
+				'label'         => __( 'Complete Site Builder', 'superdav-ai-agent' ),
+				'description'   => __( 'Mark the site builder conversation as complete. Disables site builder mode and marks onboarding as done.', 'superdav-ai-agent' ),
 				'ability_class' => CompleteSiteBuilderAbility::class,
 			]
 		);
@@ -201,11 +201,11 @@ class SiteBuilderAbilities {
 class DetectFreshInstallAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'Detect Fresh Install', 'sd-ai-agent' );
+		return __( 'Detect Fresh Install', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Check whether this WordPress site is a fresh install with no real content. Returns a boolean and a summary of site state.', 'sd-ai-agent' );
+		return __( 'Check whether this WordPress site is a fresh install with no real content. Returns a boolean and a summary of site state.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -234,10 +234,10 @@ class DetectFreshInstallAbility extends AbstractAbility {
 		/** @var array<string, mixed> $input */
 		$result  = SiteBuilderAbilities::check_fresh_install();
 		$message = $result['is_fresh']
-			? __( 'This appears to be a fresh WordPress install with no real content.', 'sd-ai-agent' )
+			? __( 'This appears to be a fresh WordPress install with no real content.', 'superdav-ai-agent' )
 			: sprintf(
 				/* translators: 1: post count, 2: page count */
-				__( 'This site has existing content: %1$d posts and %2$d pages.', 'sd-ai-agent' ),
+				__( 'This site has existing content: %1$d posts and %2$d pages.', 'superdav-ai-agent' ),
 				$result['post_count'],
 				$result['page_count']
 			);
@@ -269,11 +269,11 @@ class DetectFreshInstallAbility extends AbstractAbility {
 class SetSiteBuilderModeAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'Set Site Builder Mode', 'sd-ai-agent' );
+		return __( 'Set Site Builder Mode', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Enable or disable site builder mode. When enabled, the floating widget opens automatically and the agent uses the site builder interview system prompt.', 'sd-ai-agent' );
+		return __( 'Enable or disable site builder mode. When enabled, the floating widget opens automatically and the agent uses the site builder interview system prompt.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -310,8 +310,8 @@ class SetSiteBuilderModeAbility extends AbstractAbility {
 			'success'           => true,
 			'site_builder_mode' => $enabled,
 			'message'           => $enabled
-				? __( 'Site builder mode enabled. The widget will open automatically on the next page load.', 'sd-ai-agent' )
-				: __( 'Site builder mode disabled.', 'sd-ai-agent' ),
+				? __( 'Site builder mode enabled. The widget will open automatically on the next page load.', 'superdav-ai-agent' )
+				: __( 'Site builder mode disabled.', 'superdav-ai-agent' ),
 		];
 	}
 
@@ -339,11 +339,11 @@ class SetSiteBuilderModeAbility extends AbstractAbility {
 class GetSiteBuilderStatusAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'Get Site Builder Status', 'sd-ai-agent' );
+		return __( 'Get Site Builder Status', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Get the current site builder mode status and any collected site information.', 'sd-ai-agent' );
+		return __( 'Get the current site builder mode status and any collected site information.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -377,7 +377,7 @@ class GetSiteBuilderStatusAbility extends AbstractAbility {
 			'onboarding_complete' => (bool) ( $settings['onboarding_complete'] ?? false ),
 			'site_title'          => get_bloginfo( 'name' ),
 			'site_url'            => get_site_url(),
-			'message'             => __( 'Site builder status retrieved.', 'sd-ai-agent' ),
+			'message'             => __( 'Site builder status retrieved.', 'superdav-ai-agent' ),
 		];
 	}
 
@@ -405,11 +405,11 @@ class GetSiteBuilderStatusAbility extends AbstractAbility {
 class CompleteSiteBuilderAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'Complete Site Builder', 'sd-ai-agent' );
+		return __( 'Complete Site Builder', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Mark the site builder conversation as complete. Disables site builder mode and marks onboarding as done.', 'sd-ai-agent' );
+		return __( 'Mark the site builder conversation as complete. Disables site builder mode and marks onboarding as done.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -440,7 +440,7 @@ class CompleteSiteBuilderAbility extends AbstractAbility {
 
 		return [
 			'success' => true,
-			'message' => __( 'Site builder complete. Onboarding marked as done.', 'sd-ai-agent' ),
+			'message' => __( 'Site builder complete. Onboarding marked as done.', 'superdav-ai-agent' ),
 		];
 	}
 

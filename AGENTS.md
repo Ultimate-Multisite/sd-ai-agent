@@ -51,7 +51,7 @@
 - **Imports**: WordPress packages first, then internal dependencies
 - **File structure**: React components in `src/components/`, entry points in `src/`
 - **Styling**: CSS files in same directory as component (`style.css`), prefix all classes with `sd-ai-agent-`
-- **i18n**: Always use `__( 'text', 'sd-ai-agent' )` for translatable strings
+- **i18n**: Always use \`__( 'text', 'superdav-ai-agent' )\` for translatable strings
 - **Hooks**: Use WordPress data hooks (`useSelect`, `useDispatch`) consistently
 - **Build**: Webpack via `@wordpress/scripts` with entry points defined in `webpack.config.js`
 

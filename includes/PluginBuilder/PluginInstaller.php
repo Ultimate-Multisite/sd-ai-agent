@@ -56,7 +56,7 @@ class PluginInstaller {
 		if ( '' === $relative_path ) {
 			return new WP_Error(
 				'sd_ai_agent_empty_path',
-				__( 'File path must not be empty.', 'sd-ai-agent' )
+				__( 'File path must not be empty.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -64,7 +64,7 @@ class PluginInstaller {
 		if ( str_contains( $relative_path, "\0" ) ) {
 			return new WP_Error(
 				'sd_ai_agent_invalid_path',
-				__( 'File path contains invalid characters.', 'sd-ai-agent' )
+				__( 'File path contains invalid characters.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -72,7 +72,7 @@ class PluginInstaller {
 		if ( str_contains( $relative_path, '../' ) || str_contains( $relative_path, '..' . DIRECTORY_SEPARATOR ) ) {
 			return new WP_Error(
 				'sd_ai_agent_path_traversal',
-				__( 'File path contains directory traversal sequences.', 'sd-ai-agent' )
+				__( 'File path contains directory traversal sequences.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -87,7 +87,7 @@ class PluginInstaller {
 		if ( '' === $normalised ) {
 			return new WP_Error(
 				'sd_ai_agent_empty_path',
-				__( 'File path resolves to an empty path after normalisation.', 'sd-ai-agent' )
+				__( 'File path resolves to an empty path after normalisation.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -108,7 +108,7 @@ class PluginInstaller {
 					if ( false !== $real_dir && ! str_starts_with( $real_dir . '/', $real_plugin_dir . '/' ) ) {
 						return new WP_Error(
 							'sd_ai_agent_path_traversal',
-							__( 'File path escapes the plugin directory.', 'sd-ai-agent' )
+							__( 'File path escapes the plugin directory.', 'superdav-ai-agent' )
 						);
 					}
 				}
@@ -139,7 +139,7 @@ class PluginInstaller {
 		if ( ! preg_match( self::SLUG_PATTERN, $slug ) ) {
 			return new WP_Error(
 				'sd_ai_agent_invalid_slug',
-				__( 'Plugin slug must contain only lowercase letters, digits, and hyphens.', 'sd-ai-agent' )
+				__( 'Plugin slug must contain only lowercase letters, digits, and hyphens.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -178,14 +178,14 @@ class PluginInstaller {
 		if ( ! preg_match( self::SLUG_PATTERN, $slug ) ) {
 			return new WP_Error(
 				'sd_ai_agent_invalid_slug',
-				__( 'Plugin slug must contain only lowercase letters, digits, and hyphens.', 'sd-ai-agent' )
+				__( 'Plugin slug must contain only lowercase letters, digits, and hyphens.', 'superdav-ai-agent' )
 			);
 		}
 
 		if ( empty( $files ) ) {
 			return new WP_Error(
 				'sd_ai_agent_no_files',
-				__( 'No plugin files provided for installation.', 'sd-ai-agent' )
+				__( 'No plugin files provided for installation.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -233,14 +233,14 @@ class PluginInstaller {
 		if ( empty( $slug ) ) {
 			return new WP_Error(
 				'sd_ai_agent_invalid_slug',
-				__( 'Plugin slug must not be empty.', 'sd-ai-agent' )
+				__( 'Plugin slug must not be empty.', 'superdav-ai-agent' )
 			);
 		}
 
 		if ( empty( $files ) ) {
 			return new WP_Error(
 				'sd_ai_agent_no_files',
-				__( 'No files provided for update.', 'sd-ai-agent' )
+				__( 'No files provided for update.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -249,7 +249,7 @@ class PluginInstaller {
 			return new WP_Error(
 				'sd_ai_agent_plugin_not_found',
 				/* translators: %s: plugin slug */
-				sprintf( __( 'Plugin directory not found for slug: %s', 'sd-ai-agent' ), $slug )
+				sprintf( __( 'Plugin directory not found for slug: %s', 'superdav-ai-agent' ), $slug )
 			);
 		}
 
@@ -280,7 +280,7 @@ class PluginInstaller {
 				return new WP_Error(
 					'sd_ai_agent_write_failed',
 					/* translators: %s: file path */
-					sprintf( __( 'Could not write file: %s', 'sd-ai-agent' ), $relative_path )
+					sprintf( __( 'Could not write file: %s', 'superdav-ai-agent' ), $relative_path )
 				);
 			}
 
@@ -321,7 +321,7 @@ class PluginInstaller {
 		if ( empty( $slug ) ) {
 			return new WP_Error(
 				'sd_ai_agent_invalid_slug',
-				__( 'Plugin slug must not be empty.', 'sd-ai-agent' )
+				__( 'Plugin slug must not be empty.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -337,7 +337,7 @@ class PluginInstaller {
 			return new WP_Error(
 				'sd_ai_agent_plugin_not_found',
 				/* translators: %s: plugin slug */
-				sprintf( __( 'No generated plugin record found for slug: %s', 'sd-ai-agent' ), $slug )
+				sprintf( __( 'No generated plugin record found for slug: %s', 'superdav-ai-agent' ), $slug )
 			);
 		}
 
@@ -401,14 +401,14 @@ class PluginInstaller {
 		if ( empty( $slug ) ) {
 			return new WP_Error(
 				'sd_ai_agent_invalid_slug',
-				__( 'Plugin slug must not be empty.', 'sd-ai-agent' )
+				__( 'Plugin slug must not be empty.', 'superdav-ai-agent' )
 			);
 		}
 
 		if ( empty( $files ) ) {
 			return new WP_Error(
 				'sd_ai_agent_no_files',
-				__( 'No plugin files provided for installation.', 'sd-ai-agent' )
+				__( 'No plugin files provided for installation.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -420,7 +420,7 @@ class PluginInstaller {
 		if ( false === $canonical_plugins ) {
 			return new WP_Error(
 				'sd_ai_agent_plugins_dir_missing',
-				__( 'WordPress plugins directory not found.', 'sd-ai-agent' )
+				__( 'WordPress plugins directory not found.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -429,7 +429,7 @@ class PluginInstaller {
 			return new WP_Error(
 				'sd_ai_agent_mkdir_failed',
 				/* translators: %s: directory path */
-				sprintf( __( 'Could not create plugin directory: %s', 'sd-ai-agent' ), $plugin_dir )
+				sprintf( __( 'Could not create plugin directory: %s', 'superdav-ai-agent' ), $plugin_dir )
 			);
 		}
 
@@ -446,7 +446,7 @@ class PluginInstaller {
 				return new WP_Error(
 					'sd_ai_agent_mkdir_failed',
 					/* translators: %s: directory path */
-					sprintf( __( 'Could not create directory: %s', 'sd-ai-agent' ), $dest_real )
+					sprintf( __( 'Could not create directory: %s', 'superdav-ai-agent' ), $dest_real )
 				);
 			}
 
@@ -456,7 +456,7 @@ class PluginInstaller {
 				return new WP_Error(
 					'sd_ai_agent_write_failed',
 					/* translators: %s: file path */
-					sprintf( __( 'Could not write file: %s', 'sd-ai-agent' ), $relative_path )
+					sprintf( __( 'Could not write file: %s', 'superdav-ai-agent' ), $relative_path )
 				);
 			}
 
@@ -492,7 +492,7 @@ class PluginInstaller {
 			return new WP_Error(
 				'sd_ai_agent_db_insert_failed',
 				/* translators: %s: database error */
-				sprintf( __( 'Database insert failed: %s', 'sd-ai-agent' ), $wpdb->last_error )
+				sprintf( __( 'Database insert failed: %s', 'superdav-ai-agent' ), $wpdb->last_error )
 			);
 		}
 

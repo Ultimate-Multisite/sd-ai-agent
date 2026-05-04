@@ -31,8 +31,8 @@ class SkillAbilities {
 		wp_register_ability(
 			'ai-agent/skill-load',
 			[
-				'label'               => __( 'Load Skill', 'sd-ai-agent' ),
-				'description'         => __( 'Load the full instructions for a specific skill guide by its slug.', 'sd-ai-agent' ),
+				'label'               => __( 'Load Skill', 'superdav-ai-agent' ),
+				'description'         => __( 'Load the full instructions for a specific skill guide by its slug.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -69,8 +69,8 @@ class SkillAbilities {
 		wp_register_ability(
 			'ai-agent/skill-list',
 			[
-				'label'               => __( 'List Skills', 'sd-ai-agent' ),
-				'description'         => __( 'List all available skill guides with their slugs, names, and descriptions.', 'sd-ai-agent' ),
+				'label'               => __( 'List Skills', 'superdav-ai-agent' ),
+				'description'         => __( 'List all available skill guides with their slugs, names, and descriptions.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',

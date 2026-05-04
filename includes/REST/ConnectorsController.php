@@ -180,7 +180,7 @@ final class ConnectorsController {
 		if ( ! array_key_exists( $provider_id, self::PROVIDERS ) ) {
 			return new WP_Error(
 				'invalid_provider',
-				__( 'Unknown provider ID.', 'sd-ai-agent' ),
+				__( 'Unknown provider ID.', 'superdav-ai-agent' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -188,7 +188,7 @@ final class ConnectorsController {
 		if ( '' === $api_key ) {
 			return new WP_Error(
 				'empty_api_key',
-				__( 'API key cannot be empty. Use DELETE to clear.', 'sd-ai-agent' ),
+				__( 'API key cannot be empty. Use DELETE to clear.', 'superdav-ai-agent' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -224,7 +224,7 @@ final class ConnectorsController {
 		if ( ! array_key_exists( $provider_id, self::PROVIDERS ) ) {
 			return new WP_Error(
 				'invalid_provider',
-				__( 'Unknown provider ID.', 'sd-ai-agent' ),
+				__( 'Unknown provider ID.', 'superdav-ai-agent' ),
 				array( 'status' => 400 )
 			);
 		}

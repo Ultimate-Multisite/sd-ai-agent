@@ -32,8 +32,8 @@ class DesignSystemAbilities {
 		wp_register_ability(
 			'sd-ai-agent/inject-custom-css',
 			[
-				'label'               => __( 'Inject Custom CSS', 'sd-ai-agent' ),
-				'description'         => __( 'Inject or replace custom CSS for the site. Appends to or replaces the Additional CSS stored in the Customizer (wp_get_custom_css / wp_update_custom_css_post). Use to apply brand colours, typography overrides, or layout tweaks without editing theme files.', 'sd-ai-agent' ),
+				'label'               => __( 'Inject Custom CSS', 'superdav-ai-agent' ),
+				'description'         => __( 'Inject or replace custom CSS for the site. Appends to or replaces the Additional CSS stored in the Customizer (wp_get_custom_css / wp_update_custom_css_post). Use to apply brand colours, typography overrides, or layout tweaks without editing theme files.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -82,8 +82,8 @@ class DesignSystemAbilities {
 		wp_register_ability(
 			'sd-ai-agent/curated-block-patterns',
 			[
-				'label'               => __( 'Curated Block Patterns', 'sd-ai-agent' ),
-				'description'         => __( 'Register a curated block pattern for the site. Patterns are stored as custom post types (wp_block) and appear in the block inserter. Provide a title, description, category, and the serialised block content.', 'sd-ai-agent' ),
+				'label'               => __( 'Curated Block Patterns', 'superdav-ai-agent' ),
+				'description'         => __( 'Register a curated block pattern for the site. Patterns are stored as custom post types (wp_block) and appear in the block inserter. Provide a title, description, category, and the serialised block content.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -146,8 +146,8 @@ class DesignSystemAbilities {
 		wp_register_ability(
 			'sd-ai-agent/set-site-logo',
 			[
-				'label'               => __( 'Set Site Logo', 'sd-ai-agent' ),
-				'description'         => __( 'Set or remove the site logo. Accepts a media attachment ID or a URL to an image already in the media library. To upload a new image first, use the media-upload ability.', 'sd-ai-agent' ),
+				'label'               => __( 'Set Site Logo', 'superdav-ai-agent' ),
+				'description'         => __( 'Set or remove the site logo. Accepts a media attachment ID or a URL to an image already in the media library. To upload a new image first, use the media-upload ability.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -194,8 +194,8 @@ class DesignSystemAbilities {
 		wp_register_ability(
 			'sd-ai-agent/theme-json-presets',
 			[
-				'label'               => __( 'Theme JSON Presets', 'sd-ai-agent' ),
-				'description'         => __( 'Read or update theme.json global styles presets (colour palette, font sizes, spacing scale, border radius). Changes are written to the user-level theme.json override (wp_global_styles CPT) so they survive theme updates. Use "get" to inspect current values before modifying.', 'sd-ai-agent' ),
+				'label'               => __( 'Theme JSON Presets', 'superdav-ai-agent' ),
+				'description'         => __( 'Read or update theme.json global styles presets (colour palette, font sizes, spacing scale, border radius). Changes are written to the user-level theme.json override (wp_global_styles CPT) so they survive theme updates. Use "get" to inspect current values before modifying.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -283,7 +283,7 @@ class DesignSystemAbilities {
 				'mode'       => $mode,
 				'preview'    => true,
 				'css_length' => strlen( $resulting_css ),
-				'message'    => __( 'Preview only — no changes saved.', 'sd-ai-agent' ),
+				'message'    => __( 'Preview only — no changes saved.', 'superdav-ai-agent' ),
 			];
 		}
 
@@ -300,8 +300,8 @@ class DesignSystemAbilities {
 			'preview'    => false,
 			'css_length' => strlen( $resulting_css ),
 			'message'    => 'append' === $mode
-				? __( 'Custom CSS appended successfully.', 'sd-ai-agent' )
-				: __( 'Custom CSS replaced successfully.', 'sd-ai-agent' ),
+				? __( 'Custom CSS appended successfully.', 'superdav-ai-agent' )
+				: __( 'Custom CSS replaced successfully.', 'superdav-ai-agent' ),
 		];
 	}
 
@@ -344,7 +344,7 @@ class DesignSystemAbilities {
 				'success'       => true,
 				'attachment_id' => 0,
 				'logo_url'      => '',
-				'message'       => __( 'Site logo removed.', 'sd-ai-agent' ),
+				'message'       => __( 'Site logo removed.', 'superdav-ai-agent' ),
 			];
 		}
 
@@ -397,7 +397,7 @@ class DesignSystemAbilities {
 			'logo_url'      => is_string( $logo_url ) ? $logo_url : '',
 			'message'       => sprintf(
 				/* translators: %d: attachment ID */
-				__( 'Site logo set to attachment %d.', 'sd-ai-agent' ),
+				__( 'Site logo set to attachment %d.', 'superdav-ai-agent' ),
 				$attachment_id
 			),
 		];
@@ -506,7 +506,7 @@ class DesignSystemAbilities {
 			'slug'    => $slug,
 			'message' => sprintf(
 				/* translators: %s: pattern title */
-				__( 'Block pattern "%s" registered successfully.', 'sd-ai-agent' ),
+				__( 'Block pattern "%s" registered successfully.', 'superdav-ai-agent' ),
 				$title
 			),
 		];
@@ -557,7 +557,7 @@ class DesignSystemAbilities {
 			'total'    => count( $patterns ),
 			'message'  => sprintf(
 				/* translators: %d: pattern count */
-				__( 'Found %d block pattern(s).', 'sd-ai-agent' ),
+				__( 'Found %d block pattern(s).', 'superdav-ai-agent' ),
 				count( $patterns )
 			),
 		];
@@ -606,7 +606,7 @@ class DesignSystemAbilities {
 			'slug'    => $slug,
 			'message' => sprintf(
 				/* translators: %s: pattern slug */
-				__( 'Block pattern "%s" deleted.', 'sd-ai-agent' ),
+				__( 'Block pattern "%s" deleted.', 'superdav-ai-agent' ),
 				$slug
 			),
 		];
@@ -626,7 +626,7 @@ class DesignSystemAbilities {
 				'action'        => 'get',
 				'global_styles' => (object) [],
 				'post_id'       => 0,
-				'message'       => __( 'No user-level global styles override found. Theme defaults are active.', 'sd-ai-agent' ),
+				'message'       => __( 'No user-level global styles override found. Theme defaults are active.', 'superdav-ai-agent' ),
 			];
 		}
 
@@ -640,7 +640,7 @@ class DesignSystemAbilities {
 			'action'        => 'get',
 			'global_styles' => $decoded,
 			'post_id'       => $post->ID,
-			'message'       => __( 'Global styles retrieved.', 'sd-ai-agent' ),
+			'message'       => __( 'Global styles retrieved.', 'superdav-ai-agent' ),
 		];
 	}
 
@@ -704,7 +704,7 @@ class DesignSystemAbilities {
 			'action'        => 'update',
 			'global_styles' => $merged,
 			'post_id'       => is_int( $result ) ? $result : ( $post ? $post->ID : 0 ),
-			'message'       => __( 'Global styles updated successfully.', 'sd-ai-agent' ),
+			'message'       => __( 'Global styles updated successfully.', 'superdav-ai-agent' ),
 		];
 	}
 
@@ -722,7 +722,7 @@ class DesignSystemAbilities {
 				'action'        => 'reset',
 				'global_styles' => (object) [],
 				'post_id'       => 0,
-				'message'       => __( 'No user-level global styles to reset.', 'sd-ai-agent' ),
+				'message'       => __( 'No user-level global styles to reset.', 'superdav-ai-agent' ),
 			];
 		}
 
@@ -737,7 +737,7 @@ class DesignSystemAbilities {
 			'action'        => 'reset',
 			'global_styles' => (object) [],
 			'post_id'       => 0,
-			'message'       => __( 'Global styles reset to theme defaults.', 'sd-ai-agent' ),
+			'message'       => __( 'Global styles reset to theme defaults.', 'superdav-ai-agent' ),
 		];
 	}
 

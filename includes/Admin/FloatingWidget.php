@@ -120,7 +120,7 @@ class FloatingWidget {
 			true
 		);
 
-		wp_set_script_translations( 'sd-ai-agent-floating-widget', 'sd-ai-agent' );
+		wp_set_script_translations( 'sd-ai-agent-floating-widget', 'superdav-ai-agent' );
 
 		// WP 7.0+: enqueue the `@wordpress/abilities` script module so our
 		// client-side ability registry (src/abilities/*) can resolve the

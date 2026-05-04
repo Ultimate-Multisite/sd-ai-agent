@@ -29,7 +29,7 @@ class Knowledge {
 		$post = get_post( $post_id );
 
 		if ( ! $post || 'publish' !== $post->post_status ) {
-			return new WP_Error( 'invalid_post', __( 'Post not found or not published.', 'sd-ai-agent' ) );
+			return new WP_Error( 'invalid_post', __( 'Post not found or not published.', 'superdav-ai-agent' ) );
 		}
 
 		// Build text content: title + plain-text body.
@@ -37,7 +37,7 @@ class Knowledge {
 		$content = trim( $content );
 
 		if ( empty( $content ) ) {
-			return new WP_Error( 'empty_content', __( 'Post has no text content to index.', 'sd-ai-agent' ) );
+			return new WP_Error( 'empty_content', __( 'Post has no text content to index.', 'superdav-ai-agent' ) );
 		}
 
 		// Compute hash for change detection.
@@ -75,7 +75,7 @@ class Knowledge {
 			);
 
 			if ( ! $source_id ) {
-				return new WP_Error( 'db_error', __( 'Failed to create source record.', 'sd-ai-agent' ) );
+				return new WP_Error( 'db_error', __( 'Failed to create source record.', 'superdav-ai-agent' ) );
 			}
 		}
 
@@ -185,7 +185,7 @@ class Knowledge {
 			);
 
 			if ( ! $source_id ) {
-				return new WP_Error( 'db_error', __( 'Failed to create source record.', 'sd-ai-agent' ) );
+				return new WP_Error( 'db_error', __( 'Failed to create source record.', 'superdav-ai-agent' ) );
 			}
 		}
 
@@ -221,7 +221,7 @@ class Knowledge {
 		$collection = KnowledgeDatabase::get_collection( $collection_id );
 
 		if ( ! $collection ) {
-			return new WP_Error( 'not_found', __( 'Collection not found.', 'sd-ai-agent' ) );
+			return new WP_Error( 'not_found', __( 'Collection not found.', 'superdav-ai-agent' ) );
 		}
 
 		$config     = $collection->source_config;

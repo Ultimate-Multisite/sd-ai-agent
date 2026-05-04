@@ -286,7 +286,7 @@ final class KnowledgeController {
 		if ( $existing ) {
 			return new WP_Error(
 				'sd_ai_agent_collection_exists',
-				__( 'A collection with this slug already exists.', 'sd-ai-agent' ),
+				__( 'A collection with this slug already exists.', 'superdav-ai-agent' ),
 				array( 'status' => 409 )
 			);
 		}
@@ -304,7 +304,7 @@ final class KnowledgeController {
 		if ( ! $id ) {
 			return new WP_Error(
 				'sd_ai_agent_collection_create_failed',
-				__( 'Failed to create collection.', 'sd-ai-agent' ),
+				__( 'Failed to create collection.', 'superdav-ai-agent' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -312,7 +312,7 @@ final class KnowledgeController {
 		$collection = KnowledgeDatabase::get_collection( $id );
 
 		if ( ! $collection ) {
-			return new WP_Error( 'sd_ai_agent_collection_not_found', __( 'Collection not found after creation.', 'sd-ai-agent' ), array( 'status' => 500 ) );
+			return new WP_Error( 'sd_ai_agent_collection_not_found', __( 'Collection not found after creation.', 'superdav-ai-agent' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response(
@@ -361,7 +361,7 @@ final class KnowledgeController {
 		if ( ! $updated ) {
 			return new WP_Error(
 				'sd_ai_agent_collection_update_failed',
-				__( 'Failed to update collection.', 'sd-ai-agent' ),
+				__( 'Failed to update collection.', 'superdav-ai-agent' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -369,7 +369,7 @@ final class KnowledgeController {
 		$collection = KnowledgeDatabase::get_collection( $id );
 
 		if ( ! $collection ) {
-			return new WP_Error( 'sd_ai_agent_collection_not_found', __( 'Collection not found after update.', 'sd-ai-agent' ), array( 'status' => 500 ) );
+			return new WP_Error( 'sd_ai_agent_collection_not_found', __( 'Collection not found after update.', 'superdav-ai-agent' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response(
@@ -403,7 +403,7 @@ final class KnowledgeController {
 		if ( ! $deleted ) {
 			return new WP_Error(
 				'sd_ai_agent_collection_delete_failed',
-				__( 'Failed to delete collection.', 'sd-ai-agent' ),
+				__( 'Failed to delete collection.', 'superdav-ai-agent' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -481,18 +481,18 @@ final class KnowledgeController {
 		$files = $request->get_file_params();
 
 		if ( empty( $files['file'] ) ) {
-			return new WP_Error( 'sd_ai_agent_no_file', __( 'No file uploaded.', 'sd-ai-agent' ), array( 'status' => 400 ) );
+			return new WP_Error( 'sd_ai_agent_no_file', __( 'No file uploaded.', 'superdav-ai-agent' ), array( 'status' => 400 ) );
 		}
 
 		$collection_id = self::get_int_param( $request, 'collection_id' );
 
 		if ( ! $collection_id ) {
-			return new WP_Error( 'sd_ai_agent_no_collection', __( 'Collection ID is required.', 'sd-ai-agent' ), array( 'status' => 400 ) );
+			return new WP_Error( 'sd_ai_agent_no_collection', __( 'Collection ID is required.', 'superdav-ai-agent' ), array( 'status' => 400 ) );
 		}
 
 		$collection = KnowledgeDatabase::get_collection( $collection_id );
 		if ( ! $collection ) {
-			return new WP_Error( 'sd_ai_agent_collection_not_found', __( 'Collection not found.', 'sd-ai-agent' ), array( 'status' => 404 ) );
+			return new WP_Error( 'sd_ai_agent_collection_not_found', __( 'Collection not found.', 'superdav-ai-agent' ), array( 'status' => 404 ) );
 		}
 
 		// Use WordPress media handling to create an attachment.
@@ -542,7 +542,7 @@ final class KnowledgeController {
 		if ( ! $deleted ) {
 			return new WP_Error(
 				'sd_ai_agent_source_delete_failed',
-				__( 'Failed to delete source.', 'sd-ai-agent' ),
+				__( 'Failed to delete source.', 'superdav-ai-agent' ),
 				array( 'status' => 500 )
 			);
 		}

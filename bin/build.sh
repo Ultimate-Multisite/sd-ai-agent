@@ -7,8 +7,8 @@
 #
 # The script:
 #   1. Builds production JS/CSS assets via wp-scripts.
-#   2. Reads the version from the plugin header in sd-ai-agent.php.
-#   3. Creates sd-ai-agent-{version}.zip with standard WP plugin directory structure.
+#   2. Reads the version from the plugin header in superdav-ai-agent.php.
+#   3. Creates superdav-ai-agent-{version}.zip with standard WP plugin directory structure.
 #   4. Excludes everything listed in .distignore plus bin/, .claude/, *.map, and tests.
 
 set -euo pipefail
@@ -18,9 +18,9 @@ PLUGIN_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PLUGIN_DIR"
 
 # ── Read version from plugin header ──
-VERSION="$(grep -m1 '^ \* Version:' sd-ai-agent.php | sed 's/^.*Version:[[:space:]]*//' | tr -d '[:space:]')"
+VERSION="$(grep -m1 '^ \* Version:' superdav-ai-agent.php | sed 's/^.*Version:[[:space:]]*//' | tr -d '[:space:]')"
 if [ -z "$VERSION" ]; then
-	echo "ERROR: Could not read Version from sd-ai-agent.php plugin header." >&2
+	echo "ERROR: Could not read Version from superdav-ai-agent.php plugin header." >&2
 	exit 1
 fi
 
@@ -33,7 +33,7 @@ echo "    Done."
 
 # ── 2. Prepare temp directory ──
 BUILD_DIR="$(mktemp -d)"
-DEST="${BUILD_DIR}/sd-ai-agent"
+DEST="${BUILD_DIR}/superdav-ai-agent"
 mkdir -p "$DEST"
 
 # Temp file for combined exclusion patterns (used by rsync --exclude-from)
@@ -73,11 +73,11 @@ rsync -a --delete \
 echo "    Done."
 
 # ── 5. Create zip ──
-ZIP_NAME="sd-ai-agent-${VERSION}.zip"
+ZIP_NAME="superdav-ai-agent-${VERSION}.zip"
 ZIP_PATH="${PLUGIN_DIR}/${ZIP_NAME}"
 
 echo "==> Creating ${ZIP_NAME}..."
-(cd "$BUILD_DIR" && zip -qr "$ZIP_PATH" sd-ai-agent/)
+(cd "$BUILD_DIR" && zip -qr "$ZIP_PATH" superdav-ai-agent/)
 echo "    Done."
 
 # ── 6. Report ──

@@ -212,7 +212,10 @@ export default function CodeBlock( { language, children } ) {
 					className="sd-ai-agent-code-copy"
 					onClick={ handleCopy }
 					type="button"
-					aria-label={ __( 'Copy code to clipboard', 'sd-ai-agent' ) }
+					aria-label={ __(
+						'Copy code to clipboard',
+						'superdav-ai-agent'
+					) }
 				>
 					{ copied
 						? __( 'Copied!', 'sd-ai-agent' )

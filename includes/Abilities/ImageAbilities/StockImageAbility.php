@@ -38,8 +38,8 @@ class StockImageAbility extends \SdAiAgent\Abilities\AbstractAbility {
 		wp_register_ability(
 			'sd-ai-agent/stock-image',
 			[
-				'label'         => __( 'Stock Image', 'sd-ai-agent' ),
-				'description'   => __( 'Search for a free stock photo by keyword (Openverse CC0 or Pixabay) and import it into the media library. Returns attachment ID and URL. Use this when you need a real photograph or illustration from existing stock libraries.', 'sd-ai-agent' ),
+				'label'         => __( 'Stock Image', 'superdav-ai-agent' ),
+				'description'   => __( 'Search for a free stock photo by keyword (Openverse CC0 or Pixabay) and import it into the media library. Returns attachment ID and URL. Use this when you need a real photograph or illustration from existing stock libraries.', 'superdav-ai-agent' ),
 				'ability_class' => self::class,
 			]
 		);
@@ -49,14 +49,14 @@ class StockImageAbility extends \SdAiAgent\Abilities\AbstractAbility {
 	 * {@inheritdoc}
 	 */
 	protected function label(): string {
-		return __( 'Stock Image', 'sd-ai-agent' );
+		return __( 'Stock Image', 'superdav-ai-agent' );
 	}
 
 	/**
 	 * {@inheritdoc}
 	 */
 	protected function description(): string {
-		return __( 'Search for a free stock photo by keyword (Openverse CC0 or Pixabay) and import it into the media library. Returns attachment ID and URL. Use this when you need a real photograph or illustration from existing stock libraries.', 'sd-ai-agent' );
+		return __( 'Search for a free stock photo by keyword (Openverse CC0 or Pixabay) and import it into the media library. Returns attachment ID and URL. Use this when you need a real photograph or illustration from existing stock libraries.', 'superdav-ai-agent' );
 	}
 
 	/**

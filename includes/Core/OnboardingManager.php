@@ -203,7 +203,7 @@ class OnboardingManager {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return new \WP_Error(
 				'rest_forbidden',
-				__( 'You do not have permission to access this endpoint.', 'sd-ai-agent' ),
+				__( 'You do not have permission to access this endpoint.', 'superdav-ai-agent' ),
 				[ 'status' => 403 ]
 			);
 		}
@@ -249,7 +249,7 @@ class OnboardingManager {
 		return new \WP_REST_Response(
 			[
 				'success' => true,
-				'message' => __( 'Site scan scheduled. Results will be available shortly.', 'sd-ai-agent' ),
+				'message' => __( 'Site scan scheduled. Results will be available shortly.', 'superdav-ai-agent' ),
 			],
 			200
 		);
@@ -274,14 +274,14 @@ class OnboardingManager {
 		$session_id = Database::create_session(
 			[
 				'user_id' => $user_id,
-				'title'   => __( 'Site Discovery', 'sd-ai-agent' ),
+				'title'   => __( 'Site Discovery', 'superdav-ai-agent' ),
 			]
 		);
 
 		if ( ! $session_id ) {
 			return new \WP_Error(
 				'bootstrap_session_failed',
-				__( 'Failed to create bootstrap session.', 'sd-ai-agent' ),
+				__( 'Failed to create bootstrap session.', 'superdav-ai-agent' ),
 				[ 'status' => 500 ]
 			);
 		}
@@ -297,7 +297,7 @@ class OnboardingManager {
 			'params'     => [
 				'message'          => __(
 					'Please explore this WordPress site and present your findings.',
-					'sd-ai-agent'
+					'superdav-ai-agent'
 				),
 				'session_id'       => $session_id,
 				'bootstrap_prompt' => BootstrapPrompt::generate(),
@@ -379,7 +379,7 @@ class OnboardingManager {
 			$bootstrap_prompt = SystemInstructionBuilder::get_onboarding_bootstrap_prompt();
 			$kickoff_message  = __(
 				"Hi! I just set up this plugin and I'm ready to get started.",
-				'sd-ai-agent'
+				'superdav-ai-agent'
 			);
 
 			return new \WP_REST_Response(
@@ -398,12 +398,12 @@ class OnboardingManager {
 		// Auto-detect WooCommerce and save a context memory silently.
 		$woo_active = class_exists( 'WooCommerce' );
 		if ( $woo_active ) {
-			$woo_version = defined( 'WC_VERSION' ) ? (string) WC_VERSION : __( '(unknown version)', 'sd-ai-agent' );
+			$woo_version = defined( 'WC_VERSION' ) ? (string) WC_VERSION : __( '(unknown version)', 'superdav-ai-agent' );
 			Memory::create(
 				'site_info',
 				sprintf(
 					/* translators: %s: WooCommerce version */
-					__( 'WooCommerce %s is active on this site.', 'sd-ai-agent' ),
+					__( 'WooCommerce %s is active on this site.', 'superdav-ai-agent' ),
 					$woo_version
 				)
 			);
@@ -413,7 +413,7 @@ class OnboardingManager {
 		$session_id = Database::create_session(
 			[
 				'user_id'     => get_current_user_id(),
-				'title'       => __( 'Getting started', 'sd-ai-agent' ),
+				'title'       => __( 'Getting started', 'superdav-ai-agent' ),
 				'provider_id' => $all['default_provider'] ?? '',
 				'model_id'    => $all['default_model'] ?? '',
 			]
@@ -422,7 +422,7 @@ class OnboardingManager {
 		if ( ! $session_id ) {
 			return new \WP_Error(
 				'bootstrap_session_failed',
-				__( 'Failed to create bootstrap session.', 'sd-ai-agent' ),
+				__( 'Failed to create bootstrap session.', 'superdav-ai-agent' ),
 				[ 'status' => 500 ]
 			);
 		}
@@ -439,7 +439,7 @@ class OnboardingManager {
 		// Keeping it short and natural — the system prompt handles exploration.
 		$kickoff_message = __(
 			"Hi! I just set up this plugin and I'm ready to get started.",
-			'sd-ai-agent'
+			'superdav-ai-agent'
 		);
 
 		return new \WP_REST_Response(

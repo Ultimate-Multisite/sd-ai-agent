@@ -43,7 +43,7 @@ class AutomationRunner {
 		if ( ! isset( $schedules['weekly'] ) ) {
 			$schedules['weekly'] = [
 				'interval' => WEEK_IN_SECONDS,
-				'display'  => __( 'Once Weekly', 'sd-ai-agent' ),
+				'display'  => __( 'Once Weekly', 'superdav-ai-agent' ),
 			];
 		}
 		return $schedules;

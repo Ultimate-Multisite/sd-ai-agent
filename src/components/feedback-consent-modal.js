@@ -171,7 +171,10 @@ export default function FeedbackConsentModal( {
 			setTimeout( onClose, 1500 );
 		} catch {
 			setError(
-				__( 'Failed to send report. Please try again.', 'sd-ai-agent' )
+				__(
+					'Failed to send report. Please try again.',
+					'superdav-ai-agent'
+				)
 			);
 			setIsSending( false );
 		}
@@ -198,13 +201,13 @@ export default function FeedbackConsentModal( {
 			>
 				<div className="sd-ai-agent-feedback-modal__header">
 					<h3 id="sd-ai-agent-feedback-title">
-						{ __( 'Send Feedback Report', 'sd-ai-agent' ) }
+						{ __( 'Send Feedback Report', 'superdav-ai-agent' ) }
 					</h3>
 					<button
 						type="button"
 						className="sd-ai-agent-feedback-modal__close"
 						onClick={ onClose }
-						aria-label={ __( 'Close', 'sd-ai-agent' ) }
+						aria-label={ __( 'Close', 'superdav-ai-agent' ) }
 					>
 						&times;
 					</button>
@@ -212,14 +215,17 @@ export default function FeedbackConsentModal( {
 				<div className="sd-ai-agent-feedback-modal__body">
 					{ isSent ? (
 						<p className="sd-ai-agent-feedback-modal__success">
-							{ __( 'Report sent. Thank you!', 'sd-ai-agent' ) }
+							{ __(
+								'Report sent. Thank you!',
+								'superdav-ai-agent'
+							) }
 						</p>
 					) : (
 						<>
 							<p className="sd-ai-agent-feedback-modal__notice">
 								{ __(
 									'No passwords, API keys, or credentials are included. Server paths are anonymized. Review the full payload below.',
-									'sd-ai-agent'
+									'superdav-ai-agent'
 								) }
 							</p>
 
@@ -230,7 +236,7 @@ export default function FeedbackConsentModal( {
 										<p className="sd-ai-agent-feedback-modal__stats-loading">
 											{ __(
 												'Loading report preview…',
-												'sd-ai-agent'
+												'superdav-ai-agent'
 											) }
 										</p>
 									) }
@@ -239,7 +245,7 @@ export default function FeedbackConsentModal( {
 											<li>
 												{ __(
 													'Messages:',
-													'sd-ai-agent'
+													'superdav-ai-agent'
 												) }{ ' ' }
 												<strong>
 													{ summary.message_count }
@@ -248,7 +254,7 @@ export default function FeedbackConsentModal( {
 											<li>
 												{ __(
 													'Tool calls:',
-													'sd-ai-agent'
+													'superdav-ai-agent'
 												) }{ ' ' }
 												<strong>
 													{ summary.tool_call_count }
@@ -257,7 +263,7 @@ export default function FeedbackConsentModal( {
 											<li>
 												{ __(
 													'Environment keys:',
-													'sd-ai-agent'
+													'superdav-ai-agent'
 												) }{ ' ' }
 												<strong>
 													{ summary.environment_keys
@@ -268,7 +274,7 @@ export default function FeedbackConsentModal( {
 												<li>
 													{ __(
 														'Model:',
-														'sd-ai-agent'
+														'superdav-ai-agent'
 													) }{ ' ' }
 													<strong>
 														{ summary.model_id }
@@ -301,7 +307,7 @@ export default function FeedbackConsentModal( {
 										/>
 										{ __(
 											'Include full conversation (by default only the selected response and 2 surrounding messages are sent)',
-											'sd-ai-agent'
+											'superdav-ai-agent'
 										) }
 									</label>
 								) }
@@ -325,7 +331,7 @@ export default function FeedbackConsentModal( {
 									/>
 									{ __(
 										'Strip tool results (aggressive privacy — keeps tool names and arguments but redacts all outputs)',
-										'sd-ai-agent'
+										'superdav-ai-agent'
 									) }
 								</label>
 							) }
@@ -344,11 +350,11 @@ export default function FeedbackConsentModal( {
 										{ payloadExpanded
 											? __(
 													'Hide full payload ▲',
-													'sd-ai-agent'
+													'superdav-ai-agent'
 											  )
 											: __(
 													'View full payload ▼',
-													'sd-ai-agent'
+													'superdav-ai-agent'
 											  ) }
 									</button>
 									{ payloadExpanded && (
@@ -369,7 +375,7 @@ export default function FeedbackConsentModal( {
 							>
 								{ __(
 									'Describe the issue (optional):',
-									'sd-ai-agent'
+									'superdav-ai-agent'
 								) }
 							</label>
 							<textarea
@@ -382,7 +388,7 @@ export default function FeedbackConsentModal( {
 								rows={ 4 }
 								placeholder={ __(
 									'What went wrong?',
-									'sd-ai-agent'
+									'superdav-ai-agent'
 								) }
 							/>
 							{ error && (
@@ -401,7 +407,7 @@ export default function FeedbackConsentModal( {
 							onClick={ onClose }
 							disabled={ isSending }
 						>
-							{ __( 'Dismiss', 'sd-ai-agent' ) }
+							{ __( 'Dismiss', 'superdav-ai-agent' ) }
 						</button>
 						<button
 							type="button"
@@ -410,8 +416,8 @@ export default function FeedbackConsentModal( {
 							disabled={ isSending }
 						>
 							{ isSending
-								? __( 'Sending\u2026', 'sd-ai-agent' )
-								: __( 'Send Report', 'sd-ai-agent' ) }
+								? __( 'Sending\u2026', 'superdav-ai-agent' )
+								: __( 'Send Report', 'superdav-ai-agent' ) }
 						</button>
 					</div>
 				) }

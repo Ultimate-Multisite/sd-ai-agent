@@ -67,23 +67,23 @@ class ImageAbilities {
 		wp_register_ability(
 			'ai-agent/generate-alt-text',
 			[
-				'label'               => __( 'Generate Alt Text', 'sd-ai-agent' ),
-				'description'         => __( 'Use a vision AI model to generate descriptive, accessibility-compliant alt text for an image. Accepts an attachment ID or image URL.', 'sd-ai-agent' ),
+				'label'               => __( 'Generate Alt Text', 'superdav-ai-agent' ),
+				'description'         => __( 'Use a vision AI model to generate descriptive, accessibility-compliant alt text for an image. Accepts an attachment ID or image URL.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
 						'attachment_id' => [
 							'type'        => 'integer',
-							'description' => __( 'Attachment ID of the image to generate alt text for.', 'sd-ai-agent' ),
+							'description' => __( 'Attachment ID of the image to generate alt text for.', 'superdav-ai-agent' ),
 						],
 						'image_url'     => [
 							'type'        => 'string',
-							'description' => __( 'URL or data URI of the image. Used when attachment_id is not provided.', 'sd-ai-agent' ),
+							'description' => __( 'URL or data URI of the image. Used when attachment_id is not provided.', 'superdav-ai-agent' ),
 						],
 						'context'       => [
 							'type'        => 'string',
-							'description' => __( 'Optional context about the image or surrounding content to improve alt text relevance.', 'sd-ai-agent' ),
+							'description' => __( 'Optional context about the image or surrounding content to improve alt text relevance.', 'superdav-ai-agent' ),
 						],
 					],
 				],
@@ -92,7 +92,7 @@ class ImageAbilities {
 					'properties' => [
 						'alt_text' => [
 							'type'        => 'string',
-							'description' => __( 'Generated alt text for the image (≤ 125 characters).', 'sd-ai-agent' ),
+							'description' => __( 'Generated alt text for the image (≤ 125 characters).', 'superdav-ai-agent' ),
 						],
 					],
 				],
@@ -120,7 +120,7 @@ class ImageAbilities {
 	 */
 	public static function handle_generate_alt_text( array $input ) {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
-			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'superdav-ai-agent' ) );
 		}
 
 		// @phpstan-ignore-next-line
@@ -152,7 +152,7 @@ For images containing text, include the text in your description if it is essent
 Respond with only the alt text, nothing else.
 INSTRUCTION;
 
-		$prompt = __( 'Generate alt text for this image.', 'sd-ai-agent' );
+		$prompt = __( 'Generate alt text for this image.', 'superdav-ai-agent' );
 		if ( ! empty( $context ) ) {
 			$prompt .= "\n\n<additional-context>" . $context . '</additional-context>';
 		}
@@ -174,7 +174,7 @@ INSTRUCTION;
 		}
 
 		if ( empty( $result ) ) {
-			return new WP_Error( 'no_results', __( 'No alt text was generated.', 'sd-ai-agent' ) );
+			return new WP_Error( 'no_results', __( 'No alt text was generated.', 'superdav-ai-agent' ) );
 		}
 
 		$alt_text = trim( (string) $result, '"\'.' );
@@ -198,30 +198,30 @@ INSTRUCTION;
 		wp_register_ability(
 			'ai-agent/generate-image-prompt',
 			[
-				'label'               => __( 'Generate Image Prompt', 'sd-ai-agent' ),
-				'description'         => __( 'Generate a self-contained image-generation prompt from post content or arbitrary text. Suitable for passing directly to an image generation model.', 'sd-ai-agent' ),
+				'label'               => __( 'Generate Image Prompt', 'superdav-ai-agent' ),
+				'description'         => __( 'Generate a self-contained image-generation prompt from post content or arbitrary text. Suitable for passing directly to an image generation model.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
 						'content' => [
 							'type'        => 'string',
-							'description' => __( 'Content to use as inspiration for the generated image.', 'sd-ai-agent' ),
+							'description' => __( 'Content to use as inspiration for the generated image.', 'superdav-ai-agent' ),
 						],
 						'context' => [
 							'type'        => 'string',
-							'description' => __( 'Additional context or a post ID to enrich the prompt.', 'sd-ai-agent' ),
+							'description' => __( 'Additional context or a post ID to enrich the prompt.', 'superdav-ai-agent' ),
 						],
 						'style'   => [
 							'type'        => 'string',
-							'description' => __( 'Optional style instructions to apply to the generated image (e.g. "photorealistic", "watercolour painting").', 'sd-ai-agent' ),
+							'description' => __( 'Optional style instructions to apply to the generated image (e.g. "photorealistic", "watercolour painting").', 'superdav-ai-agent' ),
 						],
 					],
 					'required'   => [ 'content' ],
 				],
 				'output_schema'       => [
 					'type'        => 'string',
-					'description' => __( 'The image generation prompt.', 'sd-ai-agent' ),
+					'description' => __( 'The image generation prompt.', 'superdav-ai-agent' ),
 				],
 				'execute_callback'    => [ __CLASS__, 'handle_generate_image_prompt' ],
 				'permission_callback' => [ __CLASS__, 'permission_edit_posts' ],
@@ -247,7 +247,7 @@ INSTRUCTION;
 	 */
 	public static function handle_generate_image_prompt( array $input ) {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
-			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ai_client_unavailable', __( 'wp_ai_client_prompt() is not available.', 'superdav-ai-agent' ) );
 		}
 
 		// @phpstan-ignore-next-line
@@ -263,7 +263,7 @@ INSTRUCTION;
 				return new WP_Error(
 					'post_not_found',
 					/* translators: %d: Post ID. */
-					sprintf( __( 'Post with ID %d not found.', 'sd-ai-agent' ), absint( $context_input ) )
+					sprintf( __( 'Post with ID %d not found.', 'superdav-ai-agent' ), absint( $context_input ) )
 				);
 			}
 			$content = ! empty( $raw_content ) ? wp_strip_all_tags( $raw_content ) : wp_strip_all_tags( $post->post_content );
@@ -283,7 +283,7 @@ INSTRUCTION;
 		}
 
 		if ( empty( $content ) ) {
-			return new WP_Error( 'content_not_provided', __( 'Content is required to generate an image prompt.', 'sd-ai-agent' ) );
+			return new WP_Error( 'content_not_provided', __( 'Content is required to generate an image prompt.', 'superdav-ai-agent' ) );
 		}
 
 		$system_instruction = <<<'INSTRUCTION'
@@ -339,7 +339,7 @@ INSTRUCTION;
 		}
 
 		if ( empty( $result ) ) {
-			return new WP_Error( 'no_results', __( 'No image prompt was generated.', 'sd-ai-agent' ) );
+			return new WP_Error( 'no_results', __( 'No image prompt was generated.', 'superdav-ai-agent' ) );
 		}
 
 		return sanitize_text_field( trim( (string) $result ) );
@@ -356,35 +356,35 @@ INSTRUCTION;
 		wp_register_ability(
 			'ai-agent/import-base64-image',
 			[
-				'label'               => __( 'Import Base64 Image', 'sd-ai-agent' ),
-				'description'         => __( 'Import a base64-encoded image into the WordPress media library. Returns the attachment ID, URL, and metadata.', 'sd-ai-agent' ),
+				'label'               => __( 'Import Base64 Image', 'superdav-ai-agent' ),
+				'description'         => __( 'Import a base64-encoded image into the WordPress media library. Returns the attachment ID, URL, and metadata.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
 					'properties' => [
 						'data'        => [
 							'type'        => 'string',
-							'description' => __( 'Base64-encoded image data to import.', 'sd-ai-agent' ),
+							'description' => __( 'Base64-encoded image data to import.', 'superdav-ai-agent' ),
 						],
 						'filename'    => [
 							'type'        => 'string',
-							'description' => __( 'Filename for the imported image (without extension).', 'sd-ai-agent' ),
+							'description' => __( 'Filename for the imported image (without extension).', 'superdav-ai-agent' ),
 						],
 						'title'       => [
 							'type'        => 'string',
-							'description' => __( 'Title for the media library attachment.', 'sd-ai-agent' ),
+							'description' => __( 'Title for the media library attachment.', 'superdav-ai-agent' ),
 						],
 						'description' => [
 							'type'        => 'string',
-							'description' => __( 'Description for the media library attachment.', 'sd-ai-agent' ),
+							'description' => __( 'Description for the media library attachment.', 'superdav-ai-agent' ),
 						],
 						'alt_text'    => [
 							'type'        => 'string',
-							'description' => __( 'Alt text for the image.', 'sd-ai-agent' ),
+							'description' => __( 'Alt text for the image.', 'superdav-ai-agent' ),
 						],
 						'mime_type'   => [
 							'type'        => 'string',
-							'description' => __( 'MIME type of the image (e.g. image/png, image/jpeg). Auto-detected if omitted.', 'sd-ai-agent' ),
+							'description' => __( 'MIME type of the image (e.g. image/png, image/jpeg). Auto-detected if omitted.', 'superdav-ai-agent' ),
 						],
 					],
 					'required'   => [ 'data' ],
@@ -394,27 +394,27 @@ INSTRUCTION;
 					'properties' => [
 						'id'          => [
 							'type'        => 'integer',
-							'description' => __( 'Attachment ID.', 'sd-ai-agent' ),
+							'description' => __( 'Attachment ID.', 'superdav-ai-agent' ),
 						],
 						'url'         => [
 							'type'        => 'string',
-							'description' => __( 'Attachment URL.', 'sd-ai-agent' ),
+							'description' => __( 'Attachment URL.', 'superdav-ai-agent' ),
 						],
 						'filename'    => [
 							'type'        => 'string',
-							'description' => __( 'Attachment filename.', 'sd-ai-agent' ),
+							'description' => __( 'Attachment filename.', 'superdav-ai-agent' ),
 						],
 						'title'       => [
 							'type'        => 'string',
-							'description' => __( 'Attachment title.', 'sd-ai-agent' ),
+							'description' => __( 'Attachment title.', 'superdav-ai-agent' ),
 						],
 						'description' => [
 							'type'        => 'string',
-							'description' => __( 'Attachment description.', 'sd-ai-agent' ),
+							'description' => __( 'Attachment description.', 'superdav-ai-agent' ),
 						],
 						'alt_text'    => [
 							'type'        => 'string',
-							'description' => __( 'Attachment alt text.', 'sd-ai-agent' ),
+							'description' => __( 'Attachment alt text.', 'superdav-ai-agent' ),
 						],
 					],
 				],
@@ -444,7 +444,7 @@ INSTRUCTION;
 		$data = $input['data'] ?? '';
 
 		if ( empty( $data ) ) {
-			return new WP_Error( 'missing_data', __( 'Base64 image data is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'missing_data', __( 'Base64 image data is required.', 'superdav-ai-agent' ) );
 		}
 
 		// Strip data URI prefix if present (e.g. "data:image/png;base64,").
@@ -461,7 +461,7 @@ INSTRUCTION;
 		// @phpstan-ignore-next-line
 		$decoded = base64_decode( $data, true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- decoding user-supplied image data, not obfuscation
 		if ( false === $decoded ) {
-			return new WP_Error( 'invalid_base64', __( 'Failed to decode base64 image data.', 'sd-ai-agent' ) );
+			return new WP_Error( 'invalid_base64', __( 'Failed to decode base64 image data.', 'superdav-ai-agent' ) );
 		}
 
 		// Detect MIME type from binary data if not provided.
@@ -472,7 +472,7 @@ INSTRUCTION;
 		}
 
 		if ( empty( $mime_type ) || ! str_starts_with( $mime_type, 'image/' ) ) {
-			return new WP_Error( 'invalid_image', __( 'The provided data is not a recognised image type.', 'sd-ai-agent' ) );
+			return new WP_Error( 'invalid_image', __( 'The provided data is not a recognised image type.', 'superdav-ai-agent' ) );
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -485,7 +485,7 @@ INSTRUCTION;
 
 		if ( false === $written ) {
 			wp_delete_file( $temp_file );
-			return new WP_Error( 'write_failed', __( 'Failed to write image data to a temporary file.', 'sd-ai-agent' ) );
+			return new WP_Error( 'write_failed', __( 'Failed to write image data to a temporary file.', 'superdav-ai-agent' ) );
 		}
 
 		$extension = wp_get_default_extension_for_mime_type( $mime_type ) ?: 'bin';
@@ -555,7 +555,7 @@ INSTRUCTION;
 		if ( ! current_user_can( 'upload_files' ) ) {
 			return new WP_Error(
 				'insufficient_capabilities',
-				__( 'You do not have permission to use AI image abilities.', 'sd-ai-agent' )
+				__( 'You do not have permission to use AI image abilities.', 'superdav-ai-agent' )
 			);
 		}
 		return true;
@@ -577,7 +577,7 @@ INSTRUCTION;
 		if ( ! current_user_can( 'edit_posts' ) ) {
 			return new WP_Error(
 				'insufficient_capabilities',
-				__( 'You do not have permission to use AI image abilities.', 'sd-ai-agent' )
+				__( 'You do not have permission to use AI image abilities.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -586,7 +586,7 @@ INSTRUCTION;
 			if ( $post_id > 0 && ! current_user_can( 'edit_post', $post_id ) ) {
 				return new WP_Error(
 					'insufficient_capabilities',
-					__( 'You do not have permission to use that post as AI image context.', 'sd-ai-agent' )
+					__( 'You do not have permission to use that post as AI image context.', 'superdav-ai-agent' )
 				);
 			}
 		}
@@ -635,7 +635,7 @@ INSTRUCTION;
 			return self::download_to_data_uri( $url );
 		}
 
-		return new WP_Error( 'no_image_provided', __( 'Either attachment_id or image_url must be provided.', 'sd-ai-agent' ) );
+		return new WP_Error( 'no_image_provided', __( 'Either attachment_id or image_url must be provided.', 'superdav-ai-agent' ) );
 	}
 
 	/**
@@ -653,12 +653,12 @@ INSTRUCTION;
 			return new WP_Error(
 				'invalid_attachment',
 				/* translators: %d: Attachment ID. */
-				sprintf( __( 'Attachment with ID %d not found.', 'sd-ai-agent' ), $attachment_id )
+				sprintf( __( 'Attachment with ID %d not found.', 'superdav-ai-agent' ), $attachment_id )
 			);
 		}
 
 		if ( ! wp_attachment_is_image( $attachment_id ) ) {
-			return new WP_Error( 'not_an_image', __( 'The specified attachment is not an image.', 'sd-ai-agent' ) );
+			return new WP_Error( 'not_an_image', __( 'The specified attachment is not an image.', 'superdav-ai-agent' ) );
 		}
 
 		$file_path = get_attached_file( $attachment_id );
@@ -674,7 +674,7 @@ INSTRUCTION;
 			?: wp_get_attachment_image_src( $attachment_id, 'full' );
 
 		if ( ! $image_src || empty( $image_src[0] ) ) {
-			return new WP_Error( 'image_url_not_found', __( 'Could not retrieve image URL from attachment.', 'sd-ai-agent' ) );
+			return new WP_Error( 'image_url_not_found', __( 'Could not retrieve image URL from attachment.', 'superdav-ai-agent' ) );
 		}
 
 		return self::download_to_data_uri( $image_src[0] );
@@ -724,7 +724,7 @@ INSTRUCTION;
 		wp_delete_file( $temp_file );
 
 		if ( ! $data_uri ) {
-			return new WP_Error( 'file_read_error', __( 'Could not read the downloaded image file.', 'sd-ai-agent' ) );
+			return new WP_Error( 'file_read_error', __( 'Could not read the downloaded image file.', 'superdav-ai-agent' ) );
 		}
 
 		return $data_uri;

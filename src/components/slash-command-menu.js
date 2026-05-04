@@ -16,14 +16,14 @@ import { __ } from '@wordpress/i18n';
 const COMMANDS = [
 	{
 		name: '/new',
-		description: __( 'Start a new chat', 'sd-ai-agent' ),
+		description: __( 'Start a new chat', 'superdav-ai-agent' ),
 		action: 'new',
 	},
 	{
 		name: '/model',
 		description: __(
 			'Switch model (type model name after)',
-			'sd-ai-agent'
+			'superdav-ai-agent'
 		),
 		action: 'model',
 	},
@@ -31,43 +31,46 @@ const COMMANDS = [
 		name: '/remember',
 		description: __(
 			'Save a fact to memory (type fact after)',
-			'sd-ai-agent'
+			'superdav-ai-agent'
 		),
 		action: 'remember',
 	},
 	{
 		name: '/forget',
-		description: __( 'Forget memories matching a topic', 'sd-ai-agent' ),
+		description: __(
+			'Forget memories matching a topic',
+			'superdav-ai-agent'
+		),
 		action: 'forget',
 	},
 	{
 		name: '/clear',
-		description: __( 'Clear conversation', 'sd-ai-agent' ),
+		description: __( 'Clear conversation', 'superdav-ai-agent' ),
 		action: 'clear',
 	},
 	{
 		name: '/export',
-		description: __( 'Export current conversation', 'sd-ai-agent' ),
+		description: __( 'Export current conversation', 'superdav-ai-agent' ),
 		action: 'export',
 	},
 	{
 		name: '/compact',
 		description: __(
 			'Compact conversation to save context',
-			'sd-ai-agent'
+			'superdav-ai-agent'
 		),
 		action: 'compact',
 	},
 	{
 		name: '/help',
-		description: __( 'Show keyboard shortcuts', 'sd-ai-agent' ),
+		description: __( 'Show keyboard shortcuts', 'superdav-ai-agent' ),
 		action: 'help',
 	},
 	{
 		name: '/report-issue',
 		description: __(
 			'Send a bug report or feedback (type description after)',
-			'sd-ai-agent'
+			'superdav-ai-agent'
 		),
 		action: 'report-issue',
 	},
@@ -145,7 +148,7 @@ export default function SlashCommandMenu( {
 			className="sd-ai-agent-slash-menu"
 			ref={ menuRef }
 			role="listbox"
-			aria-label={ __( 'Slash commands', 'sd-ai-agent' ) }
+			aria-label={ __( 'Slash commands', 'superdav-ai-agent' ) }
 			aria-activedescendant={ activeId }
 			tabIndex={ -1 }
 			style={ position ? { bottom: position.bottom } : {} }

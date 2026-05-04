@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Superdav AI Agent
- * Plugin URI:  https://github.com/Ultimate-Multisite/sd-ai-agent
+ * Plugin URI:  https://github.com/Ultimate-Multisite/superdav-ai-agent
  * Description: Agentic AI loop for WordPress — chat with an AI that can call WordPress abilities (tools) autonomously.
  * Version:     1.9.1
  * Author:      superdav42
@@ -9,7 +9,7 @@
  * License:     GPL-2.0-or-later
  * Requires at least: 6.9
  * Requires PHP: 8.2
- * Text Domain: sd-ai-agent
+ * Text Domain: superdav-ai-agent
  *
  * @package SdAiAgent
  */
@@ -65,7 +65,7 @@ if ( file_exists( SD_AI_AGENT_DIR . '/vendor/autoload_packages.php' ) ) {
 				'<div class="notice notice-error"><p>%s</p></div>',
 				esc_html__(
 					'Superdav AI Agent is missing its vendor dependencies. Please run "composer install" in the plugin directory.',
-					'sd-ai-agent',
+					'superdav-ai-agent',
 				),
 			);
 		},

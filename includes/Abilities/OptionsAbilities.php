@@ -81,8 +81,8 @@ class OptionsAbilities {
 		wp_register_ability(
 			'sd-ai-agent/get-option',
 			[
-				'label'         => __( 'Get Option', 'sd-ai-agent' ),
-				'description'   => __( 'Read a WordPress option by name. Returns the stored value or a default if the option does not exist.', 'sd-ai-agent' ),
+				'label'         => __( 'Get Option', 'superdav-ai-agent' ),
+				'description'   => __( 'Read a WordPress option by name. Returns the stored value or a default if the option does not exist.', 'superdav-ai-agent' ),
 				'ability_class' => GetOptionAbility::class,
 			]
 		);
@@ -90,8 +90,8 @@ class OptionsAbilities {
 		wp_register_ability(
 			'sd-ai-agent/update-option',
 			[
-				'label'         => __( 'Update Option', 'sd-ai-agent' ),
-				'description'   => __( 'Create or update a WordPress option. Blocked for critical system options (siteurl, admin_email, active_plugins, etc.).', 'sd-ai-agent' ),
+				'label'         => __( 'Update Option', 'superdav-ai-agent' ),
+				'description'   => __( 'Create or update a WordPress option. Blocked for critical system options (siteurl, admin_email, active_plugins, etc.).', 'superdav-ai-agent' ),
 				'ability_class' => UpdateOptionAbility::class,
 			]
 		);
@@ -99,8 +99,8 @@ class OptionsAbilities {
 		wp_register_ability(
 			'sd-ai-agent/delete-option',
 			[
-				'label'         => __( 'Delete Option', 'sd-ai-agent' ),
-				'description'   => __( 'Delete a WordPress option by name. Blocked for critical system options.', 'sd-ai-agent' ),
+				'label'         => __( 'Delete Option', 'superdav-ai-agent' ),
+				'description'   => __( 'Delete a WordPress option by name. Blocked for critical system options.', 'superdav-ai-agent' ),
 				'ability_class' => DeleteOptionAbility::class,
 			]
 		);
@@ -108,8 +108,8 @@ class OptionsAbilities {
 		wp_register_ability(
 			'sd-ai-agent/list-options',
 			[
-				'label'         => __( 'List Options', 'sd-ai-agent' ),
-				'description'   => __( 'List WordPress options with optional prefix filtering. Returns option names and values (truncated for large values). Useful for discovering plugin/theme settings.', 'sd-ai-agent' ),
+				'label'         => __( 'List Options', 'superdav-ai-agent' ),
+				'description'   => __( 'List WordPress options with optional prefix filtering. Returns option names and values (truncated for large values). Useful for discovering plugin/theme settings.', 'superdav-ai-agent' ),
 				'ability_class' => ListOptionsAbility::class,
 			]
 		);
@@ -144,11 +144,11 @@ class OptionsAbilities {
 class GetOptionAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'Get Option', 'sd-ai-agent' );
+		return __( 'Get Option', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Read a WordPress option by name. Returns the stored value or a default if the option does not exist.', 'sd-ai-agent' );
+		return __( 'Read a WordPress option by name. Returns the stored value or a default if the option does not exist.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -185,7 +185,7 @@ class GetOptionAbility extends AbstractAbility {
 		if ( '' === $option_name ) {
 			return new WP_Error(
 				'sd_ai_agent_empty_option_name',
-				__( 'The "option_name" parameter is required.', 'sd-ai-agent' )
+				__( 'The "option_name" parameter is required.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -230,11 +230,11 @@ class GetOptionAbility extends AbstractAbility {
 class UpdateOptionAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'Update Option', 'sd-ai-agent' );
+		return __( 'Update Option', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Create or update a WordPress option. Blocked for critical system options (siteurl, admin_email, active_plugins, etc.).', 'sd-ai-agent' );
+		return __( 'Create or update a WordPress option. Blocked for critical system options (siteurl, admin_email, active_plugins, etc.).', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -277,7 +277,7 @@ class UpdateOptionAbility extends AbstractAbility {
 		if ( '' === $option_name ) {
 			return new WP_Error(
 				'sd_ai_agent_empty_option_name',
-				__( 'The "option_name" parameter is required.', 'sd-ai-agent' )
+				__( 'The "option_name" parameter is required.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -288,7 +288,7 @@ class UpdateOptionAbility extends AbstractAbility {
 				'sd_ai_agent_option_blocked',
 				sprintf(
 					/* translators: %s: option name */
-					__( 'The option "%s" is protected and cannot be modified by the AI agent.', 'sd-ai-agent' ),
+					__( 'The option "%s" is protected and cannot be modified by the AI agent.', 'superdav-ai-agent' ),
 					$option_name
 				)
 			);
@@ -297,7 +297,7 @@ class UpdateOptionAbility extends AbstractAbility {
 		if ( ! array_key_exists( 'option_value', $input ) ) {
 			return new WP_Error(
 				'sd_ai_agent_missing_option_value',
-				__( 'The "option_value" parameter is required.', 'sd-ai-agent' )
+				__( 'The "option_value" parameter is required.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -314,7 +314,7 @@ class UpdateOptionAbility extends AbstractAbility {
 				'status'      => 'updated',
 				'message'     => sprintf(
 					/* translators: %s: option name */
-					__( 'Option "%s" updated successfully.', 'sd-ai-agent' ),
+					__( 'Option "%s" updated successfully.', 'superdav-ai-agent' ),
 					$option_name
 				),
 			];
@@ -334,7 +334,7 @@ class UpdateOptionAbility extends AbstractAbility {
 				'status'      => 'unchanged',
 				'message'     => sprintf(
 					/* translators: %s: option name */
-					__( 'Option "%s" already has the requested value — no change made.', 'sd-ai-agent' ),
+					__( 'Option "%s" already has the requested value — no change made.', 'superdav-ai-agent' ),
 					$option_name
 				),
 			];
@@ -345,7 +345,7 @@ class UpdateOptionAbility extends AbstractAbility {
 			'sd_ai_agent_update_failed',
 			sprintf(
 				/* translators: %s: option name */
-				__( 'Failed to update option "%s".', 'sd-ai-agent' ),
+				__( 'Failed to update option "%s".', 'superdav-ai-agent' ),
 				$option_name
 			)
 		);
@@ -377,11 +377,11 @@ class UpdateOptionAbility extends AbstractAbility {
 class DeleteOptionAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'Delete Option', 'sd-ai-agent' );
+		return __( 'Delete Option', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Delete a WordPress option by name. Blocked for critical system options.', 'sd-ai-agent' );
+		return __( 'Delete a WordPress option by name. Blocked for critical system options.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -415,7 +415,7 @@ class DeleteOptionAbility extends AbstractAbility {
 		if ( '' === $option_name ) {
 			return new WP_Error(
 				'sd_ai_agent_empty_option_name',
-				__( 'The "option_name" parameter is required.', 'sd-ai-agent' )
+				__( 'The "option_name" parameter is required.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -426,7 +426,7 @@ class DeleteOptionAbility extends AbstractAbility {
 				'sd_ai_agent_option_blocked',
 				sprintf(
 					/* translators: %s: option name */
-					__( 'The option "%s" is protected and cannot be deleted by the AI agent.', 'sd-ai-agent' ),
+					__( 'The option "%s" is protected and cannot be deleted by the AI agent.', 'superdav-ai-agent' ),
 					$option_name
 				)
 			);
@@ -444,7 +444,7 @@ class DeleteOptionAbility extends AbstractAbility {
 				'status'      => 'not_found',
 				'message'     => sprintf(
 					/* translators: %s: option name */
-					__( 'Option "%s" does not exist.', 'sd-ai-agent' ),
+					__( 'Option "%s" does not exist.', 'superdav-ai-agent' ),
 					$option_name
 				),
 			];
@@ -458,7 +458,7 @@ class DeleteOptionAbility extends AbstractAbility {
 				'status'      => 'deleted',
 				'message'     => sprintf(
 					/* translators: %s: option name */
-					__( 'Option "%s" deleted successfully.', 'sd-ai-agent' ),
+					__( 'Option "%s" deleted successfully.', 'superdav-ai-agent' ),
 					$option_name
 				),
 			];
@@ -468,7 +468,7 @@ class DeleteOptionAbility extends AbstractAbility {
 			'sd_ai_agent_delete_failed',
 			sprintf(
 				/* translators: %s: option name */
-				__( 'Failed to delete option "%s".', 'sd-ai-agent' ),
+				__( 'Failed to delete option "%s".', 'superdav-ai-agent' ),
 				$option_name
 			)
 		);
@@ -508,11 +508,11 @@ class ListOptionsAbility extends AbstractAbility {
 	private const VALUE_TRUNCATE_LENGTH = 200;
 
 	protected function label(): string {
-		return __( 'List Options', 'sd-ai-agent' );
+		return __( 'List Options', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'List WordPress options with optional prefix filtering. Returns option names and values (truncated for large values). Useful for discovering plugin/theme settings.', 'sd-ai-agent' );
+		return __( 'List WordPress options with optional prefix filtering. Returns option names and values (truncated for large values). Useful for discovering plugin/theme settings.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -626,7 +626,7 @@ class ListOptionsAbility extends AbstractAbility {
 		if ( null === $rows ) {
 			return new WP_Error(
 				'sd_ai_agent_db_error',
-				__( 'Database query failed while listing options.', 'sd-ai-agent' )
+				__( 'Database query failed while listing options.', 'superdav-ai-agent' )
 			);
 		}
 

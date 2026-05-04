@@ -125,8 +125,8 @@ final class WooCommerceIntegrationHandler {
 			wp_register_ability_category(
 				'woocommerce-rest',
 				array(
-					'label'       => __( 'WooCommerce REST API', 'sd-ai-agent' ),
-					'description' => __( 'REST API operations for WooCommerce resources including products, orders, and other store data.', 'sd-ai-agent' ),
+					'label'       => __( 'WooCommerce REST API', 'superdav-ai-agent' ),
+					'description' => __( 'REST API operations for WooCommerce resources including products, orders, and other store data.', 'superdav-ai-agent' ),
 				)
 			);
 		}
@@ -159,12 +159,19 @@ final class WooCommerceIntegrationHandler {
 			return;
 		}
 
-		if ( ! class_exists( self::BRIDGE_CLASS ) || ! class_exists( self::FACTORY_CLASS ) ) {
+		$bridge_class  = self::BRIDGE_CLASS;
+		$factory_class = self::FACTORY_CLASS;
+
+		if ( ! class_exists( $bridge_class ) ) {
+			return;
+		}
+
+		if ( ! class_exists( $factory_class ) ) {
 			return;
 		}
 
 		try {
-			$ref    = new \ReflectionClass( self::BRIDGE_CLASS );
+			$ref    = new \ReflectionClass( $bridge_class );
 			$method = $ref->getMethod( 'get_configurations' );
 			$method->setAccessible( true );
 
@@ -172,7 +179,7 @@ final class WooCommerceIntegrationHandler {
 			$configurations = $method->invoke( null );
 
 			foreach ( $configurations as $config ) {
-				( self::FACTORY_CLASS )::register_controller_abilities( $config );
+				$factory_class::register_controller_abilities( $config );
 			}
 		} catch ( \ReflectionException $e ) {
 			// WooCommerce internals changed. Log and carry on — abilities simply

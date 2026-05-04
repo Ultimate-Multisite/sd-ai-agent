@@ -51,8 +51,8 @@ class GscAbilities {
 		wp_register_ability(
 			'sd-ai-agent/gsc-top-queries',
 			[
-				'label'               => __( 'GSC Top Queries', 'sd-ai-agent' ),
-				'description'         => __( 'Fetch top search queries from Google Search Console with impressions, clicks, CTR, and average position for a given date range.', 'sd-ai-agent' ),
+				'label'               => __( 'GSC Top Queries', 'superdav-ai-agent' ),
+				'description'         => __( 'Fetch top search queries from Google Search Console with impressions, clicks, CTR, and average position for a given date range.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -106,8 +106,8 @@ class GscAbilities {
 		wp_register_ability(
 			'sd-ai-agent/gsc-page-performance',
 			[
-				'label'               => __( 'GSC Page Performance', 'sd-ai-agent' ),
-				'description'         => __( 'Fetch page-level performance data from Google Search Console: which pages get the most impressions, clicks, and their average position.', 'sd-ai-agent' ),
+				'label'               => __( 'GSC Page Performance', 'superdav-ai-agent' ),
+				'description'         => __( 'Fetch page-level performance data from Google Search Console: which pages get the most impressions, clicks, and their average position.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -161,8 +161,8 @@ class GscAbilities {
 		wp_register_ability(
 			'sd-ai-agent/gsc-query-details',
 			[
-				'label'               => __( 'GSC Query Details', 'sd-ai-agent' ),
-				'description'         => __( 'Get detailed performance data for a specific search query from Google Search Console, including which pages rank for it and their metrics.', 'sd-ai-agent' ),
+				'label'               => __( 'GSC Query Details', 'superdav-ai-agent' ),
+				'description'         => __( 'Get detailed performance data for a specific search query from Google Search Console, including which pages rank for it and their metrics.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -204,8 +204,8 @@ class GscAbilities {
 		wp_register_ability(
 			'sd-ai-agent/gsc-site-summary',
 			[
-				'label'               => __( 'GSC Site Summary', 'sd-ai-agent' ),
-				'description'         => __( 'Get an overall SEO performance summary from Google Search Console: total clicks, impressions, average CTR, and average position for the site over a date range.', 'sd-ai-agent' ),
+				'label'               => __( 'GSC Site Summary', 'superdav-ai-agent' ),
+				'description'         => __( 'Get an overall SEO performance summary from Google Search Console: total clicks, impressions, average CTR, and average position for the site over a date range.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -373,7 +373,7 @@ class GscAbilities {
 		// @phpstan-ignore-next-line
 		$query = sanitize_text_field( $input['query'] ?? '' );
 		if ( empty( $query ) ) {
-			return new WP_Error( 'missing_param', __( 'query is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'missing_param', __( 'query is required.', 'superdav-ai-agent' ) );
 		}
 
 		$token = self::get_access_token();
@@ -584,7 +584,7 @@ class GscAbilities {
 		if ( empty( $creds ) || empty( $creds['type'] ) ) {
 			return new WP_Error(
 				'gsc_not_configured',
-				__( 'Google Search Console credentials are not configured. Go to Superdav AI Agent Settings and add your GSC credentials.', 'sd-ai-agent' )
+				__( 'Google Search Console credentials are not configured. Go to Superdav AI Agent Settings and add your GSC credentials.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -595,13 +595,13 @@ class GscAbilities {
 		if ( 'access_token' === $creds['type'] ) {
 			$token = $creds['access_token'] ?? '';
 			if ( empty( $token ) ) {
-				return new WP_Error( 'gsc_missing_token', __( 'GSC access token is empty.', 'sd-ai-agent' ) );
+				return new WP_Error( 'gsc_missing_token', __( 'GSC access token is empty.', 'superdav-ai-agent' ) );
 			}
 			// @phpstan-ignore-next-line
 			return $token;
 		}
 
-		return new WP_Error( 'gsc_unknown_type', __( 'Unknown GSC credential type.', 'sd-ai-agent' ) );
+		return new WP_Error( 'gsc_unknown_type', __( 'Unknown GSC credential type.', 'superdav-ai-agent' ) );
 	}
 
 	/**
@@ -617,7 +617,7 @@ class GscAbilities {
 		if ( empty( $private_key ) || empty( $client_email ) ) {
 			return new WP_Error(
 				'gsc_invalid_sa',
-				__( 'Service account credentials are missing private_key or client_email.', 'sd-ai-agent' )
+				__( 'Service account credentials are missing private_key or client_email.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -662,7 +662,7 @@ class GscAbilities {
 				'gsc_token_request_failed',
 				sprintf(
 					/* translators: %s: error message */
-					__( 'Failed to request GSC access token: %s', 'sd-ai-agent' ),
+					__( 'Failed to request GSC access token: %s', 'superdav-ai-agent' ),
 					$response->get_error_message()
 				)
 			);
@@ -679,7 +679,7 @@ class GscAbilities {
 				'gsc_token_error',
 				sprintf(
 					/* translators: %s: error description from Google */
-					__( 'Google token exchange failed: %s', 'sd-ai-agent' ),
+					__( 'Google token exchange failed: %s', 'superdav-ai-agent' ),
 					// @phpstan-ignore-next-line
 					$error_desc
 				)
@@ -717,7 +717,7 @@ class GscAbilities {
 		if ( ! function_exists( 'openssl_sign' ) ) {
 			return new WP_Error(
 				'gsc_openssl_missing',
-				__( 'OpenSSL extension is required for service-account authentication.', 'sd-ai-agent' )
+				__( 'OpenSSL extension is required for service-account authentication.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -748,14 +748,14 @@ class GscAbilities {
 		if ( false === $key_resource ) {
 			return new WP_Error(
 				'gsc_invalid_key',
-				__( 'Failed to load the service-account private key. Ensure it is a valid PEM-encoded RSA key.', 'sd-ai-agent' )
+				__( 'Failed to load the service-account private key. Ensure it is a valid PEM-encoded RSA key.', 'superdav-ai-agent' )
 			);
 		}
 
 		$signed = openssl_sign( $signing_input, $signature, $key_resource, OPENSSL_ALGO_SHA256 );
 
 		if ( ! $signed ) {
-			return new WP_Error( 'gsc_sign_failed', __( 'Failed to sign the JWT.', 'sd-ai-agent' ) );
+			return new WP_Error( 'gsc_sign_failed', __( 'Failed to sign the JWT.', 'superdav-ai-agent' ) );
 		}
 
 		return $signing_input . '.' . self::base64url_encode( $signature );
@@ -804,7 +804,7 @@ class GscAbilities {
 				'gsc_api_request_failed',
 				sprintf(
 					/* translators: %s: error message */
-					__( 'GSC API request failed: %s', 'sd-ai-agent' ),
+					__( 'GSC API request failed: %s', 'superdav-ai-agent' ),
 					$response->get_error_message()
 				)
 			);
@@ -824,7 +824,7 @@ class GscAbilities {
 					'gsc_forbidden',
 					sprintf(
 						/* translators: %s: site URL */
-						__( 'Access denied to GSC property "%s". Ensure the service account or token has access to this property in Google Search Console.', 'sd-ai-agent' ),
+						__( 'Access denied to GSC property "%s". Ensure the service account or token has access to this property in Google Search Console.', 'superdav-ai-agent' ),
 						$site_url
 					)
 				);
@@ -835,7 +835,7 @@ class GscAbilities {
 					'gsc_not_found',
 					sprintf(
 						/* translators: %s: site URL */
-						__( 'GSC property "%s" not found. Check the site URL matches exactly what is registered in Google Search Console.', 'sd-ai-agent' ),
+						__( 'GSC property "%s" not found. Check the site URL matches exactly what is registered in Google Search Console.', 'superdav-ai-agent' ),
 						$site_url
 					)
 				);
@@ -845,7 +845,7 @@ class GscAbilities {
 				'gsc_api_error',
 				sprintf(
 					/* translators: 1: HTTP status, 2: error message */
-					__( 'GSC API error (%1$s): %2$s', 'sd-ai-agent' ),
+					__( 'GSC API error (%1$s): %2$s', 'superdav-ai-agent' ),
 					// @phpstan-ignore-next-line
 					$error_status,
 					// @phpstan-ignore-next-line

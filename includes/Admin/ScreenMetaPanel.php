@@ -84,7 +84,7 @@ class ScreenMetaPanel {
 			true
 		);
 
-		wp_set_script_translations( 'sd-ai-agent-screen-meta', 'sd-ai-agent' );
+		wp_set_script_translations( 'sd-ai-agent-screen-meta', 'superdav-ai-agent' );
 
 		// WP 7.0+: enqueue the `@wordpress/abilities` script module so our
 		// client-side ability registry (src/abilities/*) can resolve the
@@ -144,7 +144,7 @@ class ScreenMetaPanel {
 		$screen->add_help_tab(
 			[
 				'id'      => 'sd-ai-agent-help',
-				'title'   => __( 'AI Agent', 'sd-ai-agent' ),
+				'title'   => __( 'AI Agent', 'superdav-ai-agent' ),
 				'content' => '<div id="sd-ai-agent-screen-meta-root"></div>',
 			]
 		);

@@ -5,7 +5,7 @@ parameters:
 	level: 10
 	paths:
 		- includes
-		- ai-agent-for-wp.php
+		- superdav-ai-agent.php
 	excludePaths:
 		- includes/CLI
 		# Compat polyfill files define the same global classes/functions as stubs/wordpress-7-runtime.php.
@@ -22,6 +22,7 @@ parameters:
 	scanFiles:
 		- vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
 		- stubs/wordpress-7-runtime.php
+		- stubs/woocommerce-abilities-internals.php
 	treatPhpDocTypesAsCertain: false
 	reportUnmatchedIgnoredErrors: false
 	ignoreErrors:

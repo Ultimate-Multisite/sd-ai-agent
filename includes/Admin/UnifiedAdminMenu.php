@@ -87,21 +87,21 @@ class UnifiedAdminMenu {
 		$items = array(
 			array(
 				'slug'       => 'chat',
-				'label'      => __( 'Chat', 'sd-ai-agent' ),
+				'label'      => __( 'Chat', 'superdav-ai-agent' ),
 				'icon'       => 'dashicons-format-chat',
 				'position'   => 0,
 				'capability' => self::CAPABILITY,
 			),
 			array(
 				'slug'       => 'abilities',
-				'label'      => __( 'Abilities', 'sd-ai-agent' ),
+				'label'      => __( 'Abilities', 'superdav-ai-agent' ),
 				'icon'       => 'dashicons-admin-tools',
 				'position'   => 10,
 				'capability' => self::CAPABILITY,
 			),
 			array(
 				'slug'       => 'changes',
-				'label'      => __( 'Changes', 'sd-ai-agent' ),
+				'label'      => __( 'Changes', 'superdav-ai-agent' ),
 				'icon'       => 'dashicons-backup',
 				'position'   => 20,
 				'capability' => self::CAPABILITY,
@@ -114,7 +114,7 @@ class UnifiedAdminMenu {
 
 		$items[] = array(
 			'slug'       => 'settings',
-			'label'      => __( 'Settings', 'sd-ai-agent' ),
+			'label'      => __( 'Settings', 'superdav-ai-agent' ),
 			'icon'       => 'dashicons-admin-settings',
 			'position'   => 30,
 			'capability' => self::CAPABILITY,
@@ -136,8 +136,8 @@ class UnifiedAdminMenu {
 		$icon_uri = 'data:image/svg+xml;base64,' . base64_encode( $icon_svg ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 
 		add_menu_page(
-			__( 'Superdav AI Agent', 'sd-ai-agent' ),
-			__( 'AI Agent', 'sd-ai-agent' ),
+			__( 'Superdav AI Agent', 'superdav-ai-agent' ),
+			__( 'AI Agent', 'superdav-ai-agent' ),
 			self::CAPABILITY,
 			self::SLUG,
 			array( __CLASS__, 'render' ),
@@ -206,7 +206,7 @@ class UnifiedAdminMenu {
 				'admin_notices',
 				function () {
 					echo '<div class="notice notice-error"><p>';
-					echo esc_html__( 'Superdav AI Agent build files are missing. Please run npm run build.', 'sd-ai-agent' );
+					echo esc_html__( 'Superdav AI Agent build files are missing. Please run npm run build.', 'superdav-ai-agent' );
 					echo '</p></div>';
 				}
 			);
@@ -233,7 +233,7 @@ class UnifiedAdminMenu {
 			true
 		);
 
-		wp_set_script_translations( 'sd-ai-agent-unified-admin', 'sd-ai-agent' );
+		wp_set_script_translations( 'sd-ai-agent-unified-admin', 'superdav-ai-agent' );
 
 		// WP 7.0+: enqueue the `@wordpress/abilities` script module so our
 		// client-side ability registry (src/abilities/*) can resolve the
@@ -295,7 +295,7 @@ class UnifiedAdminMenu {
 				true
 			);
 
-			wp_set_script_translations( 'sd-ai-agent-admin-page', 'sd-ai-agent' );
+			wp_set_script_translations( 'sd-ai-agent-admin-page', 'superdav-ai-agent' );
 		}
 
 		$current_user = wp_get_current_user();

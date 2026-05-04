@@ -96,7 +96,7 @@ export default function OnboardingInterview( { onComplete } ) {
 				err?.message ||
 					__(
 						'Failed to save answers. Please try again.',
-						'sd-ai-agent'
+						'superdav-ai-agent'
 					)
 			);
 		}
@@ -145,12 +145,12 @@ export default function OnboardingInterview( { onComplete } ) {
 	 */
 	function getNextButtonLabel( isSaving, isLastQ ) {
 		if ( isSaving && isLastQ ) {
-			return __( 'Saving…', 'sd-ai-agent' );
+			return __( 'Saving…', 'superdav-ai-agent' );
 		}
 		if ( isLastQ ) {
-			return __( 'Finish', 'sd-ai-agent' );
+			return __( 'Finish', 'superdav-ai-agent' );
 		}
-		return __( 'Next', 'sd-ai-agent' );
+		return __( 'Next', 'superdav-ai-agent' );
 	}
 
 	if ( loading ) {
@@ -160,7 +160,7 @@ export default function OnboardingInterview( { onComplete } ) {
 				<p>
 					{ __(
 						'Preparing your personalised setup…',
-						'sd-ai-agent'
+						'superdav-ai-agent'
 					) }
 				</p>
 			</div>
@@ -179,11 +179,13 @@ export default function OnboardingInterview( { onComplete } ) {
 	return (
 		<div className="sd-ai-agent-interview">
 			<div className="sd-ai-agent-interview__header">
-				<h2>{ __( 'Tell us about your site', 'sd-ai-agent' ) }</h2>
+				<h2>
+					{ __( 'Tell us about your site', 'superdav-ai-agent' ) }
+				</h2>
 				<p className="sd-ai-agent-interview__subtitle">
 					{ __(
 						'Your answers help the AI give you relevant suggestions and automations.',
-						'sd-ai-agent'
+						'superdav-ai-agent'
 					) }
 				</p>
 				<div className="sd-ai-agent-interview__progress">
@@ -231,7 +233,7 @@ export default function OnboardingInterview( { onComplete } ) {
 					{ isRequired && (
 						<span
 							className="sd-ai-agent-interview__required"
-							aria-label={ __( 'required', 'sd-ai-agent' ) }
+							aria-label={ __( 'required', 'superdav-ai-agent' ) }
 						>
 							{ ' *' }
 						</span>
@@ -256,7 +258,7 @@ export default function OnboardingInterview( { onComplete } ) {
 					<p className="sd-ai-agent-interview__optional-hint">
 						{ __(
 							'Optional — press Enter or click Next to skip.',
-							'sd-ai-agent'
+							'superdav-ai-agent'
 						) }
 					</p>
 				) }
@@ -273,7 +275,7 @@ export default function OnboardingInterview( { onComplete } ) {
 						onClick={ handleBack }
 						disabled={ saving }
 					>
-						{ __( 'Back', 'sd-ai-agent' ) }
+						{ __( 'Back', 'superdav-ai-agent' ) }
 					</Button>
 				) }
 
@@ -283,7 +285,7 @@ export default function OnboardingInterview( { onComplete } ) {
 					disabled={ saving }
 					className="sd-ai-agent-interview__skip"
 				>
-					{ __( 'Skip all', 'sd-ai-agent' ) }
+					{ __( 'Skip all', 'superdav-ai-agent' ) }
 				</Button>
 
 				<Button
