@@ -3,7 +3,7 @@
  * DI handler for admin-only hooks.
  *
  * Replaces the inline `add_action('admin_menu', ...)` and
- * `add_action('admin_init', ...)` calls in `ai-agent-for-wp.php`.
+ * `add_action('admin_init', ...)` calls in `superdav-ai-agent.php`.
  *
  * @package SdAiAgent\Bootstrap
  * @license GPL-2.0-or-later
@@ -125,7 +125,7 @@ final class AdminHandler {
 	#[Filter( tag: 'plugin_action_links', priority: 10 )]
 	public function add_plugin_action_links( array $actions, string $plugin_file ): array {
 		// Only modify our plugin.
-		if ( $plugin_file !== 'ai-agent-for-wp/ai-agent-for-wp.php' ) {
+		if ( $plugin_file !== 'superdav-ai-agent/superdav-ai-agent.php' ) {
 			return $actions;
 		}
 
