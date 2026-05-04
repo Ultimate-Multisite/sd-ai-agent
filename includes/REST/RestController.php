@@ -251,7 +251,7 @@ final class RestController {
 	public static function handle_chat( WP_REST_Request $request ) {
 		return new WP_Error(
 			'sd_ai_agent_endpoint_removed',
-			__( 'The /chat endpoint has been removed. Use /run instead.', 'sd-ai-agent' ),
+			__( 'The /chat endpoint has been removed. Use /run instead.', 'superdav-ai-agent' ),
 			array( 'status' => 410 )
 		);
 	}
@@ -360,7 +360,7 @@ Assistant: %s',
 		if ( ! $session_id ) {
 			return new WP_Error(
 				'sd_ai_agent_missing_session',
-				__( 'session_id is required.', 'sd-ai-agent' ),
+				__( 'session_id is required.', 'superdav-ai-agent' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -368,7 +368,7 @@ Assistant: %s',
 		if ( ! is_array( $tool_results ) || empty( $tool_results ) ) {
 			return new WP_Error(
 				'sd_ai_agent_missing_results',
-				__( 'tool_results must be a non-empty array.', 'sd-ai-agent' ),
+				__( 'tool_results must be a non-empty array.', 'superdav-ai-agent' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -379,7 +379,7 @@ Assistant: %s',
 		if ( null === $paused_state ) {
 			return new WP_Error(
 				'sd_ai_agent_no_paused_state',
-				__( 'No paused agent state found for this session. The session may have already been resumed or expired.', 'sd-ai-agent' ),
+				__( 'No paused agent state found for this session. The session may have already been resumed or expired.', 'superdav-ai-agent' ),
 				array( 'status' => 409 )
 			);
 		}

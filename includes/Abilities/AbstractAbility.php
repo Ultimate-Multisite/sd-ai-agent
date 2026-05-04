@@ -25,8 +25,8 @@ declare(strict_types=1);
  *
  *     // Register via wp_register_ability() with ability_class:
  *     wp_register_ability( 'sd-ai-agent/my-ability', [
- *         'label'         => __( 'My Ability', 'sd-ai-agent' ),
- *         'description'   => __( 'Does something.', 'sd-ai-agent' ),
+ *         'label'         => __( 'My Ability', 'superdav-ai-agent' ),
+ *         'description'   => __( 'Does something.', 'superdav-ai-agent' ),
  *         'ability_class' => MyAbility::class,
  *     ] );
  *
@@ -260,7 +260,7 @@ abstract class AbstractAbility extends \WP_Ability {
 				'ability_callback_exception',
 				sprintf(
 					/* translators: 1: Ability name, 2: Exception message. */
-					__( 'Ability "%1$s" threw an error: %2$s', 'sd-ai-agent' ),
+					__( 'Ability "%1$s" threw an error: %2$s', 'superdav-ai-agent' ),
 					$this->get_name(),
 					$e->getMessage()
 				),

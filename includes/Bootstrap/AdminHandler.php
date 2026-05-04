@@ -138,13 +138,13 @@ final class AdminHandler {
 		$actions['sd_chat'] = sprintf(
 			'<a href="%s">%s</a>',
 			esc_url( $chat_url ),
-			esc_html__( 'Start Chat', 'sd-ai-agent' )
+			esc_html__( 'Start Chat', 'superdav-ai-agent' )
 		);
 
 		$actions['sd_connections'] = sprintf(
 			'<a href="%s">%s</a>',
 			esc_url( $connectors_url ),
-			esc_html__( 'Configure Connections', 'sd-ai-agent' )
+			esc_html__( 'Configure Connections', 'superdav-ai-agent' )
 		);
 
 		return $actions;

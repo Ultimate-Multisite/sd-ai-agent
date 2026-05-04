@@ -68,7 +68,7 @@ final class CliHandler {
 	 *
 	 * @var list<string>
 	 */
-	private const NAMESPACES = array( 'ai-agent', 'sd-ai-agent' );
+	private const NAMESPACES = array( 'ai-agent', 'superdav-ai-agent' );
 
 	/**
 	 * Register every subcommand with WP-CLI.

@@ -41,8 +41,8 @@ class FeedbackAbilities {
 		wp_register_ability(
 			'sd-ai-agent/report-inability',
 			[
-				'label'               => __( 'Report Inability', 'sd-ai-agent' ),
-				'description'         => __( 'Call this ability when you cannot complete the user\'s request after genuinely trying. Provide a clear reason and list the steps you attempted. This helps the team improve the agent.', 'sd-ai-agent' ),
+				'label'               => __( 'Report Inability', 'superdav-ai-agent' ),
+				'description'         => __( 'Call this ability when you cannot complete the user\'s request after genuinely trying. Provide a clear reason and list the steps you attempted. This helps the team improve the agent.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',

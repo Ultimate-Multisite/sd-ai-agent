@@ -125,8 +125,8 @@ final class WooCommerceIntegrationHandler {
 			wp_register_ability_category(
 				'woocommerce-rest',
 				array(
-					'label'       => __( 'WooCommerce REST API', 'sd-ai-agent' ),
-					'description' => __( 'REST API operations for WooCommerce resources including products, orders, and other store data.', 'sd-ai-agent' ),
+					'label'       => __( 'WooCommerce REST API', 'superdav-ai-agent' ),
+					'description' => __( 'REST API operations for WooCommerce resources including products, orders, and other store data.', 'superdav-ai-agent' ),
 				)
 			);
 		}

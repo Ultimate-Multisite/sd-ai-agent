@@ -35,7 +35,7 @@
     <config name="minimum_supported_wp_version" value="6.9"/>
 
     <!-- Text domain -->
-    <config name="text_domain" value="sd-ai-agent"/>
+    <config name="text_domain" value="superdav-ai-agent"/>
 
     <!-- Use WordPress Coding Standards -->
     <rule ref="WordPress">
@@ -114,7 +114,7 @@
     <rule ref="WordPress.WP.I18n">
         <properties>
             <property name="text_domain" type="array">
-                <element value="sd-ai-agent"/>
+                <element value="superdav-ai-agent"/>
             </property>
         </properties>
     </rule>

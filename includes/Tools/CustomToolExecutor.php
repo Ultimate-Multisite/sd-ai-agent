@@ -48,7 +48,7 @@ class CustomToolExecutor {
 					'label'               => $tool['name'],
 					'description'         => $tool['description'] ?: sprintf(
 						/* translators: %s: tool type */
-						__( 'Custom %s tool', 'sd-ai-agent' ),
+						__( 'Custom %s tool', 'superdav-ai-agent' ),
 						// @phpstan-ignore-next-line
 						strtoupper( $tool['type'] )
 					),
@@ -94,7 +94,7 @@ class CustomToolExecutor {
 					'unknown_tool_type',
 					sprintf(
 						/* translators: %s: tool type */
-						__( 'Unknown tool type: %s', 'sd-ai-agent' ),
+						__( 'Unknown tool type: %s', 'superdav-ai-agent' ),
 						// @phpstan-ignore-next-line
 						$tool['type']
 					)
@@ -193,13 +193,13 @@ class CustomToolExecutor {
 		$hook_name = $config['hook_name'] ?? '';
 
 		if ( empty( $hook_name ) ) {
-			return new WP_Error( 'missing_config', __( 'No hook_name configured.', 'sd-ai-agent' ) );
+			return new WP_Error( 'missing_config', __( 'No hook_name configured.', 'superdav-ai-agent' ) );
 		}
 
 		// Sanitize hook name — only allow valid hook characters.
 		// @phpstan-ignore-next-line
 		if ( ! preg_match( '/^[a-zA-Z0-9_]+$/', $hook_name ) ) {
-			return new WP_Error( 'invalid_hook_name', __( 'Invalid hook name.', 'sd-ai-agent' ) );
+			return new WP_Error( 'invalid_hook_name', __( 'Invalid hook name.', 'superdav-ai-agent' ) );
 		}
 
 		// Ensure the hook name is prefixed to comply with WP.org plugin guidelines.
@@ -256,7 +256,7 @@ class CustomToolExecutor {
 		$command = $config['command'] ?? '';
 
 		if ( empty( $command ) ) {
-			return new WP_Error( 'missing_config', __( 'No command configured.', 'sd-ai-agent' ) );
+			return new WP_Error( 'missing_config', __( 'No command configured.', 'superdav-ai-agent' ) );
 		}
 
 		// Replace {{placeholders}} in the command, escaping each substituted

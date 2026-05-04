@@ -168,12 +168,12 @@ export default function DataTable( { children } ) {
 						<input
 							type="search"
 							className="sd-ai-agent-data-table-filter-input"
-							placeholder={ __( 'Filter…', 'sd-ai-agent' ) }
+							placeholder={ __( 'Filter…', 'superdav-ai-agent' ) }
 							value={ filter }
 							onChange={ handleFilterChange }
 							aria-label={ __(
 								'Filter table rows',
-								'sd-ai-agent'
+								'superdav-ai-agent'
 							) }
 						/>
 						{ filter && (
@@ -183,7 +183,7 @@ export default function DataTable( { children } ) {
 								onClick={ handleFilterClear }
 								aria-label={ __(
 									'Clear filter',
-									'sd-ai-agent'
+									'superdav-ai-agent'
 								) }
 							>
 								✕
@@ -261,7 +261,10 @@ export default function DataTable( { children } ) {
 									colSpan={ headers.length || 1 }
 									className="sd-ai-agent-data-table-empty"
 								>
-									{ __( 'No matching rows.', 'sd-ai-agent' ) }
+									{ __(
+										'No matching rows.',
+										'superdav-ai-agent'
+									) }
 								</td>
 							</tr>
 						) }

@@ -24,11 +24,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 class GitListAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'List Tracked Files', 'sd-ai-agent' );
+		return __( 'List Tracked Files', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'List all files that have been snapshotted, with their modification status.', 'sd-ai-agent' );
+		return __( 'List all files that have been snapshotted, with their modification status.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {

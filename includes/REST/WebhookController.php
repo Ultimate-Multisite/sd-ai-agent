@@ -306,7 +306,7 @@ final class WebhookController {
 		if ( ! $webhook_id ) {
 			return new WP_Error(
 				'sd_ai_agent_webhook_id_required',
-				__( 'webhook_id is required.', 'sd-ai-agent' ),
+				__( 'webhook_id is required.', 'superdav-ai-agent' ),
 				[ 'status' => 400 ]
 			);
 		}
@@ -316,7 +316,7 @@ final class WebhookController {
 		if ( ! $webhook ) {
 			return new WP_Error(
 				'sd_ai_agent_webhook_unauthorized',
-				__( 'Invalid webhook credentials.', 'sd-ai-agent' ),
+				__( 'Invalid webhook credentials.', 'superdav-ai-agent' ),
 				[ 'status' => 401 ]
 			);
 		}
@@ -326,7 +326,7 @@ final class WebhookController {
 		if ( empty( $provided_secret ) || ! hash_equals( (string) $webhook->secret, $provided_secret ) ) {
 			return new WP_Error(
 				'sd_ai_agent_webhook_unauthorized',
-				__( 'Invalid webhook credentials.', 'sd-ai-agent' ),
+				__( 'Invalid webhook credentials.', 'superdav-ai-agent' ),
 				[ 'status' => 401 ]
 			);
 		}
@@ -377,7 +377,7 @@ final class WebhookController {
 		if ( false === $id ) {
 			return new WP_Error(
 				'sd_ai_agent_webhook_create_failed',
-				__( 'Failed to create webhook.', 'sd-ai-agent' ),
+				__( 'Failed to create webhook.', 'superdav-ai-agent' ),
 				[ 'status' => 500 ]
 			);
 		}
@@ -387,7 +387,7 @@ final class WebhookController {
 		if ( ! $webhook ) {
 			return new WP_Error(
 				'sd_ai_agent_webhook_not_found',
-				__( 'Webhook not found after creation.', 'sd-ai-agent' ),
+				__( 'Webhook not found after creation.', 'superdav-ai-agent' ),
 				[ 'status' => 500 ]
 			);
 		}
@@ -414,7 +414,7 @@ final class WebhookController {
 		if ( ! $webhook ) {
 			return new WP_Error(
 				'sd_ai_agent_webhook_not_found',
-				__( 'Webhook not found.', 'sd-ai-agent' ),
+				__( 'Webhook not found.', 'superdav-ai-agent' ),
 				[ 'status' => 404 ]
 			);
 		}
@@ -439,7 +439,7 @@ final class WebhookController {
 		if ( ! $webhook ) {
 			return new WP_Error(
 				'sd_ai_agent_webhook_not_found',
-				__( 'Webhook not found.', 'sd-ai-agent' ),
+				__( 'Webhook not found.', 'superdav-ai-agent' ),
 				[ 'status' => 404 ]
 			);
 		}
@@ -466,7 +466,7 @@ final class WebhookController {
 		if ( empty( $data ) ) {
 			return new WP_Error(
 				'sd_ai_agent_webhook_no_data',
-				__( 'No valid fields provided for update.', 'sd-ai-agent' ),
+				__( 'No valid fields provided for update.', 'superdav-ai-agent' ),
 				[ 'status' => 400 ]
 			);
 		}
@@ -476,7 +476,7 @@ final class WebhookController {
 		if ( ! $updated ) {
 			return new WP_Error(
 				'sd_ai_agent_webhook_update_failed',
-				__( 'Failed to update webhook.', 'sd-ai-agent' ),
+				__( 'Failed to update webhook.', 'superdav-ai-agent' ),
 				[ 'status' => 500 ]
 			);
 		}
@@ -484,7 +484,7 @@ final class WebhookController {
 		$webhook = WebhookDatabase::get_webhook( $id );
 
 		if ( ! $webhook ) {
-			return new WP_Error( 'sd_ai_agent_webhook_not_found', __( 'Webhook not found after update.', 'sd-ai-agent' ), [ 'status' => 500 ] );
+			return new WP_Error( 'sd_ai_agent_webhook_not_found', __( 'Webhook not found after update.', 'superdav-ai-agent' ), [ 'status' => 500 ] );
 		}
 
 		$response                = $this->sanitize_webhook_for_response( $webhook );
@@ -507,7 +507,7 @@ final class WebhookController {
 		if ( ! $webhook ) {
 			return new WP_Error(
 				'sd_ai_agent_webhook_not_found',
-				__( 'Webhook not found.', 'sd-ai-agent' ),
+				__( 'Webhook not found.', 'superdav-ai-agent' ),
 				[ 'status' => 404 ]
 			);
 		}
@@ -531,7 +531,7 @@ final class WebhookController {
 		if ( ! $webhook ) {
 			return new WP_Error(
 				'sd_ai_agent_webhook_not_found',
-				__( 'Webhook not found.', 'sd-ai-agent' ),
+				__( 'Webhook not found.', 'superdav-ai-agent' ),
 				[ 'status' => 404 ]
 			);
 		}
@@ -571,7 +571,7 @@ final class WebhookController {
 		if ( ! $webhook ) {
 			return new WP_Error(
 				'sd_ai_agent_webhook_not_found',
-				__( 'Webhook not found.', 'sd-ai-agent' ),
+				__( 'Webhook not found.', 'superdav-ai-agent' ),
 				[ 'status' => 404 ]
 			);
 		}
@@ -616,7 +616,7 @@ final class WebhookController {
 		if ( ! $webhook ) {
 			return new WP_Error(
 				'sd_ai_agent_webhook_unauthorized',
-				__( 'Invalid webhook credentials.', 'sd-ai-agent' ),
+				__( 'Invalid webhook credentials.', 'superdav-ai-agent' ),
 				[ 'status' => 401 ]
 			);
 		}
@@ -625,7 +625,7 @@ final class WebhookController {
 		if ( ! (bool) $webhook->enabled ) {
 			return new WP_Error(
 				'sd_ai_agent_webhook_disabled',
-				__( 'This webhook is disabled.', 'sd-ai-agent' ),
+				__( 'This webhook is disabled.', 'superdav-ai-agent' ),
 				[ 'status' => 403 ]
 			);
 		}
@@ -646,7 +646,7 @@ final class WebhookController {
 		} else {
 			return new WP_Error(
 				'sd_ai_agent_webhook_no_message',
-				__( 'No message provided and webhook has no prompt template.', 'sd-ai-agent' ),
+				__( 'No message provided and webhook has no prompt template.', 'superdav-ai-agent' ),
 				[ 'status' => 400 ]
 			);
 		}

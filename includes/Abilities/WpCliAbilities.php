@@ -167,8 +167,8 @@ class WpCliAbilities {
 		wp_register_ability_category(
 			self::CATEGORY,
 			array(
-				'label'       => __( 'WP-CLI', 'sd-ai-agent' ),
-				'description' => __( 'Execute WP-CLI commands on this WordPress installation.', 'sd-ai-agent' ),
+				'label'       => __( 'WP-CLI', 'superdav-ai-agent' ),
+				'description' => __( 'Execute WP-CLI commands on this WordPress installation.', 'superdav-ai-agent' ),
 			)
 		);
 	}
@@ -209,7 +209,7 @@ class WpCliAbilities {
 		wp_register_ability(
 			self::CATEGORY . '/execute',
 			array(
-				'label'               => __( 'Execute WP-CLI Command', 'sd-ai-agent' ),
+				'label'               => __( 'Execute WP-CLI Command', 'superdav-ai-agent' ),
 				'description'         => $description,
 				'category'            => self::CATEGORY,
 				'permission_callback' => static function () {
@@ -221,7 +221,7 @@ class WpCliAbilities {
 					}
 					return new WP_Error(
 						'wp_cli_forbidden',
-						__( 'You do not have permission to execute WP-CLI commands. Required capability: manage_options.', 'sd-ai-agent' ),
+						__( 'You do not have permission to execute WP-CLI commands. Required capability: manage_options.', 'superdav-ai-agent' ),
 						array( 'status' => 403 )
 					);
 				},
@@ -290,7 +290,7 @@ class WpCliAbilities {
 		if ( '' === $command ) {
 			return new WP_Error(
 				'wp_cli_empty_command',
-				__( 'No command provided. Pass a WP-CLI command, e.g. "post list --format=json".', 'sd-ai-agent' )
+				__( 'No command provided. Pass a WP-CLI command, e.g. "post list --format=json".', 'superdav-ai-agent' )
 			);
 		}
 
@@ -303,7 +303,7 @@ class WpCliAbilities {
 				'wp_cli_blocked_command',
 				sprintf(
 					/* translators: %s: command path */
-					__( 'The command "%s" is blocked for security reasons.', 'sd-ai-agent' ),
+					__( 'The command "%s" is blocked for security reasons.', 'superdav-ai-agent' ),
 					$command_path
 				),
 				array( 'status' => 403 )
@@ -558,7 +558,7 @@ class WpCliAbilities {
 			'wp_cli_forbidden',
 			sprintf(
 				/* translators: 1: access level, 2: capability name */
-				__( 'You do not have permission to execute this %1$s command. Required capability: %2$s.', 'sd-ai-agent' ),
+				__( 'You do not have permission to execute this %1$s command. Required capability: %2$s.', 'superdav-ai-agent' ),
 				$level,
 				$required_cap
 			),
@@ -628,7 +628,7 @@ class WpCliAbilities {
 
 		return new WP_Error(
 			'wp_cli_not_found',
-			__( 'WP-CLI binary not found. Install WP-CLI or set the path via the sd_ai_agent_wp_cli_binary filter.', 'sd-ai-agent' )
+			__( 'WP-CLI binary not found. Install WP-CLI or set the path via the sd_ai_agent_wp_cli_binary filter.', 'superdav-ai-agent' )
 		);
 	}
 
@@ -651,7 +651,7 @@ class WpCliAbilities {
 		$process = proc_open( $args, $descriptors, $pipes, ABSPATH );
 
 		if ( ! is_resource( $process ) ) {
-			return new WP_Error( 'proc_open_failed', __( 'Failed to execute WP-CLI command.', 'sd-ai-agent' ) );
+			return new WP_Error( 'proc_open_failed', __( 'Failed to execute WP-CLI command.', 'superdav-ai-agent' ) );
 		}
 
 		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing proc_open() process pipes.

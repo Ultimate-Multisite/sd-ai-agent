@@ -38,8 +38,8 @@ class FileAbilities {
 		$ability = new FileReadAbility(
 			'sd-ai-agent/file-read',
 			[
-				'label'       => __( 'Read File', 'sd-ai-agent' ),
-				'description' => __( 'Read the contents of a file within the wp-content directory.', 'sd-ai-agent' ),
+				'label'       => __( 'Read File', 'superdav-ai-agent' ),
+				'description' => __( 'Read the contents of a file within the wp-content directory.', 'superdav-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -56,8 +56,8 @@ class FileAbilities {
 		$ability = new FileWriteAbility(
 			'sd-ai-agent/file-write',
 			[
-				'label'       => __( 'Write File', 'sd-ai-agent' ),
-				'description' => __( 'Write or overwrite a file within wp-content. Use for creating NEW files. For modifying existing files, use ai-agent/file-edit instead.', 'sd-ai-agent' ),
+				'label'       => __( 'Write File', 'superdav-ai-agent' ),
+				'description' => __( 'Write or overwrite a file within wp-content. Use for creating NEW files. For modifying existing files, use ai-agent/file-edit instead.', 'superdav-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -74,8 +74,8 @@ class FileAbilities {
 		$ability = new FileEditAbility(
 			'sd-ai-agent/file-edit',
 			[
-				'label'       => __( 'Edit File', 'sd-ai-agent' ),
-				'description' => __( 'Edit an existing file by applying search and replace operations. More efficient than write for targeted changes. Each edit finds a unique string and replaces it.', 'sd-ai-agent' ),
+				'label'       => __( 'Edit File', 'superdav-ai-agent' ),
+				'description' => __( 'Edit an existing file by applying search and replace operations. More efficient than write for targeted changes. Each edit finds a unique string and replaces it.', 'superdav-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -92,8 +92,8 @@ class FileAbilities {
 		$ability = new FileDeleteAbility(
 			'sd-ai-agent/file-delete',
 			[
-				'label'       => __( 'Delete File', 'sd-ai-agent' ),
-				'description' => __( 'Delete a file within the wp-content directory.', 'sd-ai-agent' ),
+				'label'       => __( 'Delete File', 'superdav-ai-agent' ),
+				'description' => __( 'Delete a file within the wp-content directory.', 'superdav-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -110,8 +110,8 @@ class FileAbilities {
 		$ability = new FileListAbility(
 			'sd-ai-agent/file-list',
 			[
-				'label'       => __( 'List Directory', 'sd-ai-agent' ),
-				'description' => __( 'List files and directories within a directory in wp-content.', 'sd-ai-agent' ),
+				'label'       => __( 'List Directory', 'superdav-ai-agent' ),
+				'description' => __( 'List files and directories within a directory in wp-content.', 'superdav-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -128,8 +128,8 @@ class FileAbilities {
 		$ability = new FileSearchAbility(
 			'sd-ai-agent/file-search',
 			[
-				'label'       => __( 'Search Files', 'sd-ai-agent' ),
-				'description' => __( 'Search for files matching a glob pattern within wp-content.', 'sd-ai-agent' ),
+				'label'       => __( 'Search Files', 'superdav-ai-agent' ),
+				'description' => __( 'Search for files matching a glob pattern within wp-content.', 'superdav-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -146,8 +146,8 @@ class FileAbilities {
 		$ability = new ContentSearchAbility(
 			'sd-ai-agent/content-search',
 			[
-				'label'       => __( 'Search Content', 'sd-ai-agent' ),
-				'description' => __( 'Search for text content within files in wp-content.', 'sd-ai-agent' ),
+				'label'       => __( 'Search Content', 'superdav-ai-agent' ),
+				'description' => __( 'Search for text content within files in wp-content.', 'superdav-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -165,8 +165,8 @@ class FileAbilities {
 		wp_register_ability(
 			'sd-ai-agent/file-read',
 			[
-				'label'         => __( 'Read File', 'sd-ai-agent' ),
-				'description'   => __( 'Read the contents of a file within the wp-content directory.', 'sd-ai-agent' ),
+				'label'         => __( 'Read File', 'superdav-ai-agent' ),
+				'description'   => __( 'Read the contents of a file within the wp-content directory.', 'superdav-ai-agent' ),
 				'ability_class' => FileReadAbility::class,
 			]
 		);
@@ -174,8 +174,8 @@ class FileAbilities {
 		wp_register_ability(
 			'sd-ai-agent/file-write',
 			[
-				'label'         => __( 'Write File', 'sd-ai-agent' ),
-				'description'   => __( 'Write or overwrite a file within wp-content. Use for creating NEW files. For modifying existing files, use ai-agent/file-edit instead.', 'sd-ai-agent' ),
+				'label'         => __( 'Write File', 'superdav-ai-agent' ),
+				'description'   => __( 'Write or overwrite a file within wp-content. Use for creating NEW files. For modifying existing files, use ai-agent/file-edit instead.', 'superdav-ai-agent' ),
 				'ability_class' => FileWriteAbility::class,
 			]
 		);
@@ -183,8 +183,8 @@ class FileAbilities {
 		wp_register_ability(
 			'sd-ai-agent/file-edit',
 			[
-				'label'         => __( 'Edit File', 'sd-ai-agent' ),
-				'description'   => __( 'Edit an existing file by applying search and replace operations. More efficient than write for targeted changes. Each edit finds a unique string and replaces it.', 'sd-ai-agent' ),
+				'label'         => __( 'Edit File', 'superdav-ai-agent' ),
+				'description'   => __( 'Edit an existing file by applying search and replace operations. More efficient than write for targeted changes. Each edit finds a unique string and replaces it.', 'superdav-ai-agent' ),
 				'ability_class' => FileEditAbility::class,
 			]
 		);
@@ -192,8 +192,8 @@ class FileAbilities {
 		wp_register_ability(
 			'sd-ai-agent/file-delete',
 			[
-				'label'         => __( 'Delete File', 'sd-ai-agent' ),
-				'description'   => __( 'Delete a file within the wp-content directory.', 'sd-ai-agent' ),
+				'label'         => __( 'Delete File', 'superdav-ai-agent' ),
+				'description'   => __( 'Delete a file within the wp-content directory.', 'superdav-ai-agent' ),
 				'ability_class' => FileDeleteAbility::class,
 			]
 		);
@@ -201,8 +201,8 @@ class FileAbilities {
 		wp_register_ability(
 			'sd-ai-agent/file-list',
 			[
-				'label'         => __( 'List Directory', 'sd-ai-agent' ),
-				'description'   => __( 'List files and directories within a directory in wp-content.', 'sd-ai-agent' ),
+				'label'         => __( 'List Directory', 'superdav-ai-agent' ),
+				'description'   => __( 'List files and directories within a directory in wp-content.', 'superdav-ai-agent' ),
 				'ability_class' => FileListAbility::class,
 			]
 		);
@@ -210,8 +210,8 @@ class FileAbilities {
 		wp_register_ability(
 			'sd-ai-agent/file-search',
 			[
-				'label'         => __( 'Search Files', 'sd-ai-agent' ),
-				'description'   => __( 'Search for files matching a glob pattern within wp-content.', 'sd-ai-agent' ),
+				'label'         => __( 'Search Files', 'superdav-ai-agent' ),
+				'description'   => __( 'Search for files matching a glob pattern within wp-content.', 'superdav-ai-agent' ),
 				'ability_class' => FileSearchAbility::class,
 			]
 		);
@@ -219,8 +219,8 @@ class FileAbilities {
 		wp_register_ability(
 			'sd-ai-agent/content-search',
 			[
-				'label'         => __( 'Search Content', 'sd-ai-agent' ),
-				'description'   => __( 'Search for text content within files in wp-content.', 'sd-ai-agent' ),
+				'label'         => __( 'Search Content', 'superdav-ai-agent' ),
+				'description'   => __( 'Search for text content within files in wp-content.', 'superdav-ai-agent' ),
 				'ability_class' => ContentSearchAbility::class,
 			]
 		);
@@ -244,7 +244,7 @@ abstract class AbstractFileAbility extends AbstractAbility {
 		$relative_path = ltrim( $relative_path, '/\\' );
 
 		if ( empty( $relative_path ) ) {
-			return new WP_Error( 'sd_ai_agent_empty_path', __( 'Path cannot be empty.', 'sd-ai-agent' ) );
+			return new WP_Error( 'sd_ai_agent_empty_path', __( 'Path cannot be empty.', 'superdav-ai-agent' ) );
 		}
 
 		$wp_content_path = WP_CONTENT_DIR;
@@ -266,14 +266,14 @@ abstract class AbstractFileAbility extends AbstractAbility {
 		if ( false === $real_path || false === $wp_content_real ) {
 			return new WP_Error(
 				'sd_ai_agent_path_resolve_failed',
-				__( 'Cannot resolve path.', 'sd-ai-agent' )
+				__( 'Cannot resolve path.', 'superdav-ai-agent' )
 			);
 		}
 
 		if ( strpos( $real_path, $wp_content_real ) !== 0 ) {
 			return new WP_Error(
 				'sd_ai_agent_path_traversal',
-				__( 'Access denied: path is outside wp-content directory.', 'sd-ai-agent' )
+				__( 'Access denied: path is outside wp-content directory.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -350,11 +350,11 @@ abstract class AbstractFileAbility extends AbstractAbility {
 class FileReadAbility extends AbstractFileAbility {
 
 	protected function label(): string {
-		return __( 'Read File', 'sd-ai-agent' );
+		return __( 'Read File', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Read the contents of a file within the wp-content directory.', 'sd-ai-agent' );
+		return __( 'Read the contents of a file within the wp-content directory.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -441,11 +441,11 @@ class FileReadAbility extends AbstractFileAbility {
 class FileWriteAbility extends AbstractFileAbility {
 
 	protected function label(): string {
-		return __( 'Write File', 'sd-ai-agent' );
+		return __( 'Write File', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Write or overwrite a file within wp-content. Use for creating NEW files. For modifying existing files, use ai-agent/file-edit instead.', 'sd-ai-agent' );
+		return __( 'Write or overwrite a file within wp-content. Use for creating NEW files. For modifying existing files, use ai-agent/file-edit instead.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -592,11 +592,11 @@ class FileWriteAbility extends AbstractFileAbility {
 class FileEditAbility extends AbstractFileAbility {
 
 	protected function label(): string {
-		return __( 'Edit File', 'sd-ai-agent' );
+		return __( 'Edit File', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Edit an existing file by applying search and replace operations. More efficient than write for targeted changes. Each edit finds a unique string and replaces it.', 'sd-ai-agent' );
+		return __( 'Edit an existing file by applying search and replace operations. More efficient than write for targeted changes. Each edit finds a unique string and replaces it.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -817,11 +817,11 @@ class FileEditAbility extends AbstractFileAbility {
 class FileDeleteAbility extends AbstractFileAbility {
 
 	protected function label(): string {
-		return __( 'Delete File', 'sd-ai-agent' );
+		return __( 'Delete File', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Delete a file within the wp-content directory.', 'sd-ai-agent' );
+		return __( 'Delete a file within the wp-content directory.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -927,11 +927,11 @@ class FileDeleteAbility extends AbstractFileAbility {
 class FileListAbility extends AbstractFileAbility {
 
 	protected function label(): string {
-		return __( 'List Directory', 'sd-ai-agent' );
+		return __( 'List Directory', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'List files and directories within a directory in wp-content.', 'sd-ai-agent' );
+		return __( 'List files and directories within a directory in wp-content.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -1023,11 +1023,11 @@ class FileListAbility extends AbstractFileAbility {
 class FileSearchAbility extends AbstractFileAbility {
 
 	protected function label(): string {
-		return __( 'Search Files', 'sd-ai-agent' );
+		return __( 'Search Files', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Search for files matching a glob pattern within wp-content.', 'sd-ai-agent' );
+		return __( 'Search for files matching a glob pattern within wp-content.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -1105,11 +1105,11 @@ class FileSearchAbility extends AbstractFileAbility {
 class ContentSearchAbility extends AbstractFileAbility {
 
 	protected function label(): string {
-		return __( 'Search Content', 'sd-ai-agent' );
+		return __( 'Search Content', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Search for text content within files in wp-content.', 'sd-ai-agent' );
+		return __( 'Search for text content within files in wp-content.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -1151,7 +1151,7 @@ class ContentSearchAbility extends AbstractFileAbility {
 		$file_pattern = $input['file_pattern'] ?? '*.php';
 
 		if ( empty( $needle ) ) {
-			return new WP_Error( 'sd_ai_agent_empty_needle', __( 'Search text cannot be empty.', 'sd-ai-agent' ) );
+			return new WP_Error( 'sd_ai_agent_empty_needle', __( 'Search text cannot be empty.', 'superdav-ai-agent' ) );
 		}
 
 		$search_path = WP_CONTENT_DIR;

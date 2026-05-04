@@ -25,11 +25,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 class ScanThemeHooksAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'Scan Theme Hooks', 'sd-ai-agent' );
+		return __( 'Scan Theme Hooks', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Scan an installed theme for WordPress hooks (actions and filters) to enable extension-plugin generation.', 'sd-ai-agent' );
+		return __( 'Scan an installed theme for WordPress hooks (actions and filters) to enable extension-plugin generation.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -69,7 +69,7 @@ class ScanThemeHooksAbility extends AbstractAbility {
 		$slug = (string) ( $input['slug'] ?? '' );
 
 		if ( empty( $slug ) ) {
-			return new WP_Error( 'sd_ai_agent_invalid_slug', __( 'slug is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'sd_ai_agent_invalid_slug', __( 'slug is required.', 'superdav-ai-agent' ) );
 		}
 
 		return HookScanner::scan_theme( $slug );

@@ -78,7 +78,10 @@ export default function ActionCard( { card, onConfirm, onCancel } ) {
 			<div
 				className="sd-ai-agent-action-card sd-ai-agent-action-card--retry"
 				role="region"
-				aria-label={ __( 'Retry tool submission', 'sd-ai-agent' ) }
+				aria-label={ __(
+					'Retry tool submission',
+					'superdav-ai-agent'
+				) }
 			>
 				<div className="sd-ai-agent-action-card-header">
 					<span
@@ -88,19 +91,22 @@ export default function ActionCard( { card, onConfirm, onCancel } ) {
 						&#8635;
 					</span>
 					<span className="sd-ai-agent-action-card-heading">
-						{ __( 'Submission failed — retry?', 'sd-ai-agent' ) }
+						{ __(
+							'Submission failed — retry?',
+							'superdav-ai-agent'
+						) }
 					</span>
 				</div>
 				<div className="sd-ai-agent-action-card-body">
 					<p>
 						{ __(
 							'The browser finished the tool calls but could not deliver the results to the server. Your work is preserved — click Retry to resubmit without re-running the tools.',
-							'sd-ai-agent'
+							'superdav-ai-agent'
 						) }
 					</p>
 					{ names.length > 0 && (
 						<p className="sd-ai-agent-action-card-tool-names">
-							{ __( 'Completed tools:', 'sd-ai-agent' ) }{ ' ' }
+							{ __( 'Completed tools:', 'superdav-ai-agent' ) }{ ' ' }
 							<code>{ names.join( ', ' ) }</code>
 						</p>
 					) }
@@ -111,7 +117,7 @@ export default function ActionCard( { card, onConfirm, onCancel } ) {
 						className="button sd-ai-agent-action-card-btn-cancel"
 						onClick={ onCancel }
 					>
-						{ __( 'Cancel', 'sd-ai-agent' ) }
+						{ __( 'Cancel', 'superdav-ai-agent' ) }
 					</button>
 					<button
 						type="button"
@@ -119,7 +125,7 @@ export default function ActionCard( { card, onConfirm, onCancel } ) {
 						className="button button-primary sd-ai-agent-action-card-btn-confirm"
 						onClick={ () => onConfirm() }
 					>
-						{ __( 'Retry', 'sd-ai-agent' ) }
+						{ __( 'Retry', 'superdav-ai-agent' ) }
 					</button>
 				</div>
 			</div>
@@ -134,7 +140,7 @@ export default function ActionCard( { card, onConfirm, onCancel } ) {
 		<div
 			className="sd-ai-agent-action-card"
 			role="region"
-			aria-label={ __( 'Action confirmation', 'sd-ai-agent' ) }
+			aria-label={ __( 'Action confirmation', 'superdav-ai-agent' ) }
 		>
 			<div className="sd-ai-agent-action-card-header">
 				<span
@@ -144,7 +150,7 @@ export default function ActionCard( { card, onConfirm, onCancel } ) {
 					&#9888;
 				</span>
 				<span className="sd-ai-agent-action-card-heading">
-					{ __( 'Confirm Action', 'sd-ai-agent' ) }
+					{ __( 'Confirm Action', 'superdav-ai-agent' ) }
 				</span>
 			</div>
 
@@ -170,7 +176,10 @@ export default function ActionCard( { card, onConfirm, onCancel } ) {
 							{ tool.args && (
 								<details className="sd-ai-agent-action-card-tool-args-details">
 									<summary>
-										{ __( 'View details', 'sd-ai-agent' ) }
+										{ __(
+											'View details',
+											'superdav-ai-agent'
+										) }
 									</summary>
 									<pre className="sd-ai-agent-action-card-tool-args">
 										{ JSON.stringify( tool.args, null, 2 ) }
@@ -188,7 +197,7 @@ export default function ActionCard( { card, onConfirm, onCancel } ) {
 					className="button sd-ai-agent-action-card-btn-cancel"
 					onClick={ onCancel }
 				>
-					{ __( 'Cancel', 'sd-ai-agent' ) }
+					{ __( 'Cancel', 'superdav-ai-agent' ) }
 				</button>
 				<button
 					type="button"
@@ -196,7 +205,7 @@ export default function ActionCard( { card, onConfirm, onCancel } ) {
 					className="button button-primary sd-ai-agent-action-card-btn-confirm"
 					onClick={ () => onConfirm( false ) }
 				>
-					{ __( 'Confirm', 'sd-ai-agent' ) }
+					{ __( 'Confirm', 'superdav-ai-agent' ) }
 				</button>
 			</div>
 		</div>

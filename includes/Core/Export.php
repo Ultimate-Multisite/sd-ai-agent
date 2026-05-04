@@ -143,7 +143,7 @@ class Export {
 		if ( empty( $data['format'] ) || ! in_array( $data['format'], $valid_formats, true ) ) {
 			return new WP_Error(
 				'sd_ai_agent_import_invalid',
-				__( 'Invalid import format. Expected sd-ai-agent-v1.', 'sd-ai-agent' ),
+				__( 'Invalid import format. Expected sd-ai-agent-v1.', 'superdav-ai-agent' ),
 				[ 'status' => 400 ]
 			);
 		}
@@ -151,7 +151,7 @@ class Export {
 		if ( empty( $data['messages'] ) || ! is_array( $data['messages'] ) ) {
 			return new WP_Error(
 				'sd_ai_agent_import_no_messages',
-				__( 'Import data contains no messages.', 'sd-ai-agent' ),
+				__( 'Import data contains no messages.', 'superdav-ai-agent' ),
 				[ 'status' => 400 ]
 			);
 		}
@@ -173,7 +173,7 @@ class Export {
 		if ( ! $session_id ) {
 			return new WP_Error(
 				'sd_ai_agent_import_failed',
-				__( 'Failed to create session for import.', 'sd-ai-agent' ),
+				__( 'Failed to create session for import.', 'superdav-ai-agent' ),
 				[ 'status' => 500 ]
 			);
 		}

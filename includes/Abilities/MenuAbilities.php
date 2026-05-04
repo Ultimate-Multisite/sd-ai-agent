@@ -31,8 +31,8 @@ class MenuAbilities {
 		wp_register_ability(
 			'ai-agent/list-menus',
 			[
-				'label'               => __( 'List Menus', 'sd-ai-agent' ),
-				'description'         => __( 'List all registered WordPress navigation menus. Returns menu ID, name, slug, and the theme locations it is assigned to.', 'sd-ai-agent' ),
+				'label'               => __( 'List Menus', 'superdav-ai-agent' ),
+				'description'         => __( 'List all registered WordPress navigation menus. Returns menu ID, name, slug, and the theme locations it is assigned to.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -63,8 +63,8 @@ class MenuAbilities {
 		wp_register_ability(
 			'ai-agent/get-menu',
 			[
-				'label'               => __( 'Get Menu', 'sd-ai-agent' ),
-				'description'         => __( 'Retrieve a WordPress navigation menu by ID or slug, including all its items with labels, URLs, and hierarchy.', 'sd-ai-agent' ),
+				'label'               => __( 'Get Menu', 'superdav-ai-agent' ),
+				'description'         => __( 'Retrieve a WordPress navigation menu by ID or slug, including all its items with labels, URLs, and hierarchy.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -107,8 +107,8 @@ class MenuAbilities {
 		wp_register_ability(
 			'ai-agent/create-menu',
 			[
-				'label'               => __( 'Create Menu', 'sd-ai-agent' ),
-				'description'         => __( 'Create a new WordPress navigation menu with the given name. Optionally assign it to a theme location.', 'sd-ai-agent' ),
+				'label'               => __( 'Create Menu', 'superdav-ai-agent' ),
+				'description'         => __( 'Create a new WordPress navigation menu with the given name. Optionally assign it to a theme location.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -149,8 +149,8 @@ class MenuAbilities {
 		wp_register_ability(
 			'ai-agent/delete-menu',
 			[
-				'label'               => __( 'Delete Menu', 'sd-ai-agent' ),
-				'description'         => __( 'Delete a WordPress navigation menu and all its items by menu ID or slug.', 'sd-ai-agent' ),
+				'label'               => __( 'Delete Menu', 'superdav-ai-agent' ),
+				'description'         => __( 'Delete a WordPress navigation menu and all its items by menu ID or slug.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -191,8 +191,8 @@ class MenuAbilities {
 		wp_register_ability(
 			'ai-agent/add-menu-item',
 			[
-				'label'               => __( 'Add Menu Item', 'sd-ai-agent' ),
-				'description'         => __( 'Add an item to a WordPress navigation menu. Supports custom URLs, pages, posts, categories, and tags.', 'sd-ai-agent' ),
+				'label'               => __( 'Add Menu Item', 'superdav-ai-agent' ),
+				'description'         => __( 'Add an item to a WordPress navigation menu. Supports custom URLs, pages, posts, categories, and tags.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -275,8 +275,8 @@ class MenuAbilities {
 		wp_register_ability(
 			'ai-agent/remove-menu-item',
 			[
-				'label'               => __( 'Remove Menu Item', 'sd-ai-agent' ),
-				'description'         => __( 'Remove an item from a WordPress navigation menu by its menu item ID.', 'sd-ai-agent' ),
+				'label'               => __( 'Remove Menu Item', 'superdav-ai-agent' ),
+				'description'         => __( 'Remove an item from a WordPress navigation menu by its menu item ID.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -313,8 +313,8 @@ class MenuAbilities {
 		wp_register_ability(
 			'ai-agent/assign-menu-location',
 			[
-				'label'               => __( 'Assign Menu to Location', 'sd-ai-agent' ),
-				'description'         => __( 'Assign a WordPress navigation menu to a registered theme location (e.g. "primary", "footer"). Use list-menus to see available menus and their current locations.', 'sd-ai-agent' ),
+				'label'               => __( 'Assign Menu to Location', 'superdav-ai-agent' ),
+				'description'         => __( 'Assign a WordPress navigation menu to a registered theme location (e.g. "primary", "footer"). Use list-menus to see available menus and their current locations.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -455,7 +455,7 @@ class MenuAbilities {
 		$location = sanitize_text_field( $input['location'] ?? '' );
 
 		if ( empty( $name ) ) {
-			return new WP_Error( 'ai_agent_empty_menu_name', __( 'Menu name is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ai_agent_empty_menu_name', __( 'Menu name is required.', 'superdav-ai-agent' ) );
 		}
 
 		$menu_id = wp_create_nav_menu( $name );
@@ -544,7 +544,7 @@ class MenuAbilities {
 		$target = sanitize_text_field( $input['target'] ?? '' );
 
 		if ( empty( $title ) ) {
-			return new WP_Error( 'ai_agent_empty_item_title', __( 'Menu item title is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ai_agent_empty_item_title', __( 'Menu item title is required.', 'superdav-ai-agent' ) );
 		}
 
 		$allowed_types = [ 'custom', 'post_type', 'taxonomy' ];
@@ -591,7 +591,7 @@ class MenuAbilities {
 		$item_id = (int) ( $input['item_id'] ?? 0 );
 
 		if ( ! $item_id ) {
-			return new WP_Error( 'ai_agent_empty_item_id', __( 'item_id is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ai_agent_empty_item_id', __( 'item_id is required.', 'superdav-ai-agent' ) );
 		}
 
 		$item = get_post( $item_id );
@@ -600,7 +600,7 @@ class MenuAbilities {
 			return new WP_Error(
 				'ai_agent_menu_item_not_found',
 				/* translators: %d: menu item ID */
-				sprintf( __( 'Menu item %d not found.', 'sd-ai-agent' ), $item_id )
+				sprintf( __( 'Menu item %d not found.', 'superdav-ai-agent' ), $item_id )
 			);
 		}
 
@@ -631,7 +631,7 @@ class MenuAbilities {
 		$location = sanitize_text_field( $input['location'] ?? '' );
 
 		if ( empty( $location ) ) {
-			return new WP_Error( 'ai_agent_empty_location', __( 'location is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ai_agent_empty_location', __( 'location is required.', 'superdav-ai-agent' ) );
 		}
 
 		$locations              = get_nav_menu_locations();
@@ -663,13 +663,13 @@ class MenuAbilities {
 		} elseif ( ! empty( $menu_slug ) ) {
 			$menu = wp_get_nav_menu_object( $menu_slug );
 		} else {
-			return new WP_Error( 'ai_agent_missing_menu_identifier', __( 'Provide menu_id or menu_slug.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ai_agent_missing_menu_identifier', __( 'Provide menu_id or menu_slug.', 'superdav-ai-agent' ) );
 		}
 
 		if ( ! $menu || is_wp_error( $menu ) ) {
 			return new WP_Error(
 				'ai_agent_menu_not_found',
-				__( 'Menu not found.', 'sd-ai-agent' )
+				__( 'Menu not found.', 'superdav-ai-agent' )
 			);
 		}
 

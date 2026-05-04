@@ -48,8 +48,8 @@ class PluginBuilderAbilities {
 		wp_register_ability(
 			'sd-ai-agent/generate-plugin',
 			[
-				'label'         => __( 'Generate Plugin', 'sd-ai-agent' ),
-				'description'   => __( 'Generate a WordPress plugin from a natural-language description. Returns the implementation plan and complete PHP source code.', 'sd-ai-agent' ),
+				'label'         => __( 'Generate Plugin', 'superdav-ai-agent' ),
+				'description'   => __( 'Generate a WordPress plugin from a natural-language description. Returns the implementation plan and complete PHP source code.', 'superdav-ai-agent' ),
 				'ability_class' => GeneratePluginAbility::class,
 			]
 		);
@@ -57,8 +57,8 @@ class PluginBuilderAbilities {
 		wp_register_ability(
 			'sd-ai-agent/sandbox-test-plugin',
 			[
-				'label'         => __( 'Sandbox Test Plugin', 'sd-ai-agent' ),
-				'description'   => __( 'Run layers 1 and 2 of the sandbox safety check against a plugin: PHP syntax validation and isolated subprocess include test.', 'sd-ai-agent' ),
+				'label'         => __( 'Sandbox Test Plugin', 'superdav-ai-agent' ),
+				'description'   => __( 'Run layers 1 and 2 of the sandbox safety check against a plugin: PHP syntax validation and isolated subprocess include test.', 'superdav-ai-agent' ),
 				'ability_class' => SandboxTestPluginAbility::class,
 			]
 		);
@@ -66,8 +66,8 @@ class PluginBuilderAbilities {
 		wp_register_ability(
 			'sd-ai-agent/sandbox-activate-plugin',
 			[
-				'label'         => __( 'Sandbox Activate Plugin', 'sd-ai-agent' ),
-				'description'   => __( 'Activate a plugin using layer 3 transactional safety: error handler + shutdown guard. Auto-deactivates on fatal error.', 'sd-ai-agent' ),
+				'label'         => __( 'Sandbox Activate Plugin', 'superdav-ai-agent' ),
+				'description'   => __( 'Activate a plugin using layer 3 transactional safety: error handler + shutdown guard. Auto-deactivates on fatal error.', 'superdav-ai-agent' ),
 				'ability_class' => SandboxActivatePluginAbility::class,
 			]
 		);
@@ -75,8 +75,8 @@ class PluginBuilderAbilities {
 		wp_register_ability(
 			'sd-ai-agent/update-plugin-sandboxed',
 			[
-				'label'         => __( 'Update Plugin (Sandboxed)', 'sd-ai-agent' ),
-				'description'   => __( 'Update a running plugin with new code: backup → stage → sandbox test → swap. Rolls back automatically on failure.', 'sd-ai-agent' ),
+				'label'         => __( 'Update Plugin (Sandboxed)', 'superdav-ai-agent' ),
+				'description'   => __( 'Update a running plugin with new code: backup → stage → sandbox test → swap. Rolls back automatically on failure.', 'superdav-ai-agent' ),
 				'ability_class' => UpdatePluginSandboxedAbility::class,
 			]
 		);
@@ -84,8 +84,8 @@ class PluginBuilderAbilities {
 		wp_register_ability(
 			'sd-ai-agent/scan-plugin-hooks',
 			[
-				'label'         => __( 'Scan Plugin Hooks', 'sd-ai-agent' ),
-				'description'   => __( 'Scan an installed plugin for WordPress hooks (actions and filters) to enable extension-plugin generation.', 'sd-ai-agent' ),
+				'label'         => __( 'Scan Plugin Hooks', 'superdav-ai-agent' ),
+				'description'   => __( 'Scan an installed plugin for WordPress hooks (actions and filters) to enable extension-plugin generation.', 'superdav-ai-agent' ),
 				'ability_class' => ScanPluginHooksAbility::class,
 			]
 		);
@@ -93,8 +93,8 @@ class PluginBuilderAbilities {
 		wp_register_ability(
 			'sd-ai-agent/scan-theme-hooks',
 			[
-				'label'         => __( 'Scan Theme Hooks', 'sd-ai-agent' ),
-				'description'   => __( 'Scan an installed theme for WordPress hooks (actions and filters) to enable extension-plugin generation.', 'sd-ai-agent' ),
+				'label'         => __( 'Scan Theme Hooks', 'superdav-ai-agent' ),
+				'description'   => __( 'Scan an installed theme for WordPress hooks (actions and filters) to enable extension-plugin generation.', 'superdav-ai-agent' ),
 				'ability_class' => ScanThemeHooksAbility::class,
 			]
 		);

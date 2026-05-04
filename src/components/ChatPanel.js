@@ -98,7 +98,7 @@ export default function ChatPanel( { compact = false, onSlashCommand } ) {
 	}, [ ttsEnabled, setTtsEnabled ] );
 
 	return (
-		<ErrorBoundary label={ __( 'Chat', 'sd-ai-agent' ) }>
+		<ErrorBoundary label={ __( 'Chat', 'superdav-ai-agent' ) }>
 			<div
 				className={ `sd-ai-agent-chat-panel ${
 					compact ? 'is-compact' : ''
@@ -119,11 +119,11 @@ export default function ChatPanel( { compact = false, onSlashCommand } ) {
 								ttsEnabled
 									? __(
 											'Disable text-to-speech',
-											'sd-ai-agent'
+											'superdav-ai-agent'
 									  )
 									: __(
 											'Enable text-to-speech',
-											'sd-ai-agent'
+											'superdav-ai-agent'
 									  )
 							}
 							showTooltip
@@ -132,11 +132,15 @@ export default function ChatPanel( { compact = false, onSlashCommand } ) {
 					) }
 				</div>
 				<ContextIndicator />
-				<ErrorBoundary label={ __( 'Message list', 'sd-ai-agent' ) }>
+				<ErrorBoundary
+					label={ __( 'Message list', 'superdav-ai-agent' ) }
+				>
 					<MessageList />
 				</ErrorBoundary>
 				<SessionChangesBar />
-				<ErrorBoundary label={ __( 'Message input', 'sd-ai-agent' ) }>
+				<ErrorBoundary
+					label={ __( 'Message input', 'superdav-ai-agent' ) }
+				>
 					<MessageInput
 						compact={ compact }
 						onSlashCommand={ onSlashCommand }
@@ -170,11 +174,11 @@ export default function ChatPanel( { compact = false, onSlashCommand } ) {
 					<Tooltip
 						text={ __(
 							'YOLO mode is active — all tool confirmations are skipped automatically.',
-							'sd-ai-agent'
+							'superdav-ai-agent'
 						) }
 					>
 						<span className="sd-ai-agent-yolo-badge">
-							{ __( 'YOLO', 'sd-ai-agent' ) }
+							{ __( 'YOLO', 'superdav-ai-agent' ) }
 						</span>
 					</Tooltip>
 				) }

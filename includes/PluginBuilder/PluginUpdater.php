@@ -39,7 +39,7 @@ class PluginUpdater {
 		if ( empty( $slug ) ) {
 			return new WP_Error(
 				'sd_ai_agent_invalid_slug',
-				__( 'Plugin slug must not be empty.', 'sd-ai-agent' )
+				__( 'Plugin slug must not be empty.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -48,7 +48,7 @@ class PluginUpdater {
 			return new WP_Error(
 				'sd_ai_agent_plugin_not_found',
 				/* translators: %s: plugin directory */
-				sprintf( __( 'Plugin directory not found: %s', 'sd-ai-agent' ), $plugin_dir )
+				sprintf( __( 'Plugin directory not found: %s', 'superdav-ai-agent' ), $plugin_dir )
 			);
 		}
 
@@ -78,7 +78,7 @@ class PluginUpdater {
 		if ( empty( $slug ) ) {
 			return new WP_Error(
 				'sd_ai_agent_invalid_slug',
-				__( 'Plugin slug must not be empty.', 'sd-ai-agent' )
+				__( 'Plugin slug must not be empty.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -87,7 +87,7 @@ class PluginUpdater {
 			return new WP_Error(
 				'sd_ai_agent_plugin_not_found',
 				/* translators: %s: plugin directory */
-				sprintf( __( 'Plugin directory not found: %s', 'sd-ai-agent' ), $plugin_dir )
+				sprintf( __( 'Plugin directory not found: %s', 'superdav-ai-agent' ), $plugin_dir )
 			);
 		}
 
@@ -115,7 +115,7 @@ class PluginUpdater {
 				return new WP_Error(
 					'sd_ai_agent_staging_write_failed',
 					/* translators: %s: relative file path */
-					sprintf( __( 'Could not write staging file: %s', 'sd-ai-agent' ), $relative_path )
+					sprintf( __( 'Could not write staging file: %s', 'superdav-ai-agent' ), $relative_path )
 				);
 			}
 		}
@@ -160,7 +160,7 @@ class PluginUpdater {
 			return new WP_Error(
 				'sd_ai_agent_staging_not_found',
 				/* translators: %s: staging directory */
-				sprintf( __( 'Staging directory not found: %s', 'sd-ai-agent' ), $staging_dir )
+				sprintf( __( 'Staging directory not found: %s', 'superdav-ai-agent' ), $staging_dir )
 			);
 		}
 
@@ -186,7 +186,7 @@ class PluginUpdater {
 			return new WP_Error(
 				'sd_ai_agent_swap_copy_failed',
 				/* translators: %s: underlying error message */
-				sprintf( __( 'Swap failed, backup restored: %s', 'sd-ai-agent' ), $copy_result->get_error_message() )
+				sprintf( __( 'Swap failed, backup restored: %s', 'superdav-ai-agent' ), $copy_result->get_error_message() )
 			);
 		}
 
@@ -201,7 +201,7 @@ class PluginUpdater {
 					'sd_ai_agent_reactivation_failed',
 					sprintf(
 						/* translators: 1: plugin file, 2: underlying error */
-						__( 'Reactivation of "%1$s" failed after swap, backup restored: %2$s', 'sd-ai-agent' ),
+						__( 'Reactivation of "%1$s" failed after swap, backup restored: %2$s', 'superdav-ai-agent' ),
 						$plugin_file,
 						$activate_result->get_error_message()
 					)
@@ -228,7 +228,7 @@ class PluginUpdater {
 			return new WP_Error(
 				'sd_ai_agent_backup_not_found',
 				/* translators: %s: backup directory */
-				sprintf( __( 'Backup directory not found: %s', 'sd-ai-agent' ), $backup_dir )
+				sprintf( __( 'Backup directory not found: %s', 'superdav-ai-agent' ), $backup_dir )
 			);
 		}
 
@@ -382,7 +382,7 @@ class PluginUpdater {
 			return new WP_Error(
 				'sd_ai_agent_mkdir_failed',
 				/* translators: %s: directory path */
-				sprintf( __( 'Could not create directory: %s', 'sd-ai-agent' ), $destination )
+				sprintf( __( 'Could not create directory: %s', 'superdav-ai-agent' ), $destination )
 			);
 		}
 

@@ -93,7 +93,7 @@ final class SkillController extends XWP_REST_Controller {
 		$skill = Skill::get( $id );
 
 		if ( ! $skill ) {
-			return new WP_Error( 'sd_ai_agent_skill_not_found', __( 'Skill not found after creation.', 'sd-ai-agent' ), array( 'status' => 500 ) );
+			return new WP_Error( 'sd_ai_agent_skill_not_found', __( 'Skill not found after creation.', 'superdav-ai-agent' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response( SkillService::format_skill( $skill ), 201 );
@@ -133,7 +133,7 @@ final class SkillController extends XWP_REST_Controller {
 		if ( ! $updated ) {
 			return new WP_Error(
 				'sd_ai_agent_skill_update_failed',
-				__( 'Failed to update skill.', 'sd-ai-agent' ),
+				__( 'Failed to update skill.', 'superdav-ai-agent' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -141,7 +141,7 @@ final class SkillController extends XWP_REST_Controller {
 		$skill = Skill::get( $id );
 
 		if ( ! $skill ) {
-			return new WP_Error( 'sd_ai_agent_skill_not_found', __( 'Skill not found after update.', 'sd-ai-agent' ), array( 'status' => 500 ) );
+			return new WP_Error( 'sd_ai_agent_skill_not_found', __( 'Skill not found after update.', 'superdav-ai-agent' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response( SkillService::format_skill( $skill ), 200 );
@@ -189,7 +189,7 @@ final class SkillController extends XWP_REST_Controller {
 		if ( ! $reset ) {
 			return new WP_Error(
 				'sd_ai_agent_skill_reset_failed',
-				__( 'Failed to reset skill. Only built-in skills can be reset.', 'sd-ai-agent' ),
+				__( 'Failed to reset skill. Only built-in skills can be reset.', 'superdav-ai-agent' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -197,7 +197,7 @@ final class SkillController extends XWP_REST_Controller {
 		$skill = Skill::get( $id );
 
 		if ( ! $skill ) {
-			return new WP_Error( 'sd_ai_agent_skill_not_found', __( 'Skill not found after reset.', 'sd-ai-agent' ), array( 'status' => 500 ) );
+			return new WP_Error( 'sd_ai_agent_skill_not_found', __( 'Skill not found after reset.', 'superdav-ai-agent' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response( SkillService::format_skill( $skill ), 200 );
@@ -330,7 +330,7 @@ final class SkillController extends XWP_REST_Controller {
 		if ( '' === $manifest_url ) {
 			return new WP_Error(
 				'sd_ai_agent_no_manifest_url',
-				__( 'No skill manifest URL configured. Set skill_manifest_url in settings.', 'sd-ai-agent' ),
+				__( 'No skill manifest URL configured. Set skill_manifest_url in settings.', 'superdav-ai-agent' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -341,7 +341,7 @@ final class SkillController extends XWP_REST_Controller {
 		if ( ! str_starts_with( strtolower( $manifest_url ), 'https://' ) ) {
 			return new WP_Error(
 				'sd_ai_agent_manifest_invalid_scheme',
-				__( 'Skill manifest URL must use HTTPS.', 'sd-ai-agent' ),
+				__( 'Skill manifest URL must use HTTPS.', 'superdav-ai-agent' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -360,7 +360,7 @@ final class SkillController extends XWP_REST_Controller {
 				'sd_ai_agent_manifest_fetch_failed',
 				sprintf(
 					/* translators: %s: error message */
-					__( 'Failed to fetch skill manifest: %s', 'sd-ai-agent' ),
+					__( 'Failed to fetch skill manifest: %s', 'superdav-ai-agent' ),
 					$response->get_error_message()
 				),
 				array( 'status' => 502 )
@@ -373,7 +373,7 @@ final class SkillController extends XWP_REST_Controller {
 				'sd_ai_agent_manifest_bad_status',
 				sprintf(
 					/* translators: %d: HTTP status code */
-					__( 'Skill manifest returned HTTP %d.', 'sd-ai-agent' ),
+					__( 'Skill manifest returned HTTP %d.', 'superdav-ai-agent' ),
 					$status_code
 				),
 				array( 'status' => 502 )
@@ -386,7 +386,7 @@ final class SkillController extends XWP_REST_Controller {
 		if ( ! is_array( $manifest ) ) {
 			return new WP_Error(
 				'sd_ai_agent_manifest_invalid',
-				__( 'Skill manifest is not valid JSON or not an array.', 'sd-ai-agent' ),
+				__( 'Skill manifest is not valid JSON or not an array.', 'superdav-ai-agent' ),
 				array( 'status' => 502 )
 			);
 		}

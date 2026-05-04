@@ -25,8 +25,8 @@ class ModelBenchmarkPage {
 	 */
 	public static function register(): void {
 		$hook = add_management_page(
-			__( 'Model Benchmark', 'sd-ai-agent' ),
-			__( 'Model Benchmark', 'sd-ai-agent' ),
+			__( 'Model Benchmark', 'superdav-ai-agent' ),
+			__( 'Model Benchmark', 'superdav-ai-agent' ),
 			'manage_options',
 			self::SLUG,
 			[ __CLASS__, 'render' ]
@@ -72,7 +72,7 @@ class ModelBenchmarkPage {
 			true
 		);
 
-		wp_set_script_translations( 'sd-ai-agent-benchmark-page', 'sd-ai-agent' );
+		wp_set_script_translations( 'sd-ai-agent-benchmark-page', 'superdav-ai-agent' );
 
 		wp_localize_script(
 			'sd-ai-agent-benchmark-page',
@@ -90,9 +90,9 @@ class ModelBenchmarkPage {
 	public static function render(): void {
 		?>
 		<div class="wrap sd-ai-agent-benchmark-wrap">
-			<h1><?php esc_html_e( 'Model Benchmark', 'sd-ai-agent' ); ?></h1>
+			<h1><?php esc_html_e( 'Model Benchmark', 'superdav-ai-agent' ); ?></h1>
 			<p class="description">
-				<?php esc_html_e( 'Benchmark AI models against WordPress knowledge and coding tasks. Compare performance, accuracy, and cost across different providers.', 'sd-ai-agent' ); ?>
+				<?php esc_html_e( 'Benchmark AI models against WordPress knowledge and coding tasks. Compare performance, accuracy, and cost across different providers.', 'superdav-ai-agent' ); ?>
 			</p>
 			<div id="sd-ai-agent-benchmark-root"></div>
 		</div>

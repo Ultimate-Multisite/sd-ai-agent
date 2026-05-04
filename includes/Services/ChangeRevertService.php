@@ -50,7 +50,7 @@ final class ChangeRevertService {
 		if ( isset( $change->revertable ) && ! $change->revertable ) {
 			return new WP_Error(
 				'not_revertable',
-				__( 'This change cannot be automatically undone.', 'sd-ai-agent' ),
+				__( 'This change cannot be automatically undone.', 'superdav-ai-agent' ),
 				array( 'status' => 422 )
 			);
 		}
@@ -60,7 +60,7 @@ final class ChangeRevertService {
 		if ( '[REDACTED]' === $change->before_value ) {
 			return new WP_Error(
 				'cannot_revert_redacted',
-				__( 'This field was redacted for security and cannot be reverted automatically.', 'sd-ai-agent' ),
+				__( 'This field was redacted for security and cannot be reverted automatically.', 'superdav-ai-agent' ),
 				array( 'status' => 422 )
 			);
 		}
@@ -100,7 +100,7 @@ final class ChangeRevertService {
 					if ( empty( $roles ) ) {
 						return new WP_Error(
 							'no_role_to_restore',
-							__( 'No previous role recorded; cannot revert role change.', 'sd-ai-agent' ),
+							__( 'No previous role recorded; cannot revert role change.', 'superdav-ai-agent' ),
 							array( 'status' => 422 )
 						);
 					}
@@ -108,7 +108,7 @@ final class ChangeRevertService {
 					if ( ! $user ) {
 						return new WP_Error(
 							'user_not_found',
-							__( 'User not found.', 'sd-ai-agent' ),
+							__( 'User not found.', 'superdav-ai-agent' ),
 							array( 'status' => 404 )
 						);
 					}
@@ -163,7 +163,7 @@ final class ChangeRevertService {
 				// branch is a fallback safety net.
 				return new WP_Error(
 					'nav_menu_deletion_unrevertable',
-					__( 'Deleted navigation menus cannot be automatically restored.', 'sd-ai-agent' ),
+					__( 'Deleted navigation menus cannot be automatically restored.', 'superdav-ai-agent' ),
 					array( 'status' => 422 )
 				);
 
@@ -195,7 +195,7 @@ final class ChangeRevertService {
 						'unsupported_object_type',
 						sprintf(
 							/* translators: %s: object type slug */
-							__( 'Revert is not supported for object type "%s".', 'sd-ai-agent' ),
+							__( 'Revert is not supported for object type "%s".', 'superdav-ai-agent' ),
 							$change->object_type
 						),
 						array( 'status' => 422 )

@@ -90,7 +90,7 @@ class PluginSandbox {
 			return new WP_Error(
 				'sd_ai_agent_sandbox_dir_not_found',
 				/* translators: %s: directory path */
-				sprintf( __( 'Plugin directory not found: %s', 'sd-ai-agent' ), $plugin_dir )
+				sprintf( __( 'Plugin directory not found: %s', 'superdav-ai-agent' ), $plugin_dir )
 			);
 		}
 
@@ -106,7 +106,7 @@ class PluginSandbox {
 					'sd_ai_agent_syntax_error',
 					sprintf(
 						/* translators: 1: file path 2: error output */
-						__( 'Syntax error in %1$s: %2$s', 'sd-ai-agent' ),
+						__( 'Syntax error in %1$s: %2$s', 'superdav-ai-agent' ),
 						str_replace( $plugin_dir . '/', '', $file ),
 						implode( "\n", $output )
 					)
@@ -135,7 +135,7 @@ class PluginSandbox {
 			return new WP_Error(
 				'sd_ai_agent_sandbox_file_not_found',
 				/* translators: %s: file path */
-				sprintf( __( 'Plugin main file not found: %s', 'sd-ai-agent' ), $main_file )
+				sprintf( __( 'Plugin main file not found: %s', 'superdav-ai-agent' ), $main_file )
 			);
 		}
 
@@ -175,7 +175,7 @@ class PluginSandbox {
 				'sd_ai_agent_isolated_include_failed',
 				sprintf(
 					/* translators: 1: exit code 2: output */
-					__( 'Isolated include failed (exit %1$d): %2$s', 'sd-ai-agent' ),
+					__( 'Isolated include failed (exit %1$d): %2$s', 'superdav-ai-agent' ),
 					$exit_code,
 					$output_str
 				)
@@ -212,7 +212,7 @@ class PluginSandbox {
 			return new WP_Error(
 				'sd_ai_agent_previous_fatal',
 				/* translators: %s: plugin file */
-				sprintf( __( 'Plugin "%s" caused a fatal error on a previous activation attempt and was automatically deactivated.', 'sd-ai-agent' ), $plugin_file )
+				sprintf( __( 'Plugin "%s" caused a fatal error on a previous activation attempt and was automatically deactivated.', 'superdav-ai-agent' ), $plugin_file )
 			);
 		}
 
@@ -252,7 +252,7 @@ class PluginSandbox {
 			'plugin_file' => $plugin_file,
 			'message'     => sprintf(
 				/* translators: %s: plugin file */
-				__( 'Plugin "%s" activated successfully via sandboxed activation.', 'sd-ai-agent' ),
+				__( 'Plugin "%s" activated successfully via sandboxed activation.', 'superdav-ai-agent' ),
 				$plugin_file
 			),
 		];

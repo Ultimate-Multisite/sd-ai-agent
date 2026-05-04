@@ -34,8 +34,8 @@ class PluginDownloadAbilities {
 		$ability = new ListModifiedPluginsAbility(
 			'sd-ai-agent/list-modified-plugins',
 			[
-				'label'       => __( 'List Modified Plugins', 'sd-ai-agent' ),
-				'description' => __( 'List all plugins that have been modified by the AI agent, with modification counts and download links.', 'sd-ai-agent' ),
+				'label'       => __( 'List Modified Plugins', 'superdav-ai-agent' ),
+				'description' => __( 'List all plugins that have been modified by the AI agent, with modification counts and download links.', 'superdav-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -52,8 +52,8 @@ class PluginDownloadAbilities {
 		$ability = new GetPluginDownloadUrlAbility(
 			'sd-ai-agent/get-plugin-download-url',
 			[
-				'label'       => __( 'Get Plugin Download URL', 'sd-ai-agent' ),
-				'description' => __( 'Get a download URL for a plugin that has been modified by the AI agent.', 'sd-ai-agent' ),
+				'label'       => __( 'Get Plugin Download URL', 'superdav-ai-agent' ),
+				'description' => __( 'Get a download URL for a plugin that has been modified by the AI agent.', 'superdav-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -71,8 +71,8 @@ class PluginDownloadAbilities {
 		wp_register_ability(
 			'sd-ai-agent/list-modified-plugins',
 			[
-				'label'         => __( 'List Modified Plugins', 'sd-ai-agent' ),
-				'description'   => __( 'List all plugins that have been modified by the AI agent, with modification counts and download links.', 'sd-ai-agent' ),
+				'label'         => __( 'List Modified Plugins', 'superdav-ai-agent' ),
+				'description'   => __( 'List all plugins that have been modified by the AI agent, with modification counts and download links.', 'superdav-ai-agent' ),
 				'ability_class' => ListModifiedPluginsAbility::class,
 				'show_in_rest'  => true,
 			]
@@ -81,8 +81,8 @@ class PluginDownloadAbilities {
 		wp_register_ability(
 			'sd-ai-agent/get-plugin-download-url',
 			[
-				'label'         => __( 'Get Plugin Download URL', 'sd-ai-agent' ),
-				'description'   => __( 'Get a download URL for a plugin that has been modified by the AI agent.', 'sd-ai-agent' ),
+				'label'         => __( 'Get Plugin Download URL', 'superdav-ai-agent' ),
+				'description'   => __( 'Get a download URL for a plugin that has been modified by the AI agent.', 'superdav-ai-agent' ),
 				'ability_class' => GetPluginDownloadUrlAbility::class,
 				'show_in_rest'  => true,
 			]
@@ -101,11 +101,11 @@ class PluginDownloadAbilities {
 class ListModifiedPluginsAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'List Modified Plugins', 'sd-ai-agent' );
+		return __( 'List Modified Plugins', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'List all plugins that have been modified by the AI agent, with modification counts and download links.', 'sd-ai-agent' );
+		return __( 'List all plugins that have been modified by the AI agent, with modification counts and download links.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -186,11 +186,11 @@ class ListModifiedPluginsAbility extends AbstractAbility {
 class GetPluginDownloadUrlAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'Get Plugin Download URL', 'sd-ai-agent' );
+		return __( 'Get Plugin Download URL', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Get a download URL for a plugin that has been modified by the AI agent.', 'sd-ai-agent' );
+		return __( 'Get a download URL for a plugin that has been modified by the AI agent.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -225,7 +225,7 @@ class GetPluginDownloadUrlAbility extends AbstractAbility {
 		$slug = sanitize_key( $input['plugin_slug'] ?? '' );
 
 		if ( empty( $slug ) ) {
-			return new WP_Error( 'sd_ai_agent_invalid_slug', __( 'Plugin slug cannot be empty.', 'sd-ai-agent' ) );
+			return new WP_Error( 'sd_ai_agent_invalid_slug', __( 'Plugin slug cannot be empty.', 'superdav-ai-agent' ) );
 		}
 
 		// Verify the plugin directory exists.
@@ -237,7 +237,7 @@ class GetPluginDownloadUrlAbility extends AbstractAbility {
 				'sd_ai_agent_plugin_not_found',
 				sprintf(
 					/* translators: %s: plugin slug */
-					__( 'Plugin directory not found: %s', 'sd-ai-agent' ),
+					__( 'Plugin directory not found: %s', 'superdav-ai-agent' ),
 					$slug
 				)
 			);
@@ -252,7 +252,7 @@ class GetPluginDownloadUrlAbility extends AbstractAbility {
 				'sd_ai_agent_plugin_not_modified',
 				sprintf(
 					/* translators: %s: plugin slug */
-					__( 'No AI modifications recorded for plugin: %s', 'sd-ai-agent' ),
+					__( 'No AI modifications recorded for plugin: %s', 'superdav-ai-agent' ),
 					$slug
 				)
 			);
