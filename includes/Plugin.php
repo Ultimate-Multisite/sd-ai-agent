@@ -44,7 +44,6 @@ use SdAiAgent\Infrastructure\WordPress\Abilities\UsageInstructionsFilter;
 use SdAiAgent\REST\AgentController;
 use SdAiAgent\REST\AutomationController;
 use SdAiAgent\REST\ConnectorsController;
-use SdAiAgent\REST\BenchmarkController;
 use SdAiAgent\REST\ChangesController;
 use SdAiAgent\REST\FeedbackController;
 use SdAiAgent\REST\KnowledgeController;
@@ -104,7 +103,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 		FeedbackController::class,
 		TraceController::class,
 		McpController::class,
-		BenchmarkController::class,
 		RestController::class,
 		ToolController::class,
 		AgentController::class,

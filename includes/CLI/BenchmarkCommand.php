@@ -1,589 +1,506 @@
 <?php
+
+declare(strict_types=1);
 /**
- * WP-CLI commands for model benchmarking.
+ * WP-CLI benchmark command.
  *
- * Provides `wp ai-agent benchmark run|list|show|suites|delete|compare`
- * commands that use the same BenchmarkRunner/BenchmarkSuite backend
- * as the browser-based benchmark UI.
+ * Drives the full AI agent loop against live WordPress and writes a structured
+ * log file for every question run.  No database writes — results live entirely
+ * in log files under tests/benchmark/logs/.
  *
- * @package SdAiAgent
+ * Usage:
+ *   wp sd-ai-agent benchmark run --suite=functional-v1 --provider=anthropic --model=claude-sonnet-4-6
+ *   wp sd-ai-agent benchmark run --question=fn-001 --provider=openai --model=gpt-4o
+ *   wp sd-ai-agent benchmark suites
+ *   wp sd-ai-agent benchmark questions --suite=functional-v1
+ *
+ * @package SdAiAgent\CLI
  * @license GPL-2.0-or-later
  */
 
-declare(strict_types=1);
-
 namespace SdAiAgent\CLI;
 
-use SdAiAgent\Benchmark\BenchmarkRunner;
+use SdAiAgent\Benchmark\AssertionEngine;
 use SdAiAgent\Benchmark\BenchmarkSuite;
+use SdAiAgent\Core\AgentLoop;
+use SdAiAgent\Core\ProviderCredentialLoader;
+use SdAiAgent\Tools\ToolDiscovery;
 use WP_CLI;
+use WP_CLI_Command;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Run AI model benchmarks from the command line.
- *
- * Uses the same backend as the admin benchmark page — creates runs,
- * executes questions one at a time, stores results in the database,
- * and supports comparison across runs.
+ * Run functional AI agent benchmarks against a live WordPress environment.
  *
  * ## EXAMPLES
  *
- *     # List available benchmark suites
- *     wp ai-agent benchmark suites
+ *   # Run all questions in the functional-v1 suite with Claude Sonnet
+ *   wp sd-ai-agent benchmark run --suite=functional-v1 --provider=ultimate-ai-connector-anthropic-max --model=claude-sonnet-4-6
  *
- *     # Run Opus on the agent capabilities suite
- *     wp ai-agent benchmark run --suite=agent-capabilities-v1 --provider=anthropic --model=claude-opus-4-6
+ *   # Run a single question
+ *   wp sd-ai-agent benchmark run --question=fn-001 --provider=ultimate-ai-connector-anthropic-max --model=claude-sonnet-4-6
  *
- *     # Run a quick test with Google
- *     wp ai-agent benchmark run --suite=wp-quick --provider=google --model=gemini-2.5-pro-preview-05-06
+ *   # List all suites
+ *   wp sd-ai-agent benchmark suites
  *
- *     # Run only specific questions
- *     wp ai-agent benchmark run --suite=agent-capabilities-v1 --provider=anthropic --model=claude-opus-4-6 --questions=ac-001,ac-004,ac-010
- *
- *     # List past benchmark runs
- *     wp ai-agent benchmark list
- *
- *     # Show results for a specific run
- *     wp ai-agent benchmark show 42
- *
- *     # Compare two runs
- *     wp ai-agent benchmark compare 42 43
- *
- * @since 1.5.0
+ *   # List questions in a suite
+ *   wp sd-ai-agent benchmark questions --suite=functional-v1
  */
-class BenchmarkCommand extends \WP_CLI_Command {
+class BenchmarkCommand extends WP_CLI_Command {
+
+	/**
+	 * Directory where log files are written (relative to plugin root).
+	 */
+	private const LOG_DIR = 'tests/benchmark/logs';
+
+	/**
+	 * System prompt injected for every benchmark question.
+	 * Tells the agent it is in a live WordPress environment and should act, not describe.
+	 */
+	private const SYSTEM_PROMPT = 'You are a WordPress AI Agent operating in a real, live WordPress installation. When given a task you MUST complete it immediately using your tools — do not describe what you would do. Write actual working code, create real files, activate plugins, and make real changes. The environment is yours to modify. After completing a task always confirm what was done and that it worked.';
+
+	// ── Subcommands ───────────────────────────────────────────────────────────
 
 	/**
 	 * List available benchmark suites.
 	 *
-	 * ## OPTIONS
-	 *
-	 * [--format=<format>]
-	 * : Output format.
-	 * ---
-	 * default: table
-	 * options:
-	 *   - table
-	 *   - json
-	 *   - csv
-	 * ---
-	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp ai-agent benchmark suites
-	 *     wp ai-agent benchmark suites --format=json
+	 *   wp sd-ai-agent benchmark suites
 	 *
-	 * @param array<int, string>    $args       Positional arguments.
-	 * @param array<string, string> $assoc_args Associative arguments.
+	 * @subcommand suites
 	 */
-	public function suites( array $args, array $assoc_args ): void {
-		$format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'table' );
+	public function suites(): void {
 		$suites = BenchmarkSuite::list_suites();
 
-		if ( empty( $suites ) ) {
-			WP_CLI::log( 'No benchmark suites available.' );
-			return;
-		}
+		$rows = array_map(
+			fn( $s ) => array(
+				'slug'        => $s['slug'],
+				'name'        => $s['name'],
+				'questions'   => $s['question_count'],
+				'description' => $s['description'],
+			),
+			$suites
+		);
 
-		\WP_CLI\Utils\format_items( $format, $suites, array( 'slug', 'name', 'question_count', 'description' ) );
+		WP_CLI\Utils\format_items( 'table', $rows, array( 'slug', 'name', 'questions', 'description' ) );
 	}
 
 	/**
-	 * Run a benchmark suite against one or more models.
-	 *
-	 * Creates a benchmark run, executes every question sequentially,
-	 * and prints results as they complete. Results are stored in the
-	 * database and visible in the admin benchmark page.
+	 * List questions in a suite.
 	 *
 	 * ## OPTIONS
 	 *
 	 * [--suite=<slug>]
-	 * : Benchmark suite to run.
-	 * ---
-	 * default: wp-core-v1
-	 * ---
+	 * : Suite slug. Default: functional-v1
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp sd-ai-agent benchmark questions --suite=functional-v1
+	 *
+	 * @subcommand questions
+	 * @param array<int, string>   $args       Positional arguments.
+	 * @param array<string, mixed> $assoc_args Named arguments.
+	 */
+	public function questions( array $args, array $assoc_args ): void {
+		$suite_slug = (string) ( $assoc_args['suite'] ?? 'functional-v1' );
+		$questions  = BenchmarkSuite::get_questions( $suite_slug );
+
+		if ( empty( $questions ) ) {
+			WP_CLI::error( "Suite '{$suite_slug}' not found." );
+		}
+
+		$rows = array_map(
+			fn( $q ) => array(
+				'id'         => $q['id'],
+				'category'   => $q['category'],
+				'max_turns'  => $q['max_turns'],
+				'assertions' => count( $q['assertions'] ),
+				'prompt'     => substr( $q['prompt'], 0, 80 ) . '…',
+			),
+			$questions
+		);
+
+		WP_CLI\Utils\format_items( 'table', $rows, array( 'id', 'category', 'max_turns', 'assertions', 'prompt' ) );
+	}
+
+	/**
+	 * Run benchmark questions against the AI agent.
+	 *
+	 * Runs each question through the full AgentLoop with all tools available.
+	 * A log file is written for every question under tests/benchmark/logs/.
+	 * Plugins created during functional tests are cleaned up after each question.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--suite=<slug>]
+	 * : Suite slug to run. Default: functional-v1
+	 *
+	 * [--question=<id>]
+	 * : Run a single question by ID (e.g. fn-001). Overrides --suite.
 	 *
 	 * [--provider=<id>]
-	 * : Provider ID (anthropic, openai, google). Required unless WP AI Client is configured.
+	 * : Provider ID as registered in the WP AI SDK (e.g. ultimate-ai-connector-anthropic-max).
 	 *
 	 * [--model=<id>]
-	 * : Model ID (e.g. claude-opus-4-6, gpt-4o, gemini-2.5-pro-preview-05-06).
+	 * : Model ID (e.g. claude-sonnet-4-6, gpt-4o).
 	 *
-	 * [--name=<name>]
-	 * : Human-readable name for this run. Defaults to "CLI: {suite} — {model}".
-	 *
-	 * [--questions=<ids>]
-	 * : Comma-separated list of question IDs to run (e.g. ac-001,ac-004). Runs all if omitted.
-	 *
-	 * [--format=<format>]
-	 * : Output format for results.
-	 * ---
-	 * default: table
-	 * options:
-	 *   - table
-	 *   - json
-	 * ---
+	 * [--log-dir=<path>]
+	 * : Absolute path for log output. Defaults to tests/benchmark/logs/ inside the plugin.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp ai-agent benchmark run --suite=agent-capabilities-v1 --provider=anthropic --model=claude-opus-4-6
-	 *     wp ai-agent benchmark run --suite=wp-quick --provider=openai --model=gpt-4o
-	 *     wp ai-agent benchmark run --suite=agent-capabilities-v1 --provider=anthropic --model=claude-opus-4-6 --questions=ac-001,ac-010
+	 *   wp sd-ai-agent benchmark run --suite=functional-v1 --provider=ultimate-ai-connector-anthropic-max --model=claude-sonnet-4-6
+	 *   wp sd-ai-agent benchmark run --question=fn-003 --provider=openai --model=gpt-4o
 	 *
-	 * @param array<int, string>    $args       Positional arguments.
-	 * @param array<string, string> $assoc_args Associative arguments.
+	 * @subcommand run
+	 * @param array<int, string>   $args       Positional arguments.
+	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function run( array $args, array $assoc_args ): void {
-		$suite_slug   = \WP_CLI\Utils\get_flag_value( $assoc_args, 'suite', 'wp-core-v1' );
-		$provider_id  = \WP_CLI\Utils\get_flag_value( $assoc_args, 'provider', '' );
-		$model_id     = \WP_CLI\Utils\get_flag_value( $assoc_args, 'model', '' );
-		$run_name     = \WP_CLI\Utils\get_flag_value( $assoc_args, 'name', '' );
-		$question_csv = \WP_CLI\Utils\get_flag_value( $assoc_args, 'questions', '' );
-		$format       = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'table' );
+		$suite_slug  = (string) ( $assoc_args['suite'] ?? 'functional-v1' );
+		$question_id = (string) ( $assoc_args['question'] ?? '' );
+		$provider_id = (string) ( $assoc_args['provider'] ?? '' );
+		$model_id    = (string) ( $assoc_args['model'] ?? '' );
+		$log_dir     = (string) ( $assoc_args['log-dir'] ?? '' );
 
-		// Ensure a user context so permission checks pass.
-		self::ensure_admin_user();
-
-		// Validate suite exists.
-		$suite = BenchmarkSuite::get_suite( $suite_slug );
-		if ( ! $suite ) {
-			WP_CLI::error( "Unknown benchmark suite: {$suite_slug}. Run `wp ai-agent benchmark suites` to list available suites." );
+		// Resolve questions to run.
+		if ( '' !== $question_id ) {
+			$all       = BenchmarkSuite::get_questions( $suite_slug );
+			$questions = array_values( array_filter( $all, fn( $q ) => $q['id'] === $question_id ) );
+			if ( empty( $questions ) ) {
+				// Try all suites.
+				foreach ( BenchmarkSuite::list_suites() as $suite ) {
+					$all       = BenchmarkSuite::get_questions( $suite['slug'] );
+					$questions = array_values( array_filter( $all, fn( $q ) => $q['id'] === $question_id ) );
+					if ( ! empty( $questions ) ) {
+						break;
+					}
+				}
+			}
+			if ( empty( $questions ) ) {
+				WP_CLI::error( "Question '{$question_id}' not found in any suite." );
+			}
+		} else {
+			$questions = BenchmarkSuite::get_questions( $suite_slug );
+			if ( empty( $questions ) ) {
+				WP_CLI::error( "Suite '{$suite_slug}' not found or has no questions." );
+			}
 		}
 
-		// Build model config.
-		$model_config = array(
-			'provider_id' => $provider_id,
-			'model_id'    => $model_id,
+		// Resolve log directory.
+		if ( '' === $log_dir ) {
+			$plugin_root = dirname( __DIR__, 2 );
+			$log_dir     = $plugin_root . '/' . self::LOG_DIR;
+		}
+
+		$run_id  = gmdate( 'Y-m-d_His' ) . '_' . ( $model_id ?: 'default' );
+		$run_dir = $log_dir . '/' . $run_id;
+
+		if ( ! wp_mkdir_p( $run_dir ) ) {
+			WP_CLI::error( "Could not create log directory: {$run_dir}" );
+		}
+
+		// Ensure credentials are loaded for the AI SDK.
+		ProviderCredentialLoader::load();
+
+		WP_CLI::log( '' );
+		WP_CLI::log( '╔══════════════════════════════════════════════════════════════╗' );
+		WP_CLI::log( '║  Superdav AI Agent — Functional Benchmark                    ║' );
+		WP_CLI::log( '╚══════════════════════════════════════════════════════════════╝' );
+		WP_CLI::log( sprintf( '  Provider : %s', $provider_id ?: 'default' ) );
+		WP_CLI::log( sprintf( '  Model    : %s', $model_id ?: 'default' ) );
+		WP_CLI::log( sprintf( '  Questions: %d', count( $questions ) ) );
+		WP_CLI::log( sprintf( '  Logs     : %s', $run_dir ) );
+		WP_CLI::log( '' );
+
+		$totals = array(
+			'passed'    => 0,
+			'failed'    => 0,
+			'questions' => 0,
+			'errors'    => 0,
 		);
 
-		$model_label = ! empty( $model_id ) ? $model_id : 'default';
-		if ( $provider_id ) {
-			$model_label = "{$provider_id}/{$model_label}";
-		}
+		foreach ( $questions as $question ) {
+			$q_id = (string) $question['id'];
+			WP_CLI::log( "┌─ [{$q_id}] " . substr( $question['prompt'], 0, 70 ) . '…' );
 
-		// Build run name.
-		if ( empty( $run_name ) ) {
-			$run_name = "CLI: {$suite['name']} — {$model_label}";
-		}
+			$result            = $this->run_question( $question, $provider_id, $model_id );
+			$log_file          = $run_dir . "/{$q_id}.json";
+			$result['run_id']  = $run_id;
+			$result['log_dir'] = $run_dir;
 
-		// Parse question IDs filter.
-		$question_ids = array();
-		if ( ! empty( $question_csv ) ) {
-			$question_ids = array_map( 'trim', explode( ',', $question_csv ) );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents, WordPress.WP.AlternativeFunctions.json_encode_json_encode -- CLI-only log writing; WP_Filesystem not initialised in CLI context.
+			file_put_contents( $log_file, wp_json_encode( $result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
 
-			// Validate question IDs exist in the suite.
-			$valid_ids = array_column( $suite['questions'], 'id' );
-			$invalid   = array_diff( $question_ids, $valid_ids );
-			if ( ! empty( $invalid ) ) {
-				WP_CLI::error( 'Unknown question IDs: ' . implode( ', ', $invalid ) . '. Valid IDs for this suite: ' . implode( ', ', $valid_ids ) );
-			}
-		}
-
-		$question_count = ! empty( $question_ids ) ? count( $question_ids ) : count( $suite['questions'] );
-
-		WP_CLI::log( "Benchmark: {$suite['name']}" );
-		WP_CLI::log( "Model:     {$model_label}" );
-		WP_CLI::log( "Questions: {$question_count}" );
-		WP_CLI::log( '' );
-
-		// Create the run.
-		$create_data = array(
-			'name'       => $run_name,
-			'test_suite' => $suite_slug,
-			'models'     => array( $model_config ),
-		);
-		if ( ! empty( $question_ids ) ) {
-			$create_data['question_ids'] = $question_ids;
-		}
-
-		$run_id = BenchmarkRunner::create_run( $create_data );
-		if ( ! $run_id ) {
-			WP_CLI::error( 'Failed to create benchmark run.' );
-		}
-
-		WP_CLI::log( "Run #{$run_id} created. Starting..." );
-		WP_CLI::log( '' );
-
-		// Execute questions one at a time with a progress bar.
-		$progress = \WP_CLI\Utils\make_progress_bar( 'Running benchmark', $question_count );
-		$start    = microtime( true );
-
-		for ( $i = 0; $i < $question_count; $i++ ) {
-			$result = BenchmarkRunner::run_next_question( $run_id );
-
-			if ( is_wp_error( $result ) ) {
-				$progress->finish();
-				WP_CLI::error( "Question failed: {$result->get_error_message()}" );
+			// Print summary.
+			if ( ! empty( $result['agent_error'] ) ) {
+				WP_CLI::log( '│  ✗ Agent error: ' . $result['agent_error'] );
+				++$totals['errors'];
+			} else {
+				$turns = $result['turns_used'] ?? 0;
+				WP_CLI::log( "│  Agent finished in {$turns} turn(s)" );
 			}
 
-			$progress->tick();
-
-			if ( isset( $result['status'] ) && 'completed' === $result['status'] ) {
-				break;
+			$assertions = $result['assertions'] ?? array();
+			if ( ! empty( $assertions['results'] ) ) {
+				foreach ( $assertions['results'] as $ar ) {
+					$icon = $ar['pass'] ? '✓' : '✗';
+					$line = "│  {$icon} {$ar['description']}: {$ar['actual']}";
+					if ( $ar['pass'] ) {
+						WP_CLI::log( $line );
+					} else {
+						WP_CLI::warning( $line );
+					}
+				}
+				$p = $assertions['passed'];
+				$t = $assertions['total'];
+				WP_CLI::log( "│  Score: {$p}/{$t} assertions passed" );
+				$totals['passed'] += $p;
+				$totals['failed'] += $assertions['failed'];
 			}
-		}
 
-		// Trigger final status update if all questions answered but status not yet set.
-		BenchmarkRunner::run_next_question( $run_id );
-
-		$progress->finish();
-
-		$elapsed = round( microtime( true ) - $start, 1 );
-		WP_CLI::log( '' );
-		WP_CLI::log( "Completed in {$elapsed}s." );
-		WP_CLI::log( '' );
-
-		// Display results.
-		self::display_run_results( $run_id, $format );
-	}
-
-	/**
-	 * List past benchmark runs.
-	 *
-	 * ## OPTIONS
-	 *
-	 * [--limit=<n>]
-	 * : Number of runs to show.
-	 * ---
-	 * default: 20
-	 * ---
-	 *
-	 * [--format=<format>]
-	 * : Output format.
-	 * ---
-	 * default: table
-	 * options:
-	 *   - table
-	 *   - json
-	 *   - csv
-	 * ---
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp ai-agent benchmark list
-	 *     wp ai-agent benchmark list --limit=5 --format=json
-	 *
-	 * @param array<int, string>    $args       Positional arguments.
-	 * @param array<string, string> $assoc_args Associative arguments.
-	 */
-	public function list( array $args, array $assoc_args ): void {
-		$limit  = (int) \WP_CLI\Utils\get_flag_value( $assoc_args, 'limit', 20 );
-		$format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'table' );
-
-		$data = BenchmarkRunner::list_runs( $limit );
-		$runs = $data['runs'] ?? array();
-
-		if ( empty( $runs ) ) {
-			WP_CLI::log( 'No benchmark runs found.' );
-			return;
-		}
-
-		$rows = array();
-		foreach ( $runs as $run ) {
-			$rows[] = array(
-				'ID'        => $run->id,
-				'Name'      => $run->name,
-				'Suite'     => $run->test_suite,
-				'Status'    => $run->status,
-				'Progress'  => "{$run->completed_count}/{$run->questions_count}",
-				'Started'   => $run->started_at,
-				'Completed' => $run->completed_at ?? '-',
-			);
-		}
-
-		\WP_CLI\Utils\format_items( $format, $rows, array( 'ID', 'Name', 'Suite', 'Status', 'Progress', 'Started', 'Completed' ) );
-	}
-
-	/**
-	 * Show detailed results for a benchmark run.
-	 *
-	 * ## OPTIONS
-	 *
-	 * <id>
-	 * : The benchmark run ID.
-	 *
-	 * [--format=<format>]
-	 * : Output format.
-	 * ---
-	 * default: table
-	 * options:
-	 *   - table
-	 *   - json
-	 * ---
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp ai-agent benchmark show 42
-	 *     wp ai-agent benchmark show 42 --format=json
-	 *
-	 * @param array<int, string>    $args       Positional arguments.
-	 * @param array<string, string> $assoc_args Associative arguments.
-	 */
-	public function show( array $args, array $assoc_args ): void {
-		$run_id = (int) $args[0];
-		$format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'table' );
-
-		self::display_run_results( $run_id, $format );
-	}
-
-	/**
-	 * Delete a benchmark run and its results.
-	 *
-	 * ## OPTIONS
-	 *
-	 * <id>
-	 * : The benchmark run ID to delete.
-	 *
-	 * [--yes]
-	 * : Skip confirmation prompt.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp ai-agent benchmark delete 42
-	 *     wp ai-agent benchmark delete 42 --yes
-	 *
-	 * @param array<int, string>    $args       Positional arguments.
-	 * @param array<string, string> $assoc_args Associative arguments.
-	 */
-	public function delete( array $args, array $assoc_args ): void {
-		$run_id = (int) $args[0];
-
-		$run = BenchmarkRunner::get_run( $run_id );
-		if ( ! $run ) {
-			WP_CLI::error( "Benchmark run #{$run_id} not found." );
-		}
-
-		WP_CLI::confirm( "Delete benchmark run #{$run_id} ({$run->name}) and all its results?", $assoc_args );
-
-		$deleted = BenchmarkRunner::delete_run( $run_id );
-		if ( ! $deleted ) {
-			WP_CLI::error( "Failed to delete benchmark run #{$run_id}." );
-		}
-
-		WP_CLI::success( "Benchmark run #{$run_id} deleted." );
-	}
-
-	/**
-	 * Compare two or more benchmark runs side by side.
-	 *
-	 * ## OPTIONS
-	 *
-	 * <id>...
-	 * : Two or more benchmark run IDs to compare.
-	 *
-	 * [--format=<format>]
-	 * : Output format.
-	 * ---
-	 * default: table
-	 * options:
-	 *   - table
-	 *   - json
-	 * ---
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp ai-agent benchmark compare 42 43
-	 *     wp ai-agent benchmark compare 42 43 44 --format=json
-	 *
-	 * @param array<int, string>    $args       Positional arguments.
-	 * @param array<string, string> $assoc_args Associative arguments.
-	 */
-	public function compare( array $args, array $assoc_args ): void {
-		$format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'table' );
-
-		if ( count( $args ) < 2 ) {
-			WP_CLI::error( 'At least two run IDs are required for comparison.' );
-		}
-
-		$run_ids    = array_map( 'intval', $args );
-		$comparison = BenchmarkRunner::compare_runs( $run_ids );
-
-		if ( 'json' === $format ) {
-			WP_CLI::log( (string) wp_json_encode( $comparison, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
-			return;
-		}
-
-		// Summary table.
-		WP_CLI::log( '## Run Summary' );
-		WP_CLI::log( '' );
-
-		$summary_rows = array();
-		foreach ( $comparison['summary'] as $entry ) {
-			$summary_rows[] = array(
-				'Run'      => "#{$entry['run_id']} {$entry['run_name']}",
-				'Total'    => $entry['total'],
-				'Correct'  => $entry['correct'],
-				'Accuracy' => "{$entry['accuracy']}%",
-				'Avg Lat.' => "{$entry['avg_latency']}ms",
-				'Tokens'   => $entry['total_tokens'],
-			);
-		}
-
-		\WP_CLI\Utils\format_items( 'table', $summary_rows, array( 'Run', 'Total', 'Correct', 'Accuracy', 'Avg Lat.', 'Tokens' ) );
-
-		// By-model breakdown.
-		if ( ! empty( $comparison['by_model'] ) ) {
+			WP_CLI::log( '└─ Log: ' . $log_file );
 			WP_CLI::log( '' );
-			WP_CLI::log( '## By Model' );
-			WP_CLI::log( '' );
-
-			$model_rows = array();
-			foreach ( $comparison['by_model'] as $entry ) {
-				$model_rows[] = array(
-					'Model'    => $entry['model_id'],
-					'Total'    => $entry['total'],
-					'Correct'  => $entry['correct'],
-					'Accuracy' => "{$entry['accuracy']}%",
-				);
-			}
-
-			\WP_CLI\Utils\format_items( 'table', $model_rows, array( 'Model', 'Total', 'Correct', 'Accuracy' ) );
+			++$totals['questions'];
 		}
-
-		// By-category breakdown.
-		if ( ! empty( $comparison['by_category'] ) ) {
-			WP_CLI::log( '' );
-			WP_CLI::log( '## By Category' );
-			WP_CLI::log( '' );
-
-			$cat_rows = array();
-			foreach ( $comparison['by_category'] as $entry ) {
-				$cat_rows[] = array(
-					'Category' => $entry['category'],
-					'Total'    => $entry['total'],
-					'Correct'  => $entry['correct'],
-					'Accuracy' => "{$entry['accuracy']}%",
-				);
-			}
-
-			\WP_CLI\Utils\format_items( 'table', $cat_rows, array( 'Category', 'Total', 'Correct', 'Accuracy' ) );
-		}
-	}
-
-	/**
-	 * Display results for a benchmark run.
-	 *
-	 * @param int    $run_id Run ID.
-	 * @param string $format Output format (table or json).
-	 */
-	private static function display_run_results( int $run_id, string $format ): void {
-		$run = BenchmarkRunner::get_run( $run_id );
-		if ( ! $run ) {
-			WP_CLI::error( "Benchmark run #{$run_id} not found." );
-		}
-
-		$results = BenchmarkRunner::get_run_results( $run_id );
-
-		// Run header.
-		WP_CLI::log( "Run #{$run->id}: {$run->name}" );
-		WP_CLI::log( "Suite: {$run->test_suite} | Status: {$run->status} | {$run->completed_count}/{$run->questions_count} completed" );
-		WP_CLI::log( '' );
-
-		if ( empty( $results ) ) {
-			WP_CLI::log( 'No results yet.' );
-			return;
-		}
-
-		if ( 'json' === $format ) {
-			WP_CLI::log(
-				(string) wp_json_encode(
-					array(
-						'run'     => $run,
-						'results' => $results,
-					),
-					JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
-				)
-			);
-			return;
-		}
-
-		// Results table.
-		$rows        = array();
-		$total_score = 0;
-		$total_count = 0;
-
-		foreach ( $results as $result ) {
-			$score_display = (float) $result->score;
-
-			// For open-ended questions, show the 0-100 score.
-			// For multiple-choice, show correct/incorrect.
-			$correct_display = $result->is_correct ? 'Yes' : 'No';
-
-			$rows[] = array(
-				'Q.ID'     => $result->question_id,
-				'Category' => $result->question_category,
-				'Correct'  => $correct_display,
-				'Score'    => $score_display,
-				'Latency'  => "{$result->latency_ms}ms",
-				'Tokens'   => ( (int) $result->prompt_tokens + (int) $result->completion_tokens ),
-				'Error'    => $result->error_message ? substr( $result->error_message, 0, 40 ) : '',
-			);
-
-			$total_score += $score_display;
-			++$total_count;
-		}
-
-		\WP_CLI\Utils\format_items( 'table', $rows, array( 'Q.ID', 'Category', 'Correct', 'Score', 'Latency', 'Tokens', 'Error' ) );
 
 		// Summary.
-		$avg_score     = $total_count > 0 ? round( $total_score / $total_count, 1 ) : 0;
-		$correct       = count(
-			array_filter(
-				$results,
-				function ( object $r ): bool {
-					return (bool) $r->is_correct;
-				}
-			)
-		);
-		$total_latency = array_sum( array_column( $results, 'latency_ms' ) );
-		$total_tokens  = array_sum(
-			array_map(
-				function ( object $r ): int {
-					return (int) $r->prompt_tokens + (int) $r->completion_tokens;
-				},
-				$results
-			)
+		$total_assertions = $totals['passed'] + $totals['failed'];
+		WP_CLI::log( '══════════════════════════════════════════════════════════════' );
+		WP_CLI::log( sprintf( '  Questions run : %d', $totals['questions'] ) );
+		WP_CLI::log( sprintf( '  Agent errors  : %d', $totals['errors'] ) );
+		WP_CLI::log( sprintf( '  Assertions    : %d/%d passed', $totals['passed'], $total_assertions ) );
+		if ( $total_assertions > 0 ) {
+			$pct = round( ( $totals['passed'] / $total_assertions ) * 100 );
+			WP_CLI::log( sprintf( '  Score         : %d%%', $pct ) );
+		}
+		WP_CLI::log( '' );
+
+		// Exit with non-zero if any assertions failed (useful for CI).
+		if ( $totals['failed'] > 0 || $totals['errors'] > 0 ) {
+			WP_CLI::halt( 1 );
+		}
+	}
+
+	// ── Question execution ────────────────────────────────────────────────────
+
+	/**
+	 * Run a single benchmark question through the full agent loop.
+	 *
+	 * Creates a uniquely-named sandbox plugin directory, passes it to the
+	 * agent as context, runs the loop, then runs assertions and cleans up.
+	 *
+	 * @param array<string, mixed> $question    Question definition.
+	 * @param string               $provider_id Provider ID.
+	 * @param string               $model_id    Model ID.
+	 * @return array<string, mixed> Full result including agent output, tool log, and assertions.
+	 */
+	private function run_question( array $question, string $provider_id, string $model_id ): array {
+		$q_id       = (string) $question['id'];
+		$start_time = microtime( true );
+		$log        = array(
+			'question_id' => $q_id,
+			'category'    => $question['category'],
+			'prompt'      => $question['prompt'],
+			'provider_id' => $provider_id,
+			'model_id'    => $model_id,
+			'started_at'  => gmdate( 'c' ),
 		);
 
-		WP_CLI::log( '' );
-		WP_CLI::log( "Accuracy:      {$correct}/{$total_count} correct" );
-		WP_CLI::log( "Average score: {$avg_score}/100" );
-		WP_CLI::log( "Total latency: {$total_latency}ms" );
-		WP_CLI::log( "Total tokens:  {$total_tokens}" );
+		// For plugin-building questions, create an isolated sandbox plugin slug.
+		$plugin_slug   = '';
+		$needs_plugin  = $this->question_needs_plugin( $question );
+		$assertion_ctx = array();
+
+		if ( $needs_plugin ) {
+			// Derive expected slug from the prompt (agent is told this name).
+			$plugin_slug                  = $this->extract_plugin_slug( $question['prompt'] );
+			$assertion_ctx['plugin_slug'] = $plugin_slug;
+			$log['plugin_slug']           = $plugin_slug;
+		}
+
+		// Build the prompt — include plugin name guidance for plugin questions.
+		$prompt = $question['prompt'];
+		if ( $needs_plugin && '' !== $plugin_slug ) {
+			$prompt .= "\n\nIMPORTANT: The plugin slug and directory name must be exactly \"{$plugin_slug}\". The main plugin file must be \"{$plugin_slug}/{$plugin_slug}.php\".";
+		}
+
+		// Run the agent loop.
+		$agent_result = $this->run_agent_loop( $prompt, $provider_id, $model_id, (int) ( $question['max_turns'] ?? 20 ) );
+
+		$log['turns_used']    = $agent_result['turns_used'] ?? 0;
+		$log['token_usage']   = $agent_result['token_usage'] ?? array();
+		$log['tool_call_log'] = $agent_result['tool_call_log'] ?? array();
+		$log['agent_reply']   = $agent_result['reply'] ?? '';
+		$log['elapsed_ms']    = (int) ( ( microtime( true ) - $start_time ) * 1000 );
+
+		if ( ! empty( $agent_result['error'] ) ) {
+			$log['agent_error']  = $agent_result['error'];
+			$log['assertions']   = array(
+				'passed'  => 0,
+				'failed'  => 0,
+				'total'   => 0,
+				'results' => array(),
+			);
+			$log['completed_at'] = gmdate( 'c' );
+			return $log;
+		}
+
+		// Run assertions against live WordPress state.
+		do_action( 'rest_api_init' );
+		$log['assertions'] = AssertionEngine::run( $question['assertions'], $assertion_ctx );
+
+		// Deactivate and remove the sandbox plugin if we created one.
+		if ( $needs_plugin && '' !== $plugin_slug ) {
+			$this->cleanup_plugin( $plugin_slug );
+		}
+
+		$log['completed_at'] = gmdate( 'c' );
+		return $log;
 	}
 
 	/**
-	 * Ensure a logged-in admin user for CLI context.
+	 * Run the AgentLoop synchronously and collect the full tool call log.
 	 *
-	 * WP-CLI doesn't set a current user unless --user is passed.
-	 * The benchmark needs manage_options capability.
+	 * @param string $prompt      User message.
+	 * @param string $provider_id Provider ID.
+	 * @param string $model_id    Model ID.
+	 * @param int    $max_turns   Maximum agent iterations.
+	 * @return array<string, mixed>
 	 */
-	private static function ensure_admin_user(): void {
-		if ( get_current_user_id() ) {
-			return;
+	private function run_agent_loop( string $prompt, string $provider_id, string $model_id, int $max_turns ): array {
+		$tool_call_log = array();
+
+		// Track how many log entries we've seen so the progress callback
+		// can print only the newly-added entry each time it fires.
+		$last_log_count = 0;
+
+		$options = array(
+			'provider_id'         => $provider_id,
+			'model_id'            => $model_id,
+			'max_iterations'      => $max_turns,
+			'yolo_mode'           => true,  // No confirmation prompts in benchmark.
+			'agent_system_prompt' => self::SYSTEM_PROMPT,
+			'progress_callback'   => function ( array $full_log ) use ( &$tool_call_log, &$last_log_count ): void {
+				// The callback receives the full log on every fire — diff to get new entries.
+				$new_entries = array_slice( $full_log, $last_log_count );
+				$last_log_count = count( $full_log );
+
+				foreach ( $new_entries as $entry ) {
+					$name = $entry['name'] ?? ( $entry['tool'] ?? '?' );
+					$tool_call_log[] = array(
+						'tool'      => $name,
+						'input'     => $entry['input'] ?? $entry['arguments'] ?? array(),
+						'output'    => $entry['output'] ?? $entry['result'] ?? '',
+						'timestamp' => gmdate( 'c' ),
+					);
+					WP_CLI::log( '│  → ' . $name );
+				}
+			},
+		);
+
+		// Load all server-side abilities (same as a normal agent run).
+		$abilities = ToolDiscovery::tier_1_for_run();
+
+		$loop   = new AgentLoop( $prompt, $abilities, array(), $options );
+		$result = $loop->run();
+
+		if ( is_wp_error( $result ) ) {
+			return array( 'error' => $result->get_error_message() );
 		}
 
-		$admins = get_super_admins();
-		if ( ! empty( $admins ) ) {
-			$admin = get_user_by( 'login', $admins[0] );
-			if ( $admin ) {
-				wp_set_current_user( $admin->ID );
-				return;
+		return array(
+			'reply'         => (string) ( $result['reply'] ?? '' ),
+			'turns_used'    => (int) ( $result['iterations_used'] ?? 0 ),
+			'token_usage'   => $result['token_usage'] ?? array(),
+			'tool_call_log' => $tool_call_log,
+			'exit_reason'   => $result['exit_reason'] ?? '',
+		);
+	}
+
+	// ── Helpers ───────────────────────────────────────────────────────────────
+
+	/**
+	 * Determine whether a question requires a sandbox plugin to be created.
+	 *
+	 * @param array<string, mixed> $question Question definition.
+	 * @return bool
+	 */
+	private function question_needs_plugin( array $question ): bool {
+		$plugin_assertion_types = array(
+			'plugin_activates',
+			'plugin_no_php_errors',
+			'file_exists_in_plugin',
+			'file_contains',
+		);
+
+		foreach ( (array) $question['assertions'] as $assertion ) {
+			if ( in_array( $assertion['type'] ?? '', $plugin_assertion_types, true ) ) {
+				return true;
 			}
 		}
 
-		// Fallback: find any user with manage_options.
-		$users = get_users(
-			array(
-				'role'   => 'administrator',
-				'number' => 1,
-			)
-		);
-		if ( ! empty( $users ) ) {
-			wp_set_current_user( $users[0]->ID );
+		return false;
+	}
+
+	/**
+	 * Extract the expected plugin slug from the prompt text.
+	 *
+	 * Looks for patterns like: called "event-manager" or called 'event-manager'
+	 *
+	 * @param string $prompt Prompt text.
+	 * @return string Plugin slug, or a generated fallback.
+	 */
+	private function extract_plugin_slug( string $prompt ): string {
+		if ( preg_match( '/called\s+["\']([a-z0-9-]+)["\']/', $prompt, $matches ) ) {
+			return $matches[1];
 		}
+
+		// Fallback: derive from first words of prompt.
+		return 'bench-' . substr( md5( $prompt ), 0, 8 );
+	}
+
+	/**
+	 * Deactivate and delete the sandbox plugin created during a test.
+	 *
+	 * @param string $plugin_slug Plugin slug.
+	 */
+	private function cleanup_plugin( string $plugin_slug ): void {
+		$plugin_file = "{$plugin_slug}/{$plugin_slug}.php";
+		$plugin_dir  = WP_PLUGIN_DIR . '/' . $plugin_slug;
+
+		// Deactivate silently.
+		if ( is_plugin_active( $plugin_file ) ) {
+			deactivate_plugins( $plugin_file, true );
+		}
+
+		// Remove the directory.
+		if ( is_dir( $plugin_dir ) ) {
+			$this->rmdir_recursive( $plugin_dir );
+		}
+	}
+
+	/**
+	 * Recursively delete a directory.
+	 *
+	 * @param string $dir Directory path.
+	 */
+	private function rmdir_recursive( string $dir ): void {
+		$items = new \RecursiveIteratorIterator(
+			new \RecursiveDirectoryIterator( $dir, \RecursiveDirectoryIterator::SKIP_DOTS ),
+			\RecursiveIteratorIterator::CHILD_FIRST
+		);
+
+		foreach ( $items as $item ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir, WordPress.WP.AlternativeFunctions.unlink_unlink -- CLI-only sandbox cleanup.
+			$item->isDir() ? rmdir( $item->getRealPath() ) : unlink( $item->getRealPath() );
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- CLI-only sandbox cleanup.
+		rmdir( $dir );
 	}
 }

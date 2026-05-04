@@ -1,0 +1,586 @@
+<?php
+
+declare(strict_types=1);
+/**
+ * Assertion engine — runs functional checks against live WordPress state
+ * after the agent loop completes.
+ *
+ * Each assertion type inspects real WordPress state (DB tables, registered
+ * routes, hooks, post types, etc.) and returns a structured result so the
+ * benchmark CLI can report exactly what passed, what failed, and why.
+ *
+ * @package SdAiAgent\Benchmark
+ * @license GPL-2.0-or-later
+ */
+
+namespace SdAiAgent\Benchmark;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+class AssertionEngine {
+
+	/**
+	 * Run all assertions for a question and return structured results.
+	 *
+	 * @param array<int, array<string, mixed>> $assertions Assertion definitions.
+	 * @param array<string, mixed>             $context    Runtime context (plugin_slug, etc.).
+	 * @return array{passed: int, failed: int, total: int, results: list<array<string, mixed>>}
+	 */
+	public static function run( array $assertions, array $context = array() ): array {
+		$results = array();
+
+		foreach ( $assertions as $assertion ) {
+			$type   = (string) ( $assertion['type'] ?? '' );
+			$result = self::run_one( $type, $assertion, $context );
+
+			$results[] = array_merge(
+				array(
+					'type'        => $type,
+					'description' => $assertion['description'] ?? $type,
+				),
+				$result
+			);
+		}
+
+		$passed = count( array_filter( $results, fn( $r ) => $r['pass'] ) );
+		$total  = count( $results );
+
+		return array(
+			'passed'  => $passed,
+			'failed'  => $total - $passed,
+			'total'   => $total,
+			'results' => $results,
+		);
+	}
+
+	/**
+	 * Dispatch a single assertion by type.
+	 *
+	 * @param string               $type      Assertion type identifier.
+	 * @param array<string, mixed> $assertion Full assertion definition.
+	 * @param array<string, mixed> $context   Runtime context.
+	 * @return array{pass: bool, expected: string, actual: string, detail?: string}
+	 */
+	private static function run_one( string $type, array $assertion, array $context ): array {
+		switch ( $type ) {
+
+			case 'plugin_activates':
+				return self::assert_plugin_activates( $context );
+
+			case 'plugin_no_php_errors':
+				return self::assert_plugin_no_php_errors( $context );
+
+			case 'rest_endpoint_registered':
+				return self::assert_rest_endpoint_registered(
+					(string) ( $assertion['method'] ?? 'GET' ),
+					(string) ( $assertion['path'] ?? '' )
+				);
+
+			case 'rest_endpoint_response':
+				return self::assert_rest_endpoint_response(
+					(string) ( $assertion['method'] ?? 'GET' ),
+					(string) ( $assertion['path'] ?? '' ),
+					(array) ( $assertion['body'] ?? array() ),
+					(int) ( $assertion['expected_status'] ?? 200 ),
+					(array) ( $assertion['expected_body_keys'] ?? array() )
+				);
+
+			case 'db_table_exists':
+				return self::assert_db_table_exists( (string) ( $assertion['table'] ?? '' ) );
+
+			case 'db_table_has_columns':
+				return self::assert_db_table_has_columns(
+					(string) ( $assertion['table'] ?? '' ),
+					(array) ( $assertion['columns'] ?? array() )
+				);
+
+			case 'shortcode_registered':
+				return self::assert_shortcode_registered( (string) ( $assertion['tag'] ?? '' ) );
+
+			case 'post_type_registered':
+				return self::assert_post_type_registered( (string) ( $assertion['post_type'] ?? '' ) );
+
+			case 'hook_registered':
+				return self::assert_hook_registered(
+					(string) ( $assertion['hook'] ?? '' ),
+					(string) ( $assertion['callback_pattern'] ?? '' )
+				);
+
+			case 'option_exists':
+				return self::assert_option_exists( (string) ( $assertion['option'] ?? '' ) );
+
+			case 'file_exists_in_plugin':
+				return self::assert_file_exists_in_plugin(
+					(string) ( $assertion['file'] ?? '' ),
+					$context
+				);
+
+			case 'file_contains':
+				return self::assert_file_contains(
+					(string) ( $assertion['file'] ?? '' ),
+					(string) ( $assertion['pattern'] ?? '' ),
+					$context
+				);
+
+			case 'wp_cli_command':
+				return self::assert_wp_cli_command(
+					(string) ( $assertion['command'] ?? '' ),
+					(string) ( $assertion['expected_output_pattern'] ?? '' ),
+					(int) ( $assertion['expected_exit_code'] ?? 0 )
+				);
+
+			default:
+				return array(
+					'pass'     => false,
+					'expected' => 'known assertion type',
+					'actual'   => "unknown type: {$type}",
+				);
+		}
+	}
+
+	// ── Assertion implementations ─────────────────────────────────────────────
+
+	/**
+	 * Try to activate the benchmark plugin and check for errors.
+	 *
+	 * @param array<string, mixed> $context Runtime context containing plugin_slug.
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
+	private static function assert_plugin_activates( array $context ): array {
+		$slug = (string) ( $context['plugin_slug'] ?? '' );
+
+		if ( '' === $slug ) {
+			return array(
+				'pass'     => false,
+				'expected' => 'plugin_slug in context',
+				'actual'   => 'no plugin_slug provided',
+			);
+		}
+
+		$plugin_file = "{$slug}/{$slug}.php";
+
+		if ( ! file_exists( WP_PLUGIN_DIR . '/' . $plugin_file ) ) {
+			return array(
+				'pass'     => false,
+				'expected' => "plugin file {$plugin_file} to exist",
+				'actual'   => 'plugin file not found — agent did not create it',
+			);
+		}
+
+		// Activate and capture any WP_Error.
+		$result = activate_plugin( $plugin_file, '', false, true );
+
+		if ( is_wp_error( $result ) ) {
+			return array(
+				'pass'     => false,
+				'expected' => 'plugin activates without error',
+				'actual'   => $result->get_error_message(),
+			);
+		}
+
+		return array(
+			'pass'     => true,
+			'expected' => 'plugin activates without error',
+			'actual'   => 'activated successfully',
+		);
+	}
+
+	/**
+	 * Check the plugin file passes PHP syntax check.
+	 *
+	 * @param array<string, mixed> $context Runtime context.
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
+	private static function assert_plugin_no_php_errors( array $context ): array {
+		$slug = (string) ( $context['plugin_slug'] ?? '' );
+		$dir  = WP_PLUGIN_DIR . '/' . $slug;
+
+		if ( ! is_dir( $dir ) ) {
+			return array(
+				'pass'     => false,
+				'expected' => "plugin directory {$slug} to exist",
+				'actual'   => 'directory not found',
+			);
+		}
+
+		$php_files = glob( $dir . '/*.php' ) ?: array();
+		$errors    = array();
+
+		foreach ( $php_files as $file ) {
+			$output    = array();
+			$exit_code = 0;
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec -- PHP syntax check; no WP alternative.
+			exec( 'php -l ' . escapeshellarg( $file ) . ' 2>&1', $output, $exit_code );
+			if ( $exit_code !== 0 ) {
+				$errors[] = basename( $file ) . ': ' . implode( ' ', $output );
+			}
+		}
+
+		if ( ! empty( $errors ) ) {
+			return array(
+				'pass'     => false,
+				'expected' => 'no PHP syntax errors',
+				'actual'   => implode( '; ', $errors ),
+			);
+		}
+
+		return array(
+			'pass'     => true,
+			'expected' => 'no PHP syntax errors',
+			'actual'   => count( $php_files ) . ' file(s) passed syntax check',
+		);
+	}
+
+	/**
+	 * Check a REST route is registered for the given method + path.
+	 *
+	 * @param string $method HTTP method.
+	 * @param string $path   Route path (e.g. '/my-plugin/v1/events').
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
+	private static function assert_rest_endpoint_registered( string $method, string $path ): array {
+		// Force REST route registration.
+		do_action( 'rest_api_init' );
+
+		$server = rest_get_server();
+		$routes = $server->get_routes();
+
+		foreach ( $routes as $route => $handlers ) {
+			if ( false === strpos( $route, ltrim( $path, '/' ) ) ) {
+				continue;
+			}
+			foreach ( $handlers as $handler ) {
+				$methods = array_keys( array_filter( (array) ( $handler['methods'] ?? array() ) ) );
+				if ( in_array( strtoupper( $method ), $methods, true ) ) {
+					return array(
+						'pass'     => true,
+						'expected' => "{$method} {$path} registered",
+						'actual'   => "found at route: {$route}",
+					);
+				}
+			}
+		}
+
+		return array(
+			'pass'     => false,
+			'expected' => "{$method} {$path} registered",
+			'actual'   => 'route not found in REST server',
+		);
+	}
+
+	/**
+	 * Make a real REST request and check the HTTP status and optional body keys.
+	 *
+	 * @param string               $method              HTTP method.
+	 * @param string               $path                Route path.
+	 * @param array<string, mixed> $body                Request body.
+	 * @param int                  $expected_status     Expected HTTP status code.
+	 * @param array<int, string>   $expected_body_keys  Keys that must exist in the JSON response.
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
+	private static function assert_rest_endpoint_response(
+		string $method,
+		string $path,
+		array $body,
+		int $expected_status,
+		array $expected_body_keys
+	): array {
+		do_action( 'rest_api_init' );
+
+		$request = new \WP_REST_Request( $method, $path );
+		if ( ! empty( $body ) ) {
+			$request->set_body_params( $body );
+		}
+
+		$response    = rest_do_request( $request );
+		$status      = $response->get_status();
+		$data        = (array) $response->get_data();
+		$status_pass = ( $status === $expected_status );
+
+		$missing_keys = array();
+		foreach ( $expected_body_keys as $key ) {
+			if ( ! array_key_exists( $key, $data ) ) {
+				$missing_keys[] = $key;
+			}
+		}
+
+		$pass = $status_pass && empty( $missing_keys );
+
+		$actual_parts = array( "HTTP {$status}" );
+		if ( ! empty( $missing_keys ) ) {
+			$actual_parts[] = 'missing keys: ' . implode( ', ', $missing_keys );
+		}
+		if ( ! $status_pass || ! empty( $missing_keys ) ) {
+			$body_preview   = wp_json_encode( array_slice( $data, 0, 5 ) );
+			$actual_parts[] = "body: {$body_preview}";
+		}
+
+		$expected_parts = array( "HTTP {$expected_status}" );
+		if ( ! empty( $expected_body_keys ) ) {
+			$expected_parts[] = 'keys: ' . implode( ', ', $expected_body_keys );
+		}
+
+		return array(
+			'pass'     => $pass,
+			'expected' => implode( ', ', $expected_parts ),
+			'actual'   => implode( ', ', $actual_parts ),
+		);
+	}
+
+	/**
+	 * Check a database table exists.
+	 *
+	 * @param string $table Full table name (with prefix) or bare name — prefix is auto-added if missing.
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
+	private static function assert_db_table_exists( string $table ): array {
+		global $wpdb;
+		/** @var \wpdb $wpdb */
+
+		// Auto-prepend prefix if the caller passed a bare name.
+		if ( false === strpos( $table, $wpdb->prefix ) ) {
+			$table = $wpdb->prefix . $table;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
+
+		return array(
+			'pass'     => $found === $table,
+			'expected' => "table {$table} exists",
+			'actual'   => $found ? "found: {$found}" : 'table not found',
+		);
+	}
+
+	/**
+	 * Check a table exists and has the expected columns.
+	 *
+	 * @param string             $table   Table name.
+	 * @param array<int, string> $columns Column names that must exist.
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
+	private static function assert_db_table_has_columns( string $table, array $columns ): array {
+		global $wpdb;
+		/** @var \wpdb $wpdb */
+
+		if ( false === strpos( $table, $wpdb->prefix ) ) {
+			$table = $wpdb->prefix . $table;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$rows = $wpdb->get_results( "DESCRIBE `{$table}`", ARRAY_A );
+
+		if ( empty( $rows ) ) {
+			return array(
+				'pass'     => false,
+				'expected' => 'table exists with columns: ' . implode( ', ', $columns ),
+				'actual'   => "table {$table} not found or has no columns",
+			);
+		}
+
+		$existing = array_column( $rows, 'Field' );
+		$missing  = array_diff( $columns, $existing );
+
+		return array(
+			'pass'     => empty( $missing ),
+			'expected' => 'columns: ' . implode( ', ', $columns ),
+			'actual'   => empty( $missing )
+				? 'all columns present'
+				: 'missing: ' . implode( ', ', $missing ),
+		);
+	}
+
+	/**
+	 * Check a shortcode tag is registered.
+	 *
+	 * @param string $tag Shortcode tag.
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
+	private static function assert_shortcode_registered( string $tag ): array {
+		$pass = shortcode_exists( $tag );
+		return array(
+			'pass'     => $pass,
+			'expected' => "shortcode [{$tag}] registered",
+			'actual'   => $pass ? 'registered' : 'not registered',
+		);
+	}
+
+	/**
+	 * Check a post type is registered.
+	 *
+	 * @param string $post_type Post type slug.
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
+	private static function assert_post_type_registered( string $post_type ): array {
+		$pass = post_type_exists( $post_type );
+		return array(
+			'pass'     => $pass,
+			'expected' => "post type '{$post_type}' registered",
+			'actual'   => $pass ? 'registered' : 'not registered',
+		);
+	}
+
+	/**
+	 * Check a WordPress hook has at least one callback matching an optional pattern.
+	 *
+	 * @param string $hook             Hook name.
+	 * @param string $callback_pattern Optional regex to match against callback name.
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
+	private static function assert_hook_registered( string $hook, string $callback_pattern ): array {
+		global $wp_filter;
+
+		if ( empty( $wp_filter[ $hook ] ) ) {
+			return array(
+				'pass'     => false,
+				'expected' => "hook '{$hook}' has callbacks",
+				'actual'   => 'hook not registered',
+			);
+		}
+
+		if ( '' === $callback_pattern ) {
+			return array(
+				'pass'     => true,
+				'expected' => "hook '{$hook}' has callbacks",
+				'actual'   => 'hook has callbacks',
+			);
+		}
+
+		// Walk all callbacks and check for pattern match.
+		foreach ( $wp_filter[ $hook ]->callbacks as $priority => $callbacks ) {
+			foreach ( $callbacks as $callback ) {
+				$fn   = $callback['function'];
+				$name = is_array( $fn )
+					? ( is_object( $fn[0] ) ? get_class( $fn[0] ) : $fn[0] ) . '::' . $fn[1]
+					: ( is_string( $fn ) ? $fn : '{closure}' );
+
+				if ( preg_match( '/' . $callback_pattern . '/i', $name ) ) {
+					return array(
+						'pass'     => true,
+						'expected' => "callback matching '{$callback_pattern}' on '{$hook}'",
+						'actual'   => "found: {$name} (priority {$priority})",
+					);
+				}
+			}
+		}
+
+		return array(
+			'pass'     => false,
+			'expected' => "callback matching '{$callback_pattern}' on '{$hook}'",
+			'actual'   => 'no matching callback found',
+		);
+	}
+
+	/**
+	 * Check a WordPress option exists (is not false).
+	 *
+	 * @param string $option Option name.
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
+	private static function assert_option_exists( string $option ): array {
+		$value = get_option( $option, '__benchmark_not_found__' );
+		$pass  = '__benchmark_not_found__' !== $value;
+
+		return array(
+			'pass'     => $pass,
+			'expected' => "option '{$option}' exists",
+			'actual'   => $pass ? 'exists (value: ' . substr( (string) wp_json_encode( $value ), 0, 80 ) . ')' : 'not found',
+		);
+	}
+
+	/**
+	 * Check a file exists inside the benchmark plugin directory.
+	 *
+	 * @param string               $file    Relative path within the plugin.
+	 * @param array<string, mixed> $context Runtime context.
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
+	private static function assert_file_exists_in_plugin( string $file, array $context ): array {
+		$slug      = (string) ( $context['plugin_slug'] ?? '' );
+		$full_path = WP_PLUGIN_DIR . "/{$slug}/{$file}";
+		$pass      = file_exists( $full_path );
+
+		return array(
+			'pass'     => $pass,
+			'expected' => "file {$slug}/{$file} exists",
+			'actual'   => $pass ? 'found' : 'not found',
+		);
+	}
+
+	/**
+	 * Check a file in the plugin contains a given regex pattern.
+	 *
+	 * @param string               $file    Relative path within the plugin.
+	 * @param string               $pattern Regex pattern.
+	 * @param array<string, mixed> $context Runtime context.
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
+	private static function assert_file_contains( string $file, string $pattern, array $context ): array {
+		$slug      = (string) ( $context['plugin_slug'] ?? '' );
+		$full_path = WP_PLUGIN_DIR . "/{$slug}/{$file}";
+
+		if ( ! file_exists( $full_path ) ) {
+			return array(
+				'pass'     => false,
+				'expected' => "file {$slug}/{$file} containing /{$pattern}/",
+				'actual'   => 'file not found',
+			);
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- reading a local file path, not a remote URL.
+		$contents = (string) file_get_contents( $full_path );
+		$pass     = (bool) preg_match( '/' . $pattern . '/i', $contents );
+
+		return array(
+			'pass'     => $pass,
+			'expected' => "file contains /{$pattern}/",
+			'actual'   => $pass ? 'pattern found' : 'pattern not found',
+		);
+	}
+
+	/**
+	 * Run a WP-CLI command and check exit code and optional output pattern.
+	 *
+	 * @param string $command                WP-CLI command (without 'wp' prefix).
+	 * @param string $expected_output_pattern Regex pattern the output must match.
+	 * @param int    $expected_exit_code      Expected exit code.
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
+	private static function assert_wp_cli_command(
+		string $command,
+		string $expected_output_pattern,
+		int $expected_exit_code
+	): array {
+		$safe_command = escapeshellcmd( 'wp --allow-root ' . $command ) . ' 2>&1';
+		$output       = array();
+		$exit_code    = 0;
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec -- running WP-CLI for assertion checks; no WP alternative.
+		exec( $safe_command, $output, $exit_code );
+
+		$output_str  = implode( "\n", $output );
+		$exit_pass   = ( $exit_code === $expected_exit_code );
+		$output_pass = ( '' === $expected_output_pattern )
+			|| (bool) preg_match( '/' . $expected_output_pattern . '/i', $output_str );
+
+		$pass = $exit_pass && $output_pass;
+
+		$expected_desc = "exit {$expected_exit_code}";
+		if ( '' !== $expected_output_pattern ) {
+			$expected_desc .= ", output matching /{$expected_output_pattern}/";
+		}
+
+		$actual_desc = "exit {$exit_code}";
+		if ( ! $output_pass ) {
+			$actual_desc .= ', output: ' . substr( $output_str, 0, 200 );
+		}
+
+		return array(
+			'pass'     => $pass,
+			'expected' => $expected_desc,
+			'actual'   => $pass ? 'passed' : $actual_desc,
+		);
+	}
+}
