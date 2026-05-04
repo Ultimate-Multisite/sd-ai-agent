@@ -95,11 +95,17 @@ class ReportBuilder {
 			'tool_call_count'   => count( $tool_calls ),
 		);
 
+		$environment = self::collect_environment();
+
 		return array(
 			'report_type'      => $report_type,
 			'user_description' => $user_description,
+			// Top-level fields for server-side indexing (model, provider, site).
+			'model_id'         => $session->model_id ?? '',
+			'provider_id'      => $session->provider_id ?? '',
+			'site_url'         => $environment['site_host'] ?? '',
 			'session_data'     => $session_data,
-			'environment'      => self::collect_environment(),
+			'environment'      => $environment,
 			'generated_at'     => gmdate( 'c' ),
 		);
 	}
