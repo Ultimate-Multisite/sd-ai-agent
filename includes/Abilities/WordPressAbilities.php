@@ -975,7 +975,9 @@ class RunPhpAbility extends AbstractAbility {
 				'args'     => [
 					'type'        => 'array',
 					'description' => 'Ordered array of arguments to pass to the function. Defaults to an empty array.',
-					'items'       => [],
+					'items'       => array(
+						'type' => array( 'string', 'number', 'integer', 'boolean', 'array', 'object', 'null' ),
+					),
 				],
 			],
 			'required'   => [ 'function' ],

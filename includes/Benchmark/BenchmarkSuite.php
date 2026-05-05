@@ -1466,7 +1466,7 @@ class BenchmarkSuite {
 				'id'         => 'adev-005',
 				'category'   => 'files',
 				'max_turns'  => 12,
-				'prompt'     => 'Use file-list to list the contents of the current plugin directory (path "."). Then use file-search to find any PHP files containing the string "wp_register_ability". Then use file-read on the first match and report its first 20 lines back.',
+				'prompt'     => 'Use file-list to list the contents of the current plugin directory (path "."). Then use file-search (glob filename matcher) to find any PHP files matching the pattern "*Abilities.php". Then use file-read on the first match and report its first 20 lines back.',
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
@@ -1949,8 +1949,8 @@ class BenchmarkSuite {
 			array(
 				'id'         => 'au-011',
 				'category'   => 'git',
-				'max_turns'  => 14,
-				'prompt'     => 'Use git-snapshot to take a snapshot of the current state of an arbitrary plugin (pick the first installed plugin from get-plugins). Then git-list to show recent snapshots, git-package-summary to summarise that plugin, and git-diff to show what (if anything) changed since the last snapshot.',
+				'max_turns'  => 10,
+				'prompt'     => 'Run these four git abilities in order so we can verify each one is wired up. (1) git-list (no args) — list all currently tracked files. (2) git-package-summary with package="akismet/akismet.php", package_type="plugin". (3) git-snapshot with path="' . WP_PLUGIN_DIR . '/akismet/akismet.php". (4) git-diff with package="akismet/akismet.php", package_type="plugin". Empty results are fine — the goal is to exercise each ability.',
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
@@ -1977,8 +1977,8 @@ class BenchmarkSuite {
 			array(
 				'id'         => 'au-012',
 				'category'   => 'git',
-				'max_turns'  => 8,
-				'prompt'     => 'Use git-restore to roll back the most recent snapshot of the plugin from au-011. Then use git-revert-package to revert that package entirely. Then describe what was undone.',
+				'max_turns'  => 6,
+				'prompt'     => 'Call git-restore with package="akismet/akismet.php", package_type="plugin". Then call git-revert-package with the same package and package_type. Both calls may report nothing-to-restore — that is fine, the goal is to exercise each ability.',
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',

@@ -983,11 +983,15 @@ class FileListAbility extends AbstractFileAbility {
 				}
 
 				$entry_path = $full_path . '/' . $entry;
-				$items[]    = [
+				// Guard filemtime/filesize against broken symlinks (e.g. wp-content/db.php
+				// pointing at a removed dropin) — they emit warnings otherwise.
+				$is_dir   = is_dir( $entry_path );
+				$readable = $is_dir || is_file( $entry_path );
+				$items[]  = [
 					'name'     => $entry,
-					'type'     => is_dir( $entry_path ) ? 'directory' : 'file',
-					'size'     => is_file( $entry_path ) ? filesize( $entry_path ) : null,
-					'modified' => gmdate( 'Y-m-d H:i:s', (int) filemtime( $entry_path ) ),
+					'type'     => $is_dir ? 'directory' : 'file',
+					'size'     => ( ! $is_dir && $readable ) ? filesize( $entry_path ) : null,
+					'modified' => $readable ? gmdate( 'Y-m-d H:i:s', (int) filemtime( $entry_path ) ) : null,
 				];
 			}
 		}

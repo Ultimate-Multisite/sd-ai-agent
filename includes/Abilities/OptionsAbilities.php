@@ -160,6 +160,7 @@ class GetOptionAbility extends AbstractAbility {
 					'description' => 'The option name to retrieve (e.g. "blogname", "blogdescription", "posts_per_page").',
 				],
 				'default'     => [
+					'type'        => array( 'string', 'number', 'integer', 'boolean', 'array', 'object', 'null' ),
 					'description' => 'Value to return if the option does not exist. Defaults to false.',
 				],
 			],
@@ -246,6 +247,7 @@ class UpdateOptionAbility extends AbstractAbility {
 					'description' => 'The option name to create or update.',
 				],
 				'option_value' => [
+					'type'        => array( 'string', 'number', 'integer', 'boolean', 'array', 'object', 'null' ),
 					'description' => 'The new value to store. Strings, numbers, booleans, arrays, and objects are all supported.',
 				],
 				'autoload'     => [
