@@ -364,6 +364,85 @@ class SkillTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * seed_builtins() migrates a legacy `full-site-editing` row to `block-themes`
+	 * in-place when block-themes does not yet exist.
+	 */
+	public function test_seed_builtins_migrates_full_site_editing_to_block_themes(): void {
+		global $wpdb;
+		// Start from a clean slate, then insert a legacy FSE row.
+		$wpdb->query( "DELETE FROM " . Skill::table_name() . " WHERE is_builtin = 1" );
+		$id = Skill::create(
+			[
+				'slug'        => 'full-site-editing',
+				'name'        => 'Full Site Editing',
+				'description' => 'Legacy FSE skill',
+				'content'     => '# Legacy content with admin tweaks',
+				'is_builtin'  => true,
+				'enabled'     => true,
+			]
+		);
+		$this->assertIsInt( $id );
+
+		Skill::seed_builtins();
+
+		// Legacy slug should be gone; block-themes should hold the original row id.
+		$this->assertNull( Skill::get_by_slug( 'full-site-editing' ) );
+		$migrated = Skill::get_by_slug( 'block-themes' );
+		$this->assertNotNull( $migrated );
+		$this->assertSame( (int) $id, (int) $migrated->id );
+
+		// Cleanup so other tests see a fresh built-in seed.
+		$wpdb->query( "DELETE FROM " . Skill::table_name() . " WHERE is_builtin = 1" );
+		Skill::seed_builtins();
+	}
+
+	/**
+	 * seed_builtins() does NOT migrate when both legacy and new slugs already exist.
+	 */
+	public function test_seed_builtins_skips_migration_when_new_slug_exists(): void {
+		global $wpdb;
+		$wpdb->query( "DELETE FROM " . Skill::table_name() . " WHERE is_builtin = 1" );
+		Skill::create( [ 'slug' => 'full-site-editing', 'name' => 'Old', 'description' => 'Old', 'content' => 'old', 'is_builtin' => true, 'enabled' => true ] );
+		Skill::create( [ 'slug' => 'block-themes', 'name' => 'New', 'description' => 'New', 'content' => 'new', 'is_builtin' => true, 'enabled' => true ] );
+
+		Skill::seed_builtins();
+
+		// Legacy row should remain untouched (migration must not collide).
+		$this->assertNotNull( Skill::get_by_slug( 'full-site-editing' ) );
+		$this->assertNotNull( Skill::get_by_slug( 'block-themes' ) );
+
+		$wpdb->query( "DELETE FROM " . Skill::table_name() . " WHERE is_builtin = 1" );
+		Skill::seed_builtins();
+	}
+
+	/**
+	 * Theme-aware skills (block-themes / classic-themes) are auto-enabled
+	 * based on the active theme even when their stored `enabled` flag is 0.
+	 */
+	public function test_theme_aware_skills_auto_enabled_from_active_theme(): void {
+		global $wpdb;
+		$wpdb->query( "DELETE FROM " . Skill::table_name() . " WHERE is_builtin = 1" );
+		Skill::seed_builtins();
+
+		// Force the relevant rows to enabled = 0 so we know auto-enable is doing the work.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( $wpdb->prepare( 'UPDATE ' . Skill::table_name() . " SET enabled = 0 WHERE slug IN (%s, %s)", 'block-themes', 'classic-themes' ) );
+
+		$is_block = function_exists( 'wp_is_block_theme' ) && wp_is_block_theme();
+
+		$block   = Skill::get_content_by_slug( 'block-themes' );
+		$classic = Skill::get_content_by_slug( 'classic-themes' );
+
+		if ( $is_block ) {
+			$this->assertNotNull( $block, 'block-themes should auto-enable on block themes.' );
+			$this->assertNull( $classic, 'classic-themes should NOT auto-enable on block themes.' );
+		} else {
+			$this->assertNull( $block, 'block-themes should NOT auto-enable on classic themes.' );
+			$this->assertNotNull( $classic, 'classic-themes should auto-enable on classic themes.' );
+		}
+	}
+
+	/**
 	 * seed_builtins() is idempotent — calling twice does not duplicate.
 	 */
 	public function test_seed_builtins_is_idempotent(): void {
@@ -608,7 +687,10 @@ class SkillTest extends WP_UnitTestCase {
 			'competitive-analysis' => [ 'competitive-analysis', [ 'competitor', 'analysis', 'tech stack' ] ],
 			'analytics-reporting'  => [ 'analytics-reporting', [ 'performance', 'metrics', 'analytics', 'reporting' ] ],
 			'gutenberg-blocks'     => [ 'gutenberg-blocks', [ 'blocks', 'gutenberg', 'markdown', 'layouts' ] ],
-			'full-site-editing'    => [ 'full-site-editing', [ 'template', 'block theme', 'site editing', 'layout' ] ],
+			'block-themes'         => [ 'block-themes', [ 'template', 'block theme', 'site editor', 'layout', 'theme.json' ] ],
+			'classic-themes'       => [ 'classic-themes', [ 'classic', 'customizer', 'php template', 'widget', 'child theme' ] ],
+			'kadence-blocks'       => [ 'kadence-blocks', [ 'kadence', 'rowlayout', 'advancedheading', 'validation' ] ],
+			'kadence-theme'        => [ 'kadence-theme', [ 'kadence', 'header', 'footer', 'customizer', 'hooks' ] ],
 		];
 	}
 }

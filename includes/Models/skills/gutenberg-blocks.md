@@ -1,6 +1,10 @@
 # Gutenberg Blocks
 
-## Critical Rule
+## When to Use
+
+Triggers: creating, editing, or debugging WordPress block markup; mentions of "page builder," "Gutenberg," "blocks," "columns," "hero," "landing page," "layout," "wp:paragraph," "wp:cover," "wp:group," `block validation` errors, or any `wp:*` block name. Also use whenever generating page content for a non-Kadence theme. For Kadence-specific blocks (`kadence/*`), use the `kadence-blocks` skill instead.
+
+## Critical Rule — never mix formats
 
 Content passed to `sd-ai-agent/create-post` or `sd-ai-agent/update-post` must be EITHER:
 - **All markdown** — for blog posts and articles (auto-converted to blocks)
@@ -8,14 +12,29 @@ Content passed to `sd-ai-agent/create-post` or `sd-ai-agent/update-post` must be
 
 **NEVER mix raw markdown with block markup.** Mixed content renders incorrectly.
 
-## When to Use What
+## Quick diagnostic — symptom → fix
 
-| Content type | Format | Example |
-|---|---|---|
-| Blog post, article, documentation | Markdown | `## Heading\n\nParagraph text` |
-| Landing page, about page, services | Block markup | `<!-- wp:cover -->...<!-- /wp:cover -->` |
-| Page with columns, buttons, hero sections | Block markup | See layout patterns below |
-| Simple page with only text | Either | Markdown is simpler |
+| Symptom or error | Fix |
+|---|---|
+| `Block validation: Expected tag name 'h2', instead saw 'hN'` | Add the matching `level` to the heading attribute, or fix the rendered tag. |
+| `This block contains unexpected or invalid content` | Open the editor, click "Attempt Block Recovery" — the diff points at the bad attribute. |
+| Mixed markdown + blocks rendering as escaped text | Convert the whole post to one format. Run `validate-block-content` first. |
+| Columns rendering vertically | Wrap in `wp:columns` (not raw flex CSS), and confirm each `wp:column` is a direct child. |
+| Buttons inheriting wrong style | Use `is-style-fill` (default) or `is-style-outline` via `className`. Don't override with raw CSS. |
+| Cover block image not showing | Set both `url` and the `<img class="wp-block-cover__image-background">` element inside the saved markup. |
+| Spacing presets ignored | Use `var:preset|spacing|XX` syntax in attributes AND matching CSS variable in inline `style`. |
+| Custom theme colors not applying | Reference theme palette slugs via `backgroundColor`/`textColor`, not hex codes via `style`. |
+
+## Core rules (always apply)
+
+1. **Block comments wrap standard HTML; attributes are JSON in the opening comment.** Closing comment matches the opener: `<!-- /wp:name -->`.
+2. **Self-closing block markers** (`<!-- wp:foo /-->`) are valid only for blocks with no inner HTML (e.g. `wp:nextpage`, `wp:more`).
+3. **Container blocks must own their wrapper element.** A `wp:columns` block emits `<div class="wp-block-columns">…</div>`; never split the wrapper across multiple block comments.
+4. **Inner blocks must be direct children of the right container.** `wp:column` only inside `wp:columns`; `wp:list-item` only inside `wp:list`; `wp:button` only inside `wp:buttons`.
+5. **Class names must match the block's `save()` output.** Headings use `wp-block-heading`, lists use `wp-block-list`, buttons use `wp-block-button` + `wp-block-button__link wp-element-button` on the `<a>`. Missing or extra classes trigger validation errors.
+6. **Use theme presets before raw values.** `{"backgroundColor":"primary"}` over `{"style":{"color":{"background":"#…"}}}`; `{"fontSize":"large"}` over `{"style":{"typography":{"fontSize":"24px"}}}`.
+7. **Run `sd-ai-agent/validate-block-content` before insertion** for any non-trivial layout. It catches mixed content and malformed markup before the editor does.
+8. **Don't generate `wp:html` for layout.** Use `wp:columns`, `wp:group`, `wp:cover` instead — `wp:html` blocks aren't editable in the visual editor and skip theme styling.
 
 ## Available Tools
 
@@ -27,8 +46,6 @@ Content passed to `sd-ai-agent/create-post` or `sd-ai-agent/update-post` must be
 - `sd-ai-agent/list-block-patterns` — Browse and search registered block patterns
 
 ## Block Markup Reference
-
-Blocks are HTML comments wrapping standard HTML. Attributes are JSON in the opening comment.
 
 ### Paragraph
 
@@ -416,3 +433,12 @@ Write content in markdown format and pass to `sd-ai-agent/create-post`. The mark
 2. Identify issues (missing layout blocks, unstyled sections)
 3. Build improved content using block markup
 4. Use `sd-ai-agent/update-post` to replace the content
+
+## Verifying generated markup
+
+After generating block markup, verify before committing it to a published post:
+
+1. Run `sd-ai-agent/validate-block-content` — catches mixed-content and malformed markup.
+2. If creating a draft via the editor: open it, look for "This block contains unexpected or invalid content." Click "Attempt Block Recovery" — the diff points at the offending attribute.
+3. View the rendered page in a new tab; check the browser console for validation warnings.
+4. If a rule here conflicts with what your installed WordPress version produces, trust the editor's saved output — copy it and use it as your reference.

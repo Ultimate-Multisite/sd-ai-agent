@@ -339,7 +339,10 @@ class SkillAbilitiesTest extends WP_UnitTestCase {
 			'woo: products and orders'     => [ 'WooCommerce store products and orders management', 'woocommerce' ],
 			'multisite: network admin'     => [ 'WordPress Multisite network administration', 'multisite-management' ],
 			'competitive: analyze sites'   => [ 'Analyzing competitor sites and tech stack', 'competitive-analysis' ],
-			'fse: block theme templates'   => [ 'Block theme templates and template parts', 'full-site-editing' ],
+			'fse: block theme templates'   => [ 'Block theme templates and template parts', 'block-themes' ],
+			'classic: customizer setup'    => [ 'Classic theme customizer and child theme functions', 'classic-themes' ],
+			'kadence: rowlayout markup'    => [ 'Kadence rowlayout colLayout and kbVersion', 'kadence-blocks' ],
+			'kadence: header builder'      => [ 'Kadence theme header builder and footer builder', 'kadence-theme' ],
 		];
 	}
 

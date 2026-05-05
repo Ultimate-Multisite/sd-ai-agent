@@ -118,8 +118,34 @@ class Skill {
 	 */
 	private const PLUGIN_SKILL_MAP = [
 		'woocommerce'          => 'woocommerce/woocommerce.php',
+		'kadence-blocks'       => 'kadence-blocks/kadence-blocks.php',
 		'multisite-management' => '', // No plugin dependency — enabled via is_multisite().
 	];
+
+	/**
+	 * Skills auto-enabled based on the active WordPress theme.
+	 *
+	 * Each entry maps a skill slug to a predicate that inspects the active
+	 * theme. The predicate receives the active theme's template (parent slug)
+	 * and stylesheet (child slug); it returns true when the skill should be
+	 * auto-enabled.
+	 *
+	 * Predicates only run on the WP runtime where wp_get_theme() and
+	 * wp_is_block_theme() are available. The detection helper {@see
+	 * is_skill_auto_enabled()} short-circuits when those functions are
+	 * missing (e.g. in unit tests bootstrapping outside WP).
+	 *
+	 * @return array<string, \Closure(string, string): bool>
+	 */
+	private static function theme_skill_map(): array {
+		// phpcs:disable Generic.CodeAnalysis.UnusedFunctionParameter -- Predicate signatures are uniform; some implementations don't need the theme slugs.
+		return [
+			'block-themes'   => static fn( string $template, string $stylesheet ): bool => function_exists( 'wp_is_block_theme' ) && wp_is_block_theme(),
+			'classic-themes' => static fn( string $template, string $stylesheet ): bool => function_exists( 'wp_is_block_theme' ) && ! wp_is_block_theme(),
+			'kadence-theme'  => static fn( string $template, string $stylesheet ): bool => 'kadence' === $template || 'kadence' === $stylesheet,
+		];
+		// phpcs:enable Generic.CodeAnalysis.UnusedFunctionParameter
+	}
 
 	/**
 	 * Get skill content by slug (convenience method for auto-injection).
@@ -154,27 +180,46 @@ class Skill {
 	/**
 	 * Check if a disabled skill should be auto-enabled based on environment.
 	 *
+	 * Resolution order:
+	 *   1. Plugin-based map (PLUGIN_SKILL_MAP) — woocommerce, kadence-blocks, etc.
+	 *   2. Multisite (built into PLUGIN_SKILL_MAP via empty plugin file).
+	 *   3. Theme-based map (theme_skill_map()) — block-themes, classic-themes, kadence-theme.
+	 *
 	 * @param string $slug Skill slug.
 	 * @return bool True if the skill should be treated as enabled.
 	 */
 	private static function is_skill_auto_enabled( string $slug ): bool {
-		if ( ! isset( self::PLUGIN_SKILL_MAP[ $slug ] ) ) {
-			return false;
+		if ( isset( self::PLUGIN_SKILL_MAP[ $slug ] ) ) {
+			$plugin_file = self::PLUGIN_SKILL_MAP[ $slug ];
+
+			// Multisite skill: auto-enable on multisite installs.
+			if ( '' === $plugin_file ) {
+				return 'multisite-management' === $slug && is_multisite();
+			}
+
+			// Plugin-dependent skill: check if plugin is active.
+			if ( ! function_exists( 'is_plugin_active' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+
+			return is_plugin_active( $plugin_file );
 		}
 
-		$plugin_file = self::PLUGIN_SKILL_MAP[ $slug ];
+		$theme_map = self::theme_skill_map();
+		if ( isset( $theme_map[ $slug ] ) ) {
+			if ( ! function_exists( 'wp_get_theme' ) ) {
+				return false;
+			}
 
-		// Multisite skill: auto-enable on multisite installs.
-		if ( '' === $plugin_file ) {
-			return 'multisite-management' === $slug && is_multisite();
+			$theme      = wp_get_theme();
+			$template   = (string) $theme->get_template();
+			$stylesheet = (string) $theme->get_stylesheet();
+			$predicate  = $theme_map[ $slug ];
+
+			return (bool) $predicate( $template, $stylesheet );
 		}
 
-		// Plugin-dependent skill: check if plugin is active.
-		if ( ! function_exists( 'is_plugin_active' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		}
-
-		return is_plugin_active( $plugin_file );
+		return false;
 	}
 
 	/**
@@ -538,8 +583,15 @@ class Skill {
 
 	/**
 	 * Idempotent seeding of built-in skills (skips if slug exists).
+	 *
+	 * Also performs one-time slug migrations for renamed built-ins (e.g. the
+	 * `full-site-editing` skill was renamed to `block-themes`). The legacy
+	 * slug is migrated in-place when the new slug does not yet exist; the
+	 * caller's customisations are preserved.
 	 */
 	public static function seed_builtins(): void {
+		self::migrate_renamed_builtins();
+
 		foreach ( self::get_builtin_definitions() as $slug => $definition ) {
 			$existing = self::get_by_slug( $slug );
 
@@ -560,6 +612,41 @@ class Skill {
 					// @phpstan-ignore-next-line
 					'enabled'     => $definition['enabled'],
 				]
+			);
+		}
+	}
+
+	/**
+	 * One-time migrations of legacy built-in skill slugs to their current names.
+	 *
+	 * Renames the row in-place so admin customisations (`user_modified=1`) and
+	 * usage telemetry (which references skill_id, not slug) survive the move.
+	 * No-op when the new slug already exists or the legacy slug is absent.
+	 */
+	private static function migrate_renamed_builtins(): void {
+		global $wpdb;
+		/** @var \wpdb $wpdb */
+
+		$renames = [
+			// Renamed in t-XXXX (block-themes scope expansion).
+			'full-site-editing' => 'block-themes',
+		];
+
+		foreach ( $renames as $old_slug => $new_slug ) {
+			$old = self::get_by_slug( $old_slug );
+			$new = self::get_by_slug( $new_slug );
+
+			if ( ! $old || $new ) {
+				continue;
+			}
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table; one-time migration.
+			$wpdb->update(
+				self::table_name(),
+				[ 'slug' => $new_slug ],
+				[ 'id' => $old->id ],
+				[ '%s' ],
+				[ '%d' ]
 			);
 		}
 	}
@@ -628,9 +715,28 @@ class Skill {
 			'description' => 'Creating content with Gutenberg blocks, converting markdown, building layouts',
 			'enabled'     => true,
 		],
-		'full-site-editing'    => [
-			'name'        => 'Full Site Editing',
-			'description' => 'Block theme templates, template parts, site-wide layout customization',
+		'block-themes'         => [
+			'name'        => 'Block Themes (FSE)',
+			'description' => 'Block theme templates, template parts, theme.json, Site Editor and site-wide layout',
+			// Auto-enabled when the active theme is a block theme (see theme_skill_map()).
+			'enabled'     => false,
+		],
+		'classic-themes'       => [
+			'name'        => 'Classic Themes',
+			'description' => 'Classic theme work — PHP templates, Customizer, widgets, child themes',
+			// Auto-enabled when the active theme is a classic theme.
+			'enabled'     => false,
+		],
+		'kadence-blocks'       => [
+			'name'        => 'Kadence Blocks',
+			'description' => 'Kadence Blocks markup — kadence/rowlayout, kadence/column, kadence/advancedheading, kadence/advancedbtn validation rules',
+			// Auto-enabled when the Kadence Blocks plugin is active.
+			'enabled'     => false,
+		],
+		'kadence-theme'        => [
+			'name'        => 'Kadence Theme',
+			'description' => 'Kadence theme — header/footer builder, customizer panels, hooks, child theme guidance',
+			// Auto-enabled when the active (parent) theme is Kadence.
 			'enabled'     => false,
 		],
 	];
