@@ -49,7 +49,7 @@ class ScanThemeHooksAbility extends AbstractAbility {
 		return [
 			'type'       => 'object',
 			'properties' => [
-				'hooks' => [
+				'hooks'   => [
 					'type'  => 'array',
 					'items' => [
 						'type'       => 'object',
@@ -59,6 +59,16 @@ class ScanThemeHooksAbility extends AbstractAbility {
 							'file' => [ 'type' => 'string' ],
 							'line' => [ 'type' => 'integer' ],
 						],
+					],
+				],
+				'count'   => [ 'type' => 'integer' ],
+				'summary' => [
+					'type'       => 'object',
+					'properties' => [
+						'actions_total'  => [ 'type' => 'integer' ],
+						'filters_total'  => [ 'type' => 'integer' ],
+						'unique_actions' => [ 'type' => 'array' ],
+						'unique_filters' => [ 'type' => 'array' ],
 					],
 				],
 			],

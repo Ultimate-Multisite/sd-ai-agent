@@ -312,13 +312,16 @@ class UpdateOptionAbility extends AbstractAbility {
 
 		if ( $updated ) {
 			return [
-				'option_name' => $option_name,
-				'status'      => 'updated',
-				'message'     => sprintf(
+				'option_name'  => $option_name,
+				'status'       => 'updated',
+				'message'      => sprintf(
 					/* translators: %s: option name */
 					__( 'Option "%s" updated successfully.', 'superdav-ai-agent' ),
 					$option_name
 				),
+				'verification' => [
+					'persisted_value' => get_option( $option_name ),
+				],
 			];
 		}
 
@@ -332,13 +335,16 @@ class UpdateOptionAbility extends AbstractAbility {
 
 		if ( $exists ) {
 			return [
-				'option_name' => $option_name,
-				'status'      => 'unchanged',
-				'message'     => sprintf(
+				'option_name'  => $option_name,
+				'status'       => 'unchanged',
+				'message'      => sprintf(
 					/* translators: %s: option name */
 					__( 'Option "%s" already has the requested value — no change made.', 'superdav-ai-agent' ),
 					$option_name
 				),
+				'verification' => [
+					'persisted_value' => get_option( $option_name ),
+				],
 			];
 		}
 

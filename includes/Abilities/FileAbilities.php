@@ -609,7 +609,7 @@ class FileEditAbility extends AbstractFileAbility {
 				],
 				'edits' => [
 					'type'        => 'array',
-					'description' => 'Array of {search, replace} edit operations to apply in order',
+					'description' => 'Array of {search, replace} edit operations to apply in order. Pass as a real JSON array, not a stringified JSON. Example: [{"search": "old code", "replace": "new code"}].',
 					'items'       => [
 						'type'       => 'object',
 						'properties' => [
@@ -645,6 +645,14 @@ class FileEditAbility extends AbstractFileAbility {
 		/** @var array<string, mixed> $input */
 		$path  = $input['path'] ?? '';
 		$edits = $input['edits'] ?? [];
+
+		// Defensive: some agents pass `edits` as a stringified JSON.
+		if ( is_string( $edits ) ) {
+			$decoded = json_decode( $edits, true );
+			if ( is_array( $decoded ) ) {
+				$edits = $decoded;
+			}
+		}
 
 		// @phpstan-ignore-next-line
 		$full_path = $this->resolve_path( $path );
