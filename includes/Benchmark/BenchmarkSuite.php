@@ -198,8 +198,25 @@ class BenchmarkSuite {
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function get_questions( string $slug ): array {
-		$suite = self::get_suite( $slug );
-		return $suite ? (array) $suite['questions'] : array();
+		$suite     = self::get_suite( $slug );
+		$questions = is_array( $suite ) && isset( $suite['questions'] ) && is_array( $suite['questions'] )
+			? $suite['questions']
+			: array();
+		$out       = array();
+
+		foreach ( $questions as $question ) {
+			if ( is_array( $question ) ) {
+				$normalized = array();
+				foreach ( $question as $key => $value ) {
+					if ( is_string( $key ) ) {
+						$normalized[ $key ] = $value;
+					}
+				}
+				$out[] = $normalized;
+			}
+		}
+
+		return $out;
 	}
 
 	/**
