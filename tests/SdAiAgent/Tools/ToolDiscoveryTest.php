@@ -207,7 +207,7 @@ class ToolDiscoveryTest extends WP_UnitTestCase {
 		$manifest = ToolDiscovery::build_manifest_section();
 
 		$this->assertMatchesRegularExpression(
-			'/`ai-agent\/memory-delete`.*Required:.*id/',
+			'/`sd-ai-agent\/memory-delete`.*Required:.*id/',
 			$manifest,
 			'Manifest line for memory-delete should include "Required: id".'
 		);
@@ -221,7 +221,7 @@ class ToolDiscoveryTest extends WP_UnitTestCase {
 		// example_arguments + missing_required_fields.
 		$result = ToolDiscovery::handle_ability_call(
 			array(
-				'ability'   => 'ai-agent/memory-save',
+				'ability'   => 'sd-ai-agent/memory-save',
 				'arguments' => array(),
 			)
 		);
@@ -245,7 +245,7 @@ class ToolDiscoveryTest extends WP_UnitTestCase {
 		// First call: gets the schema/hint but no nudge yet.
 		$first = ToolDiscovery::handle_ability_call(
 			array(
-				'ability'   => 'ai-agent/memory-save',
+				'ability'   => 'sd-ai-agent/memory-save',
 				'arguments' => $args,
 			)
 		);
@@ -254,12 +254,12 @@ class ToolDiscoveryTest extends WP_UnitTestCase {
 		// Second identical call: nudge appears.
 		$second = ToolDiscovery::handle_ability_call(
 			array(
-				'ability'   => 'ai-agent/memory-save',
+				'ability'   => 'sd-ai-agent/memory-save',
 				'arguments' => $args,
 			)
 		);
 		$this->assertArrayHasKey( 'nudge', $second );
 		$this->assertStringContainsString( 'STOP', $second['nudge'] );
-		$this->assertStringContainsString( 'ai-agent/memory-save', $second['nudge'] );
+		$this->assertStringContainsString( 'sd-ai-agent/memory-save', $second['nudge'] );
 	}
 }

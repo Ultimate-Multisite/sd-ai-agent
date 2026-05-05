@@ -27,7 +27,7 @@ class MemoryAbilities {
 		}
 
 		wp_register_ability(
-			'ai-agent/memory-save',
+			'sd-ai-agent/memory-save',
 			[
 				'label'               => __( 'Save Memory', 'superdav-ai-agent' ),
 				'description'         => __( 'Save a piece of information to persistent memory. Use this to remember facts, preferences, or context for future conversations.', 'superdav-ai-agent' ),
@@ -70,7 +70,7 @@ class MemoryAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/memory-list',
+			'sd-ai-agent/memory-list',
 			[
 				'label'               => __( 'List Memories', 'superdav-ai-agent' ),
 				'description'         => __( 'List all stored memories, grouped by category.', 'superdav-ai-agent' ),
@@ -100,7 +100,7 @@ class MemoryAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/memory-delete',
+			'sd-ai-agent/memory-delete',
 			[
 				'label'               => __( 'Delete Memory', 'superdav-ai-agent' ),
 				'description'         => __( 'Delete a specific memory by its ID.', 'superdav-ai-agent' ),

@@ -110,7 +110,7 @@ class SkillAutoInjector {
 	 * Get a context-aware skill hint for strong models.
 	 *
 	 * Strong models receive the lean skill index (~15 tok/skill) and are
-	 * expected to call `ai-agent/skill-load` on their own when needed.
+	 * expected to call `sd-ai-agent/skill-load` on their own when needed.
 	 * This method supplements the index with a targeted, one-line hint
 	 * pointing at which skill(s) are particularly relevant to the current
 	 * request — helping the model decide whether to load before proceeding,
@@ -133,7 +133,7 @@ class SkillAutoInjector {
 		}
 
 		return '> **Skill hint:** the following skill guide(s) are likely relevant to this request — '
-			. 'call `ai-agent/skill-load` before proceeding: `'
+			. 'call `sd-ai-agent/skill-load` before proceeding: `'
 			. implode( '`, `', $matched_slugs )
 			. '`';
 	}

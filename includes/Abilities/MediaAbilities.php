@@ -33,7 +33,7 @@ class MediaAbilities {
 		}
 
 		wp_register_ability(
-			'ai-agent/list-media',
+			'sd-ai-agent/list-media',
 			[
 				'label'               => __( 'List Media', 'superdav-ai-agent' ),
 				'description'         => __( 'List items in the WordPress media library. Filter by MIME type, search term, or date. Returns attachment ID, URL, title, alt text, MIME type, and file size.', 'superdav-ai-agent' ),
@@ -82,7 +82,7 @@ class MediaAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/upload-media-from-url',
+			'sd-ai-agent/upload-media-from-url',
 			[
 				'label'               => __( 'Upload Media from URL', 'superdav-ai-agent' ),
 				'description'         => __( 'Download a file from a URL and add it to the WordPress media library. Returns the new attachment ID and URL. Supports images, PDFs, and other media types.', 'superdav-ai-agent' ),
@@ -146,7 +146,7 @@ class MediaAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/delete-media',
+			'sd-ai-agent/delete-media',
 			[
 				'label'               => __( 'Delete Media', 'superdav-ai-agent' ),
 				'description'         => __( 'Permanently delete a media attachment from the WordPress media library, including all generated image sizes and metadata.', 'superdav-ai-agent' ),

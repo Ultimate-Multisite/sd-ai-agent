@@ -55,12 +55,12 @@ class ToolDiscovery {
 	public const DEFAULT_TIER_1 = array(
 		'sd-ai-agent/ability-search',
 		'sd-ai-agent/ability-call',
-		// Memory + skill + knowledge are registered under the `ai-agent/`
+		// Memory + skill + knowledge are registered under the `sd-ai-agent/`
 		// prefix by their feature classes, not under `sd-ai-agent/`.
-		'ai-agent/memory-save',
-		'ai-agent/memory-list',
-		'ai-agent/skill-load',
-		'ai-agent/knowledge-search',
+		'sd-ai-agent/memory-save',
+		'sd-ai-agent/memory-list',
+		'sd-ai-agent/skill-load',
+		'sd-ai-agent/knowledge-search',
 		// WP-CLI is the proper tool for admin commands like `wp site list`,
 		// `wp plugin list`, etc. Registered by the cli-abilities-bridge plugin.
 		'wp-cli/execute',
@@ -68,7 +68,7 @@ class ToolDiscovery {
 		// agent is ever asked for. Keeping it in cold-start so smaller
 		// local models don't fall back to `run-php` + positional-arg
 		// guesswork on `wp_insert_post`. See issue #831.
-		'ai-agent/create-post',
+		'sd-ai-agent/create-post',
 	);
 
 	/**

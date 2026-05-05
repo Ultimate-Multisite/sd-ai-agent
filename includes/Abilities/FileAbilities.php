@@ -57,7 +57,7 @@ class FileAbilities {
 			'sd-ai-agent/file-write',
 			[
 				'label'       => __( 'Write File', 'superdav-ai-agent' ),
-				'description' => __( 'Write or overwrite a file within wp-content. Use for creating NEW files. For modifying existing files, use ai-agent/file-edit instead.', 'superdav-ai-agent' ),
+				'description' => __( 'Write or overwrite a file within wp-content. Use for creating NEW files. For modifying existing files, use sd-ai-agent/file-edit instead.', 'superdav-ai-agent' ),
 			]
 		);
 		// @phpstan-ignore-next-line
@@ -175,7 +175,7 @@ class FileAbilities {
 			'sd-ai-agent/file-write',
 			[
 				'label'         => __( 'Write File', 'superdav-ai-agent' ),
-				'description'   => __( 'Write or overwrite a file within wp-content. Use for creating NEW files. For modifying existing files, use ai-agent/file-edit instead.', 'superdav-ai-agent' ),
+				'description'   => __( 'Write or overwrite a file within wp-content. Use for creating NEW files. For modifying existing files, use sd-ai-agent/file-edit instead.', 'superdav-ai-agent' ),
 				'ability_class' => FileWriteAbility::class,
 			]
 		);
@@ -445,7 +445,7 @@ class FileWriteAbility extends AbstractFileAbility {
 	}
 
 	protected function description(): string {
-		return __( 'Write or overwrite a file within wp-content. Use for creating NEW files. For modifying existing files, use ai-agent/file-edit instead.', 'superdav-ai-agent' );
+		return __( 'Write or overwrite a file within wp-content. Use for creating NEW files. For modifying existing files, use sd-ai-agent/file-edit instead.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {

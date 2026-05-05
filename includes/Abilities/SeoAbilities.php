@@ -25,7 +25,7 @@ class SeoAbilities {
 		}
 
 		wp_register_ability(
-			'ai-agent/seo-audit-url',
+			'sd-ai-agent/seo-audit-url',
 			[
 				'label'               => __( 'SEO Audit URL', 'superdav-ai-agent' ),
 				'description'         => __( 'Fetch a URL and analyze its SEO elements: title, meta description, headings, images, Open Graph, structured data, and common issues.', 'superdav-ai-agent' ),
@@ -82,7 +82,7 @@ class SeoAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/seo-analyze-content',
+			'sd-ai-agent/seo-analyze-content',
 			[
 				'label'               => __( 'SEO Analyze Content', 'superdav-ai-agent' ),
 				'description'         => __( 'Analyze a post\'s content for SEO quality: keyword density, title length, heading structure, links, readability, and meta description.', 'superdav-ai-agent' ),

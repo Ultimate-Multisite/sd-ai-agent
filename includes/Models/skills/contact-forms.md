@@ -53,7 +53,7 @@ WPForms registers its own abilities under the `wpforms/*` namespace. Use those a
 
 WPForms forms are embedded via shortcode: `[wpforms id="FORM_ID"]`
 
-To create a new page with the form, use `ai-agent/create-post`:
+To create a new page with the form, use `sd-ai-agent/create-post`:
 ```json
 {
   "title": "Contact Us",
@@ -63,7 +63,7 @@ To create a new page with the form, use `ai-agent/create-post`:
 }
 ```
 
-Or to append a form to an existing page, use `ai-agent/update-post` and append the shortcode to the existing content.
+Or to append a form to an existing page, use `sd-ai-agent/update-post` and append the shortcode to the existing content.
 
 ## WP-CLI Patterns
 

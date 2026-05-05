@@ -377,7 +377,7 @@ class WordPressAbilities {
 			'sd-ai-agent/run-php',
 			[
 				'label'         => __( 'Call WordPress Function', 'superdav-ai-agent' ),
-				'description'   => __( 'Low-level fallback: call a whitelisted WordPress function directly. Use ONLY when no dedicated ability exists for the task. For posts (use `ai-agent/create-post`), users, options, plugins, themes, and other common operations, call `sd-ai-agent/ability-search` first to find a purpose-built tool — dedicated abilities have typed schemas and better error recovery than passing positional args through `run-php`.', 'superdav-ai-agent' ),
+				'description'   => __( 'Low-level fallback: call a whitelisted WordPress function directly. Use ONLY when no dedicated ability exists for the task. For posts (use `sd-ai-agent/create-post`), users, options, plugins, themes, and other common operations, call `sd-ai-agent/ability-search` first to find a purpose-built tool — dedicated abilities have typed schemas and better error recovery than passing positional args through `run-php`.', 'superdav-ai-agent' ),
 				'ability_class' => RunPhpAbility::class,
 			]
 		);
@@ -961,7 +961,7 @@ class RunPhpAbility extends AbstractAbility {
 	}
 
 	protected function description(): string {
-		return __( 'Low-level fallback: call a whitelisted WordPress function directly. Use ONLY when no dedicated ability exists for the task. For posts (use `ai-agent/create-post`), users, options, plugins, themes, and other common operations, call `sd-ai-agent/ability-search` first to find a purpose-built tool — dedicated abilities have typed schemas and better error recovery than guessing positional args here. When you do use this, pass the function name via `function` and an ordered array via `args`.', 'superdav-ai-agent' );
+		return __( 'Low-level fallback: call a whitelisted WordPress function directly. Use ONLY when no dedicated ability exists for the task. For posts (use `sd-ai-agent/create-post`), users, options, plugins, themes, and other common operations, call `sd-ai-agent/ability-search` first to find a purpose-built tool — dedicated abilities have typed schemas and better error recovery than guessing positional args here. When you do use this, pass the function name via `function` and an ordered array via `args`.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {

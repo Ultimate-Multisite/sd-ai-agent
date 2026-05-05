@@ -29,7 +29,7 @@ class MenuAbilities {
 		}
 
 		wp_register_ability(
-			'ai-agent/list-menus',
+			'sd-ai-agent/list-menus',
 			[
 				'label'               => __( 'List Menus', 'superdav-ai-agent' ),
 				'description'         => __( 'List all registered WordPress navigation menus. Returns menu ID, name, slug, and the theme locations it is assigned to.', 'superdav-ai-agent' ),
@@ -61,7 +61,7 @@ class MenuAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/get-menu',
+			'sd-ai-agent/get-menu',
 			[
 				'label'               => __( 'Get Menu', 'superdav-ai-agent' ),
 				'description'         => __( 'Retrieve a WordPress navigation menu by ID or slug, including all its items with labels, URLs, and hierarchy.', 'superdav-ai-agent' ),
@@ -105,7 +105,7 @@ class MenuAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/create-menu',
+			'sd-ai-agent/create-menu',
 			[
 				'label'               => __( 'Create Menu', 'superdav-ai-agent' ),
 				'description'         => __( 'Create a new WordPress navigation menu with the given name. Optionally assign it to a theme location.', 'superdav-ai-agent' ),
@@ -147,7 +147,7 @@ class MenuAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/delete-menu',
+			'sd-ai-agent/delete-menu',
 			[
 				'label'               => __( 'Delete Menu', 'superdav-ai-agent' ),
 				'description'         => __( 'Delete a WordPress navigation menu and all its items by menu ID or slug.', 'superdav-ai-agent' ),
@@ -189,7 +189,7 @@ class MenuAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/add-menu-item',
+			'sd-ai-agent/add-menu-item',
 			[
 				'label'               => __( 'Add Menu Item', 'superdav-ai-agent' ),
 				'description'         => __( 'Add an item to a WordPress navigation menu. Supports custom URLs, pages, posts, categories, and tags.', 'superdav-ai-agent' ),
@@ -273,7 +273,7 @@ class MenuAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/remove-menu-item',
+			'sd-ai-agent/remove-menu-item',
 			[
 				'label'               => __( 'Remove Menu Item', 'superdav-ai-agent' ),
 				'description'         => __( 'Remove an item from a WordPress navigation menu by its menu item ID.', 'superdav-ai-agent' ),
@@ -311,7 +311,7 @@ class MenuAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/assign-menu-location',
+			'sd-ai-agent/assign-menu-location',
 			[
 				'label'               => __( 'Assign Menu to Location', 'superdav-ai-agent' ),
 				'description'         => __( 'Assign a WordPress navigation menu to a registered theme location (e.g. "primary", "footer"). Use list-menus to see available menus and their current locations.', 'superdav-ai-agent' ),

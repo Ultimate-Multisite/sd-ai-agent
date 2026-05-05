@@ -30,7 +30,7 @@ class BlockAbilities {
 		}
 
 		wp_register_ability(
-			'ai-agent/markdown-to-blocks',
+			'sd-ai-agent/markdown-to-blocks',
 			[
 				'label'               => __( 'Markdown to Blocks', 'superdav-ai-agent' ),
 				'description'         => __( 'Convert markdown text into serialized Gutenberg block HTML ready for post_content. Best for text-heavy content like blog posts and articles.', 'superdav-ai-agent' ),
@@ -68,7 +68,7 @@ class BlockAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/list-block-types',
+			'sd-ai-agent/list-block-types',
 			[
 				'label'               => __( 'List Block Types', 'superdav-ai-agent' ),
 				'description'         => __( 'List registered Gutenberg block types. Filter by category or search term. Returns block names, titles, descriptions, and categories.', 'superdav-ai-agent' ),
@@ -118,7 +118,7 @@ class BlockAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/get-block-type',
+			'sd-ai-agent/get-block-type',
 			[
 				'label'               => __( 'Get Block Type', 'superdav-ai-agent' ),
 				'description'         => __( 'Get detailed metadata for a specific block type including attributes schema, supports, styles, and variations.', 'superdav-ai-agent' ),
@@ -160,7 +160,7 @@ class BlockAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/list-block-patterns',
+			'sd-ai-agent/list-block-patterns',
 			[
 				'label'               => __( 'List Block Patterns', 'superdav-ai-agent' ),
 				'description'         => __( 'List registered block patterns. Filter by category or search. Returns pattern names, titles, descriptions, and optionally full content.', 'superdav-ai-agent' ),
@@ -210,7 +210,7 @@ class BlockAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/list-block-templates',
+			'sd-ai-agent/list-block-templates',
 			[
 				'label'               => __( 'List Block Templates', 'superdav-ai-agent' ),
 				'description'         => __( 'List block templates available in the current theme. Returns template slugs, titles, and descriptions.', 'superdav-ai-agent' ),
@@ -247,7 +247,7 @@ class BlockAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/create-block-content',
+			'sd-ai-agent/create-block-content',
 			[
 				'label'               => __( 'Create Block Content', 'superdav-ai-agent' ),
 				'description'         => __( 'Build serialized Gutenberg block HTML from a structured block array. Best for layouts with columns, buttons, groups, and other complex blocks. Each block needs blockName, optional attrs, content, and innerBlocks.', 'superdav-ai-agent' ),
@@ -285,7 +285,7 @@ class BlockAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/parse-block-content',
+			'sd-ai-agent/parse-block-content',
 			[
 				'label'               => __( 'Parse Block Content', 'superdav-ai-agent' ),
 				'description'         => __( 'Parse existing Gutenberg block content into a structured block tree. Provide either a post_id to read from the database, or raw content string.', 'superdav-ai-agent' ),
@@ -331,7 +331,7 @@ class BlockAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/validate-block-content',
+			'sd-ai-agent/validate-block-content',
 			[
 				'label'               => __( 'Validate Block Content', 'superdav-ai-agent' ),
 				'description'         => __( 'Validate block content before insertion. Checks for mixed markdown/block markup, malformed block comments, empty blocks, and freeform content that should be wrapped in blocks. Use this after building complex block content to catch errors before creating a post or page.', 'superdav-ai-agent' ),

@@ -51,11 +51,11 @@ class ToolCapabilitiesTest extends WP_UnitTestCase {
 			'stock-image'              => [ 'sd-ai-agent/stock-image', 'sd_ai_agent_tool_stock_image' ],
 			'generate-image'           => [ 'sd-ai-agent/generate-image', 'sd_ai_agent_tool_generate_image' ],
 			'custom-tool-with-slashes' => [ 'sd-ai-agent-custom/my-tool', 'sd_ai_agent_tool_sd_ai_agent_custom_my_tool' ],
-			// ai-agent/ prefix (WP core built-in abilities — same cap name, different namespace prefix).
-			'ai-agent/memory-save'     => [ 'ai-agent/memory-save', 'sd_ai_agent_tool_memory_save' ],
-			'ai-agent/create-post'     => [ 'ai-agent/create-post', 'sd_ai_agent_tool_create_post' ],
-			'ai-agent/update-post'     => [ 'ai-agent/update-post', 'sd_ai_agent_tool_update_post' ],
-			'ai-agent/list-posts'      => [ 'ai-agent/list-posts', 'sd_ai_agent_tool_list_posts' ],
+			// (Both forms historically existed — now canonicalised to sd-ai-agent/.)
+			'sd-ai-agent/memory-save'     => [ 'sd-ai-agent/memory-save', 'sd_ai_agent_tool_memory_save' ],
+			'sd-ai-agent/create-post'     => [ 'sd-ai-agent/create-post', 'sd_ai_agent_tool_create_post' ],
+			'sd-ai-agent/update-post'     => [ 'sd-ai-agent/update-post', 'sd_ai_agent_tool_update_post' ],
+			'sd-ai-agent/list-posts'      => [ 'sd-ai-agent/list-posts', 'sd_ai_agent_tool_list_posts' ],
 		];
 	}
 
@@ -182,7 +182,7 @@ class ToolCapabilitiesTest extends WP_UnitTestCase {
 	 * Test all_ability_ids returns a non-empty array of strings.
 	 *
 	 * Abilities may use either the plugin-specific "sd-ai-agent/" prefix
-	 * or the WP core "ai-agent/" prefix (used by WP 7.0+ built-in abilities
+	 * or the WP core "sd-ai-agent/" prefix (used by WP 7.0+ built-in abilities
 	 * such as memory-save, create-post, etc.).
 	 */
 	public function test_all_ability_ids_returns_non_empty_array(): void {
@@ -193,8 +193,8 @@ class ToolCapabilitiesTest extends WP_UnitTestCase {
 		foreach ( $ids as $id ) {
 			$this->assertIsString( $id );
 			$this->assertTrue(
-				str_starts_with( $id, 'sd-ai-agent/' ) || str_starts_with( $id, 'ai-agent/' ),
-				"Ability ID '{$id}' must start with 'sd-ai-agent/' or 'ai-agent/'"
+				str_starts_with( $id, 'sd-ai-agent/' ) || str_starts_with( $id, 'sd-ai-agent/' ),
+				"Ability ID '{$id}' must start with 'sd-ai-agent/' or 'sd-ai-agent/'"
 			);
 		}
 	}
@@ -203,20 +203,20 @@ class ToolCapabilitiesTest extends WP_UnitTestCase {
 	 * Test all_ability_ids contains expected core abilities.
 	 *
 	 * Memory, skill, knowledge, post, and global-styles abilities are registered
-	 * under the WP core "ai-agent/" prefix; plugin-specific abilities use
+	 * under the WP core "sd-ai-agent/" prefix; plugin-specific abilities use
 	 * "sd-ai-agent/".
 	 */
 	public function test_all_ability_ids_contains_core_abilities(): void {
 		$ids = ToolCapabilities::all_ability_ids();
 
 		$expected = [
-			// WP core ai-agent/ prefix abilities.
-			'ai-agent/memory-save',
-			'ai-agent/memory-list',
-			'ai-agent/memory-delete',
-			'ai-agent/create-post',
-			'ai-agent/update-post',
-			'ai-agent/list-posts',
+			// Canonical sd-ai-agent/ prefix abilities.
+			'sd-ai-agent/memory-save',
+			'sd-ai-agent/memory-list',
+			'sd-ai-agent/memory-delete',
+			'sd-ai-agent/create-post',
+			'sd-ai-agent/update-post',
+			'sd-ai-agent/list-posts',
 			// Plugin-specific sd-ai-agent/ prefix abilities.
 			'sd-ai-agent/db-query',
 			'sd-ai-agent/run-php',

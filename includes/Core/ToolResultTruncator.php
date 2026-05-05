@@ -102,7 +102,7 @@ class ToolResultTruncator {
 				break;
 
 			// Content analysis: keep summary stats, truncate per-post details.
-			case 'ai-agent/content-analyze':
+			case 'sd-ai-agent/content-analyze':
 				if ( isset( $result['posts_without_featured_image'] ) && is_array( $result['posts_without_featured_image'] ) ) {
 					$count                                  = count( $result['posts_without_featured_image'] );
 					$result['posts_without_featured_image'] = array_slice( $result['posts_without_featured_image'], 0, 5 );
@@ -130,7 +130,7 @@ class ToolResultTruncator {
 				break;
 
 			// Block type listings: keep names only.
-			case 'ai-agent/list-block-types':
+			case 'sd-ai-agent/list-block-types':
 				if ( isset( $result['block_types'] ) && is_array( $result['block_types'] ) ) {
 					$total                 = count( $result['block_types'] );
 					$result['block_types'] = array_map(

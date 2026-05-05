@@ -25,7 +25,7 @@ class MarketingAbilities {
 		}
 
 		wp_register_ability(
-			'ai-agent/fetch-url',
+			'sd-ai-agent/fetch-url',
 			[
 				'label'               => __( 'Fetch URL', 'superdav-ai-agent' ),
 				'description'         => __( 'Fetch a URL and return HTTP status, headers, page title, meta description, and head content. Useful for competitive analysis and tech stack discovery.', 'superdav-ai-agent' ),
@@ -68,7 +68,7 @@ class MarketingAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/analyze-headers',
+			'sd-ai-agent/analyze-headers',
 			[
 				'label'               => __( 'Analyze HTTP Headers', 'superdav-ai-agent' ),
 				'description'         => __( 'Analyze a URL\'s HTTP security and performance headers: HSTS, CSP, X-Frame-Options, caching, CDN indicators.', 'superdav-ai-agent' ),

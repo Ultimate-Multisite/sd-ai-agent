@@ -100,7 +100,7 @@ class SchemaExampleBuilderTest extends WP_UnitTestCase {
 	// ─── extract_missing_required ────────────────────────────────────
 
 	public function test_extract_missing_required_handles_standard_phrasing(): void {
-		$msg = 'Ability "ai-agent/create-user" has invalid input. Reason: username is a required property of input.';
+		$msg = 'Ability "sd-ai-agent/create-user" has invalid input. Reason: username is a required property of input.';
 
 		$this->assertSame(
 			array( 'username' ),

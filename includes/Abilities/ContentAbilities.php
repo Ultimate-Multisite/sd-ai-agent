@@ -25,7 +25,7 @@ class ContentAbilities {
 		}
 
 		wp_register_ability(
-			'ai-agent/content-analyze',
+			'sd-ai-agent/content-analyze',
 			[
 				'label'               => __( 'Analyze Content Strategy', 'superdav-ai-agent' ),
 				'description'         => __( 'Analyze content strategy: publishing frequency, word counts, category distribution, missing featured images, and content gaps.', 'superdav-ai-agent' ),
@@ -79,7 +79,7 @@ class ContentAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/content-performance-report',
+			'sd-ai-agent/content-performance-report',
 			[
 				'label'               => __( 'Content Performance Report', 'superdav-ai-agent' ),
 				'description'         => __( 'Generate a content performance summary for a given time period: posts published, category breakdown, word counts, drafts pending.', 'superdav-ai-agent' ),
@@ -127,7 +127,7 @@ class ContentAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/create-contact-form',
+			'sd-ai-agent/create-contact-form',
 			[
 				'label'               => __( 'Create Contact Form', 'superdav-ai-agent' ),
 				'description'         => __( 'Create a simple contact form for a page. Uses Contact Form 7 when available and otherwise returns a Gutenberg HTML block with a dependency-free form.', 'superdav-ai-agent' ),

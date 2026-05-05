@@ -686,7 +686,7 @@ class AssertionEngine {
 	/**
 	 * Assert that the agent invoked one of the listed abilities/tools.
 	 *
-	 * @param array<int, string>   $tools     Ability names (e.g. 'ai-agent/create-post')
+	 * @param array<int, string>   $tools     Ability names (e.g. 'sd-ai-agent/create-post')
 	 *                                        or short suffixes ('create-post'). ANY match passes.
 	 * @param array<string, mixed> $context   Runtime context with 'tool_call_log'.
 	 * @param int                  $min_calls Minimum number of matching calls required.
@@ -729,7 +729,7 @@ class AssertionEngine {
 					++$matches;
 					break;
 				}
-				// Permissive suffix match (e.g. 'create-post' matches 'ai-agent/create-post' direct call).
+				// Permissive suffix match (e.g. 'create-post' matches 'sd-ai-agent/create-post' direct call).
 				$short = self::ability_short_name( $candidate );
 				if ( '' !== $short && ( str_ends_with( $name, '/' . $short ) || str_ends_with( $name, '__' . $short ) || ( '' !== $inner && str_ends_with( $inner, '/' . $short ) ) ) ) {
 					++$matches;
@@ -749,7 +749,7 @@ class AssertionEngine {
 
 	/**
 	 * Convert an ability identifier into the wpab__ function-name form the
-	 * AI client uses, e.g. `ai-agent/create-post` → `wpab__ai-agent__create-post`.
+	 * AI client uses, e.g. `sd-ai-agent/create-post` → `wpab__ai-agent__create-post`.
 	 * If already in wpab__ form, returns as-is.
 	 */
 	private static function ability_to_function_name( string $name ): string {
@@ -767,7 +767,7 @@ class AssertionEngine {
 
 	/**
 	 * Strip the namespace prefix from an ability name.
-	 * `ai-agent/create-post` → `create-post`. Already-short names pass through.
+	 * `sd-ai-agent/create-post` → `create-post`. Already-short names pass through.
 	 */
 	private static function ability_short_name( string $name ): string {
 		$pos = strrpos( $name, '/' );

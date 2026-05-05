@@ -7,11 +7,11 @@ declare(strict_types=1);
  * Provides AI-powered image abilities ported from the WordPress/ai experiments
  * plugin (https://github.com/WordPress/ai):
  *
- *  - ai-agent/generate-alt-text      — Generate descriptive alt text for an image
+ *  - sd-ai-agent/generate-alt-text      — Generate descriptive alt text for an image
  *                                      using a vision model.
- *  - ai-agent/generate-image-prompt  — Generate an image-generation prompt from
+ *  - sd-ai-agent/generate-image-prompt  — Generate an image-generation prompt from
  *                                      post content or arbitrary text.
- *  - ai-agent/import-base64-image    — Import a base64-encoded image into the
+ *  - sd-ai-agent/import-base64-image    — Import a base64-encoded image into the
  *                                      WordPress media library.
  *
  * @package SdAiAgent
@@ -65,7 +65,7 @@ class ImageAbilities {
 	 */
 	private static function register_generate_alt_text(): void {
 		wp_register_ability(
-			'ai-agent/generate-alt-text',
+			'sd-ai-agent/generate-alt-text',
 			[
 				'label'               => __( 'Generate Alt Text', 'superdav-ai-agent' ),
 				'description'         => __( 'Use a vision AI model to generate descriptive, accessibility-compliant alt text for an image. Accepts an attachment ID or image URL.', 'superdav-ai-agent' ),
@@ -196,7 +196,7 @@ INSTRUCTION;
 	 */
 	private static function register_generate_image_prompt(): void {
 		wp_register_ability(
-			'ai-agent/generate-image-prompt',
+			'sd-ai-agent/generate-image-prompt',
 			[
 				'label'               => __( 'Generate Image Prompt', 'superdav-ai-agent' ),
 				'description'         => __( 'Generate a self-contained image-generation prompt from post content or arbitrary text. Suitable for passing directly to an image generation model.', 'superdav-ai-agent' ),
@@ -354,7 +354,7 @@ INSTRUCTION;
 	 */
 	private static function register_import_base64_image(): void {
 		wp_register_ability(
-			'ai-agent/import-base64-image',
+			'sd-ai-agent/import-base64-image',
 			[
 				'label'               => __( 'Import Base64 Image', 'superdav-ai-agent' ),
 				'description'         => __( 'Import a base64-encoded image into the WordPress media library. Returns the attachment ID, URL, and metadata.', 'superdav-ai-agent' ),

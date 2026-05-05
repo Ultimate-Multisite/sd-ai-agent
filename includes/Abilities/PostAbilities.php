@@ -32,7 +32,7 @@ class PostAbilities {
 		}
 
 		wp_register_ability(
-			'ai-agent/get-post',
+			'sd-ai-agent/get-post',
 			[
 				'label'               => __( 'Get Post', 'superdav-ai-agent' ),
 				'description'         => __( 'Retrieve a WordPress post by ID. Returns title, content, excerpt, status, author, categories, tags, featured image, and meta.', 'superdav-ai-agent' ),
@@ -85,7 +85,7 @@ class PostAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/create-post',
+			'sd-ai-agent/create-post',
 			[
 				'label'               => __( 'Create Post', 'superdav-ai-agent' ),
 				'description'         => __( 'Create a new WordPress post or page. This is the PRIMARY tool for creating any content — blog posts, landing pages, about pages, etc. Write content directly as HTML or markdown (auto-converted to Gutenberg blocks). Set post_type to "page" for pages or "post" for blog posts. Set status to "publish" to make it live immediately.', 'superdav-ai-agent' ),
@@ -172,7 +172,7 @@ class PostAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/update-post',
+			'sd-ai-agent/update-post',
 			[
 				'label'               => __( 'Update Post', 'superdav-ai-agent' ),
 				'description'         => __( 'Update an existing WordPress post or page. Only provided fields are changed; omitted fields are left as-is. Can update title, content, excerpt, status, categories, tags, featured image (featured_image_id), and custom meta. IMPORTANT: You must supply post_id — if you do not know it, call list-posts first (search by title) to find it. Do NOT call create-post when the intent is to update an existing post.', 'superdav-ai-agent' ),
@@ -259,7 +259,7 @@ class PostAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/list-posts',
+			'sd-ai-agent/list-posts',
 			[
 				'label'               => __( 'List Posts', 'superdav-ai-agent' ),
 				'description'         => __( 'Query and list WordPress posts or pages. Filter by post_type, status, search term, category, tag, and date. Returns id, title, excerpt, status, post_type, date, permalink, and featured_image_url for each match. Default: 10 most recent published posts.', 'superdav-ai-agent' ),
@@ -350,7 +350,7 @@ class PostAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/batch-create-posts',
+			'sd-ai-agent/batch-create-posts',
 			[
 				'label'               => __( 'Batch Create Posts', 'superdav-ai-agent' ),
 				'description'         => __( 'Create multiple WordPress posts or pages in a single call. Accepts an array of post definitions and returns an array of results. Use this instead of calling create-post repeatedly when building a full site — reduces ~7 sequential calls to 1.', 'superdav-ai-agent' ),
@@ -458,7 +458,7 @@ class PostAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/delete-post',
+			'sd-ai-agent/delete-post',
 			[
 				'label'               => __( 'Delete Post', 'superdav-ai-agent' ),
 				'description'         => __( 'Move a WordPress post to the trash, or permanently delete it. Defaults to trash (recoverable). Set force_delete to true for permanent deletion.', 'superdav-ai-agent' ),
@@ -505,7 +505,7 @@ class PostAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/set-featured-image',
+			'sd-ai-agent/set-featured-image',
 			[
 				'label'               => __( 'Set Featured Image', 'superdav-ai-agent' ),
 				'description'         => __( 'Set or remove the featured image (post thumbnail) for any WordPress post or page. Pass featured_image_id to set a new image, or 0 to remove the existing thumbnail. Use this as a focused single-purpose call after uploading a stock or generated image — no other post fields are changed.', 'superdav-ai-agent' ),

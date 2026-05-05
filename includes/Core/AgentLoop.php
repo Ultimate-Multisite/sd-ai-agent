@@ -995,7 +995,7 @@ class AgentLoop {
 	 * names (HTTP 400 "tools: Tool names must be unique"). Collisions occur when:
 	 *
 	 *   • Two abilities are registered under different namespace prefixes but the
-	 *     same base name (e.g. "ai-agent/create-block-content" and
+	 *     same base name (e.g. "sd-ai-agent/create-block-content" and
 	 *     "sd-ai-agent/create-block-content"). WP 7.0-RC2's native
 	 *     ability_name_to_function_name() may normalise these to the same string,
 	 *     whereas the compat polyfill preserves the full prefixed form.

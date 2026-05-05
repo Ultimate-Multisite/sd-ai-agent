@@ -27,7 +27,7 @@ class KnowledgeAbilities {
 		}
 
 		wp_register_ability(
-			'ai-agent/knowledge-search',
+			'sd-ai-agent/knowledge-search',
 			[
 				'label'               => __( 'Search Knowledge Base', 'superdav-ai-agent' ),
 				'description'         => __( 'Search the knowledge base for relevant information. Use this to find indexed documents, posts, and uploaded files.', 'superdav-ai-agent' ),

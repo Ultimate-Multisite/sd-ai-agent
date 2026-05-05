@@ -452,8 +452,8 @@ class McpControllerTest extends WP_UnitTestCase {
 	 */
 	public function test_ability_name_to_mcp_name_converts_slash(): void {
 		$this->assertSame(
-			'ai-agent__memory-save',
-			McpController::ability_name_to_mcp_name( 'ai-agent/memory-save' )
+			'sd-ai-agent__memory-save',
+			McpController::ability_name_to_mcp_name( 'sd-ai-agent/memory-save' )
 		);
 	}
 
@@ -472,8 +472,8 @@ class McpControllerTest extends WP_UnitTestCase {
 	 */
 	public function test_mcp_name_to_ability_name_converts_double_underscore(): void {
 		$this->assertSame(
-			'ai-agent/memory-save',
-			McpController::mcp_name_to_ability_name( 'ai-agent__memory-save' )
+			'sd-ai-agent/memory-save',
+			McpController::mcp_name_to_ability_name( 'sd-ai-agent__memory-save' )
 		);
 	}
 

@@ -2,7 +2,7 @@
 
 ## Critical Rule
 
-Content passed to `ai-agent/create-post` or `ai-agent/update-post` must be EITHER:
+Content passed to `sd-ai-agent/create-post` or `sd-ai-agent/update-post` must be EITHER:
 - **All markdown** — for blog posts and articles (auto-converted to blocks)
 - **All serialized block markup** — for pages with visual layouts
 
@@ -402,12 +402,12 @@ Using custom values:
 
 ### Create a blog post (use markdown)
 
-Write content in markdown format and pass to `ai-agent/create-post`. The markdown is automatically converted to blocks.
+Write content in markdown format and pass to `sd-ai-agent/create-post`. The markdown is automatically converted to blocks.
 
 ### Build a page with layout (use block markup)
 
 1. Write the full page content as serialized block markup following the examples above
-2. Pass the block markup string to `ai-agent/create-post` with `post_type: page`
+2. Pass the block markup string to `sd-ai-agent/create-post` with `post_type: page`
 3. Use `sd-ai-agent/validate-block-content` to check for errors before creating
 
 ### Analyze and improve existing content
@@ -415,4 +415,4 @@ Write content in markdown format and pass to `ai-agent/create-post`. The markdow
 1. Use `sd-ai-agent/parse-block-content` with a post_id to see the current structure
 2. Identify issues (missing layout blocks, unstyled sections)
 3. Build improved content using block markup
-4. Use `ai-agent/update-post` to replace the content
+4. Use `sd-ai-agent/update-post` to replace the content

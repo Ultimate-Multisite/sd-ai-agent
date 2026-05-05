@@ -7,10 +7,10 @@ declare(strict_types=1);
  * Provides AI-powered content generation abilities ported from the
  * WordPress/ai experiments plugin (https://github.com/WordPress/ai):
  *
- *  - ai-agent/generate-title      — Generate title suggestions for a post or content.
- *  - ai-agent/generate-excerpt    — Generate an excerpt for a post or content.
- *  - ai-agent/summarize-content   — Summarize content at short/medium/long length.
- *  - ai-agent/review-block        — Review a Gutenberg block for accessibility,
+ *  - sd-ai-agent/generate-title      — Generate title suggestions for a post or content.
+ *  - sd-ai-agent/generate-excerpt    — Generate an excerpt for a post or content.
+ *  - sd-ai-agent/summarize-content   — Summarize content at short/medium/long length.
+ *  - sd-ai-agent/review-block        — Review a Gutenberg block for accessibility,
  *                                   readability, grammar, and SEO issues.
  *
  * @package SdAiAgent
@@ -58,7 +58,7 @@ class EditorialAbilities {
 	 */
 	private static function register_generate_title(): void {
 		wp_register_ability(
-			'ai-agent/generate-title',
+			'sd-ai-agent/generate-title',
 			[
 				'label'               => __( 'Generate Title Suggestions', 'superdav-ai-agent' ),
 				'description'         => __( 'Generate SEO-optimised title suggestions for a post or arbitrary content. Accepts a post ID or raw content string.', 'superdav-ai-agent' ),
@@ -187,7 +187,7 @@ INSTRUCTION;
 	 */
 	private static function register_generate_excerpt(): void {
 		wp_register_ability(
-			'ai-agent/generate-excerpt',
+			'sd-ai-agent/generate-excerpt',
 			[
 				'label'               => __( 'Generate Excerpt', 'superdav-ai-agent' ),
 				'description'         => __( 'Generate a concise, SEO-friendly excerpt (~55 words) for a post or arbitrary content.', 'superdav-ai-agent' ),
@@ -298,7 +298,7 @@ INSTRUCTION;
 	 */
 	private static function register_summarize_content(): void {
 		wp_register_ability(
-			'ai-agent/summarize-content',
+			'sd-ai-agent/summarize-content',
 			[
 				'label'               => __( 'Summarize Content', 'superdav-ai-agent' ),
 				'description'         => __( 'Generate a factual, neutral summary of a post or content at short (1 sentence), medium (2–3 sentences), or long (4–6 sentences) length.', 'superdav-ai-agent' ),
@@ -412,7 +412,7 @@ INSTRUCTION;
 	 */
 	private static function register_review_block(): void {
 		wp_register_ability(
-			'ai-agent/review-block',
+			'sd-ai-agent/review-block',
 			[
 				'label'               => __( 'Review Block Content', 'superdav-ai-agent' ),
 				'description'         => __( 'Review a Gutenberg block\'s content for accessibility, readability, grammar, and SEO issues. Returns actionable suggestions.', 'superdav-ai-agent' ),

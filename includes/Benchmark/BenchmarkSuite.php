@@ -710,7 +710,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/create-post' ),
+						'tools'       => array( 'sd-ai-agent/create-post' ),
 						'description' => 'create-post ability called',
 					),
 					array(
@@ -729,12 +729,12 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/list-posts' ),
+						'tools'       => array( 'sd-ai-agent/list-posts' ),
 						'description' => 'list-posts called',
 					),
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/get-post' ),
+						'tools'       => array( 'sd-ai-agent/get-post' ),
 						'description' => 'get-post called',
 					),
 				),
@@ -747,7 +747,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/update-post' ),
+						'tools'       => array( 'sd-ai-agent/update-post' ),
 						'description' => 'update-post called',
 					),
 				),
@@ -760,7 +760,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/batch-create-posts' ),
+						'tools'       => array( 'sd-ai-agent/batch-create-posts' ),
 						'description' => 'batch-create-posts called',
 					),
 					array(
@@ -791,7 +791,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/delete-post' ),
+						'tools'       => array( 'sd-ai-agent/delete-post' ),
 						'description' => 'delete-post called',
 					),
 				),
@@ -804,7 +804,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/set-featured-image' ),
+						'tools'       => array( 'sd-ai-agent/set-featured-image' ),
 						'description' => 'set-featured-image called',
 					),
 				),
@@ -817,7 +817,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/generate-title' ),
+						'tools'       => array( 'sd-ai-agent/generate-title' ),
 						'description' => 'generate-title called',
 					),
 				),
@@ -830,7 +830,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/generate-excerpt' ),
+						'tools'       => array( 'sd-ai-agent/generate-excerpt' ),
 						'description' => 'generate-excerpt called',
 					),
 				),
@@ -843,7 +843,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/summarize-content' ),
+						'tools'       => array( 'sd-ai-agent/summarize-content' ),
 						'description' => 'summarize-content called',
 					),
 				),
@@ -856,7 +856,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/content-analyze' ),
+						'tools'       => array( 'sd-ai-agent/content-analyze' ),
 						'description' => 'content-analyze called',
 					),
 				),
@@ -882,7 +882,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/content-performance-report' ),
+						'tools'       => array( 'sd-ai-agent/content-performance-report' ),
 						'description' => 'content-performance-report called',
 					),
 				),
@@ -905,7 +905,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/list-media' ),
+						'tools'       => array( 'sd-ai-agent/list-media' ),
 						'description' => 'list-media called',
 					),
 				),
@@ -918,7 +918,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/upload-media-from-url' ),
+						'tools'       => array( 'sd-ai-agent/upload-media-from-url' ),
 						'description' => 'upload-media-from-url called',
 					),
 				),
@@ -931,7 +931,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/generate-alt-text' ),
+						'tools'       => array( 'sd-ai-agent/generate-alt-text' ),
 						'description' => 'generate-alt-text called',
 					),
 				),
@@ -944,7 +944,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/generate-image-prompt' ),
+						'tools'       => array( 'sd-ai-agent/generate-image-prompt' ),
 						'description' => 'generate-image-prompt called',
 					),
 				),
@@ -983,7 +983,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/import-base64-image' ),
+						'tools'       => array( 'sd-ai-agent/import-base64-image' ),
 						'description' => 'import-base64-image called',
 					),
 				),
@@ -1094,18 +1094,18 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/create-menu' ),
+						'tools'       => array( 'sd-ai-agent/create-menu' ),
 						'description' => 'create-menu called',
 					),
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/add-menu-item' ),
+						'tools'       => array( 'sd-ai-agent/add-menu-item' ),
 						'min_calls'   => 2,
 						'description' => 'add-menu-item called twice',
 					),
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/list-menus' ),
+						'tools'       => array( 'sd-ai-agent/list-menus' ),
 						'description' => 'list-menus called',
 					),
 					array(
@@ -1123,12 +1123,12 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/get-menu' ),
+						'tools'       => array( 'sd-ai-agent/get-menu' ),
 						'description' => 'get-menu called',
 					),
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/remove-menu-item' ),
+						'tools'       => array( 'sd-ai-agent/remove-menu-item' ),
 						'description' => 'remove-menu-item called',
 					),
 				),
@@ -1141,12 +1141,12 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/assign-menu-location' ),
+						'tools'       => array( 'sd-ai-agent/assign-menu-location' ),
 						'description' => 'assign-menu-location called',
 					),
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/delete-menu' ),
+						'tools'       => array( 'sd-ai-agent/delete-menu' ),
 						'description' => 'delete-menu called',
 					),
 				),
@@ -1159,17 +1159,17 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/list-users' ),
+						'tools'       => array( 'sd-ai-agent/list-users' ),
 						'description' => 'list-users called',
 					),
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/create-user' ),
+						'tools'       => array( 'sd-ai-agent/create-user' ),
 						'description' => 'create-user called',
 					),
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/update-user-role' ),
+						'tools'       => array( 'sd-ai-agent/update-user-role' ),
 						'description' => 'update-user-role called',
 					),
 					array(
@@ -1198,7 +1198,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/list-block-types' ),
+						'tools'       => array( 'sd-ai-agent/list-block-types' ),
 						'description' => 'list-block-types called',
 					),
 				),
@@ -1211,7 +1211,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/get-block-type' ),
+						'tools'       => array( 'sd-ai-agent/get-block-type' ),
 						'description' => 'get-block-type called',
 					),
 				),
@@ -1224,7 +1224,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/list-block-patterns' ),
+						'tools'       => array( 'sd-ai-agent/list-block-patterns' ),
 						'description' => 'list-block-patterns called',
 					),
 				),
@@ -1237,7 +1237,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/list-block-templates' ),
+						'tools'       => array( 'sd-ai-agent/list-block-templates' ),
 						'description' => 'list-block-templates called',
 					),
 				),
@@ -1250,7 +1250,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/markdown-to-blocks' ),
+						'tools'       => array( 'sd-ai-agent/markdown-to-blocks' ),
 						'description' => 'markdown-to-blocks called',
 					),
 				),
@@ -1263,17 +1263,17 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/create-block-content' ),
+						'tools'       => array( 'sd-ai-agent/create-block-content' ),
 						'description' => 'create-block-content called',
 					),
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/validate-block-content' ),
+						'tools'       => array( 'sd-ai-agent/validate-block-content' ),
 						'description' => 'validate-block-content called',
 					),
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/parse-block-content' ),
+						'tools'       => array( 'sd-ai-agent/parse-block-content' ),
 						'description' => 'parse-block-content called',
 					),
 				),
@@ -1286,7 +1286,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/review-block' ),
+						'tools'       => array( 'sd-ai-agent/review-block' ),
 						'description' => 'review-block called',
 					),
 				),
@@ -1299,7 +1299,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/get-global-styles' ),
+						'tools'       => array( 'sd-ai-agent/get-global-styles' ),
 						'description' => 'get-global-styles called',
 					),
 				),
@@ -1312,17 +1312,17 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/update-global-styles' ),
+						'tools'       => array( 'sd-ai-agent/update-global-styles' ),
 						'description' => 'update-global-styles called',
 					),
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/get-theme-json' ),
+						'tools'       => array( 'sd-ai-agent/get-theme-json' ),
 						'description' => 'get-theme-json called',
 					),
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/reset-global-styles' ),
+						'tools'       => array( 'sd-ai-agent/reset-global-styles' ),
 						'description' => 'reset-global-styles called',
 					),
 				),
@@ -1830,12 +1830,12 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/fetch-url' ),
+						'tools'       => array( 'sd-ai-agent/fetch-url' ),
 						'description' => 'fetch-url called',
 					),
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/analyze-headers' ),
+						'tools'       => array( 'sd-ai-agent/analyze-headers' ),
 						'description' => 'analyze-headers called',
 					),
 				),
@@ -1874,7 +1874,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/knowledge-search' ),
+						'tools'       => array( 'sd-ai-agent/knowledge-search' ),
 						'description' => 'knowledge-search called',
 					),
 				),
@@ -1887,7 +1887,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/seo-analyze-content' ),
+						'tools'       => array( 'sd-ai-agent/seo-analyze-content' ),
 						'description' => 'seo-analyze-content called',
 					),
 				),
@@ -1900,7 +1900,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/seo-audit-url' ),
+						'tools'       => array( 'sd-ai-agent/seo-audit-url' ),
 						'description' => 'seo-audit-url called',
 					),
 				),
@@ -1913,17 +1913,17 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/memory-save' ),
+						'tools'       => array( 'sd-ai-agent/memory-save' ),
 						'description' => 'memory-save called',
 					),
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/memory-list' ),
+						'tools'       => array( 'sd-ai-agent/memory-list' ),
 						'description' => 'memory-list called',
 					),
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/memory-delete' ),
+						'tools'       => array( 'sd-ai-agent/memory-delete' ),
 						'description' => 'memory-delete called',
 					),
 				),
@@ -1936,12 +1936,12 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/skill-list' ),
+						'tools'       => array( 'sd-ai-agent/skill-list' ),
 						'description' => 'skill-list called',
 					),
 					array(
 						'type'        => 'tool_called',
-						'tools'       => array( 'ai-agent/skill-load' ),
+						'tools'       => array( 'sd-ai-agent/skill-load' ),
 						'description' => 'skill-load called',
 					),
 				),

@@ -245,7 +245,7 @@ class ToolResultTruncatorTest extends WP_UnitTestCase {
 			'total_posts'                  => 100,
 		];
 
-		$result = ToolResultTruncator::truncate( $input, 'ai-agent/content-analyze' );
+		$result = ToolResultTruncator::truncate( $input, 'sd-ai-agent/content-analyze' );
 
 		$this->assertIsArray( $result );
 		$this->assertArrayHasKey( 'posts_without_featured_image', $result );
@@ -270,7 +270,7 @@ class ToolResultTruncatorTest extends WP_UnitTestCase {
 		}
 		$input = [ 'block_types' => $block_types ];
 
-		$result = ToolResultTruncator::truncate( $input, 'ai-agent/list-block-types' );
+		$result = ToolResultTruncator::truncate( $input, 'sd-ai-agent/list-block-types' );
 
 		$this->assertIsArray( $result );
 		$this->assertArrayHasKey( 'block_types', $result );

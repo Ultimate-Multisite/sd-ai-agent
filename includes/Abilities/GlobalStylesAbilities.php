@@ -29,7 +29,7 @@ class GlobalStylesAbilities {
 		}
 
 		wp_register_ability(
-			'ai-agent/get-global-styles',
+			'sd-ai-agent/get-global-styles',
 			[
 				'label'               => __( 'Get Global Styles', 'superdav-ai-agent' ),
 				'description'         => __( 'Read the current WordPress global styles (theme.json) including colors, typography, spacing, and layout settings. Returns the merged result of theme defaults and any user customizations.', 'superdav-ai-agent' ),
@@ -71,7 +71,7 @@ class GlobalStylesAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/update-global-styles',
+			'sd-ai-agent/update-global-styles',
 			[
 				'label'               => __( 'Update Global Styles', 'superdav-ai-agent' ),
 				'description'         => __( 'Update WordPress global styles (theme.json customizations). Merges the provided styles into the existing user customizations. Supports color palette, typography, spacing, and layout settings.', 'superdav-ai-agent' ),
@@ -118,7 +118,7 @@ class GlobalStylesAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/get-theme-json',
+			'sd-ai-agent/get-theme-json',
 			[
 				'label'               => __( 'Get Theme JSON', 'superdav-ai-agent' ),
 				'description'         => __( 'Retrieve the active theme\'s theme.json configuration as a structured object. Returns the full theme.json data including version, settings, styles, and custom templates.', 'superdav-ai-agent' ),
@@ -156,7 +156,7 @@ class GlobalStylesAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/reset-global-styles',
+			'sd-ai-agent/reset-global-styles',
 			[
 				'label'               => __( 'Reset Global Styles', 'superdav-ai-agent' ),
 				'description'         => __( 'Reset WordPress global style customizations back to the theme defaults by deleting the wp_global_styles custom post. This removes all user-applied style overrides.', 'superdav-ai-agent' ),

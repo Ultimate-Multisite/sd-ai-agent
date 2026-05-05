@@ -31,7 +31,7 @@ class UserAbilities {
 		}
 
 		wp_register_ability(
-			'ai-agent/list-users',
+			'sd-ai-agent/list-users',
 			[
 				'label'               => __( 'List Users', 'superdav-ai-agent' ),
 				'description'         => __( 'List WordPress users with optional filtering by role, search term, or number. Returns ID, login, email, display name, roles, and registration date.', 'superdav-ai-agent' ),
@@ -76,7 +76,7 @@ class UserAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/create-user',
+			'sd-ai-agent/create-user',
 			[
 				'label'               => __( 'Create User', 'superdav-ai-agent' ),
 				'description'         => __( 'Create a new WordPress user with the specified username, email, role, and optional display name. Returns the new user ID.', 'superdav-ai-agent' ),
@@ -132,7 +132,7 @@ class UserAbilities {
 		);
 
 		wp_register_ability(
-			'ai-agent/update-user-role',
+			'sd-ai-agent/update-user-role',
 			[
 				'label'               => __( 'Update User Role', 'superdav-ai-agent' ),
 				'description'         => __( 'Change the role of an existing WordPress user. Provide either user_id or user_email to identify the user.', 'superdav-ai-agent' ),

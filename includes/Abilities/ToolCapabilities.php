@@ -44,20 +44,20 @@ class ToolCapabilities {
 	 *
 	 * Examples:
 	 *   sd-ai-agent/memory-save  → sd_ai_agent_tool_memory_save
-	 *   ai-agent/memory-save         → sd_ai_agent_tool_memory_save
+	 *  sd-ai-agent/memory-save         → sd_ai_agent_tool_memory_save
 	 *   sd-ai-agent/db-query     → sd_ai_agent_tool_db_query
 	 *   sd-ai-agent/run-php      → sd_ai_agent_tool_run_php
 	 *
-	 * Both "sd-ai-agent/" and the WordPress core "ai-agent/" namespace
+	 * Both "sd-ai-agent/" and the WordPress core "sd-ai-agent/" namespace
 	 * prefixes are stripped so that abilities registered under either prefix
 	 * resolve to the same capability name.
 	 *
-	 * @param string $ability_id The ability ID (e.g. "sd-ai-agent/memory-save" or "ai-agent/create-post").
+	 * @param string $ability_id The ability ID (e.g. "sd-ai-agent/memory-save" or "sd-ai-agent/create-post").
 	 * @return string The derived capability name.
 	 */
 	public static function cap_name( string $ability_id ): string {
-		// Strip either the "sd-ai-agent/" or the WP core "ai-agent/" namespace prefix.
-		$name = str_replace( [ 'sd-ai-agent/', 'ai-agent/' ], '', $ability_id );
+		// Strip either the "sd-ai-agent/" or the WP core "sd-ai-agent/" namespace prefix.
+		$name = str_replace( [ 'sd-ai-agent/', 'sd-ai-agent/' ], '', $ability_id );
 
 		// Replace hyphens and slashes with underscores.
 		$name = str_replace( [ '-', '/' ], '_', $name );
@@ -168,52 +168,52 @@ class ToolCapabilities {
 	 */
 	public static function all_ability_ids(): array {
 		return [
-			// Posts (registered under the WP core "ai-agent/" prefix).
-			'ai-agent/list-posts',
-			'ai-agent/get-post',
-			'ai-agent/create-post',
-			'ai-agent/update-post',
-			'ai-agent/delete-post',
-			// Global styles (registered under the WP core "ai-agent/" prefix).
-			'ai-agent/get-global-styles',
-			'ai-agent/update-global-styles',
-			'ai-agent/get-theme-json',
-			'ai-agent/reset-global-styles',
-			// Memory (registered under the WP core "ai-agent/" prefix).
-			'ai-agent/memory-save',
-			'ai-agent/memory-list',
-			'ai-agent/memory-delete',
-			// Skills (registered under the WP core "ai-agent/" prefix).
-			'ai-agent/skill-load',
-			'ai-agent/skill-list',
-			// Knowledge (registered under the WP core "ai-agent/" prefix).
-			'ai-agent/knowledge-search',
-			// Nav menus (registered under the WP core "ai-agent/" prefix).
-			'ai-agent/list-menus',
-			'ai-agent/get-menu',
-			'ai-agent/create-menu',
-			'ai-agent/delete-menu',
-			'ai-agent/add-menu-item',
+			// Posts (registered under the WP core "sd-ai-agent/" prefix).
+			'sd-ai-agent/list-posts',
+			'sd-ai-agent/get-post',
+			'sd-ai-agent/create-post',
+			'sd-ai-agent/update-post',
+			'sd-ai-agent/delete-post',
+			// Global styles (registered under the WP core "sd-ai-agent/" prefix).
+			'sd-ai-agent/get-global-styles',
+			'sd-ai-agent/update-global-styles',
+			'sd-ai-agent/get-theme-json',
+			'sd-ai-agent/reset-global-styles',
+			// Memory (registered under the WP core "sd-ai-agent/" prefix).
+			'sd-ai-agent/memory-save',
+			'sd-ai-agent/memory-list',
+			'sd-ai-agent/memory-delete',
+			// Skills (registered under the WP core "sd-ai-agent/" prefix).
+			'sd-ai-agent/skill-load',
+			'sd-ai-agent/skill-list',
+			// Knowledge (registered under the WP core "sd-ai-agent/" prefix).
+			'sd-ai-agent/knowledge-search',
+			// Nav menus (registered under the WP core "sd-ai-agent/" prefix).
+			'sd-ai-agent/list-menus',
+			'sd-ai-agent/get-menu',
+			'sd-ai-agent/create-menu',
+			'sd-ai-agent/delete-menu',
+			'sd-ai-agent/add-menu-item',
 			// Images.
 			'sd-ai-agent/stock-image',
 			'sd-ai-agent/generate-image',
-			// SEO (registered under the WP core "ai-agent/" prefix).
-			'ai-agent/seo-audit-url',
-			'ai-agent/seo-analyze-content',
-			// Content (registered under the WP core "ai-agent/" prefix).
-			'ai-agent/content-analyze',
-			'ai-agent/content-performance-report',
-			// Marketing (registered under the WP core "ai-agent/" prefix).
-			'ai-agent/fetch-url',
-			'ai-agent/analyze-headers',
-			// Blocks (registered under the WP core "ai-agent/" prefix).
-			'ai-agent/markdown-to-blocks',
-			'ai-agent/list-block-types',
-			'ai-agent/get-block-type',
-			'ai-agent/list-block-patterns',
-			'ai-agent/list-block-templates',
-			'ai-agent/create-block-content',
-			'ai-agent/parse-block-content',
+			// SEO (registered under the WP core "sd-ai-agent/" prefix).
+			'sd-ai-agent/seo-audit-url',
+			'sd-ai-agent/seo-analyze-content',
+			// Content (registered under the WP core "sd-ai-agent/" prefix).
+			'sd-ai-agent/content-analyze',
+			'sd-ai-agent/content-performance-report',
+			// Marketing (registered under the WP core "sd-ai-agent/" prefix).
+			'sd-ai-agent/fetch-url',
+			'sd-ai-agent/analyze-headers',
+			// Blocks (registered under the WP core "sd-ai-agent/" prefix).
+			'sd-ai-agent/markdown-to-blocks',
+			'sd-ai-agent/list-block-types',
+			'sd-ai-agent/get-block-type',
+			'sd-ai-agent/list-block-patterns',
+			'sd-ai-agent/list-block-templates',
+			'sd-ai-agent/create-block-content',
+			'sd-ai-agent/parse-block-content',
 			// Files.
 			'sd-ai-agent/file-read',
 			'sd-ai-agent/file-write',

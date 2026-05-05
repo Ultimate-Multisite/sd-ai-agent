@@ -463,12 +463,12 @@ class Agent {
 		return [
 			'sd-ai-agent/ability-search',
 			'sd-ai-agent/ability-call',
-			'ai-agent/memory-save',
-			'ai-agent/memory-list',
-			'ai-agent/skill-load',
-			'ai-agent/knowledge-search',
+			'sd-ai-agent/memory-save',
+			'sd-ai-agent/memory-list',
+			'sd-ai-agent/skill-load',
+			'sd-ai-agent/knowledge-search',
 			'wp-cli/execute',
-			'ai-agent/create-post',
+			'sd-ai-agent/create-post',
 		];
 	}
 
@@ -506,7 +506,7 @@ class Agent {
 			'system_prompt' => "You are an AI assistant for the WordPress site \"{$site_title}\" ({$site_url}).\n\n"
 				. "## Your first task: discover before you ask\n\n"
 				. "Before asking the user *anything*, silently explore the site using your tools:\n"
-				. "1. Read recent posts and pages (use `ai-agent/list-posts`).\n"
+				. "1. Read recent posts and pages (use `sd-ai-agent/list-posts`).\n"
 				. "2. Check active plugins (`sd-ai-agent/get-plugins`) and site title/tagline (`sd-ai-agent/list-options`).\n"
 				. "3. Note the content style, tone, and apparent audience from what you read.\n"
 				. "4. Check if WooCommerce is active and, if so, note the store size.\n\n"
@@ -521,11 +521,11 @@ class Agent {
 				. "- Ask ONE open question about what they're building and who it's for.\n\n"
 				. "## Conversation rules\n\n"
 				. "- One question at a time - never a list of questions.\n"
-				. "- Save anything the user tells you about themselves or the site using `ai-agent/memory-save`.\n"
+				. "- Save anything the user tells you about themselves or the site using `sd-ai-agent/memory-save`.\n"
 				. "- Be warm and natural. This is a first conversation, not an intake form.\n"
 				. "- After 3-4 exchanges, offer to show what you can do or ask what they'd like to try first.\n\n"
 				. "## Memory\n\n"
-				. "Use `ai-agent/memory-save` throughout to record:\n"
+				. "Use `sd-ai-agent/memory-save` throughout to record:\n"
 				. "- Site type and purpose (inferred + confirmed).\n"
 				. "- Target audience.\n"
 				. "- The user's main goals for the assistant.\n"
@@ -543,7 +543,7 @@ class Agent {
 						$base_tools,
 						[
 							'sd-ai-agent/list-options',
-							'ai-agent/list-posts',
+							'sd-ai-agent/list-posts',
 							'sd-ai-agent/get-plugins',
 						]
 					)
@@ -601,7 +601,7 @@ class Agent {
 				. "4. **Call all needed tools in one response.** When a task requires multiple tools (e.g. create a post AND find an image), call them all at once.\n"
 				. "5. **After receiving tool results, ALWAYS provide a text response summarizing the results for the user.** Never return an empty response after tool calls.\n\n"
 				. "## Content Creation (IMPORTANT)\n"
-				. "To create any page or blog post, use `ai-agent/create-post`.\n"
+				. "To create any page or blog post, use `sd-ai-agent/create-post`.\n"
 				. "- For pages: set `post_type` to `page`.\n"
 				. "- For blog posts: set `post_type` to `post`.\n"
 				. "- **Blog posts and articles**: write content in markdown (`## headings`, `**bold**`, `- lists`). Markdown is auto-converted to Gutenberg blocks.\n"
@@ -667,12 +667,12 @@ class Agent {
 			'system_prompt' => "You are a professional content creator for a WordPress website. You specialize in writing high-quality blog posts, pages, and marketing copy.\n\n"
 				. "## Core Principles\n"
 				. "1. **Write real, substantial content.** Every piece should be publication-ready with 3+ paragraphs minimum. Never use placeholder text.\n"
-				. "2. **Match the site's voice.** Check existing content first (use `ai-agent/list-posts`) to match the established tone and style.\n"
+				. "2. **Match the site's voice.** Check existing content first (use `sd-ai-agent/list-posts`) to match the established tone and style.\n"
 				. "3. **SEO-aware writing.** Include natural keyword usage, write compelling meta descriptions (excerpts), and use proper heading hierarchy.\n"
 				. "4. **Rich media.** Add featured images using `sd-ai-agent/stock-image` or `sd-ai-agent/generate-image`. Suggest relevant images throughout the content.\n"
 				. "5. **Proper categorization.** Always include relevant categories and tags for blog posts.\n\n"
 				. "## Content Creation\n"
-				. "- Use `ai-agent/create-post` for all content.\n"
+				. "- Use `sd-ai-agent/create-post` for all content.\n"
 				. "- Blog posts: write in markdown format. Include headings, lists, bold text, and other formatting.\n"
 				. "- Pages: use Gutenberg block markup for visual layouts with columns, groups, covers, and buttons.\n"
 				. "- Always set an excerpt for SEO meta descriptions.\n"
@@ -695,8 +695,8 @@ class Agent {
 					array_merge(
 						$base_tools,
 						[
-							'ai-agent/list-posts',
-							'ai-agent/update-post',
+							'sd-ai-agent/list-posts',
+							'sd-ai-agent/update-post',
 							'sd-ai-agent/stock-image',
 						]
 					)
@@ -752,7 +752,7 @@ class Agent {
 				. "- **Plugin check:** Verify SEO plugin installation (Yoast, Rank Math, etc.) and configuration.\n"
 				. "- **Internal linking:** Analyze link structure and suggest improvements.\n\n"
 				. "## Optimization Actions\n"
-				. "- Update post excerpts to serve as meta descriptions using `ai-agent/update-post`.\n"
+				. "- Update post excerpts to serve as meta descriptions using `sd-ai-agent/update-post`.\n"
 				. "- Improve title tags for better click-through rates.\n"
 				. "- Add proper heading hierarchy (H1, H2, H3) to content.\n"
 				. "- Suggest and implement schema markup where supported.\n"
@@ -770,8 +770,8 @@ class Agent {
 					array_merge(
 						$base_tools,
 						[
-							'ai-agent/list-posts',
-							'ai-agent/update-post',
+							'sd-ai-agent/list-posts',
+							'sd-ai-agent/update-post',
 							'sd-ai-agent/list-options',
 							'sd-ai-agent/get-plugins',
 						]
