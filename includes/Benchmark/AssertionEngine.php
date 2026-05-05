@@ -563,6 +563,16 @@ class AssertionEngine {
 		string $expected_output_pattern,
 		int $expected_exit_code
 	): array {
+		// Auto-inject --user=<admin> when the caller didn't pass one. WC CLI
+		// commands (and any others gated on capabilities) fail with 401
+		// otherwise because the external `wp` invocation has no logged-in user.
+		if ( false === strpos( $command, '--user=' ) ) {
+			$current = wp_get_current_user();
+			if ( $current && $current->exists() ) {
+				$command = '--user=' . (int) $current->ID . ' ' . $command;
+			}
+		}
+
 		$safe_command = escapeshellcmd( 'wp --allow-root ' . $command ) . ' 2>&1';
 		$output       = array();
 		$exit_code    = 0;

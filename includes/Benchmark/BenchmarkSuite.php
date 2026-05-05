@@ -283,7 +283,7 @@ class BenchmarkSuite {
 					),
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'plugin list --field=name,status --format=csv --url=wp-multisite-waas.test',
+						'command'                 => 'plugin list --fields=name,status --format=csv --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'contact-form-7,active',
 						'expected_exit_code'      => 0,
 						'description'             => 'contact-form-7 plugin is active',
