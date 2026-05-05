@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace SdAiAgent\Tests\REST;
 
 use SdAiAgent\Core\Database;
+use SdAiAgent\Models\ActiveJobRepository;
 use SdAiAgent\Models\Memory;
 use SdAiAgent\Models\Skill;
 use SdAiAgent\REST\RestController;
@@ -888,6 +889,43 @@ class RestControllerTest extends WP_UnitTestCase {
 		$data = $status_response->get_data();
 		$this->assertArrayHasKey( 'status', $data );
 		$this->assertSame( 'processing', $data['status'] );
+	}
+
+	/**
+	 * Test invalid direct history processing persists the DB job status as error.
+	 */
+	public function test_process_invalid_history_persists_error_status(): void {
+		wp_set_current_user( $this->admin_id );
+
+		$run_response = $this->dispatch( 'POST', '/sd-ai-agent/v1/run', [
+			'message' => 'Invalid history persistence test',
+		] );
+
+		$this->assertStatus( 202, $run_response );
+		$job_id = $run_response->get_data()['job_id'];
+		$job    = get_transient( RestController::JOB_PREFIX . $job_id );
+
+		$this->assertIsArray( $job );
+		$this->assertArrayHasKey( 'token', $job );
+
+		$job['params']['history'] = [
+			[
+				'role'  => 'invalid-role',
+				'parts' => [],
+			],
+		];
+		set_transient( RestController::JOB_PREFIX . $job_id, $job, RestController::JOB_TTL );
+
+		$process_response = $this->dispatch( 'POST', '/sd-ai-agent/v1/process', [
+			'job_id' => $job_id,
+			'token'  => $job['token'],
+		] );
+
+		$this->assertStatus( 200, $process_response );
+		$db_row = ActiveJobRepository::get_by_job_id( $job_id );
+
+		$this->assertNotNull( $db_row );
+		$this->assertSame( 'error', $db_row->status );
 	}
 
 	/**

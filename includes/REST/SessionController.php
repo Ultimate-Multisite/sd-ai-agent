@@ -1414,6 +1414,7 @@ final class SessionController {
 				$job['error']  = __( 'Invalid conversation history format.', 'superdav-ai-agent' );
 				unset( $job['token'] );
 				set_transient( RestController::JOB_PREFIX . $job_id, $job, RestController::JOB_TTL );
+				ActiveJobRepository::update_status( $job_id, 'error' );
 				return new WP_REST_Response( array( 'ok' => false ), 200 );
 			}
 		}
