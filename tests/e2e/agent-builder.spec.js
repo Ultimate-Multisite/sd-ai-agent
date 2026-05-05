@@ -314,7 +314,7 @@ async function mockAgentsApi( page, opts = {} ) {
  * @return {import('@playwright/test').Locator}
  */
 function getAgentBuilder( page ) {
-	return page.locator( '.sd-ai-agent-builder' );
+	return page.locator( '.sdaa-builder' );
 }
 
 /**
@@ -334,7 +334,7 @@ function getAddAgentButton( page ) {
  * @return {import('@playwright/test').Locator}
  */
 function getAgentForm( page ) {
-	return page.locator( '.sd-ai-agent-form' );
+	return page.locator( '.sdaa-form' );
 }
 
 /**
@@ -374,7 +374,7 @@ function getCancelButton( page ) {
  * @return {import('@playwright/test').Locator}
  */
 function getAgentCards( page ) {
-	return page.locator( '.sd-ai-agent-card' );
+	return page.locator( '.sdaa-card' );
 }
 
 /**
@@ -401,7 +401,7 @@ function getDeleteButton( card ) {
  * Get the agent selector dropdown in the admin page chat panel.
  *
  * Scoped to the non-compact (admin page) chat panel to avoid matching the
- * floating widget's hidden agent selector (.sd-ai-agent-selector.is-compact).
+ * floating widget's hidden agent selector (.sdaa-selector.is-compact).
  * The floating widget renders AgentSelector with compact=true, adding is-compact.
  *
  * @param {import('@playwright/test').Page} page
@@ -410,7 +410,7 @@ function getDeleteButton( card ) {
 function getAgentSelector( page ) {
 	return page
 		.locator(
-			'.sd-ai-agent-chat-panel:not(.is-compact) .sd-ai-agent-selector'
+			'.sdaa-chat-panel:not(.is-compact) .sdaa-selector'
 		)
 		.first();
 }
@@ -419,7 +419,7 @@ function getAgentSelector( page ) {
  * Navigate to the Agents tab on the settings page and wait for the
  * AgentBuilder component to finish its initial fetchAgents() load.
  *
- * The AgentBuilder renders a spinner (.sd-ai-agent-loading) while
+ * The AgentBuilder renders a spinner (.sdaa-loading) while
  * agentsLoaded is false. Waiting for the spinner to disappear ensures
  * fetchAgents() has completed and the agent list (or empty state) is
  * rendered before the test makes assertions.
@@ -429,7 +429,7 @@ function getAgentSelector( page ) {
 async function goToAgentsTab( page ) {
 	// UnifiedAdminMenu uses hash-based routing. The settings route is at
 	// admin.php?page=sd-ai-agent#/settings. The old URL
-	// (tools.php?page=sd-ai-agent-settings) triggers a wp_safe_redirect()
+	// (tools.php?page=sdaa-settings) triggers a wp_safe_redirect()
 	// which causes Playwright to hang — use the canonical hash URL directly.
 	await page.goto( '/wp-admin/admin.php?page=sd-ai-agent#/settings' );
 	await page.waitForLoadState( 'domcontentloaded' );
@@ -437,20 +437,20 @@ async function goToAgentsTab( page ) {
 	// Use 30 s to match the Playwright test timeout — the unified admin SPA
 	// can be slow to render on CI runners under load with 3 parallel workers.
 	await page
-		.locator( '.sd-ai-agent-route-settings' )
+		.locator( '.sdaa-route-settings' )
 		.waitFor( { state: 'visible', timeout: 30_000 } );
 	// Click the Agents tab (present in the unified settings route).
 	const tab = page.getByRole( 'tab', { name: /agents/i } );
 	await tab.click();
 	// Wait for the AgentBuilder container to be visible.
 	await page
-		.locator( '.sd-ai-agent-builder' )
+		.locator( '.sdaa-builder' )
 		.waitFor( { state: 'visible', timeout: 15000 } );
 	// Wait for the loading spinner to disappear — signals agentsLoaded=true.
 	// Use a short timeout: if the spinner never appeared (agentsLoaded was
 	// already true), this resolves immediately.
 	await page
-		.locator( '.sd-ai-agent-loading' )
+		.locator( '.sdaa-loading' )
 		.waitFor( { state: 'hidden', timeout: 15000 } )
 		.catch( () => {
 			// Spinner may never appear if agentsLoaded was already true.
@@ -598,7 +598,7 @@ test.describe( 'Agent Builder - Agent List', () => {
 		// Use a generous timeout for the inner element — the card body renders
 		// asynchronously after the card itself becomes visible.
 		await expect(
-			card.locator( '.sd-ai-agent-prompt-preview' )
+			card.locator( '.sdaa-prompt-preview' )
 		).toContainText( AGENT_FIXTURE.system_prompt.slice( 0, 40 ), {
 			timeout: 10000,
 		} );
@@ -770,8 +770,8 @@ test.describe( 'Agent Builder - Delete Agent', () => {
 } );
 
 // FIXME: The admin chat UI was redesigned. The old AgentSelector component
-// (.sd-ai-agent-selector with a <select> element) was replaced by the new
-// AgentPicker chip/popover (.gaa-cr-agent-chip) which only renders when 2+
+// (.sdaa-selector with a <select> element) was replaced by the new
+// AgentPicker chip/popover (.sdaa-cr-agent-chip) which only renders when 2+
 // agents are enabled. These tests need to be rewritten to use the new chip
 // interaction model and to mock 2+ agents. Re-enable once updated.
 test.describe.fixme( 'Agent Builder - Agent Selector in Chat', () => {
@@ -854,8 +854,8 @@ test.describe.fixme( 'Agent Builder - Agent Selector in Chat', () => {
 } );
 
 // FIXME: Step 2 of the lifecycle (verify agent in chat selector) uses
-// getAgentSelector which relies on .sd-ai-agent-selector (<select>). The
-// admin chat UI now uses AgentPicker (gaa-cr-agent-chip), a chip/popover that
+// getAgentSelector which relies on .sdaa-selector (<select>). The
+// admin chat UI now uses AgentPicker (sdaa-cr-agent-chip), a chip/popover that
 // only renders when 2+ agents exist. Re-enable once step 2 is rewritten for
 // the new AgentPicker interaction model.
 test.describe.fixme( 'Agent Builder - Full Lifecycle', () => {

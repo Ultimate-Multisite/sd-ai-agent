@@ -76,8 +76,8 @@ class CustomTaxonomyAbilities {
 		wp_register_ability(
 			'sd-ai-agent/register-taxonomy',
 			[
-				'label'               => __( 'Register Custom Taxonomy', 'sd-ai-agent' ),
-				'description'         => __( 'Register a new custom taxonomy and persist it in the database so it survives page reloads. Supports labels, public visibility, REST API support, hierarchical settings, and association with one or more post types.', 'sd-ai-agent' ),
+				'label'               => __( 'Register Custom Taxonomy', 'superdav-ai-agent' ),
+				'description'         => __( 'Register a new custom taxonomy and persist it in the database so it survives page reloads. Supports labels, public visibility, REST API support, hierarchical settings, and association with one or more post types.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -148,8 +148,8 @@ class CustomTaxonomyAbilities {
 		wp_register_ability(
 			'sd-ai-agent/list-taxonomies',
 			[
-				'label'               => __( 'List Custom Taxonomies', 'sd-ai-agent' ),
-				'description'         => __( 'List all registered taxonomies, including those persisted by the AI agent. Returns slug, labels, public status, associated post types, and whether the taxonomy was registered by the AI agent.', 'sd-ai-agent' ),
+				'label'               => __( 'List Custom Taxonomies', 'superdav-ai-agent' ),
+				'description'         => __( 'List all registered taxonomies, including those persisted by the AI agent. Returns slug, labels, public status, associated post types, and whether the taxonomy was registered by the AI agent.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -184,8 +184,8 @@ class CustomTaxonomyAbilities {
 		wp_register_ability(
 			'sd-ai-agent/delete-taxonomy',
 			[
-				'label'               => __( 'Delete Custom Taxonomy', 'sd-ai-agent' ),
-				'description'         => __( 'Remove a custom taxonomy that was registered by the AI agent. This unregisters the taxonomy and removes it from the database so it will not be re-registered on future page loads. Only AI-registered taxonomies can be deleted via this ability.', 'sd-ai-agent' ),
+				'label'               => __( 'Delete Custom Taxonomy', 'superdav-ai-agent' ),
+				'description'         => __( 'Remove a custom taxonomy that was registered by the AI agent. This unregisters the taxonomy and removes it from the database so it will not be re-registered on future page loads. Only AI-registered taxonomies can be deleted via this ability.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -244,18 +244,18 @@ class CustomTaxonomyAbilities {
 			: [];
 
 		if ( empty( $taxonomy ) ) {
-			return new WP_Error( 'sd_ai_agent_empty_taxonomy', __( 'taxonomy is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'sd_ai_agent_empty_taxonomy', __( 'taxonomy is required.', 'superdav-ai-agent' ) );
 		}
 
 		if ( strlen( $taxonomy ) > 32 ) {
 			return new WP_Error(
 				'sd_ai_agent_taxonomy_too_long',
-				__( 'taxonomy slug must be 32 characters or fewer.', 'sd-ai-agent' )
+				__( 'taxonomy slug must be 32 characters or fewer.', 'superdav-ai-agent' )
 			);
 		}
 
 		if ( empty( $singular ) || empty( $plural ) ) {
-			return new WP_Error( 'sd_ai_agent_empty_labels', __( 'singular and plural labels are required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'sd_ai_agent_empty_labels', __( 'singular and plural labels are required.', 'superdav-ai-agent' ) );
 		}
 
 		// Prevent overwriting built-in taxonomies.
@@ -264,7 +264,7 @@ class CustomTaxonomyAbilities {
 			return new WP_Error(
 				'sd_ai_agent_builtin_taxonomy',
 				/* translators: %s: taxonomy slug */
-				sprintf( __( '"%s" is a built-in WordPress taxonomy and cannot be overwritten.', 'sd-ai-agent' ), $taxonomy )
+				sprintf( __( '"%s" is a built-in WordPress taxonomy and cannot be overwritten.', 'superdav-ai-agent' ), $taxonomy )
 			);
 		}
 
@@ -272,28 +272,28 @@ class CustomTaxonomyAbilities {
 			'name'                  => $plural,
 			'singular_name'         => $singular,
 			/* translators: %s: singular label */
-			'search_items'          => sprintf( __( 'Search %s', 'sd-ai-agent' ), $plural ),
+			'search_items'          => sprintf( __( 'Search %s', 'superdav-ai-agent' ), $plural ),
 			/* translators: %s: plural label */
-			'all_items'             => sprintf( __( 'All %s', 'sd-ai-agent' ), $plural ),
+			'all_items'             => sprintf( __( 'All %s', 'superdav-ai-agent' ), $plural ),
 			/* translators: %s: singular label */
-			'edit_item'             => sprintf( __( 'Edit %s', 'sd-ai-agent' ), $singular ),
+			'edit_item'             => sprintf( __( 'Edit %s', 'superdav-ai-agent' ), $singular ),
 			/* translators: %s: singular label */
-			'view_item'             => sprintf( __( 'View %s', 'sd-ai-agent' ), $singular ),
+			'view_item'             => sprintf( __( 'View %s', 'superdav-ai-agent' ), $singular ),
 			/* translators: %s: singular label */
-			'update_item'           => sprintf( __( 'Update %s', 'sd-ai-agent' ), $singular ),
+			'update_item'           => sprintf( __( 'Update %s', 'superdav-ai-agent' ), $singular ),
 			/* translators: %s: singular label */
-			'add_new_item'          => sprintf( __( 'Add New %s', 'sd-ai-agent' ), $singular ),
+			'add_new_item'          => sprintf( __( 'Add New %s', 'superdav-ai-agent' ), $singular ),
 			/* translators: %s: singular label */
-			'new_item_name'         => sprintf( __( 'New %s Name', 'sd-ai-agent' ), $singular ),
+			'new_item_name'         => sprintf( __( 'New %s Name', 'superdav-ai-agent' ), $singular ),
 			'menu_name'             => $plural,
 			/* translators: %s: plural label */
-			'not_found'             => sprintf( __( 'No %s found.', 'sd-ai-agent' ), strtolower( $plural ) ),
+			'not_found'             => sprintf( __( 'No %s found.', 'superdav-ai-agent' ), strtolower( $plural ) ),
 			/* translators: %s: plural label */
-			'no_terms'              => sprintf( __( 'No %s', 'sd-ai-agent' ), strtolower( $plural ) ),
+			'no_terms'              => sprintf( __( 'No %s', 'superdav-ai-agent' ), strtolower( $plural ) ),
 			/* translators: %s: plural label */
-			'items_list'            => sprintf( __( '%s list', 'sd-ai-agent' ), $plural ),
+			'items_list'            => sprintf( __( '%s list', 'superdav-ai-agent' ), $plural ),
 			/* translators: %s: plural label */
-			'items_list_navigation' => sprintf( __( '%s list navigation', 'sd-ai-agent' ), $plural ),
+			'items_list_navigation' => sprintf( __( '%s list navigation', 'superdav-ai-agent' ), $plural ),
 		];
 
 		$args = [
@@ -383,7 +383,7 @@ class CustomTaxonomyAbilities {
 		$taxonomy = sanitize_key( $input['taxonomy'] ?? '' );
 
 		if ( empty( $taxonomy ) ) {
-			return new WP_Error( 'sd_ai_agent_empty_taxonomy', __( 'taxonomy is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'sd_ai_agent_empty_taxonomy', __( 'taxonomy is required.', 'superdav-ai-agent' ) );
 		}
 
 		$stored = get_option( self::OPTION_KEY, [] );
@@ -392,7 +392,7 @@ class CustomTaxonomyAbilities {
 			return new WP_Error(
 				'sd_ai_agent_taxonomy_not_found',
 				/* translators: %s: taxonomy slug */
-				sprintf( __( 'Taxonomy "%s" was not registered by the AI agent and cannot be deleted via this ability.', 'sd-ai-agent' ), $taxonomy )
+				sprintf( __( 'Taxonomy "%s" was not registered by the AI agent and cannot be deleted via this ability.', 'superdav-ai-agent' ), $taxonomy )
 			);
 		}
 

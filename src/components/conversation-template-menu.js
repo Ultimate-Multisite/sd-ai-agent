@@ -32,20 +32,18 @@ const CATEGORY_LABELS = {
  */
 function TemplateCard( { template, onSelect } ) {
 	const descId = template.id
-		? `sd-ai-agent-template-desc-${ template.id }`
+		? `sdaa-template-desc-${ template.id }`
 		: undefined;
 	return (
 		<button
 			type="button"
-			className="sd-ai-agent-template-card"
+			className="sdaa-template-card"
 			onClick={ () => onSelect( template ) }
 			aria-describedby={ template.description ? descId : undefined }
 		>
-			<span className="sd-ai-agent-template-card__name">
-				{ template.name }
-			</span>
+			<span className="sdaa-template-card__name">{ template.name }</span>
 			{ template.description && (
-				<span id={ descId } className="sd-ai-agent-template-card__desc">
+				<span id={ descId } className="sdaa-template-card__desc">
 					{ template.description }
 				</span>
 			) }
@@ -108,35 +106,32 @@ export default function ConversationTemplateMenu( { onSelect, onClose } ) {
 
 	return (
 		<div
-			className="sd-ai-agent-template-menu"
+			className="sdaa-template-menu"
 			role="dialog"
 			aria-label={ __( 'Conversation templates', 'sd-ai-agent' ) }
 		>
-			<div className="sd-ai-agent-template-menu__header">
-				<span className="sd-ai-agent-template-menu__title">
+			<div className="sdaa-template-menu__header">
+				<span className="sdaa-template-menu__title">
 					{ __( 'Templates', 'sd-ai-agent' ) }
 				</span>
 				<Button
 					icon={ <Icon icon={ close } /> }
 					label={ __( 'Close templates', 'sd-ai-agent' ) }
 					onClick={ onClose }
-					className="sd-ai-agent-template-menu__close"
+					className="sdaa-template-menu__close"
 					isSmall
 				/>
 			</div>
 
 			{ categories.length > 2 && (
-				<div
-					className="sd-ai-agent-template-menu__categories"
-					role="tablist"
-				>
+				<div className="sdaa-template-menu__categories" role="tablist">
 					{ categories.map( ( cat ) => (
 						<button
 							key={ cat.value }
 							type="button"
 							role="tab"
 							aria-selected={ activeCategory === cat.value }
-							className={ `sd-ai-agent-template-menu__cat-tab ${
+							className={ `sdaa-template-menu__cat-tab ${
 								activeCategory === cat.value ? 'is-active' : ''
 							}` }
 							onClick={ () => setActiveCategory( cat.value ) }
@@ -147,14 +142,14 @@ export default function ConversationTemplateMenu( { onSelect, onClose } ) {
 				</div>
 			) }
 
-			<div className="sd-ai-agent-template-menu__grid">
+			<div className="sdaa-template-menu__grid">
 				{ ! loaded && (
-					<div className="sd-ai-agent-template-menu__loading">
+					<div className="sdaa-template-menu__loading">
 						<Spinner />
 					</div>
 				) }
 				{ loaded && filtered.length === 0 && (
-					<p className="sd-ai-agent-template-menu__empty">
+					<p className="sdaa-template-menu__empty">
 						{ __( 'No templates found.', 'sd-ai-agent' ) }
 					</p>
 				) }

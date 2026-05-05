@@ -282,7 +282,7 @@ final class AutomationController {
 		$id   = Automations::create( $data );
 
 		if ( false === $id ) {
-			return new WP_Error( 'create_failed', __( 'Failed to create automation.', 'sd-ai-agent' ), array( 'status' => 400 ) );
+			return new WP_Error( 'create_failed', __( 'Failed to create automation.', 'superdav-ai-agent' ), array( 'status' => 400 ) );
 		}
 
 		return new WP_REST_Response( Automations::get( $id ), 201 );
@@ -296,7 +296,7 @@ final class AutomationController {
 		$data = $request->get_json_params();
 
 		if ( ! Automations::update( $id, $data ) ) {
-			return new WP_Error( 'update_failed', __( 'Failed to update automation.', 'sd-ai-agent' ), array( 'status' => 400 ) );
+			return new WP_Error( 'update_failed', __( 'Failed to update automation.', 'superdav-ai-agent' ), array( 'status' => 400 ) );
 		}
 
 		return new WP_REST_Response( Automations::get( $id ), 200 );
@@ -309,7 +309,7 @@ final class AutomationController {
 		$id = self::get_int_param( $request, 'id' );
 
 		if ( ! Automations::delete( $id ) ) {
-			return new WP_Error( 'delete_failed', __( 'Failed to delete automation.', 'sd-ai-agent' ), array( 'status' => 400 ) );
+			return new WP_Error( 'delete_failed', __( 'Failed to delete automation.', 'superdav-ai-agent' ), array( 'status' => 400 ) );
 		}
 
 		return new WP_REST_Response( array( 'deleted' => true ), 200 );
@@ -323,7 +323,7 @@ final class AutomationController {
 		$result = AutomationRunner::run( $id );
 
 		if ( null === $result ) {
-			return new WP_Error( 'not_found', __( 'Automation not found.', 'sd-ai-agent' ), array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Automation not found.', 'superdav-ai-agent' ), array( 'status' => 404 ) );
 		}
 
 		return new WP_REST_Response( $result, 200 );
@@ -361,7 +361,7 @@ final class AutomationController {
 		$id   = EventAutomations::create( $data );
 
 		if ( false === $id ) {
-			return new WP_Error( 'create_failed', __( 'Failed to create event automation.', 'sd-ai-agent' ), array( 'status' => 400 ) );
+			return new WP_Error( 'create_failed', __( 'Failed to create event automation.', 'superdav-ai-agent' ), array( 'status' => 400 ) );
 		}
 
 		return new WP_REST_Response( EventAutomations::get( $id ), 201 );
@@ -375,7 +375,7 @@ final class AutomationController {
 		$data = $request->get_json_params();
 
 		if ( ! EventAutomations::update( $id, $data ) ) {
-			return new WP_Error( 'update_failed', __( 'Failed to update event automation.', 'sd-ai-agent' ), array( 'status' => 400 ) );
+			return new WP_Error( 'update_failed', __( 'Failed to update event automation.', 'superdav-ai-agent' ), array( 'status' => 400 ) );
 		}
 
 		return new WP_REST_Response( EventAutomations::get( $id ), 200 );
@@ -388,7 +388,7 @@ final class AutomationController {
 		$id = self::get_int_param( $request, 'id' );
 
 		if ( ! EventAutomations::delete( $id ) ) {
-			return new WP_Error( 'delete_failed', __( 'Failed to delete event automation.', 'sd-ai-agent' ), array( 'status' => 400 ) );
+			return new WP_Error( 'delete_failed', __( 'Failed to delete event automation.', 'superdav-ai-agent' ), array( 'status' => 400 ) );
 		}
 
 		return new WP_REST_Response( array( 'deleted' => true ), 200 );

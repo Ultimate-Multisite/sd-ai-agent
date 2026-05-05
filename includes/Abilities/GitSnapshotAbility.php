@@ -25,11 +25,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 class GitSnapshotAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'Snapshot File', 'sd-ai-agent' );
+		return __( 'Snapshot File', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Explicitly snapshot a file before editing. Note: FileAbilities automatically snapshots files on write/edit — use this for manual control.', 'sd-ai-agent' );
+		return __( 'Explicitly snapshot a file before editing. Note: FileAbilities automatically snapshots files on write/edit — use this for manual control.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -60,7 +60,7 @@ class GitSnapshotAbility extends AbstractAbility {
 		$path = $input['path'] ?? null;
 
 		if ( ! is_string( $path ) || '' === $path ) {
-			return new WP_Error( 'sd_ai_agent_invalid_path', __( 'Path must be a non-empty string.', 'sd-ai-agent' ) );
+			return new WP_Error( 'sd_ai_agent_invalid_path', __( 'Path must be a non-empty string.', 'superdav-ai-agent' ) );
 		}
 
 		$result = GitTrackerManager::snapshot_before_modify( $path );
@@ -73,7 +73,7 @@ class GitSnapshotAbility extends AbstractAbility {
 			'path'    => $path,
 			'message' => sprintf(
 				/* translators: %s: file path */
-				__( 'File snapshotted successfully: %s', 'sd-ai-agent' ),
+				__( 'File snapshotted successfully: %s', 'superdav-ai-agent' ),
 				$path
 			),
 		];

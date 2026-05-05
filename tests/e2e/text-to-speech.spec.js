@@ -325,13 +325,13 @@ test.describe( 'TTS Toggle Button', () => {
 	} ) => {
 		// The button is only rendered when isTTSSupported is true.
 		// Our mock defines window.speechSynthesis, so the button should appear.
-		// The admin page now uses ChatRedesign (.gaa-cr); the TTS button is in
-		// ConvoHeader with class sd-ai-agent-tts-btn. Scoping to .gaa-cr
+		// The admin page now uses ChatRedesign (.sdaa-cr); the TTS button is in
+		// ConvoHeader with class sdaa-tts-btn. Scoping to .sdaa-cr
 		// avoids matching the floating widget's button.
 		// Use 15 s timeout — the chat panel can be slow to render on CI runners
 		// under load, especially on WP trunk where the SPA mount is heavier.
 		const ttsBtn = page
-			.locator( '.gaa-cr .sd-ai-agent-tts-btn' )
+			.locator( '.sdaa-cr .sdaa-tts-btn' )
 			.first();
 		await expect( ttsBtn ).toBeVisible( { timeout: 15_000 } );
 	} );
@@ -339,9 +339,9 @@ test.describe( 'TTS Toggle Button', () => {
 	test( 'clicking TTS toggle button enables TTS and adds is-active class', async ( {
 		page,
 	} ) => {
-		// Scope to the ChatRedesign root (.gaa-cr) — admin page chat panel.
+		// Scope to the ChatRedesign root (.sdaa-cr) — admin page chat panel.
 		const ttsBtn = page
-			.locator( '.gaa-cr .sd-ai-agent-tts-btn' )
+			.locator( '.sdaa-cr .sdaa-tts-btn' )
 			.first();
 		await expect( ttsBtn ).toBeVisible( { timeout: 15_000 } );
 
@@ -362,9 +362,9 @@ test.describe( 'TTS Toggle Button', () => {
 	test( 'clicking TTS toggle button a second time disables TTS', async ( {
 		page,
 	} ) => {
-		// Scope to the ChatRedesign root (.gaa-cr) — admin page chat panel.
+		// Scope to the ChatRedesign root (.sdaa-cr) — admin page chat panel.
 		const ttsBtn = page
-			.locator( '.gaa-cr .sd-ai-agent-tts-btn' )
+			.locator( '.sdaa-cr .sdaa-tts-btn' )
 			.first();
 		await expect( ttsBtn ).toBeVisible( { timeout: 15_000 } );
 
@@ -397,7 +397,7 @@ test.describe( 'TTS Settings Tab', () => {
 		await goToSettingsPage( page, 'general' );
 		// Wait for settings to finish loading so the TTS section is rendered.
 		await page
-			.locator( '.sd-ai-agent-settings-loading' )
+			.locator( '.sdaa-settings-loading' )
 			.waitFor( { state: 'hidden', timeout: 15_000 } );
 	} );
 
@@ -465,9 +465,9 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 		page,
 	} ) => {
 		// Enable TTS via the header toggle. The admin page uses ChatRedesign
-		// (.gaa-cr); scope to that root to avoid matching the floating widget.
+		// (.sdaa-cr); scope to that root to avoid matching the floating widget.
 		const ttsBtn = page
-			.locator( '.gaa-cr .sd-ai-agent-tts-btn' )
+			.locator( '.sdaa-cr .sdaa-tts-btn' )
 			.first();
 		await expect( ttsBtn ).toBeVisible( { timeout: 15_000 } );
 
@@ -491,13 +491,13 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 		// waiting for `.first()` would resolve immediately and TTS polling
 		// would start before the new response is processed — causing a race
 		// where speak() is called after the 10 s window expires.
-		// ChatRedesign renders model messages as .gaa-cr-msg-assistant rows.
-		const assistantBubbleLocator = page.locator( '.gaa-cr-msg-assistant' );
+		// ChatRedesign renders model messages as .sdaa-cr-msg-assistant rows.
+		const assistantBubbleLocator = page.locator( '.sdaa-cr-msg-assistant' );
 		const initialBubbleCount = await assistantBubbleLocator.count();
 
-		// Send a message. Scope to the ChatRedesign root (.gaa-cr).
+		// Send a message. Scope to the ChatRedesign root (.sdaa-cr).
 		const input = page
-			.locator( '.gaa-cr .gaa-cr-input-textarea' )
+			.locator( '.sdaa-cr .sdaa-cr-input-textarea' )
 			.first();
 		await input.fill( 'Hello' );
 		await input.press( 'Enter' );
@@ -508,7 +508,7 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 		// response from THIS message is in the store.
 		await page.waitForFunction(
 			( count ) =>
-				document.querySelectorAll( '.gaa-cr-msg-assistant' ).length >
+				document.querySelectorAll( '.sdaa-cr-msg-assistant' ).length >
 				count,
 			initialBubbleCount,
 			{ timeout: 30_000 }
@@ -521,7 +521,7 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 		// speak calls. The message input being enabled is a reliable proxy.
 		await expect(
 			page
-				.locator( '.gaa-cr .gaa-cr-input-textarea' )
+				.locator( '.sdaa-cr .sdaa-cr-input-textarea' )
 				.first()
 		).toBeEnabled( { timeout: 15_000 } );
 
@@ -549,9 +549,9 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 	test( 'speechSynthesis.speak is NOT called when TTS is disabled', async ( {
 		page,
 	} ) => {
-		// Ensure TTS is disabled. Scope to the ChatRedesign root (.gaa-cr).
+		// Ensure TTS is disabled. Scope to the ChatRedesign root (.sdaa-cr).
 		const ttsBtn = page
-			.locator( '.gaa-cr .sd-ai-agent-tts-btn' )
+			.locator( '.sdaa-cr .sdaa-tts-btn' )
 			.first();
 		await expect( ttsBtn ).toBeVisible( { timeout: 15_000 } );
 
@@ -568,13 +568,13 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 
 		// Capture the current assistant-bubble count so we can wait for a
 		// genuinely NEW response (avoids matching a pre-existing bubble).
-		// ChatRedesign renders model messages as .gaa-cr-msg-assistant rows.
-		const assistantBubbleLocator = page.locator( '.gaa-cr-msg-assistant' );
+		// ChatRedesign renders model messages as .sdaa-cr-msg-assistant rows.
+		const assistantBubbleLocator = page.locator( '.sdaa-cr-msg-assistant' );
 		const initialBubbleCount = await assistantBubbleLocator.count();
 
-		// Send a message. Scope to the ChatRedesign root (.gaa-cr).
+		// Send a message. Scope to the ChatRedesign root (.sdaa-cr).
 		const input = page
-			.locator( '.gaa-cr .gaa-cr-input-textarea' )
+			.locator( '.sdaa-cr .sdaa-cr-input-textarea' )
 			.first();
 		await input.fill( 'Hello' );
 		await input.press( 'Enter' );
@@ -582,7 +582,7 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 		// Wait for a NEW assistant bubble (count must exceed the initial).
 		await page.waitForFunction(
 			( count ) =>
-				document.querySelectorAll( '.gaa-cr-msg-assistant' ).length >
+				document.querySelectorAll( '.sdaa-cr-msg-assistant' ).length >
 				count,
 			initialBubbleCount,
 			{ timeout: 30_000 }
@@ -602,9 +602,9 @@ test.describe( 'TTS Auto-Speak on AI Responses', () => {
 	test( 'disabling TTS mid-conversation calls speechSynthesis.cancel', async ( {
 		page,
 	} ) => {
-		// Enable TTS. Scope to the ChatRedesign root (.gaa-cr).
+		// Enable TTS. Scope to the ChatRedesign root (.sdaa-cr).
 		const ttsBtn = page
-			.locator( '.gaa-cr .sd-ai-agent-tts-btn' )
+			.locator( '.sdaa-cr .sdaa-tts-btn' )
 			.first();
 		await expect( ttsBtn ).toBeVisible( { timeout: 15_000 } );
 

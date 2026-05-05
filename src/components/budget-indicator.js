@@ -104,16 +104,16 @@ export default function BudgetIndicator() {
 		: __( 'this month', 'sd-ai-agent' );
 
 	const classMap = {
-		ok: 'sd-ai-agent-budget-indicator--ok',
-		warning: 'sd-ai-agent-budget-indicator--warning',
-		exceeded: 'sd-ai-agent-budget-indicator--exceeded',
+		ok: 'sdaa-budget-indicator--ok',
+		warning: 'sdaa-budget-indicator--warning',
+		exceeded: 'sdaa-budget-indicator--exceeded',
 	};
 
 	const levelClass = classMap[ warningLevel ] || classMap.ok;
 
 	return (
 		<span
-			className={ `sd-ai-agent-budget-indicator ${ levelClass }` }
+			className={ `sdaa-budget-indicator ${ levelClass }` }
 			title={ getTooltip( warningLevel ) }
 		>
 			{ formatCost( spend ) } / { formatCost( cap ) } { label }

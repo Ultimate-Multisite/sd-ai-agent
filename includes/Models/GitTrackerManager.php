@@ -55,7 +55,7 @@ class GitTrackerManager {
 				'sd_ai_agent_git_tracker_plugin_not_found',
 				sprintf(
 					/* translators: %s: plugin file */
-					__( 'Plugin directory not found for: %s', 'sd-ai-agent' ),
+					__( 'Plugin directory not found for: %s', 'superdav-ai-agent' ),
 					$plugin_file
 				)
 			);
@@ -86,7 +86,7 @@ class GitTrackerManager {
 				'sd_ai_agent_git_tracker_theme_not_found',
 				sprintf(
 					/* translators: %s: theme slug */
-					__( 'Theme directory not found for: %s', 'sd-ai-agent' ),
+					__( 'Theme directory not found for: %s', 'superdav-ai-agent' ),
 					$theme_slug
 				)
 			);
@@ -144,7 +144,7 @@ class GitTrackerManager {
 			'sd_ai_agent_git_tracker_outside_packages',
 			sprintf(
 				/* translators: %s: file path */
-				__( 'File is not inside a plugin or theme directory: %s', 'sd-ai-agent' ),
+				__( 'File is not inside a plugin or theme directory: %s', 'superdav-ai-agent' ),
 				$absolute_path
 			)
 		);
@@ -446,7 +446,7 @@ class GitTrackerManager {
 			'sd_ai_agent_git_tracker_plugin_file_not_found',
 			sprintf(
 				/* translators: %s: plugin directory slug */
-				__( 'Cannot resolve main plugin file for directory: %s', 'sd-ai-agent' ),
+				__( 'Cannot resolve main plugin file for directory: %s', 'superdav-ai-agent' ),
 				$plugin_dir_slug
 			)
 		);

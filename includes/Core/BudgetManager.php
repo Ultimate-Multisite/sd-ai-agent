@@ -71,7 +71,7 @@ class BudgetManager {
 					'sd_ai_agent_budget_daily_exceeded',
 					sprintf(
 						/* translators: 1: formatted spend, 2: formatted cap */
-						__( 'Daily budget of %2$s reached (spent %1$s). Resets at midnight UTC.', 'sd-ai-agent' ),
+						__( 'Daily budget of %2$s reached (spent %1$s). Resets at midnight UTC.', 'superdav-ai-agent' ),
 						self::format_cost( $daily_spend ),
 						self::format_cost( $daily_cap )
 					)
@@ -86,7 +86,7 @@ class BudgetManager {
 					'sd_ai_agent_budget_monthly_exceeded',
 					sprintf(
 						/* translators: 1: formatted spend, 2: formatted cap */
-						__( 'Monthly budget of %2$s reached (spent %1$s). Resets on the 1st of next month UTC.', 'sd-ai-agent' ),
+						__( 'Monthly budget of %2$s reached (spent %1$s). Resets on the 1st of next month UTC.', 'superdav-ai-agent' ),
 						self::format_cost( $monthly_spend ),
 						self::format_cost( $monthly_cap )
 					)

@@ -86,9 +86,9 @@ export default function WidgetEmpty() {
 		__( 'AI Agent', 'sd-ai-agent' );
 
 	return (
-		<div className="gaa-w-empty">
-			<h2 className="gaa-w-empty-greeting">{ greeting }</h2>
-			<p className="gaa-w-empty-sub">
+		<div className="sdaa-w-empty">
+			<h2 className="sdaa-w-empty-greeting">{ greeting }</h2>
+			<p className="sdaa-w-empty-sub">
 				{ selectedAgent?.description ||
 					branding.tagline ||
 					__(
@@ -96,30 +96,30 @@ export default function WidgetEmpty() {
 						'sd-ai-agent'
 					) }
 			</p>
-			<div className="gaa-w-empty-label">
+			<div className="sdaa-w-empty-label">
 				{ __( 'Suggested', 'sd-ai-agent' ) }
 			</div>
-			<div className="gaa-w-suggestion-list">
+			<div className="sdaa-w-suggestion-list">
 				{ suggestions.map( ( s, i ) => (
 					<button
 						key={ i }
 						type="button"
-						className="gaa-w-suggestion-card"
+						className="sdaa-w-suggestion-card"
 						onClick={ () => sendMessage( s.prompt, [] ) }
 						aria-label={ s.title }
 					>
-						<span className="gaa-w-suggestion-card-body">
-							<span className="gaa-w-suggestion-card-title">
+						<span className="sdaa-w-suggestion-card-body">
+							<span className="sdaa-w-suggestion-card-title">
 								{ s.title }
 							</span>
-							<span className="gaa-w-suggestion-card-sub">
+							<span className="sdaa-w-suggestion-card-sub">
 								{ s.description }
 							</span>
 						</span>
 					</button>
 				) ) }
 			</div>
-			<p className="gaa-w-empty-foot">{ agentName }</p>
+			<p className="sdaa-w-empty-foot">{ agentName }</p>
 		</div>
 	);
 }

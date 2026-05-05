@@ -1,6 +1,6 @@
 /* Settings Page */
 
-.sd-ai-agent-settings {
+.sdaa-settings {
 	max-width: 800px;
 	margin-top: 16px;
 	background: #fff;
@@ -8,19 +8,19 @@
 	border-radius: 4px;
 }
 
-.sd-ai-agent-settings-loading {
+.sdaa-settings-loading {
 	padding: 40px;
 	text-align: center;
 }
 
 /* Tab bar scroll wrapper — provides fade-edge overflow indicators */
-.sd-ai-agent-tabs-scroll-wrapper {
+.sdaa-tabs-scroll-wrapper {
 	position: relative;
 }
 
 /* Left/right fade indicators — constrained to the tab bar row height */
-.sd-ai-agent-tabs-scroll-wrapper::before,
-.sd-ai-agent-tabs-scroll-wrapper::after {
+.sdaa-tabs-scroll-wrapper::before,
+.sdaa-tabs-scroll-wrapper::after {
 	content: "";
 	position: absolute;
 	top: 0;
@@ -31,27 +31,27 @@
 	transition: opacity 0.15s;
 }
 
-.sd-ai-agent-tabs-scroll-wrapper::before {
+.sdaa-tabs-scroll-wrapper::before {
 	left: 0;
 	background: linear-gradient(to right, #fff 40%, transparent);
 	opacity: 0;
 }
 
-.sd-ai-agent-tabs-scroll-wrapper::after {
+.sdaa-tabs-scroll-wrapper::after {
 	right: 0;
 	background: linear-gradient(to left, #fff 40%, transparent);
 	opacity: 0;
 }
 
-.sd-ai-agent-tabs-scroll-wrapper.has-scroll-left::before {
+.sdaa-tabs-scroll-wrapper.has-scroll-left::before {
 	opacity: 1;
 }
 
-.sd-ai-agent-tabs-scroll-wrapper.has-scroll-right::after {
+.sdaa-tabs-scroll-wrapper.has-scroll-right::after {
 	opacity: 1;
 }
 
-.sd-ai-agent-settings .components-tab-panel__tabs {
+.sdaa-settings .components-tab-panel__tabs {
 	border-bottom: 1px solid #dcdcde;
 	padding: 0 12px;
 	flex-wrap: nowrap;
@@ -64,62 +64,62 @@
 	-ms-overflow-style: none; /* IE/Edge */
 }
 
-.sd-ai-agent-settings .components-tab-panel__tabs::-webkit-scrollbar {
+.sdaa-settings .components-tab-panel__tabs::-webkit-scrollbar {
 	display: none; /* Chrome/Safari/Opera */
 }
 
-.sd-ai-agent-settings .components-tab-panel__tabs-item {
+.sdaa-settings .components-tab-panel__tabs-item {
 	flex: 0 0 auto;
 	white-space: nowrap;
 }
 
-.sd-ai-agent-providers-link-notice {
+.sdaa-providers-link-notice {
 	margin: 12px 16px 0 !important;
 }
 
 /* Settings wrap — full width, no fixed max */
-.sd-ai-agent-settings {
+.sdaa-settings {
 	max-width: none;
 }
 
 @media screen and (max-width: 782px) {
-	.sd-ai-agent-settings {
+	.sdaa-settings {
 		margin: 12px 0 0;
 		border-radius: 0;
 		border-left: none;
 		border-right: none;
 	}
 
-	.sd-ai-agent-settings .components-tab-panel__tabs {
+	.sdaa-settings .components-tab-panel__tabs {
 		padding: 0 8px;
 	}
 
-	.sd-ai-agent-settings .components-tab-panel__tabs-item {
+	.sdaa-settings .components-tab-panel__tabs-item {
 		padding: 8px 12px;
 		font-size: 13px;
 	}
 
-	.sd-ai-agent-settings-section {
+	.sdaa-settings-section {
 		padding: 16px;
 	}
 
-	.sd-ai-agent-providers-link-notice {
+	.sdaa-providers-link-notice {
 		margin: 8px 0 0 !important;
 	}
 }
 
-.sd-ai-agent-settings .components-tab-panel__tab-content {
+.sdaa-settings .components-tab-panel__tab-content {
 	padding: 0;
 }
 
-.sd-ai-agent-settings-section {
+.sdaa-settings-section {
 	padding: 20px 24px;
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
 }
 
-.sd-ai-agent-settings-actions {
+.sdaa-settings-actions {
 	padding: 16px 24px;
 	border-top: 1px solid #dcdcde;
 	display: flex;
@@ -127,13 +127,13 @@
 }
 
 /* YOLO mode section */
-.sd-ai-agent-settings-yolo-section {
+.sdaa-settings-yolo-section {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
 }
 
-.sd-ai-agent-yolo-warning {
+.sdaa-yolo-warning {
 	background: #fcf0f1;
 	border: 1px solid #cc1818;
 	border-left: 4px solid #cc1818;
@@ -145,23 +145,23 @@
 
 /* Memory Manager */
 
-.sd-ai-agent-memory-manager {
+.sdaa-memory-manager {
 	margin-top: 12px;
 }
 
-.sd-ai-agent-memory-header {
+.sdaa-memory-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	margin-bottom: 12px;
 }
 
-.sd-ai-agent-memory-header h3 {
+.sdaa-memory-header h3 {
 	margin: 0;
 	font-size: 14px;
 }
 
-.sd-ai-agent-memory-form {
+.sdaa-memory-form {
 	background: #f6f7f7;
 	border: 1px solid #dcdcde;
 	border-radius: 4px;
@@ -172,24 +172,24 @@
 	gap: 12px;
 }
 
-.sd-ai-agent-memory-form-actions {
+.sdaa-memory-form-actions {
 	display: flex;
 	gap: 8px;
 }
 
-.sd-ai-agent-memory-table {
+.sdaa-memory-table {
 	font-size: 13px;
 }
 
-.sd-ai-agent-memory-table th {
+.sdaa-memory-table th {
 	font-weight: 600;
 }
 
-.sd-ai-agent-memory-table td {
+.sdaa-memory-table td {
 	vertical-align: top;
 }
 
-.sd-ai-agent-memory-category {
+.sdaa-memory-category {
 	text-transform: capitalize;
 	font-size: 12px;
 	background: #f0f0f1;
@@ -198,34 +198,34 @@
 	white-space: nowrap;
 }
 
-.sd-ai-agent-memory-actions {
+.sdaa-memory-actions {
 	display: flex;
 	gap: 2px;
 }
 
 /* Skill Manager */
 
-.sd-ai-agent-skill-manager {
+.sdaa-skill-manager {
 	margin-top: 0;
 }
 
-.sd-ai-agent-skill-header {
+.sdaa-skill-header {
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
 	margin-bottom: 16px;
 }
 
-.sd-ai-agent-skill-header h3 {
+.sdaa-skill-header h3 {
 	margin: 0 0 4px;
 	font-size: 14px;
 }
 
-.sd-ai-agent-skill-header .description {
+.sdaa-skill-header .description {
 	margin: 0;
 }
 
-.sd-ai-agent-skill-form {
+.sdaa-skill-form {
 	background: #f6f7f7;
 	border: 1px solid #dcdcde;
 	border-radius: 4px;
@@ -236,18 +236,18 @@
 	gap: 12px;
 }
 
-.sd-ai-agent-skill-form-actions {
+.sdaa-skill-form-actions {
 	display: flex;
 	gap: 8px;
 }
 
-.sd-ai-agent-skill-cards {
+.sdaa-skill-cards {
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
 }
 
-.sd-ai-agent-skill-card {
+.sdaa-skill-card {
 	border: 1px solid #dcdcde;
 	border-radius: 4px;
 	padding: 14px 16px;
@@ -255,33 +255,33 @@
 	transition: opacity 0.2s;
 }
 
-.sd-ai-agent-skill-card--disabled {
+.sdaa-skill-card--disabled {
 	opacity: 0.6;
 }
 
-.sd-ai-agent-skill-card-header {
+.sdaa-skill-card-header {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 	margin-bottom: 6px;
 }
 
-.sd-ai-agent-skill-card-header .components-toggle-control {
+.sdaa-skill-card-header .components-toggle-control {
 	margin-bottom: 0;
 }
 
-.sd-ai-agent-skill-card-header .components-base-control__field {
+.sdaa-skill-card-header .components-base-control__field {
 	margin-bottom: 0;
 }
 
-.sd-ai-agent-skill-card-title {
+.sdaa-skill-card-title {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 	flex: 1;
 }
 
-.sd-ai-agent-skill-badge {
+.sdaa-skill-badge {
 	font-size: 11px;
 	background: #e0e0e0;
 	color: #50575e;
@@ -290,58 +290,58 @@
 	font-weight: 400;
 }
 
-.sd-ai-agent-skill-badge--modified {
+.sdaa-skill-badge--modified {
 	background: #fcf0c8;
 	color: #6b5d14;
 }
 
-.sd-ai-agent-skill-badge--update {
+.sdaa-skill-badge--update {
 	background: #d0e8ff;
 	color: #06c;
 }
 
-.sd-ai-agent-skill-version {
+.sdaa-skill-version {
 	font-size: 11px;
 	color: #999;
 }
 
-.sd-ai-agent-skill-card-description {
+.sdaa-skill-card-description {
 	margin: 0 0 8px;
 	color: #646970;
 	font-size: 13px;
 	padding-left: 52px;
 }
 
-.sd-ai-agent-skill-card-footer {
+.sdaa-skill-card-footer {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	padding-left: 52px;
 }
 
-.sd-ai-agent-skill-meta {
+.sdaa-skill-meta {
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
 }
 
-.sd-ai-agent-skill-word-count {
+.sdaa-skill-word-count {
 	font-size: 12px;
 	color: #999;
 }
 
-.sd-ai-agent-skill-usage-stats {
+.sdaa-skill-usage-stats {
 	display: flex;
 	gap: 8px;
 	align-items: center;
 }
 
-.sd-ai-agent-skill-usage-count {
+.sdaa-skill-usage-count {
 	font-size: 12px;
 	color: #646970;
 }
 
-.sd-ai-agent-skill-helpful {
+.sdaa-skill-helpful {
 	font-size: 11px;
 	background: #d7f0d5;
 	color: #1e6129;
@@ -349,13 +349,13 @@
 	border-radius: 3px;
 }
 
-.sd-ai-agent-skill-card-actions {
+.sdaa-skill-card-actions {
 	display: flex;
 	gap: 2px;
 }
 
 /* Skill update controls (auto-update toggle + check-updates button) */
-.sd-ai-agent-skill-update-controls {
+.sdaa-skill-update-controls {
 	display: flex;
 	align-items: flex-start;
 	gap: 16px;
@@ -367,56 +367,56 @@
 	flex-wrap: wrap;
 }
 
-.sd-ai-agent-skill-update-controls .components-toggle-control {
+.sdaa-skill-update-controls .components-toggle-control {
 	margin-bottom: 0;
 	flex: 1;
 	min-width: 200px;
 }
 
-.sd-ai-agent-skill-update-controls .components-base-control__field {
+.sdaa-skill-update-controls .components-base-control__field {
 	margin-bottom: 0;
 }
 
-.sd-ai-agent-check-updates-btn {
+.sdaa-check-updates-btn {
 	flex-shrink: 0;
 	align-self: flex-start;
 	margin-top: 2px;
 }
 
 /* Usage Dashboard */
-.sd-ai-agent-usage-dashboard {
+.sdaa-usage-dashboard {
 	min-height: 200px;
 }
 
-.sd-ai-agent-usage-loading {
+.sdaa-usage-loading {
 	padding: 40px;
 	text-align: center;
 }
 
-.sd-ai-agent-usage-header {
+.sdaa-usage-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	margin-bottom: 16px;
 }
 
-.sd-ai-agent-usage-header h3 {
+.sdaa-usage-header h3 {
 	margin: 0;
 	font-size: 15px;
 }
 
-.sd-ai-agent-usage-header .components-select-control {
+.sdaa-usage-header .components-select-control {
 	min-width: 160px;
 }
 
-.sd-ai-agent-usage-cards {
+.sdaa-usage-cards {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 	gap: 12px;
 	margin-bottom: 24px;
 }
 
-.sd-ai-agent-usage-card {
+.sdaa-usage-card {
 	background: #f6f7f7;
 	border: 1px solid #dcdcde;
 	border-radius: 6px;
@@ -424,30 +424,30 @@
 	text-align: center;
 }
 
-.sd-ai-agent-usage-card-label {
+.sdaa-usage-card-label {
 	font-size: 12px;
 	color: #50575e;
 	margin-bottom: 4px;
 }
 
-.sd-ai-agent-usage-card-value {
+.sdaa-usage-card-value {
 	font-size: 22px;
 	font-weight: 600;
 	color: #1d2327;
 }
 
-.sd-ai-agent-usage-breakdown h4 {
+.sdaa-usage-breakdown h4 {
 	margin: 0 0 12px;
 	font-size: 14px;
 }
 
-.sd-ai-agent-usage-table {
+.sdaa-usage-table {
 	width: 100%;
 	border-collapse: collapse;
 	font-size: 13px;
 }
 
-.sd-ai-agent-usage-table th {
+.sdaa-usage-table th {
 	text-align: left;
 	padding: 8px 10px;
 	border-bottom: 2px solid #dcdcde;
@@ -456,12 +456,12 @@
 	color: #50575e;
 }
 
-.sd-ai-agent-usage-table td {
+.sdaa-usage-table td {
 	padding: 8px 10px;
 	border-bottom: 1px solid #f0f0f1;
 }
 
-.sd-ai-agent-usage-bar {
+.sdaa-usage-bar {
 	width: 80px;
 	height: 8px;
 	background: #e0e0e0;
@@ -469,7 +469,7 @@
 	overflow: hidden;
 }
 
-.sd-ai-agent-usage-bar-fill {
+.sdaa-usage-bar-fill {
 	height: 100%;
 	background: var(--wp-admin-theme-color, #2271b1);
 	border-radius: 4px;
@@ -477,24 +477,24 @@
 }
 
 /* Test Result */
-.sd-ai-agent-test-result {
+.sdaa-test-result {
 	margin-top: 12px;
 	padding: 12px;
 	border-radius: 4px;
 	font-size: 13px;
 }
 
-.sd-ai-agent-test-result.is-success {
+.sdaa-test-result.is-success {
 	background: #edfaef;
 	border: 1px solid #00a32a;
 }
 
-.sd-ai-agent-test-result.is-error {
+.sdaa-test-result.is-error {
 	background: #fcf0f1;
 	border: 1px solid #d63638;
 }
 
-.sd-ai-agent-test-result pre {
+.sdaa-test-result pre {
 	margin: 8px 0 0;
 	white-space: pre-wrap;
 	word-break: break-all;
@@ -504,7 +504,7 @@
 }
 
 /* Trigger Info */
-.sd-ai-agent-trigger-info {
+.sdaa-trigger-info {
 	background: #f0f6fc;
 	border: 1px solid #c3d1e0;
 	border-radius: 4px;
@@ -512,12 +512,12 @@
 	font-size: 13px;
 }
 
-.sd-ai-agent-trigger-info .description {
+.sdaa-trigger-info .description {
 	margin: 4px 0;
 }
 
 /* Automation Logs */
-.sd-ai-agent-automation-logs {
+.sdaa-automation-logs {
 	margin-top: 12px;
 	padding-top: 12px;
 	border-top: 1px solid #dcdcde;
@@ -526,31 +526,31 @@
 	gap: 8px;
 }
 
-.sd-ai-agent-log-entry {
+.sdaa-log-entry {
 	padding: 8px 12px;
 	border-radius: 4px;
 	font-size: 12px;
 	border: 1px solid #dcdcde;
 }
 
-.sd-ai-agent-log--success {
+.sdaa-log--success {
 	border-color: #c3e6cb;
 	background: #f8fcf8;
 }
 
-.sd-ai-agent-log--error {
+.sdaa-log--error {
 	border-color: #f5c2c7;
 	background: #fdf0f1;
 }
 
-.sd-ai-agent-log-meta {
+.sdaa-log-meta {
 	display: flex;
 	gap: 12px;
 	align-items: center;
 	color: #646970;
 }
 
-.sd-ai-agent-log-status {
+.sdaa-log-status {
 	font-weight: 600;
 	text-transform: uppercase;
 	font-size: 11px;
@@ -558,22 +558,22 @@
 	border-radius: 3px;
 }
 
-.sd-ai-agent-log-status--success {
+.sdaa-log-status--success {
 	color: #00a32a;
 	background: #edfaef;
 }
 
-.sd-ai-agent-log-status--error {
+.sdaa-log-status--error {
 	color: #d63638;
 	background: #fcf0f1;
 }
 
-.sd-ai-agent-log-error {
+.sdaa-log-error {
 	margin: 4px 0 0;
 	color: #d63638;
 }
 
-.sd-ai-agent-log-reply {
+.sdaa-log-reply {
 	margin: 4px 0 0;
 	white-space: pre-wrap;
 	word-break: break-word;
@@ -587,59 +587,59 @@
 
 /* ── Abilities Manager (t098) ────────────────────────────────────────────── */
 
-.sd-ai-agent-abilities-manager {
+.sdaa-abilities-manager {
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
 }
 
-.sd-ai-agent-abilities-toolbar {
+.sdaa-abilities-toolbar {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
 }
 
-.sd-ai-agent-abilities-search {
+.sdaa-abilities-search {
 	flex: 1;
 }
 
-.sd-ai-agent-abilities-filters {
+.sdaa-abilities-filters {
 	display: flex;
 	align-items: flex-end;
 	gap: 12px;
 	flex-wrap: wrap;
 }
 
-.sd-ai-agent-abilities-filters .components-select-control {
+.sdaa-abilities-filters .components-select-control {
 	min-width: 180px;
 }
 
-.sd-ai-agent-abilities-expand-buttons {
+.sdaa-abilities-expand-buttons {
 	display: flex;
 	gap: 4px;
 	padding-bottom: 2px;
 }
 
-.sd-ai-agent-abilities-count {
+.sdaa-abilities-count {
 	margin: 0;
 	font-size: 12px;
 	color: #646970;
 }
 
-.sd-ai-agent-abilities-sections {
+.sdaa-abilities-sections {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
 }
 
 /* Category collapsible section */
-.sd-ai-agent-abilities-category {
+.sdaa-abilities-category {
 	border: 1px solid #dcdcde;
 	border-radius: 4px;
 	overflow: hidden;
 }
 
-.sd-ai-agent-abilities-category-header {
+.sdaa-abilities-category-header {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -655,27 +655,27 @@
 	transition: background 0.1s;
 }
 
-.sd-ai-agent-abilities-category-header:hover {
+.sdaa-abilities-category-header:hover {
 	background: #f0f0f1;
 }
 
-.sd-ai-agent-abilities-category-header:focus-visible {
+.sdaa-abilities-category-header:focus-visible {
 	outline: 2px solid var(--wp-admin-theme-color, #2271b1);
 	outline-offset: -2px;
 }
 
-.sd-ai-agent-abilities-category-chevron {
+.sdaa-abilities-category-chevron {
 	font-size: 11px;
 	color: #646970;
 	flex-shrink: 0;
 	width: 12px;
 }
 
-.sd-ai-agent-abilities-category-name {
+.sdaa-abilities-category-name {
 	flex: 1;
 }
 
-.sd-ai-agent-abilities-category-count {
+.sdaa-abilities-category-count {
 	font-size: 11px;
 	font-weight: 400;
 	color: #646970;
@@ -685,7 +685,7 @@
 	flex-shrink: 0;
 }
 
-.sd-ai-agent-abilities-category-badge {
+.sdaa-abilities-category-badge {
 	font-size: 11px;
 	font-weight: 600;
 	color: #0a4b78;
@@ -696,42 +696,42 @@
 	flex-shrink: 0;
 }
 
-.sd-ai-agent-abilities-category-body {
+.sdaa-abilities-category-body {
 	padding: 4px 0;
 	background: #fff;
 }
 
 /* Individual ability row inside a category */
-.sd-ai-agent-ability-row {
+.sdaa-ability-row {
 	padding: 10px 16px;
 	border-top: 1px solid #f0f0f1;
 }
 
-.sd-ai-agent-ability-row:first-child {
+.sdaa-ability-row:first-child {
 	border-top: none;
 }
 
-.sd-ai-agent-ability-row .components-select-control {
+.sdaa-ability-row .components-select-control {
 	max-width: 100%;
 }
 
 /* ── Branding Manager (t075) ─────────────────────────────────────────────── */
 
-.sd-ai-agent-branding-manager {
+.sdaa-branding-manager {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
 }
 
 /* Inline colour field: swatch + text input + pick button */
-.sd-ai-agent-color-field {
+.sdaa-color-field {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 	margin-top: 4px;
 }
 
-.sd-ai-agent-color-swatch {
+.sdaa-color-swatch {
 	width: 28px;
 	height: 28px;
 	border-radius: 4px;
@@ -739,7 +739,7 @@
 }
 
 /* Live preview block */
-.sd-ai-agent-branding-preview {
+.sdaa-branding-preview {
 	border: 1px solid #c3c4c7;
 	border-radius: 6px;
 	padding: 16px;
@@ -749,14 +749,14 @@
 	gap: 12px;
 }
 
-.sd-ai-agent-branding-preview .description {
+.sdaa-branding-preview .description {
 	margin: 0;
 	font-style: italic;
 	color: #646970;
 }
 
 /* FAB preview circle */
-.sd-ai-agent-branding-preview__fab {
+.sdaa-branding-preview__fab {
 	width: 48px;
 	height: 48px;
 	border-radius: 50%;
@@ -767,7 +767,7 @@
 	flex-shrink: 0;
 }
 
-.sd-ai-agent-branding-preview__logo {
+.sdaa-branding-preview__logo {
 	width: 24px;
 	height: 24px;
 	object-fit: contain;
@@ -775,7 +775,7 @@
 }
 
 /* Title bar preview strip */
-.sd-ai-agent-branding-preview__titlebar {
+.sdaa-branding-preview__titlebar {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -786,7 +786,7 @@
 	max-width: 280px;
 }
 
-.sd-ai-agent-branding-preview__titlebar-logo {
+.sdaa-branding-preview__titlebar-logo {
 	width: 20px;
 	height: 20px;
 	object-fit: contain;
@@ -796,16 +796,16 @@
 
 /* ── Model pricing selector (t108) ─────────────────────────────────────── */
 
-.sd-ai-agent-model-pricing-selector {
+.sdaa-model-pricing-selector {
 	margin-bottom: 16px;
 }
 
-.sd-ai-agent-model-pricing-selector .components-base-control {
+.sdaa-model-pricing-selector .components-base-control {
 	margin-bottom: 4px;
 }
 
 /* Pricing hint line below the selector */
-.sd-ai-agent-model-pricing-hint {
+.sdaa-model-pricing-hint {
 	margin: 4px 0 0;
 	font-size: 12px;
 	color: #646970;
@@ -817,7 +817,7 @@
 }
 
 /* Tier badge */
-.sd-ai-agent-model-pricing-hint__tier {
+.sdaa-model-pricing-hint__tier {
 	display: inline-block;
 	padding: 1px 7px;
 	border-radius: 10px;
@@ -827,31 +827,31 @@
 	letter-spacing: 0.04em;
 }
 
-.sd-ai-agent-model-pricing-hint__tier--budget {
+.sdaa-model-pricing-hint__tier--budget {
 	background: #d1fae5;
 	color: #065f46;
 }
 
-.sd-ai-agent-model-pricing-hint__tier--standard {
+.sdaa-model-pricing-hint__tier--standard {
 	background: #dbeafe;
 	color: #1e40af;
 }
 
-.sd-ai-agent-model-pricing-hint__tier--premium {
+.sdaa-model-pricing-hint__tier--premium {
 	background: #ede9fe;
 	color: #5b21b6;
 }
 
-.sd-ai-agent-model-pricing-hint__prices {
+.sdaa-model-pricing-hint__prices {
 	color: #3c434a;
 }
 
-.sd-ai-agent-model-pricing-hint__session {
+.sdaa-model-pricing-hint__session {
 	color: #646970;
 }
 
 /* Greeting message preview */
-.sd-ai-agent-branding-preview__greeting {
+.sdaa-branding-preview__greeting {
 	font-size: 13px;
 	color: #646970;
 	font-style: italic;
@@ -864,17 +864,17 @@
 
 /* ── Agent builder — card hover + layout ─────────────────────── */
 
-.sd-ai-agent-card {
+.sdaa-card {
 	transition: background-color 120ms, box-shadow 120ms;
 }
 
-.sd-ai-agent-card:hover {
+.sdaa-card:hover {
 	background-color: #f0f6fc;
 	box-shadow: 0 0 0 1px #c5d9ed;
 }
 
 /* Title row: name | badge | actions all inline. */
-.sd-ai-agent-card-title-row {
+.sdaa-card-title-row {
 	display: flex;
 	align-items: center;
 	gap: 6px;
@@ -882,7 +882,7 @@
 }
 
 /* Actions sit immediately after the badge — no auto-margin. */
-.sd-ai-agent-card-actions {
+.sdaa-card-actions {
 	display: flex;
 	align-items: center;
 	gap: 2px;
@@ -892,13 +892,13 @@
 	transition: opacity 120ms;
 }
 
-.sd-ai-agent-card:hover .sd-ai-agent-card-actions,
-.sd-ai-agent-card:focus-within .sd-ai-agent-card-actions {
+.sdaa-card:hover .sdaa-card-actions,
+.sdaa-card:focus-within .sdaa-card-actions {
 	opacity: 1;
 }
 
 /* Description sits on its own line below the title row. */
-.sd-ai-agent-card-desc {
+.sdaa-card-desc {
 	display: block;
 	margin: 3px 0 0;
 	font-size: 12.5px;
@@ -908,7 +908,7 @@
 
 /* ── Agent builder — built-in badge ──────────────────────────── */
 
-.sd-ai-agent-card-badge {
+.sdaa-card-badge {
 	display: inline-block;
 	font-size: 11px;
 	line-height: 1;
@@ -922,7 +922,7 @@
 
 /* ── Agent builder — avatar icon preview ─────────────────────── */
 
-.sd-ai-agent-icon-preview {
+.sdaa-icon-preview {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
@@ -933,26 +933,26 @@
 	border-radius: 4px;
 }
 
-.sd-ai-agent-icon-preview-dash {
+.sdaa-icon-preview-dash {
 	font-size: 22px;
 	width: 22px;
 	height: 22px;
 	color: #2271b1;
 }
 
-.sd-ai-agent-icon-preview-emoji {
+.sdaa-icon-preview-emoji {
 	font-size: 20px;
 	line-height: 1;
 }
 
-.sd-ai-agent-icon-preview-label {
+.sdaa-icon-preview-label {
 	font-size: 11px;
 	color: #757575;
 	text-transform: uppercase;
 	letter-spacing: 0.3px;
 }
 
-.sd-ai-agent-builder-actions {
+.sdaa-builder-actions {
 	display: flex;
 	gap: 12px;
 	margin-top: 16px;
@@ -960,18 +960,18 @@
 
 /* ── Tier 1 Tools editor ─────────────────────────────────────── */
 
-.sd-ai-agent-tier1-editor {
+.sdaa-tier1-editor {
 	margin-top: 8px;
 }
 
-.sd-ai-agent-tier1-list {
+.sdaa-tier1-list {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 6px;
 	margin-bottom: 12px;
 }
 
-.sd-ai-agent-tier1-chip {
+.sdaa-tier1-chip {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
@@ -983,14 +983,14 @@
 	line-height: 1.4;
 }
 
-.sd-ai-agent-tier1-chip-label {
+.sdaa-tier1-chip-label {
 	max-width: 200px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.sd-ai-agent-tier1-chip-remove {
+.sdaa-tier1-chip-remove {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -1006,16 +1006,16 @@
 	border-radius: 50%;
 }
 
-.sd-ai-agent-tier1-chip-remove:hover {
+.sdaa-tier1-chip-remove:hover {
 	background: #cc1818;
 	color: #fff;
 }
 
-.sd-ai-agent-tier1-add {
+.sdaa-tier1-add {
 	position: relative;
 }
 
-.sd-ai-agent-tier1-results {
+.sdaa-tier1-results {
 	position: absolute;
 	top: 100%;
 	left: 0;
@@ -1032,7 +1032,7 @@
 	overflow-y: auto;
 }
 
-.sd-ai-agent-tier1-result-item {
+.sdaa-tier1-result-item {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
@@ -1043,40 +1043,40 @@
 	text-align: left;
 }
 
-.sd-ai-agent-tier1-result-item:hover {
+.sdaa-tier1-result-item:hover {
 	background: #f0f0f0;
 }
 
-.sd-ai-agent-tier1-result-name {
+.sdaa-tier1-result-name {
 	font-size: 13px;
 	font-weight: 500;
 }
 
-.sd-ai-agent-tier1-result-id {
+.sdaa-tier1-result-id {
 	font-size: 11px;
 	color: #757575;
 }
 
-.sd-ai-agent-tier1-warning {
+.sdaa-tier1-warning {
 	color: #996800;
 	font-size: 12px;
 	margin: 0 0 8px;
 }
 
-.sd-ai-agent-tier1-no-results {
+.sdaa-tier1-no-results {
 	color: #757575;
 	font-size: 12px;
 	padding: 4px 0;
 }
 
-.sd-ai-agent-form-label {
+.sdaa-form-label {
 	font-size: 13px;
 	font-weight: 600;
 	margin: 16px 0 4px;
 }
 
 /* Save-feedback snackbar — viewport-fixed so it is visible regardless of scroll position */
-.sd-ai-agent-snackbar-list {
+.sdaa-snackbar-list {
 	position: fixed;
 	bottom: 0;
 	right: 0;

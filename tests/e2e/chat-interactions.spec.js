@@ -272,12 +272,12 @@ test.describe( 'Slash Command Menu', () => {
 	test( 'slash menu appears when typing /', async ( { page } ) => {
 		// Wait for ChatRedesign InputArea to be ready before typing.
 		await page
-			.locator( '.gaa-cr' )
+			.locator( '.sdaa-cr' )
 			.waitFor( { state: 'visible', timeout: 30_000 } );
 		const input = getMessageInput( page );
 		await input.fill( '/' );
 
-		const slashMenu = page.locator( '.sd-ai-agent-slash-menu' );
+		const slashMenu = page.locator( '.sdaa-slash-menu' );
 		await expect( slashMenu ).toBeVisible();
 	} );
 
@@ -285,7 +285,7 @@ test.describe( 'Slash Command Menu', () => {
 		const input = getMessageInput( page );
 		await input.fill( '/' );
 
-		const slashMenu = page.locator( '.sd-ai-agent-slash-menu' );
+		const slashMenu = page.locator( '.sdaa-slash-menu' );
 		await expect( slashMenu ).toBeVisible();
 
 		// Core commands should be listed.
@@ -300,11 +300,11 @@ test.describe( 'Slash Command Menu', () => {
 		const input = getMessageInput( page );
 		await input.fill( '/rem' );
 
-		const slashMenu = page.locator( '.sd-ai-agent-slash-menu' );
+		const slashMenu = page.locator( '.sdaa-slash-menu' );
 		await expect( slashMenu ).toBeVisible();
 
 		// Only /remember should match /rem.
-		const items = page.locator( '.sd-ai-agent-slash-item' );
+		const items = page.locator( '.sdaa-slash-item' );
 		const count = await items.count();
 		expect( count ).toBeGreaterThanOrEqual( 1 );
 
@@ -315,7 +315,7 @@ test.describe( 'Slash Command Menu', () => {
 		const input = getMessageInput( page );
 		await input.fill( '/' );
 
-		const slashMenu = page.locator( '.sd-ai-agent-slash-menu' );
+		const slashMenu = page.locator( '.sdaa-slash-menu' );
 		await expect( slashMenu ).toBeVisible();
 
 		await input.press( 'Escape' );
@@ -328,19 +328,19 @@ test.describe( 'Slash Command Menu', () => {
 		const input = getMessageInput( page );
 		await input.fill( '/new' );
 
-		const slashMenu = page.locator( '.sd-ai-agent-slash-menu' );
+		const slashMenu = page.locator( '.sdaa-slash-menu' );
 		await expect( slashMenu ).toBeVisible();
 
 		// Click the /new item.
-		const newItem = page.locator( '.sd-ai-agent-slash-item' ).filter( {
+		const newItem = page.locator( '.sdaa-slash-item' ).filter( {
 			hasText: '/new',
 		} );
 		await newItem.click();
 
 		// Empty state should be visible. ChatRedesign MessageList renders
-		// .gaa-cr-empty when there are no messages. Scoped to .gaa-cr (the admin
+		// .sdaa-cr-empty when there are no messages. Scoped to .sdaa-cr (the admin
 		// chat root) so it doesn't match any other element on the page.
-		const emptyState = page.locator( '.gaa-cr .gaa-cr-empty' );
+		const emptyState = page.locator( '.sdaa-cr .sdaa-cr-empty' );
 		await expect( emptyState ).toBeVisible();
 	} );
 
@@ -348,16 +348,16 @@ test.describe( 'Slash Command Menu', () => {
 		const input = getMessageInput( page );
 		await input.fill( '/help' );
 
-		const slashMenu = page.locator( '.sd-ai-agent-slash-menu' );
+		const slashMenu = page.locator( '.sdaa-slash-menu' );
 		await expect( slashMenu ).toBeVisible();
 
-		const helpItem = page.locator( '.sd-ai-agent-slash-item' ).filter( {
+		const helpItem = page.locator( '.sdaa-slash-item' ).filter( {
 			hasText: '/help',
 		} );
 		await helpItem.click();
 
 		// Shortcuts dialog should open.
-		const shortcutsDialog = page.locator( '.sd-ai-agent-shortcuts-overlay' );
+		const shortcutsDialog = page.locator( '.sdaa-shortcuts-overlay' );
 		await expect( shortcutsDialog ).toBeVisible();
 	} );
 } );
@@ -373,16 +373,16 @@ test.describe( 'Provider Selector', () => {
 	} ) => {
 		// Wait for ChatRedesign to mount before checking the model chip.
 		// ChatRoute polls for window.sdAiAgentChat (exposed by admin-page.js),
-		// so .gaa-cr may appear after a short delay post-navigation.
+		// so .sdaa-cr may appear after a short delay post-navigation.
 		await page
-			.locator( '.gaa-cr' )
+			.locator( '.sdaa-cr' )
 			.waitFor( { state: 'visible', timeout: 30_000 } );
 
 		// ChatRedesign replaces ProviderSelector with ModelPicker. The model chip
-		// (.gaa-cr-model-chip-wrap) sits in InputArea's toolbar and shows the
-		// active provider + model. Scoped to .gaa-cr (admin chat root).
+		// (.sdaa-cr-model-chip-wrap) sits in InputArea's toolbar and shows the
+		// active provider + model. Scoped to .sdaa-cr (admin chat root).
 		const providerSelector = page
-			.locator( '.gaa-cr .gaa-cr-model-chip-wrap' )
+			.locator( '.sdaa-cr .sdaa-cr-model-chip-wrap' )
 			.first();
 		await expect( providerSelector ).toBeVisible();
 	} );
@@ -433,9 +433,9 @@ test.describe( 'Auto-Title Sessions (t099)', () => {
 		await loginToWordPress( page );
 		await goToAgentPage( page );
 		// Wait for ChatRedesign to mount before interacting. ChatRoute polls for
-		// window.sdAiAgentChat, so .gaa-cr may appear after a short delay.
+		// window.sdAiAgentChat, so .sdaa-cr may appear after a short delay.
 		await page
-			.locator( '.gaa-cr' )
+			.locator( '.sdaa-cr' )
 			.waitFor( { state: 'visible', timeout: 30_000 } );
 	} );
 
@@ -459,21 +459,21 @@ test.describe( 'Auto-Title Sessions (t099)', () => {
 		// .first() is unreliable when previous tests have left sessions in the
 		// sidebar — the current session may not be the first item.
 		//
-		// ChatRedesign Sidebar uses .gaa-cr-session-row (was .sd-ai-agent-session-item).
+		// ChatRedesign Sidebar uses .sdaa-cr-session-row (was .sdaa-session-item).
 		//
 		// 20 s timeout: the full chain (POST /sessions → POST /run → job poll
 		// at 3 s interval → fetchSessions → React re-render) takes 8-15 s on
 		// CI runners under load. The previous 10 s timeout was borderline —
 		// the third auto-title test (which uses 15 s) passed while these two
 		// (at 10 s) failed consistently.
-		const activeItem = page.locator( '.gaa-cr-session-row.is-active' );
+		const activeItem = page.locator( '.sdaa-cr-session-row.is-active' );
 		await expect( activeItem ).toBeVisible( { timeout: 20_000 } );
 
 		// The active sidebar row should now display the generated title.
 		// The title arrives via the SSE done event (generated_title field),
 		// not via a direct store dispatch, so this assertion validates the
 		// full stream-event handling path.
-		// ChatRedesign Sidebar uses .gaa-cr-session-row-title (was .sd-ai-agent-session-title).
+		// ChatRedesign Sidebar uses .sdaa-cr-session-row-title (was .sdaa-session-title).
 		await expect( activeItem ).toContainText( expectedTitle, {
 			timeout: 10_000,
 		} );
@@ -493,14 +493,14 @@ test.describe( 'Auto-Title Sessions (t099)', () => {
 		await input.press( 'Enter' );
 
 		// Wait for the active session row (see timeout rationale in first test).
-		// ChatRedesign Sidebar uses .gaa-cr-session-row (was .sd-ai-agent-session-item).
-		const activeItem = page.locator( '.gaa-cr-session-row.is-active' );
+		// ChatRedesign Sidebar uses .sdaa-cr-session-row (was .sdaa-session-item).
+		const activeItem = page.locator( '.sdaa-cr-session-row.is-active' );
 		await expect( activeItem ).toBeVisible( { timeout: 20_000 } );
 
 		// The title element inside the active session row should not say "Untitled".
 		// The title arrives via the SSE done event, not a direct store dispatch.
-		// ChatRedesign Sidebar uses .gaa-cr-session-row-title (was .sd-ai-agent-session-title).
-		const titleEl = activeItem.locator( '.gaa-cr-session-row-title' );
+		// ChatRedesign Sidebar uses .sdaa-cr-session-row-title (was .sdaa-session-title).
+		const titleEl = activeItem.locator( '.sdaa-cr-session-row-title' );
 		await expect( titleEl ).not.toContainText( 'Untitled', {
 			timeout: 10_000,
 		} );
@@ -525,14 +525,14 @@ test.describe( 'Auto-Title Sessions (t099)', () => {
 		// Wait for the active session row to appear in the sidebar. fetchSessions()
 		// runs after the intercepted stream completes, so the session is in
 		// state.sessions at this point.
-		// ChatRedesign Sidebar uses .gaa-cr-session-row (was .sd-ai-agent-session-item).
-		const activeItem = page.locator( '.gaa-cr-session-row.is-active' );
+		// ChatRedesign Sidebar uses .sdaa-cr-session-row (was .sdaa-session-item).
+		const activeItem = page.locator( '.sdaa-cr-session-row.is-active' );
 		await expect( activeItem ).toBeVisible( { timeout: 15_000 } );
 
 		// The intercepted done event carries no generated_title, so the title
 		// should still be "Untitled" (or empty) at this point.
-		// ChatRedesign Sidebar uses .gaa-cr-session-row-title (was .sd-ai-agent-session-title).
-		const titleEl = activeItem.locator( '.gaa-cr-session-row-title' );
+		// ChatRedesign Sidebar uses .sdaa-cr-session-row-title (was .sdaa-session-title).
+		const titleEl = activeItem.locator( '.sdaa-cr-session-row-title' );
 		const titleText = await titleEl.textContent();
 		// Title is either empty or "Untitled" — no auto-title was injected.
 		expect(

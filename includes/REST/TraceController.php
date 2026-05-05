@@ -122,7 +122,7 @@ final class TraceController extends XWP_REST_Controller {
 		if ( ! $trace ) {
 			return new WP_Error(
 				'trace_not_found',
-				__( 'Trace record not found.', 'sd-ai-agent' ),
+				__( 'Trace record not found.', 'superdav-ai-agent' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -149,7 +149,7 @@ final class TraceController extends XWP_REST_Controller {
 		if ( ! $trace ) {
 			return new WP_Error(
 				'trace_not_found',
-				__( 'Trace record not found.', 'sd-ai-agent' ),
+				__( 'Trace record not found.', 'superdav-ai-agent' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -196,7 +196,7 @@ final class TraceController extends XWP_REST_Controller {
 				'max_rows' => ProviderTrace::get_max_rows(),
 				'count'    => ProviderTrace::count(),
 				'warning'  => ProviderTrace::is_enabled()
-					? __( 'Provider tracing is enabled. Logs may contain prompt content. Disable on shared environments.', 'sd-ai-agent' )
+					? __( 'Provider tracing is enabled. Logs may contain prompt content. Disable on shared environments.', 'superdav-ai-agent' )
 					: '',
 			)
 		);
@@ -232,7 +232,7 @@ final class TraceController extends XWP_REST_Controller {
 				'max_rows' => ProviderTrace::get_max_rows(),
 				'count'    => ProviderTrace::count(),
 				'warning'  => ProviderTrace::is_enabled()
-					? __( 'Provider tracing is enabled. Logs may contain prompt content. Disable on shared environments.', 'sd-ai-agent' )
+					? __( 'Provider tracing is enabled. Logs may contain prompt content. Disable on shared environments.', 'superdav-ai-agent' )
 					: '',
 			)
 		);

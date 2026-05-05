@@ -72,24 +72,24 @@ function AbilityCategorySection( {
 	} ).length;
 
 	return (
-		<div className="sd-ai-agent-abilities-category">
+		<div className="sdaa-abilities-category">
 			<button
 				type="button"
-				className="sd-ai-agent-abilities-category-header"
+				className="sdaa-abilities-category-header"
 				onClick={ () => setOpen( ( v ) => ! v ) }
 				aria-expanded={ open }
 			>
-				<span className="sd-ai-agent-abilities-category-chevron">
+				<span className="sdaa-abilities-category-chevron">
 					{ open ? '▾' : '▸' }
 				</span>
-				<span className="sd-ai-agent-abilities-category-name">
+				<span className="sdaa-abilities-category-name">
 					{ category }
 				</span>
-				<span className="sd-ai-agent-abilities-category-count">
+				<span className="sdaa-abilities-category-count">
 					{ abilities.length }
 				</span>
 				{ nonDefaultCount > 0 && (
-					<span className="sd-ai-agent-abilities-category-badge">
+					<span className="sdaa-abilities-category-badge">
 						{ nonDefaultCount }{ ' ' }
 						{ __( 'customised', 'sd-ai-agent' ) }
 					</span>
@@ -97,14 +97,14 @@ function AbilityCategorySection( {
 			</button>
 
 			{ open && (
-				<div className="sd-ai-agent-abilities-category-body">
+				<div className="sdaa-abilities-category-body">
 					{ abilities.map( ( ability ) => {
 						const currentPerm =
 							toolPermissions[ ability.name ] || 'auto';
 						return (
 							<div
 								key={ ability.name }
-								className="sd-ai-agent-ability-row"
+								className="sdaa-ability-row"
 							>
 								<SelectControl
 									label={ ability.label || ability.name }
@@ -217,10 +217,10 @@ export default function AbilitiesManager( {
 	const isFiltering = search || categoryFilter;
 
 	return (
-		<div className="sd-ai-agent-abilities-manager">
+		<div className="sdaa-abilities-manager">
 			{ /* Toolbar: search + category filter + expand/collapse */ }
-			<div className="sd-ai-agent-abilities-toolbar">
-				<div className="sd-ai-agent-abilities-search">
+			<div className="sdaa-abilities-toolbar">
+				<div className="sdaa-abilities-search">
 					<SearchControl
 						label={ __( 'Search abilities', 'sd-ai-agent' ) }
 						value={ search }
@@ -231,7 +231,7 @@ export default function AbilitiesManager( {
 						) }
 					/>
 				</div>
-				<div className="sd-ai-agent-abilities-filters">
+				<div className="sdaa-abilities-filters">
 					<SelectControl
 						label={ __( 'Category', 'sd-ai-agent' ) }
 						value={ categoryFilter }
@@ -239,7 +239,7 @@ export default function AbilitiesManager( {
 						onChange={ setCategoryFilter }
 						__nextHasNoMarginBottom
 					/>
-					<div className="sd-ai-agent-abilities-expand-buttons">
+					<div className="sdaa-abilities-expand-buttons">
 						<Button
 							variant="tertiary"
 							size="small"
@@ -259,7 +259,7 @@ export default function AbilitiesManager( {
 			</div>
 
 			{ /* Result count */ }
-			<p className="sd-ai-agent-abilities-count description">
+			<p className="sdaa-abilities-count description">
 				{ filtered.length === abilities.length
 					? sprintf(
 							/* translators: %d: total number of abilities */
@@ -285,7 +285,7 @@ export default function AbilitiesManager( {
 			) }
 
 			{ /* Category sections */ }
-			<div className="sd-ai-agent-abilities-sections">
+			<div className="sdaa-abilities-sections">
 				{ grouped.map( ( [ category, categoryAbilities ] ) => (
 					<AbilityCategorySection
 						key={ category }

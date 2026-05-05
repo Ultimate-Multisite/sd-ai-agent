@@ -24,6 +24,9 @@
     <!-- lib/ contains bundled WP 7.0 SDK files and PSR-compliant third-party code
          that follows PSR-2/PSR-12 coding standards rather than WordPress coding standards. -->
     <exclude-pattern>*/lib/*</exclude-pattern>
+    <!-- stubs/ contains PHPStan type stubs for external classes unavailable at analysis time.
+         They use stub-file conventions (empty function bodies) rather than WordPress coding standards. -->
+    <exclude-pattern>*/stubs/*</exclude-pattern>
 
     <!-- Arguments -->
     <arg name="extensions" value="php"/>
@@ -35,7 +38,7 @@
     <config name="minimum_supported_wp_version" value="6.9"/>
 
     <!-- Text domain -->
-    <config name="text_domain" value="sd-ai-agent"/>
+    <config name="text_domain" value="superdav-ai-agent"/>
 
     <!-- Use WordPress Coding Standards -->
     <rule ref="WordPress">
@@ -114,7 +117,7 @@
     <rule ref="WordPress.WP.I18n">
         <properties>
             <property name="text_domain" type="array">
-                <element value="sd-ai-agent"/>
+                <element value="superdav-ai-agent"/>
             </property>
         </properties>
     </rule>

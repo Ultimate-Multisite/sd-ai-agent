@@ -51,14 +51,14 @@ export default function ImportDialog( { onClose } ) {
 					setError(
 						__(
 							'Invalid format. Expected sd-ai-agent-v1.',
-							'sd-ai-agent'
+							'superdav-ai-agent'
 						)
 					);
 					return;
 				}
 				setFileData( data );
 			} catch {
-				setError( __( 'Invalid JSON file.', 'sd-ai-agent' ) );
+				setError( __( 'Invalid JSON file.', 'superdav-ai-agent' ) );
 			}
 		};
 		reader.readAsText( file );
@@ -83,18 +83,20 @@ export default function ImportDialog( { onClose } ) {
 	}, [ fileData, importSession, onClose ] );
 
 	return (
-		<div className="sd-ai-agent-shortcuts-overlay">
-			<div className="sd-ai-agent-export-dialog" ref={ dialogRef }>
-				<div className="sd-ai-agent-export-header">
-					<h3>{ __( 'Import Conversation', 'sd-ai-agent' ) }</h3>
+		<div className="sdaa-shortcuts-overlay">
+			<div className="sdaa-export-dialog" ref={ dialogRef }>
+				<div className="sdaa-export-header">
+					<h3>
+						{ __( 'Import Conversation', 'superdav-ai-agent' ) }
+					</h3>
 					<button type="button" onClick={ onClose }>
 						&times;
 					</button>
 				</div>
-				<div className="sd-ai-agent-export-body">
+				<div className="sdaa-export-body">
 					<div
 						ref={ dropRef }
-						className="sd-ai-agent-import-dropzone"
+						className="sdaa-import-dropzone"
 						role="button"
 						tabIndex={ 0 }
 						onDragOver={ ( e ) => e.preventDefault() }
@@ -128,17 +130,21 @@ export default function ImportDialog( { onClose } ) {
 						} }
 					>
 						{ fileName ? (
-							<div className="sd-ai-agent-import-file">
+							<div className="sdaa-import-file">
 								<strong>{ fileName }</strong>
 								{ fileData && (
 									<p>
 										{ fileData.title ||
 											__(
 												'Untitled',
-												'sd-ai-agent'
+												'superdav-ai-agent'
 											) }{ ' ' }
 										({ fileData.messages?.length || 0 }{ ' ' }
-										{ __( 'messages', 'sd-ai-agent' ) })
+										{ __(
+											'messages',
+											'superdav-ai-agent'
+										) }
+										)
 									</p>
 								) }
 							</div>
@@ -146,22 +152,20 @@ export default function ImportDialog( { onClose } ) {
 							<p>
 								{ __(
 									'Drop a .json file here or click to browse',
-									'sd-ai-agent'
+									'superdav-ai-agent'
 								) }
 							</p>
 						) }
 					</div>
-					{ error && (
-						<p className="sd-ai-agent-import-error">{ error }</p>
-					) }
+					{ error && <p className="sdaa-import-error">{ error }</p> }
 				</div>
-				<div className="sd-ai-agent-export-footer">
+				<div className="sdaa-export-footer">
 					<button
 						type="button"
 						className="button"
 						onClick={ onClose }
 					>
-						{ __( 'Cancel', 'sd-ai-agent' ) }
+						{ __( 'Cancel', 'superdav-ai-agent' ) }
 					</button>
 					<button
 						type="button"
@@ -169,7 +173,7 @@ export default function ImportDialog( { onClose } ) {
 						onClick={ handleImport }
 						disabled={ ! fileData }
 					>
-						{ __( 'Import', 'sd-ai-agent' ) }
+						{ __( 'Import', 'superdav-ai-agent' ) }
 					</button>
 				</div>
 			</div>

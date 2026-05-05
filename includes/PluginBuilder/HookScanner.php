@@ -37,7 +37,7 @@ class HookScanner {
 		if ( empty( $plugin_slug ) ) {
 			return new WP_Error(
 				'sd_ai_agent_plugin_not_found',
-				__( 'Plugin slug must not be empty.', 'sd-ai-agent' )
+				__( 'Plugin slug must not be empty.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -47,7 +47,7 @@ class HookScanner {
 			return new WP_Error(
 				'sd_ai_agent_plugin_not_found',
 				/* translators: %s: plugin slug */
-				sprintf( __( 'Plugin not found: %s', 'sd-ai-agent' ), $plugin_slug )
+				sprintf( __( 'Plugin not found: %s', 'superdav-ai-agent' ), $plugin_slug )
 			);
 		}
 
@@ -66,7 +66,7 @@ class HookScanner {
 		if ( empty( $theme_slug ) ) {
 			return new WP_Error(
 				'sd_ai_agent_theme_not_found',
-				__( 'Theme slug must not be empty.', 'sd-ai-agent' )
+				__( 'Theme slug must not be empty.', 'superdav-ai-agent' )
 			);
 		}
 
@@ -76,7 +76,7 @@ class HookScanner {
 			return new WP_Error(
 				'sd_ai_agent_theme_not_found',
 				/* translators: %s: theme slug */
-				sprintf( __( 'Theme not found: %s', 'sd-ai-agent' ), $theme_slug )
+				sprintf( __( 'Theme not found: %s', 'superdav-ai-agent' ), $theme_slug )
 			);
 		}
 

@@ -33,8 +33,8 @@ class UserAbilities {
 		wp_register_ability(
 			'ai-agent/list-users',
 			[
-				'label'               => __( 'List Users', 'sd-ai-agent' ),
-				'description'         => __( 'List WordPress users with optional filtering by role, search term, or number. Returns ID, login, email, display name, roles, and registration date.', 'sd-ai-agent' ),
+				'label'               => __( 'List Users', 'superdav-ai-agent' ),
+				'description'         => __( 'List WordPress users with optional filtering by role, search term, or number. Returns ID, login, email, display name, roles, and registration date.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -78,8 +78,8 @@ class UserAbilities {
 		wp_register_ability(
 			'ai-agent/create-user',
 			[
-				'label'               => __( 'Create User', 'sd-ai-agent' ),
-				'description'         => __( 'Create a new WordPress user with the specified username, email, role, and optional display name. Returns the new user ID.', 'sd-ai-agent' ),
+				'label'               => __( 'Create User', 'superdav-ai-agent' ),
+				'description'         => __( 'Create a new WordPress user with the specified username, email, role, and optional display name. Returns the new user ID.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -134,8 +134,8 @@ class UserAbilities {
 		wp_register_ability(
 			'ai-agent/update-user-role',
 			[
-				'label'               => __( 'Update User Role', 'sd-ai-agent' ),
-				'description'         => __( 'Change the role of an existing WordPress user. Provide either user_id or user_email to identify the user.', 'sd-ai-agent' ),
+				'label'               => __( 'Update User Role', 'superdav-ai-agent' ),
+				'description'         => __( 'Change the role of an existing WordPress user. Provide either user_id or user_email to identify the user.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -252,18 +252,18 @@ class UserAbilities {
 		$send_email   = (bool) ( $input['send_email'] ?? false );
 
 		if ( empty( $username ) ) {
-			return new WP_Error( 'ai_agent_empty_username', __( 'Username is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ai_agent_empty_username', __( 'Username is required.', 'superdav-ai-agent' ) );
 		}
 
 		if ( empty( $email ) || ! is_email( $email ) ) {
-			return new WP_Error( 'ai_agent_invalid_email', __( 'A valid email address is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ai_agent_invalid_email', __( 'A valid email address is required.', 'superdav-ai-agent' ) );
 		}
 
 		if ( username_exists( $username ) ) {
 			return new WP_Error(
 				'ai_agent_username_exists',
 				/* translators: %s: username */
-				sprintf( __( 'Username "%s" is already taken.', 'sd-ai-agent' ), $username )
+				sprintf( __( 'Username "%s" is already taken.', 'superdav-ai-agent' ), $username )
 			);
 		}
 
@@ -271,7 +271,7 @@ class UserAbilities {
 			return new WP_Error(
 				'ai_agent_email_exists',
 				/* translators: %s: email address */
-				sprintf( __( 'Email "%s" is already registered.', 'sd-ai-agent' ), $email )
+				sprintf( __( 'Email "%s" is already registered.', 'superdav-ai-agent' ), $email )
 			);
 		}
 
@@ -281,7 +281,7 @@ class UserAbilities {
 			return new WP_Error(
 				'ai_agent_invalid_role',
 				/* translators: %s: role slug */
-				sprintf( __( 'Role "%s" does not exist.', 'sd-ai-agent' ), $role )
+				sprintf( __( 'Role "%s" does not exist.', 'superdav-ai-agent' ), $role )
 			);
 		}
 
@@ -331,7 +331,7 @@ class UserAbilities {
 		$new_role = sanitize_text_field( $input['role'] ?? '' );
 
 		if ( empty( $new_role ) ) {
-			return new WP_Error( 'ai_agent_empty_role', __( 'Role is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ai_agent_empty_role', __( 'Role is required.', 'superdav-ai-agent' ) );
 		}
 
 		// Validate role exists.
@@ -340,7 +340,7 @@ class UserAbilities {
 			return new WP_Error(
 				'ai_agent_invalid_role',
 				/* translators: %s: role slug */
-				sprintf( __( 'Role "%s" does not exist.', 'sd-ai-agent' ), $new_role )
+				sprintf( __( 'Role "%s" does not exist.', 'superdav-ai-agent' ), $new_role )
 			);
 		}
 
@@ -353,7 +353,7 @@ class UserAbilities {
 		}
 
 		if ( ! ( $user instanceof WP_User ) ) {
-			return new WP_Error( 'ai_agent_user_not_found', __( 'User not found. Provide a valid user_id or user_email.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ai_agent_user_not_found', __( 'User not found. Provide a valid user_id or user_email.', 'superdav-ai-agent' ) );
 		}
 
 		// Prevent demoting the last administrator.
@@ -367,7 +367,7 @@ class UserAbilities {
 			if ( $admin_count <= 1 ) {
 				return new WP_Error(
 					'ai_agent_last_admin',
-					__( 'Cannot change the role of the last administrator.', 'sd-ai-agent' )
+					__( 'Cannot change the role of the last administrator.', 'superdav-ai-agent' )
 				);
 			}
 		}

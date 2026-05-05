@@ -22,7 +22,7 @@ export function AiIcon( { thinking = false, size = 14 } ) {
 			fill="currentColor"
 			aria-hidden="true"
 			focusable="false"
-			className={ `gaa-ai-icon${ thinking ? ' thinking' : '' }` }
+			className={ `sdaa-ai-icon${ thinking ? ' thinking' : '' }` }
 		>
 			<text
 				x="1.5"

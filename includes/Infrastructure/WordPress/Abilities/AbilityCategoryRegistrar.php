@@ -45,8 +45,8 @@ final class AbilityCategoryRegistrar {
 		wp_register_ability_category(
 			'sd-ai-agent',
 			array(
-				'label'       => __( 'Superdav AI Agent', 'sd-ai-agent' ),
-				'description' => __( 'Superdav AI Agent memory and skill abilities.', 'sd-ai-agent' ),
+				'label'       => __( 'Superdav AI Agent', 'superdav-ai-agent' ),
+				'description' => __( 'Superdav AI Agent memory and skill abilities.', 'superdav-ai-agent' ),
 			)
 		);
 	}

@@ -43,7 +43,7 @@ trait PermissionTrait {
 		if ( ! is_user_logged_in() ) {
 			return new WP_Error(
 				'rest_not_logged_in',
-				__( 'You must be logged in to use the AI chat.', 'sd-ai-agent' ),
+				__( 'You must be logged in to use the AI chat.', 'superdav-ai-agent' ),
 				array( 'status' => 401 )
 			);
 		}
@@ -51,7 +51,7 @@ trait PermissionTrait {
 		if ( ! RolePermissions::current_user_has_chat_access() ) {
 			return new WP_Error(
 				'rest_forbidden',
-				__( 'Your user role does not have permission to access the AI chat.', 'sd-ai-agent' ),
+				__( 'Your user role does not have permission to access the AI chat.', 'superdav-ai-agent' ),
 				array( 'status' => 403 )
 			);
 		}

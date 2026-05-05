@@ -324,7 +324,7 @@ export default function InputArea() {
 	}, [] );
 
 	return (
-		<div className="gaa-cr-input-area">
+		<div className="sdaa-cr-input-area">
 			{ showSlash && (
 				<SlashCommandMenu
 					filter={ text }
@@ -346,7 +346,7 @@ export default function InputArea() {
 				/>
 			) }
 			{ queueCount > 0 && (
-				<div className="gaa-cr-queue-indicator">
+				<div className="sdaa-cr-queue-indicator">
 					{ queueCount === 1
 						? __( '1 message queued', 'sd-ai-agent' )
 						: sprintf(
@@ -356,9 +356,9 @@ export default function InputArea() {
 						  ) }
 				</div>
 			) }
-			<div className="gaa-cr-input-inner">
+			<div className="sdaa-cr-input-inner">
 				<div
-					className={ `gaa-cr-input-frame${
+					className={ `sdaa-cr-input-frame${
 						isDragOver ? ' is-drag-over' : ''
 					}` }
 					role="presentation"
@@ -374,11 +374,11 @@ export default function InputArea() {
 					onDrop={ handleDrop }
 				>
 					{ attachments.length > 0 && (
-						<div className="gaa-cr-attachments">
+						<div className="sdaa-cr-attachments">
 							{ attachments.map( ( a, i ) => (
 								<div
 									key={ i }
-									className="gaa-cr-attachment-thumb"
+									className="sdaa-cr-attachment-thumb"
 								>
 									{ a.isImage ? (
 										<img src={ a.dataUrl } alt={ a.name } />
@@ -390,12 +390,12 @@ export default function InputArea() {
 												.toUpperCase() }
 										</span>
 									) }
-									<span className="gaa-cr-attachment-thumb-name">
+									<span className="sdaa-cr-attachment-thumb-name">
 										{ a.name }
 									</span>
 									<button
 										type="button"
-										className="gaa-cr-attachment-thumb-remove"
+										className="sdaa-cr-attachment-thumb-remove"
 										onClick={ () =>
 											setAttachments( ( prev ) =>
 												prev.filter(
@@ -416,7 +416,7 @@ export default function InputArea() {
 					) }
 					<textarea
 						ref={ taRef }
-						className="gaa-cr-input-textarea"
+						className="sdaa-cr-input-textarea"
 						placeholder={
 							sending
 								? __(
@@ -434,8 +434,8 @@ export default function InputArea() {
 						onPaste={ handlePaste }
 						rows={ 2 }
 					/>
-					<div className="gaa-cr-input-toolbar">
-						<div className="gaa-cr-input-toolbar-left">
+					<div className="sdaa-cr-input-toolbar">
+						<div className="sdaa-cr-input-toolbar-left">
 							<input
 								ref={ fileRef }
 								type="file"
@@ -451,7 +451,7 @@ export default function InputArea() {
 							/>
 							<button
 								type="button"
-								className="gaa-cr-icon-btn"
+								className="sdaa-cr-icon-btn"
 								onClick={ () => fileRef.current?.click() }
 								aria-label={ __(
 									'Attach file',
@@ -463,11 +463,11 @@ export default function InputArea() {
 							<ModelPicker />
 							<AgentPicker />
 						</div>
-						<div className="gaa-cr-input-toolbar-right">
+						<div className="sdaa-cr-input-toolbar-right">
 							{ micSupported && (
 								<button
 									type="button"
-									className={ `gaa-cr-icon-btn${
+									className={ `sdaa-cr-icon-btn${
 										isListening ? ' is-active' : ''
 									}` }
 									onClick={ toggleListening }
@@ -487,7 +487,7 @@ export default function InputArea() {
 							{ sending ? (
 								<button
 									type="button"
-									className="gaa-cr-send-btn is-stop"
+									className="sdaa-cr-send-btn is-stop"
 									onClick={ stopGeneration }
 									aria-label={ __(
 										'Stop generation',
@@ -499,7 +499,7 @@ export default function InputArea() {
 							) : (
 								<button
 									type="button"
-									className="gaa-cr-send-btn"
+									className="sdaa-cr-send-btn"
 									onClick={ handleSend }
 									disabled={ ! canSend }
 									aria-label={ __(

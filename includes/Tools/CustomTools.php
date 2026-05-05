@@ -239,11 +239,11 @@ class CustomTools {
 	 */
 	public static function validate( array $data ) {
 		if ( empty( $data['name'] ) ) {
-			return new \WP_Error( 'missing_name', __( 'Tool name is required.', 'sd-ai-agent' ) );
+			return new \WP_Error( 'missing_name', __( 'Tool name is required.', 'superdav-ai-agent' ) );
 		}
 
 		if ( empty( $data['type'] ) || ! in_array( $data['type'], self::VALID_TYPES, true ) ) {
-			return new \WP_Error( 'invalid_type', __( 'Tool type must be http, action, or cli.', 'sd-ai-agent' ) );
+			return new \WP_Error( 'invalid_type', __( 'Tool type must be http, action, or cli.', 'superdav-ai-agent' ) );
 		}
 
 		// Auto-generate slug from name if not provided.
@@ -266,11 +266,11 @@ class CustomTools {
 			case self::TYPE_HTTP:
 				// @phpstan-ignore-next-line
 				if ( empty( $config['url'] ) ) {
-					return new \WP_Error( 'missing_url', __( 'HTTP tools require a URL.', 'sd-ai-agent' ) );
+					return new \WP_Error( 'missing_url', __( 'HTTP tools require a URL.', 'superdav-ai-agent' ) );
 				}
 				// @phpstan-ignore-next-line
 				if ( ! empty( $config['method'] ) && ! in_array( strtoupper( $config['method'] ), self::VALID_HTTP_METHODS, true ) ) {
-					return new \WP_Error( 'invalid_method', __( 'Invalid HTTP method.', 'sd-ai-agent' ) );
+					return new \WP_Error( 'invalid_method', __( 'Invalid HTTP method.', 'superdav-ai-agent' ) );
 				}
 				// @phpstan-ignore-next-line
 				$config['method'] = strtoupper( $config['method'] ?? 'GET' );
@@ -279,14 +279,14 @@ class CustomTools {
 			case self::TYPE_ACTION:
 				// @phpstan-ignore-next-line
 				if ( empty( $config['hook_name'] ) ) {
-					return new \WP_Error( 'missing_hook', __( 'Action tools require a hook_name.', 'sd-ai-agent' ) );
+					return new \WP_Error( 'missing_hook', __( 'Action tools require a hook_name.', 'superdav-ai-agent' ) );
 				}
 				break;
 
 			case self::TYPE_CLI:
 				// @phpstan-ignore-next-line
 				if ( empty( $config['command'] ) ) {
-					return new \WP_Error( 'missing_command', __( 'CLI tools require a command template.', 'sd-ai-agent' ) );
+					return new \WP_Error( 'missing_command', __( 'CLI tools require a command template.', 'superdav-ai-agent' ) );
 				}
 				break;
 		}

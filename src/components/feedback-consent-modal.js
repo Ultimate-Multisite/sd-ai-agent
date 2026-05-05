@@ -171,7 +171,10 @@ export default function FeedbackConsentModal( {
 			setTimeout( onClose, 1500 );
 		} catch {
 			setError(
-				__( 'Failed to send report. Please try again.', 'sd-ai-agent' )
+				__(
+					'Failed to send report. Please try again.',
+					'superdav-ai-agent'
+				)
 			);
 			setIsSending( false );
 		}
@@ -188,58 +191,61 @@ export default function FeedbackConsentModal( {
 	const summary = preview?.summary;
 
 	return (
-		<div className="sd-ai-agent-shortcuts-overlay">
+		<div className="sdaa-shortcuts-overlay">
 			<div
-				className="sd-ai-agent-feedback-modal"
+				className="sdaa-feedback-modal"
 				ref={ dialogRef }
 				role="dialog"
 				aria-modal="true"
-				aria-labelledby="sd-ai-agent-feedback-title"
+				aria-labelledby="sdaa-feedback-title"
 			>
-				<div className="sd-ai-agent-feedback-modal__header">
-					<h3 id="sd-ai-agent-feedback-title">
-						{ __( 'Send Feedback Report', 'sd-ai-agent' ) }
+				<div className="sdaa-feedback-modal__header">
+					<h3 id="sdaa-feedback-title">
+						{ __( 'Send Feedback Report', 'superdav-ai-agent' ) }
 					</h3>
 					<button
 						type="button"
-						className="sd-ai-agent-feedback-modal__close"
+						className="sdaa-feedback-modal__close"
 						onClick={ onClose }
-						aria-label={ __( 'Close', 'sd-ai-agent' ) }
+						aria-label={ __( 'Close', 'superdav-ai-agent' ) }
 					>
 						&times;
 					</button>
 				</div>
-				<div className="sd-ai-agent-feedback-modal__body">
+				<div className="sdaa-feedback-modal__body">
 					{ isSent ? (
-						<p className="sd-ai-agent-feedback-modal__success">
-							{ __( 'Report sent. Thank you!', 'sd-ai-agent' ) }
+						<p className="sdaa-feedback-modal__success">
+							{ __(
+								'Report sent. Thank you!',
+								'superdav-ai-agent'
+							) }
 						</p>
 					) : (
 						<>
-							<p className="sd-ai-agent-feedback-modal__notice">
+							<p className="sdaa-feedback-modal__notice">
 								{ __(
 									'No passwords, API keys, or credentials are included. Server paths are anonymized. Review the full payload below.',
-									'sd-ai-agent'
+									'superdav-ai-agent'
 								) }
 							</p>
 
 							{ /* Summary stats — shown when a session is loaded */ }
 							{ sessionId && (
-								<div className="sd-ai-agent-feedback-modal__stats">
+								<div className="sdaa-feedback-modal__stats">
 									{ previewLoading && (
-										<p className="sd-ai-agent-feedback-modal__stats-loading">
+										<p className="sdaa-feedback-modal__stats-loading">
 											{ __(
 												'Loading report preview…',
-												'sd-ai-agent'
+												'superdav-ai-agent'
 											) }
 										</p>
 									) }
 									{ ! previewLoading && summary && (
-										<ul className="sd-ai-agent-feedback-modal__stats-list">
+										<ul className="sdaa-feedback-modal__stats-list">
 											<li>
 												{ __(
 													'Messages:',
-													'sd-ai-agent'
+													'superdav-ai-agent'
 												) }{ ' ' }
 												<strong>
 													{ summary.message_count }
@@ -248,7 +254,7 @@ export default function FeedbackConsentModal( {
 											<li>
 												{ __(
 													'Tool calls:',
-													'sd-ai-agent'
+													'superdav-ai-agent'
 												) }{ ' ' }
 												<strong>
 													{ summary.tool_call_count }
@@ -257,7 +263,7 @@ export default function FeedbackConsentModal( {
 											<li>
 												{ __(
 													'Environment keys:',
-													'sd-ai-agent'
+													'superdav-ai-agent'
 												) }{ ' ' }
 												<strong>
 													{ summary.environment_keys
@@ -268,7 +274,7 @@ export default function FeedbackConsentModal( {
 												<li>
 													{ __(
 														'Model:',
-														'sd-ai-agent'
+														'superdav-ai-agent'
 													) }{ ' ' }
 													<strong>
 														{ summary.model_id }
@@ -285,13 +291,13 @@ export default function FeedbackConsentModal( {
 								messageIndex !== undefined &&
 								messageIndex !== null && (
 									<label
-										htmlFor="sd-ai-agent-full-conversation"
-										className="sd-ai-agent-feedback-modal__strip-label"
+										htmlFor="sdaa-full-conversation"
+										className="sdaa-feedback-modal__strip-label"
 									>
 										<input
-											id="sd-ai-agent-full-conversation"
+											id="sdaa-full-conversation"
 											type="checkbox"
-											className="sd-ai-agent-feedback-modal__strip-checkbox"
+											className="sdaa-feedback-modal__strip-checkbox"
 											checked={ includeFullConversation }
 											onChange={ ( e ) =>
 												setIncludeFullConversation(
@@ -301,7 +307,7 @@ export default function FeedbackConsentModal( {
 										/>
 										{ __(
 											'Include full conversation (by default only the selected response and 2 surrounding messages are sent)',
-											'sd-ai-agent'
+											'superdav-ai-agent'
 										) }
 									</label>
 								) }
@@ -309,13 +315,13 @@ export default function FeedbackConsentModal( {
 							{ /* Strip tool results checkbox */ }
 							{ sessionId && (
 								<label
-									htmlFor="sd-ai-agent-strip-tool-results"
-									className="sd-ai-agent-feedback-modal__strip-label"
+									htmlFor="sdaa-strip-tool-results"
+									className="sdaa-feedback-modal__strip-label"
 								>
 									<input
-										id="sd-ai-agent-strip-tool-results"
+										id="sdaa-strip-tool-results"
 										type="checkbox"
-										className="sd-ai-agent-feedback-modal__strip-checkbox"
+										className="sdaa-feedback-modal__strip-checkbox"
 										checked={ stripToolResults }
 										onChange={ ( e ) =>
 											setStripToolResults(
@@ -325,17 +331,17 @@ export default function FeedbackConsentModal( {
 									/>
 									{ __(
 										'Strip tool results (aggressive privacy — keeps tool names and arguments but redacts all outputs)',
-										'sd-ai-agent'
+										'superdav-ai-agent'
 									) }
 								</label>
 							) }
 
 							{ /* Collapsible payload preview */ }
 							{ sessionId && preview?.payload && (
-								<div className="sd-ai-agent-feedback-modal__payload-section">
+								<div className="sdaa-feedback-modal__payload-section">
 									<button
 										type="button"
-										className="sd-ai-agent-feedback-modal__payload-toggle"
+										className="sdaa-feedback-modal__payload-toggle"
 										onClick={ () =>
 											setPayloadExpanded( ( v ) => ! v )
 										}
@@ -344,15 +350,15 @@ export default function FeedbackConsentModal( {
 										{ payloadExpanded
 											? __(
 													'Hide full payload ▲',
-													'sd-ai-agent'
+													'superdav-ai-agent'
 											  )
 											: __(
 													'View full payload ▼',
-													'sd-ai-agent'
+													'superdav-ai-agent'
 											  ) }
 									</button>
 									{ payloadExpanded && (
-										<pre className="sd-ai-agent-feedback-modal__payload-json">
+										<pre className="sdaa-feedback-modal__payload-json">
 											{ JSON.stringify(
 												preview.payload,
 												null,
@@ -364,17 +370,17 @@ export default function FeedbackConsentModal( {
 							) }
 
 							<label
-								htmlFor="sd-ai-agent-feedback-description"
-								className="sd-ai-agent-feedback-modal__label"
+								htmlFor="sdaa-feedback-description"
+								className="sdaa-feedback-modal__label"
 							>
 								{ __(
 									'Describe the issue (optional):',
-									'sd-ai-agent'
+									'superdav-ai-agent'
 								) }
 							</label>
 							<textarea
-								id="sd-ai-agent-feedback-description"
-								className="sd-ai-agent-feedback-modal__textarea"
+								id="sdaa-feedback-description"
+								className="sdaa-feedback-modal__textarea"
 								value={ description }
 								onChange={ ( e ) =>
 									setDescription( e.target.value )
@@ -382,11 +388,11 @@ export default function FeedbackConsentModal( {
 								rows={ 4 }
 								placeholder={ __(
 									'What went wrong?',
-									'sd-ai-agent'
+									'superdav-ai-agent'
 								) }
 							/>
 							{ error && (
-								<p className="sd-ai-agent-feedback-modal__error">
+								<p className="sdaa-feedback-modal__error">
 									{ error }
 								</p>
 							) }
@@ -394,14 +400,14 @@ export default function FeedbackConsentModal( {
 					) }
 				</div>
 				{ ! isSent && (
-					<div className="sd-ai-agent-feedback-modal__footer">
+					<div className="sdaa-feedback-modal__footer">
 						<button
 							type="button"
 							className="button"
 							onClick={ onClose }
 							disabled={ isSending }
 						>
-							{ __( 'Dismiss', 'sd-ai-agent' ) }
+							{ __( 'Dismiss', 'superdav-ai-agent' ) }
 						</button>
 						<button
 							type="button"
@@ -410,8 +416,8 @@ export default function FeedbackConsentModal( {
 							disabled={ isSending }
 						>
 							{ isSending
-								? __( 'Sending\u2026', 'sd-ai-agent' )
-								: __( 'Send Report', 'sd-ai-agent' ) }
+								? __( 'Sending\u2026', 'superdav-ai-agent' )
+								: __( 'Send Report', 'superdav-ai-agent' ) }
 						</button>
 					</div>
 				) }

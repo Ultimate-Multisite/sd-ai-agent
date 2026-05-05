@@ -45,45 +45,42 @@ export default function ToolConfirmationDialog( {
 	}
 
 	return (
-		<div className="sd-ai-agent-shortcuts-overlay">
-			<div className="sd-ai-agent-tool-confirm-dialog" ref={ dialogRef }>
-				<div className="sd-ai-agent-tool-confirm-header">
+		<div className="sdaa-shortcuts-overlay">
+			<div className="sdaa-tool-confirm-dialog" ref={ dialogRef }>
+				<div className="sdaa-tool-confirm-header">
 					<h3>
 						{ __( 'Tool Confirmation Required', 'sd-ai-agent' ) }
 					</h3>
 				</div>
-				<div className="sd-ai-agent-tool-confirm-body">
-					<p className="sd-ai-agent-tool-confirm-desc">
+				<div className="sdaa-tool-confirm-body">
+					<p className="sdaa-tool-confirm-desc">
 						{ __(
 							'The AI wants to use the following tools:',
 							'sd-ai-agent'
 						) }
 					</p>
 					{ confirmation.tools.map( ( tool ) => (
-						<div
-							key={ tool.id }
-							className="sd-ai-agent-tool-confirm-item"
-						>
-							<div className="sd-ai-agent-tool-confirm-name">
+						<div key={ tool.id } className="sdaa-tool-confirm-item">
+							<div className="sdaa-tool-confirm-name">
 								{ tool.label || tool.name }
 							</div>
 							{ tool.description && (
-								<p className="sd-ai-agent-tool-confirm-description">
+								<p className="sdaa-tool-confirm-description">
 									{ tool.description }
 								</p>
 							) }
 							{ tool.args && (
-								<details className="sd-ai-agent-tool-confirm-details">
+								<details className="sdaa-tool-confirm-details">
 									<summary>
 										{ __(
 											'Technical details',
 											'sd-ai-agent'
 										) }
 									</summary>
-									<div className="sd-ai-agent-tool-confirm-tool-name">
+									<div className="sdaa-tool-confirm-tool-name">
 										{ tool.name }
 									</div>
-									<pre className="sd-ai-agent-tool-confirm-args">
+									<pre className="sdaa-tool-confirm-args">
 										{ JSON.stringify( tool.args, null, 2 ) }
 									</pre>
 								</details>
@@ -91,7 +88,7 @@ export default function ToolConfirmationDialog( {
 						</div>
 					) ) }
 					<label
-						className="sd-ai-agent-tool-confirm-always"
+						className="sdaa-tool-confirm-always"
 						htmlFor="tool-confirm-always-allow"
 					>
 						<input
@@ -108,7 +105,7 @@ export default function ToolConfirmationDialog( {
 						) }
 					</label>
 				</div>
-				<div className="sd-ai-agent-tool-confirm-footer">
+				<div className="sdaa-tool-confirm-footer">
 					<button
 						type="button"
 						className="button"

@@ -625,7 +625,7 @@ final class SessionController {
 				$data['folder'] = sanitize_text_field( $request->get_param( 'folder' ) ?? '' );
 				break;
 			default:
-				return new WP_Error( 'sd_ai_agent_invalid_action', __( 'Invalid bulk action.', 'sd-ai-agent' ), array( 'status' => 400 ) );
+				return new WP_Error( 'sd_ai_agent_invalid_action', __( 'Invalid bulk action.', 'superdav-ai-agent' ), array( 'status' => 400 ) );
 		}
 
 		$count = $this->database->bulk_update_sessions( $ids, get_current_user_id(), $data );
@@ -657,7 +657,7 @@ final class SessionController {
 		if ( ! $session ) {
 			return new WP_Error(
 				'sd_ai_agent_session_not_found',
-				__( 'Session not found.', 'sd-ai-agent' ),
+				__( 'Session not found.', 'superdav-ai-agent' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -723,7 +723,7 @@ final class SessionController {
 		if ( ! $session_id ) {
 			return new WP_Error(
 				'sd_ai_agent_session_create_failed',
-				__( 'Failed to create session.', 'sd-ai-agent' ),
+				__( 'Failed to create session.', 'superdav-ai-agent' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -731,7 +731,7 @@ final class SessionController {
 		$session = $this->database->get_session( $session_id );
 
 		if ( ! $session ) {
-			return new WP_Error( 'sd_ai_agent_session_not_found', __( 'Session not found after creation.', 'sd-ai-agent' ), array( 'status' => 500 ) );
+			return new WP_Error( 'sd_ai_agent_session_not_found', __( 'Session not found after creation.', 'superdav-ai-agent' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response(
@@ -776,7 +776,7 @@ final class SessionController {
 		}
 
 		if ( empty( $data ) ) {
-			return new WP_Error( 'sd_ai_agent_no_data', __( 'No fields to update.', 'sd-ai-agent' ), array( 'status' => 400 ) );
+			return new WP_Error( 'sd_ai_agent_no_data', __( 'No fields to update.', 'superdav-ai-agent' ), array( 'status' => 400 ) );
 		}
 
 		$updated = $this->database->update_session( $session_id, $data );
@@ -784,7 +784,7 @@ final class SessionController {
 		if ( ! $updated ) {
 			return new WP_Error(
 				'sd_ai_agent_session_update_failed',
-				__( 'Failed to update session.', 'sd-ai-agent' ),
+				__( 'Failed to update session.', 'superdav-ai-agent' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -792,7 +792,7 @@ final class SessionController {
 		$session = $this->database->get_session( $session_id );
 
 		if ( ! $session ) {
-			return new WP_Error( 'sd_ai_agent_session_not_found', __( 'Session not found after update.', 'sd-ai-agent' ), array( 'status' => 500 ) );
+			return new WP_Error( 'sd_ai_agent_session_not_found', __( 'Session not found after update.', 'superdav-ai-agent' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response(
@@ -825,7 +825,7 @@ final class SessionController {
 		if ( ! $deleted ) {
 			return new WP_Error(
 				'sd_ai_agent_session_delete_failed',
-				__( 'Failed to delete session.', 'sd-ai-agent' ),
+				__( 'Failed to delete session.', 'superdav-ai-agent' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -857,7 +857,7 @@ final class SessionController {
 		if ( ! $success ) {
 			return new WP_Error(
 				'sd_ai_agent_share_failed',
-				__( 'Failed to share session.', 'sd-ai-agent' ),
+				__( 'Failed to share session.', 'superdav-ai-agent' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -878,7 +878,7 @@ final class SessionController {
 		if ( ! $success ) {
 			return new WP_Error(
 				'sd_ai_agent_unshare_failed',
-				__( 'Failed to unshare session.', 'sd-ai-agent' ),
+				__( 'Failed to unshare session.', 'superdav-ai-agent' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -898,7 +898,7 @@ final class SessionController {
 		$session    = $this->database->get_session( $session_id );
 
 		if ( ! $session ) {
-			return new WP_Error( 'sd_ai_agent_session_not_found', __( 'Session not found.', 'sd-ai-agent' ), array( 'status' => 404 ) );
+			return new WP_Error( 'sd_ai_agent_session_not_found', __( 'Session not found.', 'superdav-ai-agent' ), array( 'status' => 404 ) );
 		}
 
 		// @phpstan-ignore-next-line
@@ -917,7 +917,7 @@ final class SessionController {
 		$data = $request->get_json_params();
 
 		if ( empty( $data ) ) {
-			return new WP_Error( 'sd_ai_agent_import_empty', __( 'No import data provided.', 'sd-ai-agent' ), array( 'status' => 400 ) );
+			return new WP_Error( 'sd_ai_agent_import_empty', __( 'No import data provided.', 'superdav-ai-agent' ), array( 'status' => 400 ) );
 		}
 
 		$session_id = Export::import_json( $data, get_current_user_id() );
@@ -929,7 +929,7 @@ final class SessionController {
 		$session = $this->database->get_session( $session_id );
 
 		if ( ! $session ) {
-			return new WP_Error( 'sd_ai_agent_session_not_found', __( 'Session not found after import.', 'sd-ai-agent' ), array( 'status' => 500 ) );
+			return new WP_Error( 'sd_ai_agent_session_not_found', __( 'Session not found after import.', 'superdav-ai-agent' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response(
@@ -961,7 +961,7 @@ final class SessionController {
 			if ( null === $db_row ) {
 				return new WP_Error(
 					'sd_ai_agent_job_not_found',
-					__( 'Job not found or expired.', 'sd-ai-agent' ),
+					__( 'Job not found or expired.', 'superdav-ai-agent' ),
 					array( 'status' => 404 )
 				);
 			}
@@ -1110,13 +1110,13 @@ final class SessionController {
 		if ( ! is_array( $job ) || 'awaiting_confirmation' !== ( $job['status'] ?? '' ) ) {
 			return new WP_Error(
 				'sd_ai_agent_invalid_job',
-				__( 'Job not found or not awaiting confirmation.', 'sd-ai-agent' ),
+				__( 'Job not found or not awaiting confirmation.', 'superdav-ai-agent' ),
 				array( 'status' => 404 )
 			);
 		}
 
 		if ( ( $job['user_id'] ?? 0 ) !== get_current_user_id() ) {
-			return new WP_Error( 'sd_ai_agent_forbidden', __( 'Not authorized.', 'sd-ai-agent' ), array( 'status' => 403 ) );
+			return new WP_Error( 'sd_ai_agent_forbidden', __( 'Not authorized.', 'superdav-ai-agent' ), array( 'status' => 403 ) );
 		}
 
 		// "Always allow" — persist permission so this tool auto-executes in future.
@@ -1152,13 +1152,13 @@ final class SessionController {
 		if ( ! is_array( $job ) || 'awaiting_confirmation' !== ( $job['status'] ?? '' ) ) {
 			return new WP_Error(
 				'sd_ai_agent_invalid_job',
-				__( 'Job not found or not awaiting confirmation.', 'sd-ai-agent' ),
+				__( 'Job not found or not awaiting confirmation.', 'superdav-ai-agent' ),
 				array( 'status' => 404 )
 			);
 		}
 
 		if ( ( $job['user_id'] ?? 0 ) !== get_current_user_id() ) {
-			return new WP_Error( 'sd_ai_agent_forbidden', __( 'Not authorized.', 'sd-ai-agent' ), array( 'status' => 403 ) );
+			return new WP_Error( 'sd_ai_agent_forbidden', __( 'Not authorized.', 'superdav-ai-agent' ), array( 'status' => 403 ) );
 		}
 
 		return $this->resume_job( $job_id, $job, 'reject' );
@@ -1184,13 +1184,13 @@ final class SessionController {
 		if ( ! is_array( $job ) || 'processing' !== ( $job['status'] ?? '' ) ) {
 			return new WP_Error(
 				'sd_ai_agent_invalid_job',
-				__( 'Job not found or not currently processing.', 'sd-ai-agent' ),
+				__( 'Job not found or not currently processing.', 'superdav-ai-agent' ),
 				array( 'status' => 404 )
 			);
 		}
 
 		if ( ( $job['user_id'] ?? 0 ) !== get_current_user_id() ) {
-			return new WP_Error( 'sd_ai_agent_forbidden', __( 'Not authorized.', 'sd-ai-agent' ), array( 'status' => 403 ) );
+			return new WP_Error( 'sd_ai_agent_forbidden', __( 'Not authorized.', 'superdav-ai-agent' ), array( 'status' => 403 ) );
 		}
 
 		// Append the interrupt message to the job's pending interrupts.
@@ -1411,7 +1411,7 @@ final class SessionController {
 				$history = ConversationTrimmer::validate_tool_pairs( $history );
 			} catch ( \Exception $e ) {
 				$job['status'] = 'error';
-				$job['error']  = __( 'Invalid conversation history format.', 'sd-ai-agent' );
+				$job['error']  = __( 'Invalid conversation history format.', 'superdav-ai-agent' );
 				unset( $job['token'] );
 				set_transient( RestController::JOB_PREFIX . $job_id, $job, RestController::JOB_TTL );
 				return new WP_REST_Response( array( 'ok' => false ), 200 );
@@ -1802,7 +1802,7 @@ final class SessionController {
 		if ( null === $db_row ) {
 			return new WP_Error(
 				'sd_ai_agent_no_active_job',
-				__( 'No active job for this session.', 'sd-ai-agent' ),
+				__( 'No active job for this session.', 'superdav-ai-agent' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -1858,7 +1858,7 @@ final class SessionController {
 		$session_id = Database::create_session(
 			array(
 				'user_id'     => get_current_user_id(),
-				'title'       => __( 'Site Builder', 'sd-ai-agent' ),
+				'title'       => __( 'Site Builder', 'superdav-ai-agent' ),
 				'provider_id' => $this->settings->get( 'default_provider' ) ?: '',
 				'model_id'    => $this->settings->get( 'default_model' ) ?: '',
 			)
@@ -1870,7 +1870,7 @@ final class SessionController {
 				'site_builder_mode' => true,
 				'session_id'        => $session_id,
 				'system_prompt'     => SystemInstructionBuilder::get_site_builder_system_prompt(),
-				'message'           => __( 'Site builder mode enabled. The widget will open automatically.', 'sd-ai-agent' ),
+				'message'           => __( 'Site builder mode enabled. The widget will open automatically.', 'superdav-ai-agent' ),
 			),
 			200
 		);

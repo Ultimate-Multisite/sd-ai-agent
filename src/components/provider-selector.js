@@ -43,7 +43,7 @@ export default function ProviderSelector( { compact = false } ) {
 
 	if ( ! providers.length ) {
 		return (
-			<div className="sd-ai-agent-provider-selector">
+			<div className="sdaa-provider-selector">
 				<p>
 					<a
 						href={
@@ -51,7 +51,7 @@ export default function ProviderSelector( { compact = false } ) {
 							'options-general.php?page=options-connectors-wp-admin'
 						}
 					>
-						{ __( 'Configure a provider', 'sd-ai-agent' ) }
+						{ __( 'Configure a provider', 'superdav-ai-agent' ) }
 					</a>
 				</p>
 			</div>
@@ -68,7 +68,7 @@ export default function ProviderSelector( { compact = false } ) {
 				label: m.name || m.id,
 				value: m.id,
 		  } ) )
-		: [ { label: __( '(default)', 'sd-ai-agent' ), value: '' } ];
+		: [ { label: __( '(default)', 'superdav-ai-agent' ), value: '' } ];
 
 	const onProviderChange = ( value ) => {
 		setSelectedProvider( value );
@@ -82,13 +82,15 @@ export default function ProviderSelector( { compact = false } ) {
 
 	return (
 		<div
-			className={ `sd-ai-agent-provider-selector ${
+			className={ `sdaa-provider-selector ${
 				compact ? 'is-compact' : ''
 			}` }
 		>
-			<div className="sd-ai-agent-provider-selector__row">
+			<div className="sdaa-provider-selector__row">
 				<SelectControl
-					label={ compact ? null : __( 'Provider', 'sd-ai-agent' ) }
+					label={
+						compact ? null : __( 'Provider', 'superdav-ai-agent' )
+					}
 					value={ selectedProviderId }
 					options={ providerOptions }
 					onChange={ onProviderChange }
@@ -99,14 +101,14 @@ export default function ProviderSelector( { compact = false } ) {
 					variant="tertiary"
 					onClick={ onRefresh }
 					disabled={ loading }
-					className="sd-ai-agent-provider-selector__refresh"
+					className="sdaa-provider-selector__refresh"
 					icon="update"
-					label={ __( 'Refresh providers', 'sd-ai-agent' ) }
+					label={ __( 'Refresh providers', 'superdav-ai-agent' ) }
 					showTooltip
 				/>
 			</div>
 			<SelectControl
-				label={ compact ? null : __( 'Model', 'sd-ai-agent' ) }
+				label={ compact ? null : __( 'Model', 'superdav-ai-agent' ) }
 				value={ selectedModelId }
 				options={ modelOptions }
 				onChange={ setSelectedModel }

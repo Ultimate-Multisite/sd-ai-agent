@@ -96,7 +96,7 @@ export default function OnboardingInterview( { onComplete } ) {
 				err?.message ||
 					__(
 						'Failed to save answers. Please try again.',
-						'sd-ai-agent'
+						'superdav-ai-agent'
 					)
 			);
 		}
@@ -145,22 +145,22 @@ export default function OnboardingInterview( { onComplete } ) {
 	 */
 	function getNextButtonLabel( isSaving, isLastQ ) {
 		if ( isSaving && isLastQ ) {
-			return __( 'Saving…', 'sd-ai-agent' );
+			return __( 'Saving…', 'superdav-ai-agent' );
 		}
 		if ( isLastQ ) {
-			return __( 'Finish', 'sd-ai-agent' );
+			return __( 'Finish', 'superdav-ai-agent' );
 		}
-		return __( 'Next', 'sd-ai-agent' );
+		return __( 'Next', 'superdav-ai-agent' );
 	}
 
 	if ( loading ) {
 		return (
-			<div className="sd-ai-agent-interview sd-ai-agent-interview--loading">
+			<div className="sdaa-interview sdaa-interview--loading">
 				<Spinner />
 				<p>
 					{ __(
 						'Preparing your personalised setup…',
-						'sd-ai-agent'
+						'superdav-ai-agent'
 					) }
 				</p>
 			</div>
@@ -177,21 +177,23 @@ export default function OnboardingInterview( { onComplete } ) {
 		.filter( ( q ) => answers[ q.id ]?.trim() );
 
 	return (
-		<div className="sd-ai-agent-interview">
-			<div className="sd-ai-agent-interview__header">
-				<h2>{ __( 'Tell us about your site', 'sd-ai-agent' ) }</h2>
-				<p className="sd-ai-agent-interview__subtitle">
+		<div className="sdaa-interview">
+			<div className="sdaa-interview__header">
+				<h2>
+					{ __( 'Tell us about your site', 'superdav-ai-agent' ) }
+				</h2>
+				<p className="sdaa-interview__subtitle">
 					{ __(
 						'Your answers help the AI give you relevant suggestions and automations.',
-						'sd-ai-agent'
+						'superdav-ai-agent'
 					) }
 				</p>
-				<div className="sd-ai-agent-interview__progress">
+				<div className="sdaa-interview__progress">
 					{ questions.map( ( _, i ) => (
 						<span
 							key={ i }
 							className={ [
-								'sd-ai-agent-interview__dot',
+								'sdaa-interview__dot',
 								i === currentIndex ? 'is-active' : '',
 								i < currentIndex ? 'is-complete' : '',
 							]
@@ -204,16 +206,16 @@ export default function OnboardingInterview( { onComplete } ) {
 
 			{ /* Previous answers summary */ }
 			{ answeredSummary.length > 0 && (
-				<div className="sd-ai-agent-interview__summary">
+				<div className="sdaa-interview__summary">
 					{ answeredSummary.map( ( q ) => (
 						<div
 							key={ q.id }
-							className="sd-ai-agent-interview__summary-item"
+							className="sdaa-interview__summary-item"
 						>
-							<span className="sd-ai-agent-interview__summary-q">
+							<span className="sdaa-interview__summary-q">
 								{ q.question }
 							</span>
-							<span className="sd-ai-agent-interview__summary-a">
+							<span className="sdaa-interview__summary-a">
 								{ answers[ q.id ] }
 							</span>
 						</div>
@@ -222,16 +224,16 @@ export default function OnboardingInterview( { onComplete } ) {
 			) }
 
 			{ /* Current question */ }
-			<div className="sd-ai-agent-interview__question-card">
+			<div className="sdaa-interview__question-card">
 				<label
-					className="sd-ai-agent-interview__question-label"
+					className="sdaa-interview__question-label"
 					htmlFor={ `sd-interview-${ currentQuestion.id }` }
 				>
 					{ currentQuestion.question }
 					{ isRequired && (
 						<span
-							className="sd-ai-agent-interview__required"
-							aria-label={ __( 'required', 'sd-ai-agent' ) }
+							className="sdaa-interview__required"
+							aria-label={ __( 'required', 'superdav-ai-agent' ) }
 						>
 							{ ' *' }
 						</span>
@@ -253,27 +255,25 @@ export default function OnboardingInterview( { onComplete } ) {
 					__nextHasNoMarginBottom
 				/>
 				{ ! isRequired && (
-					<p className="sd-ai-agent-interview__optional-hint">
+					<p className="sdaa-interview__optional-hint">
 						{ __(
 							'Optional — press Enter or click Next to skip.',
-							'sd-ai-agent'
+							'superdav-ai-agent'
 						) }
 					</p>
 				) }
 			</div>
 
-			{ error && (
-				<p className="sd-ai-agent-interview__error">{ error }</p>
-			) }
+			{ error && <p className="sdaa-interview__error">{ error }</p> }
 
-			<div className="sd-ai-agent-interview__footer">
+			<div className="sdaa-interview__footer">
 				{ currentIndex > 0 && (
 					<Button
 						variant="tertiary"
 						onClick={ handleBack }
 						disabled={ saving }
 					>
-						{ __( 'Back', 'sd-ai-agent' ) }
+						{ __( 'Back', 'superdav-ai-agent' ) }
 					</Button>
 				) }
 
@@ -281,9 +281,9 @@ export default function OnboardingInterview( { onComplete } ) {
 					variant="link"
 					onClick={ handleSkip }
 					disabled={ saving }
-					className="sd-ai-agent-interview__skip"
+					className="sdaa-interview__skip"
 				>
-					{ __( 'Skip all', 'sd-ai-agent' ) }
+					{ __( 'Skip all', 'superdav-ai-agent' ) }
 				</Button>
 
 				<Button

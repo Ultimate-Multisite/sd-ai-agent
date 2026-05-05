@@ -3,7 +3,7 @@
  * DI handler for admin-only hooks.
  *
  * Replaces the inline `add_action('admin_menu', ...)` and
- * `add_action('admin_init', ...)` calls in `ai-agent-for-wp.php`.
+ * `add_action('admin_init', ...)` calls in `superdav-ai-agent.php`.
  *
  * @package SdAiAgent\Bootstrap
  * @license GPL-2.0-or-later
@@ -83,10 +83,15 @@ final class AdminHandler {
 				0
 			);
 		}
+
+		// Flush when any provider plugin is activated or deactivated so the
+		// WP SDK registry change is immediately reflected in the chat UI.
+		add_action( 'activated_plugin', [ SettingsController::class, 'flush_providers_cache' ], 10, 0 );
+		add_action( 'deactivated_plugin', [ SettingsController::class, 'flush_providers_cache' ], 10, 0 );
 	}
 
 	/**
-	 * Enqueue admin-only assets for the floating widget and screen-meta panel.
+	 * Enqueue admin-only assets for the floating widget.
 	 *
 	 * @param string $hook_suffix The current admin page hook suffix.
 	 */
@@ -105,7 +110,7 @@ final class AdminHandler {
 	#[Filter( tag: 'plugin_action_links', priority: 10 )]
 	public function add_plugin_action_links( array $actions, string $plugin_file ): array {
 		// Only modify our plugin.
-		if ( $plugin_file !== 'ai-agent-for-wp/ai-agent-for-wp.php' ) {
+		if ( $plugin_file !== 'superdav-ai-agent/superdav-ai-agent.php' ) {
 			return $actions;
 		}
 
@@ -118,13 +123,13 @@ final class AdminHandler {
 		$actions['sd_chat'] = sprintf(
 			'<a href="%s">%s</a>',
 			esc_url( $chat_url ),
-			esc_html__( 'Start Chat', 'sd-ai-agent' )
+			esc_html__( 'Start Chat', 'superdav-ai-agent' )
 		);
 
 		$actions['sd_connections'] = sprintf(
 			'<a href="%s">%s</a>',
 			esc_url( $connectors_url ),
-			esc_html__( 'Configure Connections', 'sd-ai-agent' )
+			esc_html__( 'Configure Connections', 'superdav-ai-agent' )
 		);
 
 		return $actions;

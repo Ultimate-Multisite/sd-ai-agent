@@ -67,7 +67,7 @@ class AbilityFunctionResolver extends \WP_AI_Client_Ability_Function_Resolver {
 				$function_id,
 				$function_name,
 				array(
-					'error' => __( 'Not an ability function call', 'sd-ai-agent' ),
+					'error' => __( 'Not an ability function call', 'superdav-ai-agent' ),
 					'code'  => 'invalid_ability_call',
 				)
 			);
@@ -82,7 +82,7 @@ class AbilityFunctionResolver extends \WP_AI_Client_Ability_Function_Resolver {
 				array(
 					'error' => sprintf(
 						/* translators: %s: ability name */
-						__( 'Ability "%s" was not specified in the allowed abilities list.', 'sd-ai-agent' ),
+						__( 'Ability "%s" was not specified in the allowed abilities list.', 'superdav-ai-agent' ),
 						$ability_name
 					),
 					'code'  => 'ability_not_allowed',
@@ -98,7 +98,7 @@ class AbilityFunctionResolver extends \WP_AI_Client_Ability_Function_Resolver {
 				array(
 					'error' => sprintf(
 						/* translators: %s: ability name */
-						__( 'Ability "%s" not found', 'sd-ai-agent' ),
+						__( 'Ability "%s" not found', 'superdav-ai-agent' ),
 						$ability_name
 					),
 					'code'  => 'ability_not_found',

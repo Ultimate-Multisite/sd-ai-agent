@@ -92,7 +92,7 @@ final class McpController extends XWP_REST_Controller {
 					'ai_agent_mcp_unknown_method',
 					sprintf(
 						/* translators: %s: MCP method name */
-						__( 'Unknown MCP method: %s. Supported methods: list_tools, call_tool.', 'sd-ai-agent' ),
+						__( 'Unknown MCP method: %s. Supported methods: list_tools, call_tool.', 'superdav-ai-agent' ),
 						// @phpstan-ignore-next-line
 						$method
 					),
@@ -155,7 +155,7 @@ final class McpController extends XWP_REST_Controller {
 		if ( '' === $tool_name ) {
 			return new WP_Error(
 				'ai_agent_mcp_missing_name',
-				__( 'call_tool requires a "name" parameter.', 'sd-ai-agent' ),
+				__( 'call_tool requires a "name" parameter.', 'superdav-ai-agent' ),
 				[ 'status' => 400 ]
 			);
 		}
@@ -163,7 +163,7 @@ final class McpController extends XWP_REST_Controller {
 		if ( ! function_exists( 'wp_get_ability' ) ) {
 			return new WP_Error(
 				'ai_agent_mcp_no_abilities_api',
-				__( 'WordPress Abilities API is not available. WordPress 7.0+ is required.', 'sd-ai-agent' ),
+				__( 'WordPress Abilities API is not available. WordPress 7.0+ is required.', 'superdav-ai-agent' ),
 				[ 'status' => 503 ]
 			);
 		}
@@ -176,7 +176,7 @@ final class McpController extends XWP_REST_Controller {
 				'ai_agent_mcp_tool_not_found',
 				sprintf(
 					/* translators: %s: tool name */
-					__( 'Tool not found: %s', 'sd-ai-agent' ),
+					__( 'Tool not found: %s', 'superdav-ai-agent' ),
 					$tool_name
 				),
 				[ 'status' => 404 ]

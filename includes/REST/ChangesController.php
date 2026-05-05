@@ -260,7 +260,7 @@ final class ChangesController {
 		$change = ChangesLog::get( $id );
 
 		if ( ! $change ) {
-			return new WP_Error( 'not_found', __( 'Change record not found.', 'sd-ai-agent' ), array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Change record not found.', 'superdav-ai-agent' ), array( 'status' => 404 ) );
 		}
 
 		return new WP_REST_Response( $change, 200 );
@@ -278,7 +278,7 @@ final class ChangesController {
 		$change = ChangesLog::get( $id );
 
 		if ( ! $change ) {
-			return new WP_Error( 'not_found', __( 'Change record not found.', 'sd-ai-agent' ), array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Change record not found.', 'superdav-ai-agent' ), array( 'status' => 404 ) );
 		}
 
 		$diff = ChangesLog::generate_diff( $change->before_value, $change->after_value );
@@ -306,11 +306,11 @@ final class ChangesController {
 		$change = ChangesLog::get( $id );
 
 		if ( ! $change ) {
-			return new WP_Error( 'not_found', __( 'Change record not found.', 'sd-ai-agent' ), array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Change record not found.', 'superdav-ai-agent' ), array( 'status' => 404 ) );
 		}
 
 		if ( $change->reverted ) {
-			return new WP_Error( 'already_reverted', __( 'This change has already been reverted.', 'sd-ai-agent' ), array( 'status' => 409 ) );
+			return new WP_Error( 'already_reverted', __( 'This change has already been reverted.', 'superdav-ai-agent' ), array( 'status' => 409 ) );
 		}
 
 		$result = ChangeRevertService::apply_revert( $change );
@@ -324,7 +324,7 @@ final class ChangesController {
 		return new WP_REST_Response(
 			array(
 				'success' => true,
-				'message' => __( 'Change reverted successfully.', 'sd-ai-agent' ),
+				'message' => __( 'Change reverted successfully.', 'superdav-ai-agent' ),
 				'id'      => $id,
 			),
 			200
@@ -342,7 +342,7 @@ final class ChangesController {
 		$ids = array_map( 'absint', (array) $request->get_param( 'ids' ) );
 
 		if ( empty( $ids ) ) {
-			return new WP_Error( 'no_ids', __( 'No change IDs provided.', 'sd-ai-agent' ), array( 'status' => 400 ) );
+			return new WP_Error( 'no_ids', __( 'No change IDs provided.', 'superdav-ai-agent' ), array( 'status' => 400 ) );
 		}
 
 		$patch = ChangesLog::generate_patch( $ids );
@@ -368,13 +368,13 @@ final class ChangesController {
 		$change = ChangesLog::get( $id );
 
 		if ( ! $change ) {
-			return new WP_Error( 'not_found', __( 'Change record not found.', 'sd-ai-agent' ), array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Change record not found.', 'superdav-ai-agent' ), array( 'status' => 404 ) );
 		}
 
 		$deleted = ChangesLog::delete( $id );
 
 		if ( ! $deleted ) {
-			return new WP_Error( 'delete_failed', __( 'Failed to delete change record.', 'sd-ai-agent' ), array( 'status' => 500 ) );
+			return new WP_Error( 'delete_failed', __( 'Failed to delete change record.', 'superdav-ai-agent' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response(
@@ -427,7 +427,7 @@ final class ChangesController {
 		$slug = sanitize_key( $request->get_param( 'slug' ) );
 
 		if ( empty( $slug ) ) {
-			return new WP_Error( 'invalid_slug', __( 'Plugin slug is required.', 'sd-ai-agent' ), array( 'status' => 400 ) );
+			return new WP_Error( 'invalid_slug', __( 'Plugin slug is required.', 'superdav-ai-agent' ), array( 'status' => 400 ) );
 		}
 
 		// Verify the plugin has been AI-modified.
@@ -437,7 +437,7 @@ final class ChangesController {
 				'plugin_not_modified',
 				sprintf(
 					/* translators: %s: plugin slug */
-					__( 'No AI modifications recorded for plugin: %s', 'sd-ai-agent' ),
+					__( 'No AI modifications recorded for plugin: %s', 'superdav-ai-agent' ),
 					$slug
 				),
 				array( 'status' => 404 )
@@ -453,7 +453,7 @@ final class ChangesController {
 				'plugin_not_found',
 				sprintf(
 					/* translators: %s: plugin slug */
-					__( 'Plugin directory not found: %s', 'sd-ai-agent' ),
+					__( 'Plugin directory not found: %s', 'superdav-ai-agent' ),
 					$slug
 				),
 				array( 'status' => 404 )
@@ -464,7 +464,7 @@ final class ChangesController {
 		if ( ! class_exists( 'ZipArchive' ) ) {
 			return new WP_Error(
 				'zip_unavailable',
-				__( 'ZipArchive PHP extension is not available on this server.', 'sd-ai-agent' ),
+				__( 'ZipArchive PHP extension is not available on this server.', 'superdav-ai-agent' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -472,13 +472,13 @@ final class ChangesController {
 		// Create a temporary zip file.
 		$tmp_file = wp_tempnam( $slug . '.zip' );
 		if ( ! $tmp_file ) {
-			return new WP_Error( 'tmp_failed', __( 'Failed to create temporary file.', 'sd-ai-agent' ), array( 'status' => 500 ) );
+			return new WP_Error( 'tmp_failed', __( 'Failed to create temporary file.', 'superdav-ai-agent' ), array( 'status' => 500 ) );
 		}
 
 		$zip = new \ZipArchive();
 		if ( true !== $zip->open( $tmp_file, \ZipArchive::OVERWRITE ) ) {
 			wp_delete_file( $tmp_file );
-			return new WP_Error( 'zip_open_failed', __( 'Failed to open zip archive for writing.', 'sd-ai-agent' ), array( 'status' => 500 ) );
+			return new WP_Error( 'zip_open_failed', __( 'Failed to open zip archive for writing.', 'superdav-ai-agent' ), array( 'status' => 500 ) );
 		}
 
 		$this->add_directory_to_zip( $zip, $plugin_dir, $slug );

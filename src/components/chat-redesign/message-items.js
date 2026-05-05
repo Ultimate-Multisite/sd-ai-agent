@@ -2,7 +2,7 @@
  * Shared message item components used by both the main chat (MessageList)
  * and the floating widget (WidgetMessageList).
  *
- * All rendering is scoped to `.gaa-cr-*` classes so the widget and full
+ * All rendering is scoped to `.sdaa-cr-*` classes so the widget and full
  * chat look identical (the widget's bundle also loads chat-redesign.css
  * via components/chat-widget/index.js).
  *
@@ -101,7 +101,7 @@ function AssistantMeta( { tokens } ) {
 	const parts = [];
 	if ( tokens?.modelName ) {
 		parts.push(
-			<span key="model" className="gaa-cr-msg-meta-model">
+			<span key="model" className="sdaa-cr-msg-meta-model">
 				{ tokens.modelName }
 			</span>
 		);
@@ -127,14 +127,14 @@ function AssistantMeta( { tokens } ) {
 	parts.forEach( ( p, i ) => {
 		if ( i > 0 ) {
 			withSeps.push(
-				<span key={ `sep${ i }` } className="gaa-cr-msg-meta-sep">
+				<span key={ `sep${ i }` } className="sdaa-cr-msg-meta-sep">
 					·
 				</span>
 			);
 		}
 		withSeps.push( p );
 	} );
-	return <span className="gaa-cr-msg-meta-text">{ withSeps }</span>;
+	return <span className="sdaa-cr-msg-meta-text">{ withSeps }</span>;
 }
 
 /**
@@ -209,11 +209,11 @@ export function UserMessage( { msg, index } ) {
 
 	if ( editing ) {
 		return (
-			<div className="gaa-cr-msg-row gaa-cr-msg-user">
-				<div className="gaa-cr-bubble-user gaa-cr-bubble-user--editing">
+			<div className="sdaa-cr-msg-row sdaa-cr-msg-user">
+				<div className="sdaa-cr-bubble-user sdaa-cr-bubble-user--editing">
 					<textarea
 						ref={ textareaRef }
-						className="gaa-cr-bubble-user-edit"
+						className="sdaa-cr-bubble-user-edit"
 						value={ draft }
 						onChange={ ( e ) => setDraft( e.target.value ) }
 						onKeyDown={ ( e ) => {
@@ -227,17 +227,17 @@ export function UserMessage( { msg, index } ) {
 						} }
 						rows={ 3 }
 					/>
-					<div className="gaa-cr-bubble-user-edit-actions">
+					<div className="sdaa-cr-bubble-user-edit-actions">
 						<button
 							type="button"
-							className="gaa-cr-btn-sm"
+							className="sdaa-cr-btn-sm"
 							onClick={ () => setEditingMessageIndex( null ) }
 						>
 							{ __( 'Cancel', 'sd-ai-agent' ) }
 						</button>
 						<button
 							type="button"
-							className="gaa-cr-btn-sm is-primary"
+							className="sdaa-cr-btn-sm is-primary"
 							onClick={ handleSubmit }
 							disabled={ sending || ! draft.trim() }
 						>
@@ -250,10 +250,10 @@ export function UserMessage( { msg, index } ) {
 	}
 
 	return (
-		<div className="gaa-cr-msg-row gaa-cr-msg-user">
-			<div className="gaa-cr-bubble-user">
+		<div className="sdaa-cr-msg-row sdaa-cr-msg-user">
+			<div className="sdaa-cr-bubble-user">
 				{ attachments.length > 0 && (
-					<div className="gaa-cr-bubble-attachments">
+					<div className="sdaa-cr-bubble-attachments">
 						{ attachments.map( ( a, i ) => (
 							<img
 								key={ i }
@@ -265,22 +265,22 @@ export function UserMessage( { msg, index } ) {
 				) }
 				{ text }
 			</div>
-			<div className="gaa-cr-msg-meta gaa-cr-msg-meta-user">
-				<span className="gaa-cr-msg-meta-text">
+			<div className="sdaa-cr-msg-meta sdaa-cr-msg-meta-user">
+				<span className="sdaa-cr-msg-meta-text">
 					{ modelLabel && (
-						<span className="gaa-cr-msg-meta-model">
+						<span className="sdaa-cr-msg-meta-model">
 							{ modelLabel }
 						</span>
 					) }
 					{ modelLabel && timeLabel && (
-						<span className="gaa-cr-msg-meta-sep">·</span>
+						<span className="sdaa-cr-msg-meta-sep">·</span>
 					) }
 					{ timeLabel && <span>{ timeLabel }</span> }
 				</span>
-				<span className="gaa-cr-msg-meta-actions">
+				<span className="sdaa-cr-msg-meta-actions">
 					<button
 						type="button"
-						className="gaa-cr-icon-btn"
+						className="sdaa-cr-icon-btn"
 						onClick={ () => {
 							setDraft( text || '' );
 							setEditingMessageIndex( index );
@@ -293,7 +293,7 @@ export function UserMessage( { msg, index } ) {
 					</button>
 					<button
 						type="button"
-						className="gaa-cr-icon-btn"
+						className="sdaa-cr-icon-btn"
 						onClick={ handleCopy }
 						title={
 							copied
@@ -355,11 +355,11 @@ export function AssistantMessage( {
 	};
 
 	return (
-		<div className="gaa-cr-msg-row gaa-cr-msg-assistant">
-			<div className="gaa-cr-avatar" aria-hidden="true">
+		<div className="sdaa-cr-msg-row sdaa-cr-msg-assistant">
+			<div className="sdaa-cr-avatar" aria-hidden="true">
 				<AiIcon />
 			</div>
-			<div className="gaa-cr-msg-body">
+			<div className="sdaa-cr-msg-body">
 				{ pairs.map( ( pair, i ) => (
 					<ToolCard
 						key={ pair.call.id || i }
@@ -369,12 +369,12 @@ export function AssistantMessage( {
 				) ) }
 				{ cleanText && <MarkdownMessage content={ cleanText } /> }
 				{ isLastModel && suggestions.length > 0 && (
-					<div className="gaa-cr-suggestions">
+					<div className="sdaa-cr-suggestions">
 						{ suggestions.map( ( s, i ) => (
 							<button
 								type="button"
 								key={ i }
-								className="gaa-cr-suggestion-chip"
+								className="sdaa-cr-suggestion-chip"
 								onClick={ () => onSuggestionSelect( s ) }
 							>
 								{ s }
@@ -382,11 +382,11 @@ export function AssistantMessage( {
 						) ) }
 					</div>
 				) }
-				<div className="gaa-cr-msg-meta gaa-cr-msg-meta-assistant">
-					<span className="gaa-cr-msg-meta-actions">
+				<div className="sdaa-cr-msg-meta sdaa-cr-msg-meta-assistant">
+					<span className="sdaa-cr-msg-meta-actions">
 						<button
 							type="button"
-							className="gaa-cr-icon-btn"
+							className="sdaa-cr-icon-btn"
 							onClick={ handleCopy }
 							title={
 								copied
@@ -406,7 +406,7 @@ export function AssistantMessage( {
 						</button>
 						<button
 							type="button"
-							className="gaa-cr-icon-btn"
+							className="sdaa-cr-icon-btn"
 							onClick={ () => onThumbsDown?.( index ) }
 							title={ __(
 								'Report an issue with this response',
@@ -436,11 +436,11 @@ export function AssistantMessage( {
 export function RunningMessage( { step, liveToolCalls } ) {
 	const pairs = pairToolCalls( liveToolCalls );
 	return (
-		<div className="gaa-cr-msg-row gaa-cr-msg-assistant">
-			<div className="gaa-cr-avatar" aria-hidden="true">
+		<div className="sdaa-cr-msg-row sdaa-cr-msg-assistant">
+			<div className="sdaa-cr-avatar" aria-hidden="true">
 				<AiIcon thinking={ true } />
 			</div>
-			<div className="gaa-cr-msg-body">
+			<div className="sdaa-cr-msg-body">
 				{ pairs.map( ( pair, i ) => (
 					<ToolCard
 						key={ pair.call.id || i }
@@ -449,8 +449,8 @@ export function RunningMessage( { step, liveToolCalls } ) {
 						defaultOpen={ ! pair.response }
 					/>
 				) ) }
-				<div className="gaa-cr-running-line">
-					<span className="gaa-cr-running-dot" aria-hidden="true" />
+				<div className="sdaa-cr-running-line">
+					<span className="sdaa-cr-running-dot" aria-hidden="true" />
 					<span>{ step }</span>
 				</div>
 			</div>
@@ -465,8 +465,8 @@ export function RunningMessage( { step, liveToolCalls } ) {
  */
 export function SystemMessage( { text } ) {
 	return (
-		<div className="gaa-cr-msg-row">
-			<div className="gaa-cr-msg-system">{ linkifyText( text ) }</div>
+		<div className="sdaa-cr-msg-row">
+			<div className="sdaa-cr-msg-system">{ linkifyText( text ) }</div>
 		</div>
 	);
 }

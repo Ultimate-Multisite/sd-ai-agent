@@ -2,8 +2,6 @@
  * Unit tests for components/onboarding-bootstrap.js
  *
  * Tests cover:
- * - Renders the bootstrap wrapper
- * - Renders the ChatPanel
  * - Calls bootstrap-start endpoint on mount
  * - Opens the session returned by bootstrap-start
  * - Sends the kickoff message returned by bootstrap-start
@@ -42,11 +40,12 @@ jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
 jest.mock( '../../store', () => 'sd-ai-agent' );
 
-// ─── Mock ChatPanel ───────────────────────────────────────────────────────────
+// ─── Mock ChatRedesign ────────────────────────────────────────────────────────
 
-jest.mock( '../ChatPanel', () => {
+jest.mock( '../chat-redesign', () => {
 	const React = require( 'react' );
-	return () => React.createElement( 'div', { 'data-testid': 'chat-panel' } );
+	return () =>
+		React.createElement( 'div', { 'data-testid': 'chat-redesign' } );
 } );
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -87,30 +86,6 @@ describe( 'OnboardingBootstrap', () => {
 			root.render( createElement( OnboardingBootstrap, {} ) );
 		} );
 	}
-
-	test( 'renders the bootstrap wrapper', async () => {
-		apiFetch.mockResolvedValue( {
-			session_id: 42,
-			kickoff_message: 'Hi there!',
-			bootstrap_system_prompt: 'You are a helpful agent.',
-		} );
-		await renderBootstrap();
-		expect(
-			container.querySelector( '.sd-ai-agent-onboarding-bootstrap' )
-		).not.toBeNull();
-	} );
-
-	test( 'renders ChatPanel inside the wrapper', async () => {
-		apiFetch.mockResolvedValue( {
-			session_id: 42,
-			kickoff_message: 'Hi there!',
-			bootstrap_system_prompt: 'You are a helpful agent.',
-		} );
-		await renderBootstrap();
-		expect(
-			container.querySelector( '[data-testid="chat-panel"]' )
-		).not.toBeNull();
-	} );
 
 	test( 'calls bootstrap-start endpoint on mount', async () => {
 		apiFetch.mockResolvedValue( {

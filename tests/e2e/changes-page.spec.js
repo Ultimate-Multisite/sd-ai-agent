@@ -24,28 +24,28 @@ test.describe( 'Changes Page - Page Load', () => {
 	} );
 
 	test( 'changes page loads the unified admin app', async ( { page } ) => {
-		// The UnifiedAdminMenu SPA mounts into #sd-ai-agent-root and
-		// renders .sd-ai-agent-unified-admin as the top-level wrapper.
+		// The UnifiedAdminMenu SPA mounts into #sdaa-root and
+		// renders .sdaa-unified-admin as the top-level wrapper.
 		await expect(
-			page.locator( '#sd-ai-agent-root' )
+			page.locator( '#sdaa-root' )
 		).toBeVisible();
 		await expect(
-			page.locator( '.sd-ai-agent-unified-admin' )
+			page.locator( '.sdaa-unified-admin' )
 		).toBeVisible();
 	} );
 
 	test( 'changes route container is rendered', async ( { page } ) => {
-		// The Router renders ChangesRoute inside .sd-ai-agent-route-changes
+		// The Router renders ChangesRoute inside .sdaa-route-changes
 		// when the hash is #/changes.
 		await expect(
-			page.locator( '.sd-ai-agent-route-changes' )
+			page.locator( '.sdaa-route-changes' )
 		).toBeVisible();
 	} );
 
 	test( 'changes page shows the Changes heading', async ( { page } ) => {
 		// ChangesRoute renders an h2 with "Changes".
 		await expect(
-			page.locator( '.sd-ai-agent-route-changes' ).getByRole( 'heading', {
+			page.locator( '.sdaa-route-changes' ).getByRole( 'heading', {
 				name: /changes/i,
 				level: 2,
 			} )
@@ -55,7 +55,7 @@ test.describe( 'Changes Page - Page Load', () => {
 	test( 'changes page shows descriptive content', async ( { page } ) => {
 		// ChangesRoute renders a description paragraph.
 		await expect(
-			page.locator( '.sd-ai-agent-route-changes' )
+			page.locator( '.sdaa-route-changes' )
 		).toContainText( 'changes' );
 	} );
 

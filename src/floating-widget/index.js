@@ -190,7 +190,7 @@ function gatherPageContext() {
 
 // Mount the floating widget.
 const wrapper = document.createElement( 'div' );
-wrapper.id = 'sd-ai-agent-floating-root';
+wrapper.id = 'sdaa-floating-root';
 document.body.appendChild( wrapper );
 
 const root = createRoot( wrapper );

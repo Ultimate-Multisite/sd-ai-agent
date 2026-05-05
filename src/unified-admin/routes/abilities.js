@@ -13,7 +13,7 @@ import '../../abilities-explorer/style.css';
  */
 export default function AbilitiesRoute() {
 	return (
-		<div className="sd-ai-agent-route sd-ai-agent-route-abilities">
+		<div className="sdaa-route sdaa-route-abilities">
 			<AbilitiesExplorerApp />
 		</div>
 	);

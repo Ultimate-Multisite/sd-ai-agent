@@ -16,14 +16,14 @@ import { __ } from '@wordpress/i18n';
 const COMMANDS = [
 	{
 		name: '/new',
-		description: __( 'Start a new chat', 'sd-ai-agent' ),
+		description: __( 'Start a new chat', 'superdav-ai-agent' ),
 		action: 'new',
 	},
 	{
 		name: '/model',
 		description: __(
 			'Switch model (type model name after)',
-			'sd-ai-agent'
+			'superdav-ai-agent'
 		),
 		action: 'model',
 	},
@@ -31,43 +31,46 @@ const COMMANDS = [
 		name: '/remember',
 		description: __(
 			'Save a fact to memory (type fact after)',
-			'sd-ai-agent'
+			'superdav-ai-agent'
 		),
 		action: 'remember',
 	},
 	{
 		name: '/forget',
-		description: __( 'Forget memories matching a topic', 'sd-ai-agent' ),
+		description: __(
+			'Forget memories matching a topic',
+			'superdav-ai-agent'
+		),
 		action: 'forget',
 	},
 	{
 		name: '/clear',
-		description: __( 'Clear conversation', 'sd-ai-agent' ),
+		description: __( 'Clear conversation', 'superdav-ai-agent' ),
 		action: 'clear',
 	},
 	{
 		name: '/export',
-		description: __( 'Export current conversation', 'sd-ai-agent' ),
+		description: __( 'Export current conversation', 'superdav-ai-agent' ),
 		action: 'export',
 	},
 	{
 		name: '/compact',
 		description: __(
 			'Compact conversation to save context',
-			'sd-ai-agent'
+			'superdav-ai-agent'
 		),
 		action: 'compact',
 	},
 	{
 		name: '/help',
-		description: __( 'Show keyboard shortcuts', 'sd-ai-agent' ),
+		description: __( 'Show keyboard shortcuts', 'superdav-ai-agent' ),
 		action: 'help',
 	},
 	{
 		name: '/report-issue',
 		description: __(
 			'Send a bug report or feedback (type description after)',
-			'sd-ai-agent'
+			'superdav-ai-agent'
 		),
 		action: 'report-issue',
 	},
@@ -137,15 +140,15 @@ export default function SlashCommandMenu( {
 	}
 
 	const activeId = filtered[ selectedIndex ]
-		? `sd-ai-agent-slash-option-${ filtered[ selectedIndex ].action }`
+		? `sdaa-slash-option-${ filtered[ selectedIndex ].action }`
 		: undefined;
 
 	return (
 		<div
-			className="sd-ai-agent-slash-menu"
+			className="sdaa-slash-menu"
 			ref={ menuRef }
 			role="listbox"
-			aria-label={ __( 'Slash commands', 'sd-ai-agent' ) }
+			aria-label={ __( 'Slash commands', 'superdav-ai-agent' ) }
 			aria-activedescendant={ activeId }
 			tabIndex={ -1 }
 			style={ position ? { bottom: position.bottom } : {} }
@@ -153,11 +156,11 @@ export default function SlashCommandMenu( {
 			{ filtered.map( ( cmd, i ) => (
 				<div
 					key={ cmd.name }
-					id={ `sd-ai-agent-slash-option-${ cmd.action }` }
+					id={ `sdaa-slash-option-${ cmd.action }` }
 					role="option"
 					aria-selected={ i === selectedIndex }
 					tabIndex={ 0 }
-					className={ `sd-ai-agent-slash-item ${
+					className={ `sdaa-slash-item ${
 						i === selectedIndex ? 'is-selected' : ''
 					}` }
 					onClick={ () => onSelect( cmd ) }
@@ -169,10 +172,8 @@ export default function SlashCommandMenu( {
 					} }
 					onMouseEnter={ () => setSelectedIndex( i ) }
 				>
-					<span className="sd-ai-agent-slash-name">{ cmd.name }</span>
-					<span className="sd-ai-agent-slash-desc">
-						{ cmd.description }
-					</span>
+					<span className="sdaa-slash-name">{ cmd.name }</span>
+					<span className="sdaa-slash-desc">{ cmd.description }</span>
 				</div>
 			) ) }
 		</div>

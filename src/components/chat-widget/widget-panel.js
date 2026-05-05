@@ -14,7 +14,7 @@ import STORE_NAME from '../../store';
 import ErrorBoundary from '../error-boundary';
 import ToolConfirmationDialog from '../tool-confirmation-dialog';
 import ChangesDrawer from '../chat-redesign/ChangesDrawer';
-// chat-redesign base styles (.gaa-cr-*) are only needed by panel
+// chat-redesign base styles (.sdaa-cr-*) are only needed by panel
 // sub-components, so the import lives here rather than in index.js.
 // This keeps the CSS in the async panel chunk and out of the initial bundle.
 import '../chat-redesign/chat-redesign.css';
@@ -167,7 +167,7 @@ export default function WidgetPanel() {
 	return (
 		<>
 			<div
-				className={ `gaa-w-panel${
+				className={ `sdaa-w-panel${
 					isMinimized ? ' is-minimized' : ''
 				}${ isDragging ? ' is-dragging' : '' }${
 					isResizing ? ' is-resizing' : ''
@@ -187,9 +187,9 @@ export default function WidgetPanel() {
 				/>
 
 				{ ! isMinimized && changesCount > 0 && (
-					<div className="gaa-w-changes-strip">
-						<span className="gaa-w-changes-strip-text">
-							<span className="gaa-w-changes-count">
+					<div className="sdaa-w-changes-strip">
+						<span className="sdaa-w-changes-strip-text">
+							<span className="sdaa-w-changes-count">
 								{ changesCount }
 							</span>
 							{ _n(
@@ -201,7 +201,7 @@ export default function WidgetPanel() {
 						</span>
 						<button
 							type="button"
-							className="gaa-w-changes-strip-btn"
+							className="sdaa-w-changes-strip-btn"
 							onClick={ () => setShowChanges( ( v ) => ! v ) }
 							aria-expanded={ showChanges }
 						>
@@ -216,7 +216,7 @@ export default function WidgetPanel() {
 				) }
 
 				{ ! isMinimized && (
-					<div className="gaa-w-body-wrap">
+					<div className="sdaa-w-body-wrap">
 						<ErrorBoundary
 							label={ __( 'Message list', 'sd-ai-agent' ) }
 						>
@@ -227,7 +227,7 @@ export default function WidgetPanel() {
 							) }
 						</ErrorBoundary>
 						{ showChanges && (
-							<div className="gaa-w-changes-drawer-wrap gaa-cr">
+							<div className="sdaa-w-changes-drawer-wrap sdaa-cr">
 								<ChangesDrawer
 									sessionId={ currentSessionId }
 									onClose={ () => setShowChanges( false ) }
@@ -249,21 +249,21 @@ export default function WidgetPanel() {
 				{ ! isMinimized && (
 					<>
 						<div
-							className="gaa-w-resize-handle gaa-w-resize-handle--right"
+							className="sdaa-w-resize-handle sdaa-w-resize-handle--right"
 							role="presentation"
 							onMouseDown={ ( e ) =>
 								handleResizeMouseDown( e, 'right' )
 							}
 						/>
 						<div
-							className="gaa-w-resize-handle gaa-w-resize-handle--bottom"
+							className="sdaa-w-resize-handle sdaa-w-resize-handle--bottom"
 							role="presentation"
 							onMouseDown={ ( e ) =>
 								handleResizeMouseDown( e, 'bottom' )
 							}
 						/>
 						<div
-							className="gaa-w-resize-handle gaa-w-resize-handle--corner"
+							className="sdaa-w-resize-handle sdaa-w-resize-handle--corner"
 							role="presentation"
 							onMouseDown={ ( e ) =>
 								handleResizeMouseDown( e, 'corner' )

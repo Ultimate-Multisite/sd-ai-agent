@@ -96,8 +96,8 @@ class InternetSearchAbilities {
 		wp_register_ability(
 			'sd-ai-agent/internet-search',
 			[
-				'label'               => __( 'Internet Search', 'sd-ai-agent' ),
-				'description'         => __( 'Search the internet for current information. Returns a list of relevant results with titles, URLs, and snippets. Use this to research topics before writing blog posts or answering questions about recent events. Provider priority: Tavily (if configured) > Brave (if configured) > DuckDuckGo (free fallback).', 'sd-ai-agent' ),
+				'label'               => __( 'Internet Search', 'superdav-ai-agent' ),
+				'description'         => __( 'Search the internet for current information. Returns a list of relevant results with titles, URLs, and snippets. Use this to research topics before writing blog posts or answering questions about recent events. Provider priority: Tavily (if configured) > Brave (if configured) > DuckDuckGo (free fallback).', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -156,8 +156,8 @@ class InternetSearchAbilities {
 		wp_register_ability(
 			'sd-ai-agent/configure-search-provider',
 			[
-				'label'               => __( 'Configure Search Provider', 'sd-ai-agent' ),
-				'description'         => __( 'Save or remove an API key for an internet search provider (Tavily or Brave). Use this when the user provides an API key in the chat so they do not need to visit the settings page. Also use this to check which providers are currently configured.', 'sd-ai-agent' ),
+				'label'               => __( 'Configure Search Provider', 'superdav-ai-agent' ),
+				'description'         => __( 'Save or remove an API key for an internet search provider (Tavily or Brave). Use this when the user provides an API key in the chat so they do not need to visit the settings page. Also use this to check which providers are currently configured.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',

@@ -116,8 +116,8 @@ class ToolDiscovery {
 		wp_register_ability_category(
 			'sd-ai-agent-js',
 			array(
-				'label'       => __( 'Superdav AI Agent (Client)', 'sd-ai-agent' ),
-				'description' => __( 'Client-side abilities provided by the Superdav AI Agent plugin. Execute in the browser without a server round-trip.', 'sd-ai-agent' ),
+				'label'       => __( 'Superdav AI Agent (Client)', 'superdav-ai-agent' ),
+				'description' => __( 'Client-side abilities provided by the Superdav AI Agent plugin. Execute in the browser without a server round-trip.', 'superdav-ai-agent' ),
 			)
 		);
 	}
@@ -135,8 +135,8 @@ class ToolDiscovery {
 		wp_register_ability(
 			'sd-ai-agent/ability-search',
 			array(
-				'label'               => __( 'Search Abilities', 'sd-ai-agent' ),
-				'description'         => __( 'Search the full catalog of registered WordPress abilities and return matching ids together with their full input/output schemas. Use this whenever you need an ability that is not already loaded in your tool list. Query forms: bare keywords for ranked search ("create site"), `select:foo,bar` to fetch specific abilities by id, or `+substr keyword` to require a substring before ranking.', 'sd-ai-agent' ),
+				'label'               => __( 'Search Abilities', 'superdav-ai-agent' ),
+				'description'         => __( 'Search the full catalog of registered WordPress abilities and return matching ids together with their full input/output schemas. Use this whenever you need an ability that is not already loaded in your tool list. Query forms: bare keywords for ranked search ("create site"), `select:foo,bar` to fetch specific abilities by id, or `+substr keyword` to require a substring before ranking.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => array(
 					'type'       => 'object',
@@ -171,8 +171,8 @@ class ToolDiscovery {
 		wp_register_ability(
 			'sd-ai-agent/ability-call',
 			array(
-				'label'               => __( 'Call Ability', 'sd-ai-agent' ),
-				'description'         => __( 'Execute any ability by id with a complete arguments object. CRITICAL: ALWAYS call ability-search FIRST to fetch the target ability\'s input_schema with example_arguments, copy that stub, replace placeholders with real values, then call this tool. Never call without valid arguments.', 'sd-ai-agent' ),
+				'label'               => __( 'Call Ability', 'superdav-ai-agent' ),
+				'description'         => __( 'Execute any ability by id with a complete arguments object. CRITICAL: ALWAYS call ability-search FIRST to fetch the target ability\'s input_schema with example_arguments, copy that stub, replace placeholders with real values, then call this tool. Never call without valid arguments.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => array(
 					'type'       => 'object',
@@ -465,7 +465,7 @@ class ToolDiscovery {
 	 */
 	public static function handle_ability_search( array $input ) {
 		if ( ! function_exists( 'wp_get_abilities' ) ) {
-			return new WP_Error( 'api_unavailable', __( 'Abilities API not available.', 'sd-ai-agent' ) );
+			return new WP_Error( 'api_unavailable', __( 'Abilities API not available.', 'superdav-ai-agent' ) );
 		}
 
 		$query_raw = isset( $input['query'] ) ? trim( (string) $input['query'] ) : '';
@@ -648,11 +648,11 @@ class ToolDiscovery {
 		$args       = $input['arguments'] ?? array();
 
 		if ( '' === $ability_id ) {
-			return new WP_Error( 'invalid_argument', __( 'ability is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'invalid_argument', __( 'ability is required.', 'superdav-ai-agent' ) );
 		}
 
 		if ( ! function_exists( 'wp_get_ability' ) ) {
-			return new WP_Error( 'api_unavailable', __( 'Abilities API not available.', 'sd-ai-agent' ) );
+			return new WP_Error( 'api_unavailable', __( 'Abilities API not available.', 'superdav-ai-agent' ) );
 		}
 
 		// @phpstan-ignore-next-line
@@ -662,7 +662,7 @@ class ToolDiscovery {
 				'ability_not_found',
 				sprintf(
 					/* translators: %s: ability id */
-					__( 'Ability "%s" not found.', 'sd-ai-agent' ),
+					__( 'Ability "%s" not found.', 'superdav-ai-agent' ),
 					$ability_id
 				)
 			);
@@ -674,7 +674,7 @@ class ToolDiscovery {
 				'ability_disabled',
 				sprintf(
 					/* translators: %s: ability id */
-					__( 'Ability "%s" is disabled.', 'sd-ai-agent' ),
+					__( 'Ability "%s" is disabled.', 'superdav-ai-agent' ),
 					$ability_id
 				)
 			);
@@ -700,7 +700,7 @@ class ToolDiscovery {
 					'invalid_ability_arguments',
 					sprintf(
 						/* translators: %s: JSON decode error message. */
-						__( 'arguments must be valid JSON: %s', 'sd-ai-agent' ),
+						__( 'arguments must be valid JSON: %s', 'superdav-ai-agent' ),
 						json_last_error_msg()
 					)
 				);
@@ -708,7 +708,7 @@ class ToolDiscovery {
 			if ( ! is_array( $decoded ) ) {
 				return new WP_Error(
 					'invalid_ability_arguments',
-					__( 'arguments must decode to a JSON object.', 'sd-ai-agent' )
+					__( 'arguments must decode to a JSON object.', 'superdav-ai-agent' )
 				);
 			}
 			$args = $decoded;

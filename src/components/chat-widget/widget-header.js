@@ -170,14 +170,14 @@ export default function WidgetHeader( {
 
 	return (
 		<div
-			className="gaa-w-head"
+			className="sdaa-w-head"
 			role="presentation"
 			onMouseDown={ onDragHandleMouseDown }
 		>
-			<div className="gaa-w-head-title-wrap" ref={ drawerRef }>
+			<div className="sdaa-w-head-title-wrap" ref={ drawerRef }>
 				<button
 					type="button"
-					className={ `gaa-w-head-session${
+					className={ `sdaa-w-head-session${
 						drawerOpen ? ' is-open' : ''
 					}` }
 					onClick={ () => setDrawerOpen( ( v ) => ! v ) }
@@ -185,33 +185,33 @@ export default function WidgetHeader( {
 					aria-haspopup="menu"
 					aria-expanded={ drawerOpen }
 				>
-					<span className="gaa-w-avatar" aria-hidden="true">
+					<span className="sdaa-w-avatar" aria-hidden="true">
 						{ branding.logoUrl ? (
 							<img
 								src={ branding.logoUrl }
 								alt=""
-								className="gaa-w-avatar-logo"
+								className="sdaa-w-avatar-logo"
 							/>
 						) : (
 							<AiIcon thinking={ isRunning } />
 						) }
 					</span>
-					<span className="gaa-w-head-titles">
-						<span className="gaa-w-head-name">
-							<span className="gaa-w-head-name-text">
+					<span className="sdaa-w-head-titles">
+						<span className="sdaa-w-head-name">
+							<span className="sdaa-w-head-name-text">
 								{ title }
 							</span>
-							<span className="gaa-w-head-caret">
+							<span className="sdaa-w-head-caret">
 								<Icon icon={ chevronDown } size={ 14 } />
 							</span>
 						</span>
 						<span
-							className={ `gaa-w-head-status${
+							className={ `sdaa-w-head-status${
 								isRunning ? ' is-running' : ''
 							}` }
 						>
-							<span className="gaa-w-head-status-dot" />
-							<span className="gaa-w-head-status-text">
+							<span className="sdaa-w-head-status-dot" />
+							<span className="sdaa-w-head-status-text">
 								{ statusLabel }
 							</span>
 						</span>
@@ -219,23 +219,23 @@ export default function WidgetHeader( {
 				</button>
 
 				{ drawerOpen && (
-					<div className="gaa-w-session-drawer" role="menu">
-						<div className="gaa-w-session-drawer-head">
+					<div className="sdaa-w-session-drawer" role="menu">
+						<div className="sdaa-w-session-drawer-head">
 							<span>
 								{ __( 'Conversations', 'sd-ai-agent' ) }
 							</span>
 							<button
 								type="button"
-								className="gaa-w-icon-btn is-small"
+								className="sdaa-w-icon-btn is-small"
 								onClick={ () => setDrawerOpen( false ) }
 								aria-label={ __( 'Close', 'sd-ai-agent' ) }
 							>
 								<Icon icon={ close } size={ 14 } />
 							</button>
 						</div>
-						<div className="gaa-w-session-drawer-list">
+						<div className="sdaa-w-session-drawer-list">
 							{ recent.length === 0 && (
-								<div className="gaa-w-session-drawer-empty">
+								<div className="sdaa-w-session-drawer-empty">
 									{ __(
 										'No conversations yet',
 										'sd-ai-agent'
@@ -250,7 +250,7 @@ export default function WidgetHeader( {
 									<button
 										type="button"
 										key={ s.id }
-										className={ `gaa-w-session-drawer-item${
+										className={ `sdaa-w-session-drawer-item${
 											active ? ' is-active' : ''
 										}` }
 										onClick={ () =>
@@ -258,9 +258,9 @@ export default function WidgetHeader( {
 										}
 										role="menuitem"
 									>
-										<span className="gaa-w-session-drawer-item-icon">
+										<span className="sdaa-w-session-drawer-item-icon">
 											{ running ? (
-												<span className="gaa-w-head-status-dot is-running" />
+												<span className="sdaa-w-head-status-dot is-running" />
 											) : (
 												<Icon
 													icon={ commentContent }
@@ -268,14 +268,14 @@ export default function WidgetHeader( {
 												/>
 											) }
 										</span>
-										<span className="gaa-w-session-drawer-item-title">
+										<span className="sdaa-w-session-drawer-item-title">
 											{ s.title ||
 												__(
 													'Untitled',
 													'sd-ai-agent'
 												) }
 										</span>
-										<span className="gaa-w-session-drawer-item-time">
+										<span className="sdaa-w-session-drawer-item-time">
 											{ relativeTime( s.updated_at ) }
 										</span>
 									</button>
@@ -288,7 +288,7 @@ export default function WidgetHeader( {
 
 			<button
 				type="button"
-				className="gaa-w-new-btn"
+				className="sdaa-w-new-btn"
 				onClick={ handleNewChat }
 				aria-label={ __( 'Start new chat', 'sd-ai-agent' ) }
 				title={ __( 'Start new chat', 'sd-ai-agent' ) }
@@ -296,10 +296,10 @@ export default function WidgetHeader( {
 				<Icon icon={ plus } size={ 18 } />
 			</button>
 
-			<div className="gaa-w-head-actions">
+			<div className="sdaa-w-head-actions">
 				<button
 					type="button"
-					className="gaa-w-icon-btn"
+					className="sdaa-w-icon-btn"
 					onClick={ onToggleMinimize }
 					aria-label={
 						isMinimized
@@ -316,7 +316,7 @@ export default function WidgetHeader( {
 				</button>
 				<button
 					type="button"
-					className="gaa-w-icon-btn"
+					className="sdaa-w-icon-btn"
 					data-dismiss-only="true"
 					onClick={ ( e ) => {
 						e.stopPropagation();

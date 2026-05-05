@@ -35,8 +35,8 @@ class MediaAbilities {
 		wp_register_ability(
 			'ai-agent/list-media',
 			[
-				'label'               => __( 'List Media', 'sd-ai-agent' ),
-				'description'         => __( 'List items in the WordPress media library. Filter by MIME type, search term, or date. Returns attachment ID, URL, title, alt text, MIME type, and file size.', 'sd-ai-agent' ),
+				'label'               => __( 'List Media', 'superdav-ai-agent' ),
+				'description'         => __( 'List items in the WordPress media library. Filter by MIME type, search term, or date. Returns attachment ID, URL, title, alt text, MIME type, and file size.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -84,8 +84,8 @@ class MediaAbilities {
 		wp_register_ability(
 			'ai-agent/upload-media-from-url',
 			[
-				'label'               => __( 'Upload Media from URL', 'sd-ai-agent' ),
-				'description'         => __( 'Download a file from a URL and add it to the WordPress media library. Returns the new attachment ID and URL. Supports images, PDFs, and other media types.', 'sd-ai-agent' ),
+				'label'               => __( 'Upload Media from URL', 'superdav-ai-agent' ),
+				'description'         => __( 'Download a file from a URL and add it to the WordPress media library. Returns the new attachment ID and URL. Supports images, PDFs, and other media types.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -148,8 +148,8 @@ class MediaAbilities {
 		wp_register_ability(
 			'ai-agent/delete-media',
 			[
-				'label'               => __( 'Delete Media', 'sd-ai-agent' ),
-				'description'         => __( 'Permanently delete a media attachment from the WordPress media library, including all generated image sizes and metadata.', 'sd-ai-agent' ),
+				'label'               => __( 'Delete Media', 'superdav-ai-agent' ),
+				'description'         => __( 'Permanently delete a media attachment from the WordPress media library, including all generated image sizes and metadata.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -300,7 +300,7 @@ class MediaAbilities {
 		$site_url = $input['site_url'] ?? '';
 
 		if ( empty( $url ) ) {
-			return new WP_Error( 'ai_agent_empty_url', __( 'URL is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ai_agent_empty_url', __( 'URL is required.', 'superdav-ai-agent' ) );
 		}
 
 		$switched = false;
@@ -336,7 +336,7 @@ class MediaAbilities {
 			return new WP_Error(
 				'ai_agent_download_failed',
 				/* translators: %s: error message */
-				sprintf( __( 'Failed to download file: %s', 'sd-ai-agent' ), $tmp_file->get_error_message() )
+				sprintf( __( 'Failed to download file: %s', 'superdav-ai-agent' ), $tmp_file->get_error_message() )
 			);
 		}
 
@@ -366,7 +366,7 @@ class MediaAbilities {
 			return new WP_Error(
 				'ai_agent_sideload_failed',
 				/* translators: %s: error message */
-				sprintf( __( 'Failed to import media: %s', 'sd-ai-agent' ), $attachment_id->get_error_message() )
+				sprintf( __( 'Failed to import media: %s', 'superdav-ai-agent' ), $attachment_id->get_error_message() )
 			);
 		}
 
@@ -415,7 +415,7 @@ class MediaAbilities {
 		$site_url      = $input['site_url'] ?? '';
 
 		if ( ! $attachment_id ) {
-			return new WP_Error( 'ai_agent_empty_attachment_id', __( 'attachment_id is required.', 'sd-ai-agent' ) );
+			return new WP_Error( 'ai_agent_empty_attachment_id', __( 'attachment_id is required.', 'superdav-ai-agent' ) );
 		}
 
 		$switched = false;
@@ -443,7 +443,7 @@ class MediaAbilities {
 			return new WP_Error(
 				'ai_agent_attachment_not_found',
 				/* translators: %d: attachment ID */
-				sprintf( __( 'Attachment %d not found.', 'sd-ai-agent' ), $attachment_id )
+				sprintf( __( 'Attachment %d not found.', 'superdav-ai-agent' ), $attachment_id )
 			);
 		}
 

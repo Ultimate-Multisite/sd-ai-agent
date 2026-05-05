@@ -1,4 +1,4 @@
-.sd-ai-agent-unified-admin {
+.sdaa-unified-admin {
 	display: flex;
 	flex-direction: column;
 }
@@ -20,45 +20,45 @@
 }
 
 /* Route Containers */
-.sd-ai-agent-route {
+.sdaa-route {
 	max-width: none;
 }
 
-.sd-ai-agent-route h2 {
+.sdaa-route h2 {
 	margin: 0;
 	font-size: 18px;
 	font-weight: 600;
 }
 
-.sd-ai-agent-route-not-found {
+.sdaa-route-not-found {
 	text-align: center;
 	padding: 60px 20px;
 }
 
 /* Advanced Settings */
-.sd-ai-advanced-settings .sd-ai-agent-notice-advanced {
+.sd-ai-advanced-settings .sdaa-notice-advanced {
 	margin: 16px 0;
 }
 
-.sd-ai-agent-benchmark-section {
+.sdaa-benchmark-section {
 	margin-top: 16px;
 }
 
-.sd-ai-agent-benchmark-progress {
+.sdaa-benchmark-progress {
 	margin-bottom: 24px;
 	padding: 16px;
 	background: #f0f6fc;
 	border-radius: 4px;
 }
 
-.sd-ai-agent-benchmark-models {
+.sdaa-benchmark-models {
 	margin: 16px 0;
 	padding: 16px;
 	background: #f6f7f7;
 	border-radius: 4px;
 }
 
-.sd-ai-agent-benchmark-models h4 {
+.sdaa-benchmark-models h4 {
 	margin-top: 0;
 }
 
@@ -74,17 +74,17 @@
 	}
 }
 
-.sd-ai-agent-route {
+.sdaa-route {
 	animation: slideIn 0.2s ease-out;
 }
 
 /* Respect user motion preferences */
 @media (prefers-reduced-motion: reduce) {
-	.sd-ai-agent-route {
+	.sdaa-route {
 		animation: none;
 	}
 
-	.sd-ai-agent-nav-link {
+	.sdaa-nav-link {
 		transition: none;
 	}
 }

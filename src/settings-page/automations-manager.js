@@ -290,8 +290,8 @@ export default function AutomationsManager() {
 	}, [] );
 
 	return (
-		<div className="sd-ai-agent-automations-manager">
-			<div className="sd-ai-agent-skill-header">
+		<div className="sdaa-automations-manager">
+			<div className="sdaa-skill-header">
 				<div>
 					<h3>{ __( 'Scheduled Automations', 'sd-ai-agent' ) }</h3>
 					<p className="description">
@@ -333,22 +333,19 @@ export default function AutomationsManager() {
 						<h4>
 							{ __( 'Quick Start Templates', 'sd-ai-agent' ) }
 						</h4>
-						<div className="sd-ai-agent-skill-cards">
+						<div className="sdaa-skill-cards">
 							{ templates.map( ( tpl, idx ) => (
-								<div
-									key={ idx }
-									className="sd-ai-agent-skill-card"
-								>
-									<div className="sd-ai-agent-skill-card-header">
-										<div className="sd-ai-agent-skill-card-title">
+								<div key={ idx } className="sdaa-skill-card">
+									<div className="sdaa-skill-card-header">
+										<div className="sdaa-skill-card-title">
 											<strong>{ tpl.name }</strong>
 										</div>
 									</div>
-									<p className="sd-ai-agent-skill-card-description">
+									<p className="sdaa-skill-card-description">
 										{ tpl.description }
 									</p>
-									<div className="sd-ai-agent-skill-card-footer">
-										<span className="sd-ai-agent-skill-word-count">
+									<div className="sdaa-skill-card-footer">
+										<span className="sdaa-skill-word-count">
 											{ tpl.schedule }
 										</span>
 										<Button
@@ -371,7 +368,7 @@ export default function AutomationsManager() {
 				) }
 
 			{ showForm && (
-				<div className="sd-ai-agent-skill-form">
+				<div className="sdaa-skill-form">
 					<TextControl
 						label={ __( 'Name', 'sd-ai-agent' ) }
 						value={ form.name }
@@ -417,7 +414,7 @@ export default function AutomationsManager() {
 					/>
 
 					<BaseControl
-						id="sd-ai-agent-notification-channels"
+						id="sdaa-notification-channels"
 						label={ __( 'Notification Channels', 'sd-ai-agent' ) }
 						help={ __(
 							'Send Slack or Discord messages after each run.',
@@ -429,7 +426,7 @@ export default function AutomationsManager() {
 							( channel, idx ) => (
 								<div
 									key={ idx }
-									className="sd-ai-agent-notification-channel"
+									className="sdaa-notification-channel"
 									style={ {
 										display: 'flex',
 										gap: '8px',
@@ -525,7 +522,7 @@ export default function AutomationsManager() {
 						</Button>
 					</BaseControl>
 
-					<div className="sd-ai-agent-skill-form-actions">
+					<div className="sdaa-skill-form-actions">
 						<Button
 							variant="primary"
 							onClick={ handleSubmit }
@@ -557,34 +554,34 @@ export default function AutomationsManager() {
 
 			{ loaded && automations.length > 0 && (
 				<div
-					className="sd-ai-agent-skill-cards"
+					className="sdaa-skill-cards"
 					style={ { marginTop: '16px' } }
 				>
 					{ automations.map( ( auto ) => (
 						<div
 							key={ auto.id }
-							className={ `sd-ai-agent-skill-card ${
+							className={ `sdaa-skill-card ${
 								! auto.enabled
-									? 'sd-ai-agent-skill-card--disabled'
+									? 'sdaa-skill-card--disabled'
 									: ''
 							}` }
 						>
-							<div className="sd-ai-agent-skill-card-header">
+							<div className="sdaa-skill-card-header">
 								<ToggleControl
 									checked={ auto.enabled }
 									onChange={ () => handleToggle( auto ) }
 									__nextHasNoMarginBottom
 								/>
-								<div className="sd-ai-agent-skill-card-title">
+								<div className="sdaa-skill-card-title">
 									<strong>{ auto.name }</strong>
-									<span className="sd-ai-agent-skill-badge">
+									<span className="sdaa-skill-badge">
 										{ auto.schedule }
 									</span>
 									{ auto.notification_channels?.filter(
 										( c ) => c.enabled
 									).length > 0 && (
 										<span
-											className="sd-ai-agent-skill-badge"
+											className="sdaa-skill-badge"
 											title={ __(
 												'Notifications configured',
 												'sd-ai-agent'
@@ -608,12 +605,12 @@ export default function AutomationsManager() {
 									) }
 								</div>
 							</div>
-							<p className="sd-ai-agent-skill-card-description">
+							<p className="sdaa-skill-card-description">
 								{ auto.description ||
 									auto.prompt.slice( 0, 100 ) + '...' }
 							</p>
-							<div className="sd-ai-agent-skill-card-footer">
-								<span className="sd-ai-agent-skill-word-count">
+							<div className="sdaa-skill-card-footer">
+								<span className="sdaa-skill-word-count">
 									{ auto.run_count }{ ' ' }
 									{ __( 'runs', 'sd-ai-agent' ) }
 									{ auto.last_run_at && (
@@ -628,7 +625,7 @@ export default function AutomationsManager() {
 										</>
 									) }
 								</span>
-								<div className="sd-ai-agent-skill-card-actions">
+								<div className="sdaa-skill-card-actions">
 									<Button
 										variant="secondary"
 										size="small"
@@ -671,7 +668,7 @@ export default function AutomationsManager() {
 							</div>
 
 							{ viewLogsId === auto.id && (
-								<div className="sd-ai-agent-automation-logs">
+								<div className="sdaa-automation-logs">
 									{ logs.length === 0 && (
 										<p className="description">
 											{ __(
@@ -683,11 +680,11 @@ export default function AutomationsManager() {
 									{ logs.map( ( log ) => (
 										<div
 											key={ log.id }
-											className={ `sd-ai-agent-log-entry sd-ai-agent-log--${ log.status }` }
+											className={ `sdaa-log-entry sdaa-log--${ log.status }` }
 										>
-											<div className="sd-ai-agent-log-meta">
+											<div className="sdaa-log-meta">
 												<span
-													className={ `sd-ai-agent-log-status sd-ai-agent-log-status--${ log.status }` }
+													className={ `sdaa-log-status sdaa-log-status--${ log.status }` }
 												>
 													{ log.status }
 												</span>
@@ -704,7 +701,7 @@ export default function AutomationsManager() {
 												) }
 											</div>
 											{ log.error_message && (
-												<p className="sd-ai-agent-log-error">
+												<p className="sdaa-log-error">
 													{ log.error_message }
 												</p>
 											) }
@@ -716,7 +713,7 @@ export default function AutomationsManager() {
 															'sd-ai-agent'
 														) }
 													</summary>
-													<pre className="sd-ai-agent-log-reply">
+													<pre className="sdaa-log-reply">
 														{ log.reply }
 													</pre>
 												</details>

@@ -52,8 +52,8 @@ class SiteHealthAbilities {
 		wp_register_ability(
 			'sd-ai-agent/check-plugin-updates',
 			[
-				'label'               => __( 'Check Plugin Updates', 'sd-ai-agent' ),
-				'description'         => __( 'List all installed plugins that have updates available, including current and new version numbers.', 'sd-ai-agent' ),
+				'label'               => __( 'Check Plugin Updates', 'superdav-ai-agent' ),
+				'description'         => __( 'List all installed plugins that have updates available, including current and new version numbers.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -95,8 +95,8 @@ class SiteHealthAbilities {
 		wp_register_ability(
 			'sd-ai-agent/scan-php-error-log',
 			[
-				'label'               => __( 'Scan PHP Error Log', 'sd-ai-agent' ),
-				'description'         => __( 'Read the PHP/WordPress debug log and return recent errors, warnings, and notices. Returns the most recent entries up to the specified limit.', 'sd-ai-agent' ),
+				'label'               => __( 'Scan PHP Error Log', 'superdav-ai-agent' ),
+				'description'         => __( 'Read the PHP/WordPress debug log and return recent errors, warnings, and notices. Returns the most recent entries up to the specified limit.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -151,8 +151,8 @@ class SiteHealthAbilities {
 		wp_register_ability(
 			'sd-ai-agent/check-disk-space',
 			[
-				'label'               => __( 'Check Disk Space', 'sd-ai-agent' ),
-				'description'         => __( 'Report disk space usage for the WordPress installation: total, used, free space, and wp-content directory size.', 'sd-ai-agent' ),
+				'label'               => __( 'Check Disk Space', 'superdav-ai-agent' ),
+				'description'         => __( 'Report disk space usage for the WordPress installation: total, used, free space, and wp-content directory size.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -192,8 +192,8 @@ class SiteHealthAbilities {
 		wp_register_ability(
 			'sd-ai-agent/check-security',
 			[
-				'label'               => __( 'Check Security', 'sd-ai-agent' ),
-				'description'         => __( 'Run security checks: debug mode status, admin user enumeration risk, file editor status, inactive plugins, and WordPress version currency.', 'sd-ai-agent' ),
+				'label'               => __( 'Check Security', 'superdav-ai-agent' ),
+				'description'         => __( 'Run security checks: debug mode status, admin user enumeration risk, file editor status, inactive plugins, and WordPress version currency.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -230,8 +230,8 @@ class SiteHealthAbilities {
 		wp_register_ability(
 			'sd-ai-agent/check-performance',
 			[
-				'label'               => __( 'Check Performance', 'sd-ai-agent' ),
-				'description'         => __( 'Check performance indicators: autoloaded options size, expired transients count, object cache status, and post revision count.', 'sd-ai-agent' ),
+				'label'               => __( 'Check Performance', 'superdav-ai-agent' ),
+				'description'         => __( 'Check performance indicators: autoloaded options size, expired transients count, object cache status, and post revision count.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -271,8 +271,8 @@ class SiteHealthAbilities {
 		wp_register_ability(
 			'sd-ai-agent/site-health-summary',
 			[
-				'label'               => __( 'Site Health Summary', 'sd-ai-agent' ),
-				'description'         => __( 'Run all site health checks (plugins, errors, disk, security, performance) in one call and return a consolidated summary report.', 'sd-ai-agent' ),
+				'label'               => __( 'Site Health Summary', 'superdav-ai-agent' ),
+				'description'         => __( 'Run all site health checks (plugins, errors, disk, security, performance) in one call and return a consolidated summary report.', 'superdav-ai-agent' ),
 				'category'            => 'sd-ai-agent',
 				'input_schema'        => [
 					'type'       => 'object',
@@ -408,7 +408,7 @@ class SiteHealthAbilities {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- WP_Filesystem does not support fseek/streaming reads needed for large log files.
 		$handle = fopen( $log_path, 'r' );
 		if ( ! $handle ) {
-			return new WP_Error( 'log_read_error', __( 'Could not open error log file.', 'sd-ai-agent' ) );
+			return new WP_Error( 'log_read_error', __( 'Could not open error log file.', 'superdav-ai-agent' ) );
 		}
 
 		if ( $offset > 0 ) {
@@ -456,7 +456,7 @@ class SiteHealthAbilities {
 		$disk_free  = disk_free_space( $abspath );
 
 		if ( false === $disk_total || false === $disk_free ) {
-			return new WP_Error( 'disk_check_failed', __( 'Could not retrieve disk space information.', 'sd-ai-agent' ) );
+			return new WP_Error( 'disk_check_failed', __( 'Could not retrieve disk space information.', 'superdav-ai-agent' ) );
 		}
 
 		$disk_used         = $disk_total - $disk_free;

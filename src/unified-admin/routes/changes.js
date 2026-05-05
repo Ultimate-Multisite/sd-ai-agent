@@ -20,7 +20,7 @@ import '../../changes-page/style.css';
  */
 export default function ChangesRoute() {
 	return (
-		<div className="sd-ai-agent-route sd-ai-agent-route-changes">
+		<div className="sdaa-route sdaa-route-changes">
 			<h2>{ __( 'Changes', 'sd-ai-agent' ) }</h2>
 			<ChangesApp />
 		</div>
