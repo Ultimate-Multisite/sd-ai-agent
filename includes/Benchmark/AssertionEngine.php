@@ -705,20 +705,33 @@ class AssertionEngine {
 
 		$matches = 0;
 		foreach ( $log as $entry ) {
-			$name = (string) ( $entry['tool'] ?? '' );
+			$name      = (string) ( $entry['tool'] ?? '' );
+			$input     = (array) ( $entry['input'] ?? array() );
+			$is_meta   = str_ends_with( $name, '/ability-call' )
+				|| str_ends_with( $name, '__ability-call' );
+			$inner     = $is_meta ? (string) ( $input['ability'] ?? $input['ability_name'] ?? $input['name'] ?? '' ) : '';
+			$wpab_name = self::ability_to_function_name( $name );
+
 			foreach ( $tools as $candidate ) {
 				$candidate = (string) $candidate;
 				if ( '' === $candidate ) {
 					continue;
 				}
-				// Match either the full ability name or the shortened wpab__ form
-				// or a suffix (e.g. 'create-post' matches 'ai-agent/create-post').
-				if (
-					$name === $candidate
-					|| str_ends_with( $name, '/' . $candidate )
-					|| str_ends_with( $name, '__' . str_replace( '-', '_', $candidate ) )
-					|| str_contains( $name, $candidate )
-				) {
+				$cand_func = self::ability_to_function_name( $candidate );
+
+				// Direct invocation match: name equals or wpab-form matches.
+				if ( $name === $candidate || $wpab_name === $cand_func || $name === $cand_func ) {
+					++$matches;
+					break;
+				}
+				// Meta-dispatch via ability-call: candidate appears in the inner ability_name argument.
+				if ( '' !== $inner && ( $inner === $candidate || str_ends_with( $inner, '/' . self::ability_short_name( $candidate ) ) ) ) {
+					++$matches;
+					break;
+				}
+				// Permissive suffix match (e.g. 'create-post' matches 'ai-agent/create-post' direct call).
+				$short = self::ability_short_name( $candidate );
+				if ( '' !== $short && ( str_ends_with( $name, '/' . $short ) || str_ends_with( $name, '__' . $short ) || ( '' !== $inner && str_ends_with( $inner, '/' . $short ) ) ) ) {
 					++$matches;
 					break;
 				}
@@ -732,6 +745,33 @@ class AssertionEngine {
 			'expected' => sprintf( 'at least %d call to one of [%s]', $min_calls, implode( ', ', $tools ) ),
 			'actual'   => sprintf( '%d matching call(s) in tool log', $matches ),
 		);
+	}
+
+	/**
+	 * Convert an ability identifier into the wpab__ function-name form the
+	 * AI client uses, e.g. `ai-agent/create-post` → `wpab__ai-agent__create-post`.
+	 * If already in wpab__ form, returns as-is.
+	 */
+	private static function ability_to_function_name( string $name ): string {
+		if ( '' === $name ) {
+			return '';
+		}
+		if ( str_starts_with( $name, 'wpab__' ) ) {
+			return $name;
+		}
+		if ( str_contains( $name, '/' ) ) {
+			return 'wpab__' . str_replace( '/', '__', $name );
+		}
+		return $name;
+	}
+
+	/**
+	 * Strip the namespace prefix from an ability name.
+	 * `ai-agent/create-post` → `create-post`. Already-short names pass through.
+	 */
+	private static function ability_short_name( string $name ): string {
+		$pos = strrpos( $name, '/' );
+		return false === $pos ? $name : substr( $name, $pos + 1 );
 	}
 
 	/**

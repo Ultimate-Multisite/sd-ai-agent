@@ -431,10 +431,16 @@ class BenchmarkCommand extends WP_CLI_Command {
 				$last_log_count = count( $full_log );
 
 				foreach ( $new_entries as $entry ) {
+					$type = $entry['type'] ?? '';
+					if ( 'call' !== $type && '' !== $type ) {
+						// Skip 'response' rows — we only log calls so the
+						// matcher can introspect what the agent invoked.
+						continue;
+					}
 					$name = $entry['name'] ?? ( $entry['tool'] ?? '?' );
 					$tool_call_log[] = array(
 						'tool'      => $name,
-						'input'     => $entry['input'] ?? $entry['arguments'] ?? array(),
+						'input'     => $entry['args'] ?? $entry['input'] ?? $entry['arguments'] ?? array(),
 						'output'    => $entry['output'] ?? $entry['result'] ?? '',
 						'timestamp' => gmdate( 'c' ),
 					);
