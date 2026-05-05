@@ -83,8 +83,9 @@ class AssertionEngine {
 					(string) ( $assertion['method'] ?? 'GET' ),
 					(string) ( $assertion['path'] ?? '' ),
 					(array) ( $assertion['body'] ?? array() ),
-					(int) ( $assertion['expected_status'] ?? 200 ),
-					(array) ( $assertion['expected_body_keys'] ?? array() )
+					$assertion['expected_status'] ?? 200,
+					(array) ( $assertion['expected_body_keys'] ?? array() ),
+					array_key_exists( 'as_user', $assertion ) ? $assertion['as_user'] : null
 				);
 
 			case 'db_table_exists':
@@ -169,6 +170,14 @@ class AssertionEngine {
 			);
 		}
 
+		// validate_plugin() uses the get_plugins() cache, which was populated
+		// before the agent created this file — bust it so the new plugin is
+		// recognised.
+		wp_cache_delete( 'plugins', 'plugins' );
+		if ( function_exists( 'wp_clean_plugins_cache' ) ) {
+			wp_clean_plugins_cache( false );
+		}
+
 		// Activate and capture any WP_Error.
 		$result = activate_plugin( $plugin_file, '', false, true );
 
@@ -179,6 +188,22 @@ class AssertionEngine {
 				'actual'   => $result->get_error_message(),
 			);
 		}
+
+		// activate_plugin() updates the active_plugins option but does not
+		// load the plugin's PHP into the current process — so its hooks
+		// (init, rest_api_init, etc.) are not registered for assertions that
+		// follow. Include it now and replay only the *newly added* init /
+		// rest_api_init callbacks (re-firing the whole init action would
+		// re-trigger every other plugin and explode on idempotency checks).
+		$absolute = WP_PLUGIN_DIR . '/' . $plugin_file;
+
+		$snapshot = self::snapshot_callbacks( array( 'init', 'rest_api_init' ) );
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
+		include_once $absolute;
+
+		self::run_new_callbacks( 'init', $snapshot['init'] ?? array() );
+		self::run_new_callbacks( 'rest_api_init', $snapshot['rest_api_init'] ?? array() );
 
 		return array(
 			'pass'     => true,
@@ -294,9 +319,13 @@ class AssertionEngine {
 		string $method,
 		string $path,
 		array $body,
-		int $expected_status,
-		array $expected_body_keys
+		$expected_status,
+		array $expected_body_keys,
+		$as_user = null
 	): array {
+		$expected_statuses = is_array( $expected_status )
+			? array_map( 'intval', $expected_status )
+			: array( (int) $expected_status );
 		do_action( 'rest_api_init' );
 
 		$request = new \WP_REST_Request( $method, $path );
@@ -304,10 +333,23 @@ class AssertionEngine {
 			$request->set_body_params( $body );
 		}
 
-		$response    = rest_do_request( $request );
+		// Optionally swap the current user just for this request — used to
+		// verify capability gates (e.g. as_user=0 means anonymous).
+		$prev_user_id = null;
+		if ( null !== $as_user ) {
+			$prev_user_id = get_current_user_id();
+			wp_set_current_user( (int) $as_user );
+		}
+
+		$response = rest_do_request( $request );
+
+		if ( null !== $prev_user_id ) {
+			wp_set_current_user( $prev_user_id );
+		}
+
 		$status      = $response->get_status();
 		$data        = (array) $response->get_data();
-		$status_pass = ( $status === $expected_status );
+		$status_pass = in_array( $status, $expected_statuses, true );
 
 		$missing_keys = array();
 		foreach ( $expected_body_keys as $key ) {
@@ -327,7 +369,10 @@ class AssertionEngine {
 			$actual_parts[] = "body: {$body_preview}";
 		}
 
-		$expected_parts = array( "HTTP {$expected_status}" );
+		$expected_label = count( $expected_statuses ) === 1
+			? "HTTP {$expected_statuses[0]}"
+			: 'HTTP ' . implode( '|', $expected_statuses );
+		$expected_parts = array( $expected_label );
 		if ( ! empty( $expected_body_keys ) ) {
 			$expected_parts[] = 'keys: ' . implode( ', ', $expected_body_keys );
 		}
@@ -602,5 +647,56 @@ class AssertionEngine {
 			'expected' => $expected_desc,
 			'actual'   => $pass ? 'passed' : $actual_desc,
 		);
+	}
+
+	/**
+	 * Snapshot the registered callback IDs for a list of action names.
+	 *
+	 * Used by assert_plugin_activates() to identify which callbacks were
+	 * added by including the plugin file so we can run just those without
+	 * re-firing the whole hook (which would explode on plugins that detect
+	 * duplicate registration).
+	 *
+	 * @param array<int, string> $hooks Hook names.
+	 * @return array<string, array<string, true>>
+	 */
+	private static function snapshot_callbacks( array $hooks ): array {
+		global $wp_filter;
+		$out = array();
+		foreach ( $hooks as $hook ) {
+			$out[ $hook ] = array();
+			if ( ! isset( $wp_filter[ $hook ] ) ) {
+				continue;
+			}
+			foreach ( $wp_filter[ $hook ]->callbacks as $callbacks ) {
+				foreach ( $callbacks as $id => $_cb ) {
+					$out[ $hook ][ $id ] = true;
+				}
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Invoke any callbacks added to $hook that are NOT in the snapshot.
+	 *
+	 * @param string              $hook     Hook name.
+	 * @param array<string, true> $existing Snapshot of callback IDs from before.
+	 */
+	private static function run_new_callbacks( string $hook, array $existing ): void {
+		global $wp_filter;
+		if ( ! isset( $wp_filter[ $hook ] ) ) {
+			return;
+		}
+		foreach ( $wp_filter[ $hook ]->callbacks as $callbacks ) {
+			foreach ( $callbacks as $id => $cb ) {
+				if ( isset( $existing[ $id ] ) ) {
+					continue;
+				}
+				if ( is_callable( $cb['function'] ) ) {
+					call_user_func( $cb['function'] );
+				}
+			}
+		}
 	}
 }

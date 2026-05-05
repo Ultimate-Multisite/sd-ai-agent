@@ -151,6 +151,9 @@ class BenchmarkCommand extends WP_CLI_Command {
 	 * [--log-dir=<path>]
 	 * : Absolute path for log output. Defaults to tests/benchmark/logs/ inside the plugin.
 	 *
+	 * [--keep-plugins]
+	 * : Keep generated sandbox plugins on disk after the run for debugging.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *   wp sd-ai-agent benchmark run --suite=functional-v1 --provider=ultimate-ai-connector-anthropic-max --model=claude-sonnet-4-6
@@ -166,6 +169,7 @@ class BenchmarkCommand extends WP_CLI_Command {
 		$provider_id = (string) ( $assoc_args['provider'] ?? '' );
 		$model_id    = (string) ( $assoc_args['model'] ?? '' );
 		$log_dir     = (string) ( $assoc_args['log-dir'] ?? '' );
+		$no_cleanup  = isset( $assoc_args['keep-plugins'] );
 
 		// Resolve questions to run.
 		if ( '' !== $question_id ) {
@@ -259,7 +263,7 @@ class BenchmarkCommand extends WP_CLI_Command {
 			$q_id = (string) $question['id'];
 			WP_CLI::log( "┌─ [{$q_id}] " . substr( $question['prompt'], 0, 70 ) . '…' );
 
-			$result            = $this->run_question( $question, $provider_id, $model_id );
+			$result            = $this->run_question( $question, $provider_id, $model_id, $no_cleanup );
 			$log_file          = $run_dir . "/{$q_id}.json";
 			$result['run_id']  = $run_id;
 			$result['log_dir'] = $run_dir;
@@ -330,7 +334,7 @@ class BenchmarkCommand extends WP_CLI_Command {
 	 * @param string               $model_id    Model ID.
 	 * @return array<string, mixed> Full result including agent output, tool log, and assertions.
 	 */
-	private function run_question( array $question, string $provider_id, string $model_id ): array {
+	private function run_question( array $question, string $provider_id, string $model_id, bool $no_cleanup = false ): array {
 		$q_id       = (string) $question['id'];
 		$start_time = microtime( true );
 		$log        = array(
@@ -392,7 +396,7 @@ class BenchmarkCommand extends WP_CLI_Command {
 			// Always deactivate and remove the sandbox plugin if we created one,
 			// even on agent error or thrown exception, so deterministic slugs
 			// (e.g. event-manager) don't leak into later questions.
-			if ( $needs_plugin && '' !== $plugin_slug ) {
+			if ( $needs_plugin && '' !== $plugin_slug && ! $no_cleanup ) {
 				$this->cleanup_plugin( $plugin_slug );
 			}
 		}
