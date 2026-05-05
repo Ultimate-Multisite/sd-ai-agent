@@ -102,7 +102,7 @@ class BenchmarkSuite {
 	 * Get a suite by slug with its full question list.
 	 *
 	 * @param string $slug Suite slug.
-	 * @return array<string, mixed>|null
+	 * @return array{slug: string, name: string, description: string, questions: array<int, array<string, mixed>>}|null
 	 */
 	public static function get_suite( string $slug ): ?array {
 		switch ( $slug ) {
