@@ -242,6 +242,54 @@ class DatabaseSchemaTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Benchmark tables have the required columns for run/result persistence.
+	 */
+	public function test_benchmark_tables_have_required_columns(): void {
+		Database::install();
+
+		$run_columns = $this->get_column_names( Database::benchmark_runs_table_name() );
+		foreach (
+			[
+				'id',
+				'suite_slug',
+				'provider_id',
+				'model_id',
+				'status',
+				'total_questions',
+				'passed_questions',
+				'failed_questions',
+				'score',
+				'duration_ms',
+				'started_at',
+				'completed_at',
+				'created_at',
+			] as $col
+		) {
+			$this->assertContains( $col, $run_columns, "Benchmark runs table missing column '{$col}'." );
+		}
+
+		$result_columns = $this->get_column_names( Database::benchmark_results_table_name() );
+		foreach (
+			[
+				'id',
+				'run_id',
+				'question_id',
+				'category',
+				'prompt',
+				'answer',
+				'assertions',
+				'passed',
+				'score',
+				'duration_ms',
+				'error',
+				'created_at',
+			] as $col
+		) {
+			$this->assertContains( $col, $result_columns, "Benchmark results table missing column '{$col}'." );
+		}
+	}
+
+	/**
 	 * Knowledge tables are created with correct structure.
 	 */
 	public function test_knowledge_tables_have_required_columns(): void {
