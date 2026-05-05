@@ -207,6 +207,37 @@ class BenchmarkCommand extends WP_CLI_Command {
 		// Ensure credentials are loaded for the AI SDK.
 		ProviderCredentialLoader::load();
 
+		// Set the current user to an administrator so abilities that gate on
+		// current_user_can( 'edit_posts' )/'manage_options' work in CLI context.
+		// Without this every ability returns ability_invalid_permissions.
+		$admin_id = 0;
+		if ( is_multisite() ) {
+			$super_admins = get_super_admins();
+			if ( ! empty( $super_admins ) ) {
+				$user = get_user_by( 'login', $super_admins[0] );
+				if ( $user ) {
+					$admin_id = (int) $user->ID;
+				}
+			}
+		}
+		if ( 0 === $admin_id ) {
+			$admins = get_users(
+				array(
+					'role'    => 'administrator',
+					'number'  => 1,
+					'orderby' => 'ID',
+				)
+			);
+			if ( ! empty( $admins ) ) {
+				$admin_id = (int) $admins[0]->ID;
+			}
+		}
+		if ( $admin_id > 0 ) {
+			wp_set_current_user( $admin_id );
+		} else {
+			WP_CLI::warning( 'No administrator user found — abilities may fail with permission errors.' );
+		}
+
 		WP_CLI::log( '' );
 		WP_CLI::log( '╔══════════════════════════════════════════════════════════════╗' );
 		WP_CLI::log( '║  Superdav AI Agent — Functional Benchmark                    ║' );
