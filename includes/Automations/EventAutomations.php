@@ -32,12 +32,37 @@ class EventAutomations {
 		/** @var \wpdb $wpdb */
 
 		$table = self::table_name();
+		if ( ! self::table_exists( $table ) ) {
+			return [];
+		}
+
 		$where = $enabled_only ? 'WHERE enabled = 1' : '';
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table query; table/column names from internal methods, not user input.
 		$rows = $wpdb->get_results( "SELECT * FROM {$table} {$where} ORDER BY name ASC" );
 
 		return array_map( [ __CLASS__, 'decode_row' ], $rows ?: [] );
+	}
+
+	/**
+	 * Check whether the event automations table exists for the current site.
+	 *
+	 * Network-activated multisite installs can reach subsites before this custom
+	 * table has been created for the current blog. Guarding the read prevents a
+	 * failed SELECT from running on every request while event hooks attach.
+	 *
+	 * @param string $table Event automations table name.
+	 */
+	private static function table_exists( string $table ): bool {
+		global $wpdb;
+		/** @var \wpdb $wpdb */
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Schema existence check for custom table before querying it.
+		$found = $wpdb->get_var(
+			$wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) )
+		);
+
+		return $found === $table;
 	}
 
 	/**

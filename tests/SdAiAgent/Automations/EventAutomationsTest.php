@@ -245,6 +245,25 @@ class EventAutomationsTest extends WP_UnitTestCase {
 		$this->assertSame( $sorted, $names );
 	}
 
+	/**
+	 * Test list returns empty without querying a missing subsite table.
+	 */
+	public function test_list_returns_empty_when_current_site_table_is_missing(): void {
+		global $wpdb;
+		/** @var \wpdb $wpdb */
+
+		$original_prefix = $wpdb->prefix;
+		$wpdb->prefix    = $original_prefix . 'missing_';
+		$wpdb->last_error = '';
+
+		try {
+			$this->assertSame( [], EventAutomations::list( true ) );
+			$this->assertSame( '', $wpdb->last_error );
+		} finally {
+			$wpdb->prefix = $original_prefix;
+		}
+	}
+
 	// -------------------------------------------------------------------------
 	// update
 	// -------------------------------------------------------------------------
