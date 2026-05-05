@@ -480,6 +480,7 @@ class ToolDiscovery {
 			$ids   = array_filter( array_map( 'trim', explode( ',', substr( $query_raw, 7 ) ) ) );
 			$found = array();
 			foreach ( $ids as $id ) {
+				$id = self::canonicalise_ability_id( $id );
 				foreach ( $candidates as $a ) {
 					if ( $a->get_name() === $id ) {
 						$found[] = $a;
@@ -655,17 +656,12 @@ class ToolDiscovery {
 			return new WP_Error( 'api_unavailable', __( 'Abilities API not available.', 'superdav-ai-agent' ) );
 		}
 
+		$ability_id = self::canonicalise_ability_id( $ability_id );
+
 		// @phpstan-ignore-next-line
 		$ability = wp_get_ability( $ability_id );
 		if ( ! $ability instanceof \WP_Ability ) {
-			return new WP_Error(
-				'ability_not_found',
-				sprintf(
-					/* translators: %s: ability id */
-					__( 'Ability "%s" not found.', 'superdav-ai-agent' ),
-					$ability_id
-				)
-			);
+			return self::format_unknown_ability_response( $ability_id );
 		}
 
 		$perms = self::tool_permissions();
@@ -796,11 +792,21 @@ class ToolDiscovery {
 		AbilityUsageTracker::record( $ability_id );
 		ModelHealthTracker::record_success();
 
-		return array(
+		$response = array(
 			'ability' => $ability_id,
 			'success' => true,
 			'result'  => $result,
 		);
+
+		// Auto-attach skill content for category-specific abilities the first
+		// time they're invoked this request. Saves the agent a round-trip to
+		// `skill-load`. Skill is silently omitted on subsequent calls.
+		$skill = \SdAiAgent\Core\SkillAutoInjector::consume_skill_for_ability( $ability_id );
+		if ( null !== $skill ) {
+			$response['_skill_context'] = $skill;
+		}
+
+		return $response;
 	}
 
 	// ─── Schema cache ────────────────────────────────────────────────────
@@ -855,6 +861,91 @@ class ToolDiscovery {
 	 */
 	public static function reset_schema_cache(): void {
 		self::$schema_cache = array();
+	}
+
+	// ─── Aliasing + unknown-ability self-heal ────────────────────────────
+
+	/**
+	 * Canonicalise an ability id, transparently rewriting the legacy
+	 * `ai-agent/` prefix that the model sometimes hallucinates back to the
+	 * canonical `sd-ai-agent/` namespace. Only rewrites when the rewritten
+	 * name resolves to a registered ability.
+	 *
+	 * @param string $ability_id Raw ability id from the model.
+	 * @return string Canonical id, or the original if no rewrite applied.
+	 */
+	public static function canonicalise_ability_id( string $ability_id ): string {
+		if ( '' === $ability_id ) {
+			return $ability_id;
+		}
+		if ( ! function_exists( 'wp_get_ability' ) ) {
+			return $ability_id;
+		}
+
+		// Rewrite the legacy `ai-agent/` prefix BEFORE probing, so we don't
+		// trigger WP's `doing_it_wrong` notice on the unknown name. Only
+		// keep the rewrite when the canonical name actually resolves.
+		if ( str_starts_with( $ability_id, 'ai-agent/' ) ) {
+			$rewritten = 'sd-' . $ability_id;
+			// @phpstan-ignore-next-line
+			if ( wp_get_ability( $rewritten ) instanceof \WP_Ability ) {
+				return $rewritten;
+			}
+		}
+
+		return $ability_id;
+	}
+
+	/**
+	 * Build a self-heal response when ability-call gets an unknown id.
+	 * Returns up to five fuzzy-ranked suggestions with their schemas inline
+	 * so the model can pick + retry in one turn instead of falling back to
+	 * ability-search.
+	 *
+	 * @param string $ability_id The original (post-canonicalisation) id.
+	 * @return array<string,mixed>
+	 */
+	private static function format_unknown_ability_response( string $ability_id ): array {
+		$payload = array(
+			'success' => false,
+			'ability' => $ability_id,
+			'error'   => sprintf(
+				/* translators: %s: ability id */
+				__( 'Ability "%s" not found.', 'superdav-ai-agent' ),
+				$ability_id
+			),
+			'code'    => 'ability_not_found',
+		);
+
+		$candidates = self::visible_abilities();
+
+		// Strip a known prefix when ranking so e.g. "ai-agent/foo-bar"
+		// matches "sd-ai-agent/foo-bar" cleanly even if the prefix rewrite
+		// didn't catch it (e.g. typo in slug).
+		$query = $ability_id;
+		if ( str_contains( $query, '/' ) ) {
+			[ , $tail ] = explode( '/', $query, 2 );
+			$query      = (string) $tail;
+		}
+
+		$ranked      = self::rank( $candidates, $query );
+		$top         = array_slice( $ranked, 0, 5 );
+		$suggestions = array();
+		foreach ( $top as $ability ) {
+			$suggestions[] = array(
+				'id'           => $ability->get_name(),
+				'description'  => $ability->get_description(),
+				// @phpstan-ignore-next-line
+				'input_schema' => self::serialise_schema( $ability->get_input_schema() ),
+			);
+		}
+
+		$payload['suggestions'] = $suggestions;
+		$payload['hint']        = empty( $suggestions )
+			? 'Call sd-ai-agent/ability-search with a keyword query to discover available abilities.'
+			: 'Pick the closest match from `suggestions`, copy its `input_schema`, and call sd-ai-agent/ability-call again.';
+
+		return $payload;
 	}
 
 	// ─── Helpers ─────────────────────────────────────────────────────────

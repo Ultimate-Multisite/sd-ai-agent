@@ -430,7 +430,7 @@ class GitTrackerManager {
 	 * @param string $plugin_dir_slug Plugin directory name (e.g. "akismet").
 	 * @return string|WP_Error Plugin file relative to plugins dir (e.g. "akismet/akismet.php"), or WP_Error.
 	 */
-	private static function resolve_plugin_file( string $plugin_dir_slug ) {
+	public static function resolve_plugin_file( string $plugin_dir_slug ) {
 		if ( ! function_exists( 'get_plugins' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}

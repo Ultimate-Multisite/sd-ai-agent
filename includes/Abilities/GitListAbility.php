@@ -35,10 +35,14 @@ class GitListAbility extends AbstractAbility {
 		return [
 			'type'       => 'object',
 			'properties' => [
-				'status' => [
+				'status'       => [
 					'type'        => 'string',
 					'enum'        => [ 'unchanged', 'modified', 'deleted' ],
 					'description' => 'Filter by status. Omit to list all tracked files.',
+				],
+				'package_slug' => [
+					'type'        => 'string',
+					'description' => 'Filter to a single plugin or theme slug. Match is on `package_slug` (e.g. "akismet" or "akismet/akismet.php").',
 				],
 			],
 		];
@@ -62,8 +66,18 @@ class GitListAbility extends AbstractAbility {
 
 		$rows = GitTrackerManager::get_all_tracked_files( $status );
 
+		$slug_filter_raw = $input['package_slug'] ?? null;
+		$slug_filter     = is_string( $slug_filter_raw ) && '' !== $slug_filter_raw ? $slug_filter_raw : null;
+
 		$files = [];
 		foreach ( $rows as $row ) {
+			if ( null !== $slug_filter ) {
+				$row_slug = (string) $row->package_slug;
+				$head     = explode( '/', $row_slug, 2 )[0];
+				if ( $row_slug !== $slug_filter && $head !== $slug_filter ) {
+					continue;
+				}
+			}
 			$files[] = [
 				'id'           => (int) $row->id,
 				'package_slug' => $row->package_slug,

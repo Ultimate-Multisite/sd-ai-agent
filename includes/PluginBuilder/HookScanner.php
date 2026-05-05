@@ -116,7 +116,43 @@ class HookScanner {
 			}
 		);
 
-		return [ 'hooks' => $hooks ];
+		// Summary buckets: distinct names by type so the agent can answer
+		// "what hooks does X invoke" without parsing the full positional
+		// list (which is often truncated for large plugins).
+		$action_names = [];
+		$filter_names = [];
+		foreach ( $hooks as $h ) {
+			if ( 'action' === $h['type'] || 'add_action' === $h['type'] ) {
+				$action_names[ $h['name'] ] = true;
+			} elseif ( 'filter' === $h['type'] || 'add_filter' === $h['type'] ) {
+				$filter_names[ $h['name'] ] = true;
+			}
+		}
+		$action_names = array_keys( $action_names );
+		$filter_names = array_keys( $filter_names );
+		sort( $action_names );
+		sort( $filter_names );
+
+		return [
+			'hooks'   => $hooks,
+			'count'   => count( $hooks ),
+			'summary' => [
+				'actions_total'  => count(
+					array_filter(
+						$hooks,
+						static fn( $h ) => 'action' === $h['type'] || 'add_action' === $h['type']
+					)
+				),
+				'filters_total'  => count(
+					array_filter(
+						$hooks,
+						static fn( $h ) => 'filter' === $h['type'] || 'add_filter' === $h['type']
+					)
+				),
+				'unique_actions' => $action_names,
+				'unique_filters' => $filter_names,
+			],
+		];
 	}
 
 	/**

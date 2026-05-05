@@ -163,6 +163,94 @@ class SkillAutoInjector {
 	}
 
 	/**
+	 * Per-request cache of skill slugs already auto-attached to ability
+	 * responses, so we attach each skill at most once per chat turn.
+	 *
+	 * @var array<string, true>
+	 */
+	private static array $attached_for_request = [];
+
+	/**
+	 * Map ability id prefix → skill slug. When an ability matching a prefix
+	 * is invoked via ability-call, the corresponding skill content is
+	 * attached to the response on first call only.
+	 *
+	 * @var array<string, string>
+	 */
+	private const ABILITY_PREFIX_TO_SKILL = [
+		'sd-ai-agent/seo-'                   => 'seo-optimization',
+		'sd-ai-agent/create-block-content'   => 'gutenberg-blocks',
+		'sd-ai-agent/parse-block-content'    => 'gutenberg-blocks',
+		'sd-ai-agent/review-block'           => 'gutenberg-blocks',
+		'sd-ai-agent/validate-block-content' => 'gutenberg-blocks',
+		'sd-ai-agent/markdown-to-blocks'     => 'gutenberg-blocks',
+		'sd-ai-agent/list-block-types'       => 'gutenberg-blocks',
+		'sd-ai-agent/list-block-templates'   => 'gutenberg-blocks',
+		'sd-ai-agent/list-block-patterns'    => 'gutenberg-blocks',
+		'sd-ai-agent/get-block-type'         => 'gutenberg-blocks',
+		'sd-ai-agent/get-theme-json'         => 'full-site-editing',
+		'sd-ai-agent/get-global-styles'      => 'full-site-editing',
+		'sd-ai-agent/update-global-styles'   => 'full-site-editing',
+		'sd-ai-agent/reset-global-styles'    => 'full-site-editing',
+	];
+
+	/**
+	 * Resolve the skill slug (if any) associated with a given ability id.
+	 *
+	 * @param string $ability_id Ability id to look up.
+	 * @return string Empty string when no skill applies.
+	 */
+	public static function skill_for_ability( string $ability_id ): string {
+		foreach ( self::ABILITY_PREFIX_TO_SKILL as $prefix => $slug ) {
+			if ( str_starts_with( $ability_id, $prefix ) ) {
+				return $slug;
+			}
+		}
+		return '';
+	}
+
+	/**
+	 * Return the auto-load skill content for an ability if it hasn't been
+	 * attached yet this request, marking it as attached for subsequent
+	 * calls. Returns null when no skill applies or when already attached.
+	 *
+	 * @param string $ability_id Ability id being invoked.
+	 * @return array{slug:string,name:string,content:string}|null
+	 */
+	public static function consume_skill_for_ability( string $ability_id ): ?array {
+		$slug = self::skill_for_ability( $ability_id );
+		if ( '' === $slug ) {
+			return null;
+		}
+		if ( isset( self::$attached_for_request[ $slug ] ) ) {
+			return null;
+		}
+
+		// @phpstan-ignore-next-line
+		$skill = Skill::get_by_slug( $slug );
+		if ( ! $skill || ! (int) $skill->enabled ) {
+			return null;
+		}
+
+		self::$attached_for_request[ $slug ] = true;
+
+		return [
+			'slug'    => $slug,
+			'name'    => (string) $skill->name,
+			'content' => (string) $skill->content,
+		];
+	}
+
+	/**
+	 * Reset per-request state. AgentLoop should call this between requests.
+	 *
+	 * @return void
+	 */
+	public static function reset_request_state(): void {
+		self::$attached_for_request = [];
+	}
+
+	/**
 	 * Record a skill auto-injection event to the usage table.
 	 *
 	 * Looks up the skill by slug to get its ID. Silently no-ops if the

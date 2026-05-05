@@ -1117,12 +1117,15 @@ class RecommendPluginAbility extends AbstractAbility {
 	}
 
 	protected function input_schema(): array {
+		$categories = AbilityPluginRegistry::get_categories();
+		sort( $categories );
 		return [
 			'type'       => 'object',
 			'properties' => [
 				'category'        => [
 					'type'        => 'string',
-					'description' => 'The need category to search for (e.g. "ecommerce", "forms", "seo", "security", "backup", "events", "booking"). Use list-categories to see all available categories.',
+					'description' => 'The need category to search for. One of the values in `enum`. Set `list_categories: true` to enumerate them dynamically.',
+					'enum'        => $categories,
 				],
 				'limit'           => [
 					'type'        => 'integer',
@@ -1191,10 +1194,35 @@ class RecommendPluginAbility extends AbstractAbility {
 		$matches = AbilityPluginRegistry::get_by_category( $category );
 
 		if ( empty( $matches ) ) {
+			$all     = AbilityPluginRegistry::get_categories();
+			$cat_low = strtolower( trim( $category ) );
+			$near    = [];
+			foreach ( $all as $candidate ) {
+				$lev = levenshtein( $cat_low, strtolower( $candidate ) );
+				if ( $lev <= 4 || str_contains( strtolower( $candidate ), $cat_low ) || str_contains( $cat_low, strtolower( $candidate ) ) ) {
+					$near[] = [
+						'category' => $candidate,
+						'distance' => $lev,
+					];
+				}
+			}
+			usort(
+				$near,
+				static function ( array $a, array $b ): int {
+					return $a['distance'] - $b['distance'];
+				}
+			);
+			$suggestions = array_slice( array_column( $near, 'category' ), 0, 5 );
+			sort( $all );
 			return [
-				'recommendations' => [],
-				'total'           => 0,
-				'category'        => $category,
+				'recommendations'      => [],
+				'total'                => 0,
+				'category'             => $category,
+				'available_categories' => $all,
+				'suggested_categories' => $suggestions,
+				'hint'                 => empty( $suggestions )
+					? 'No close match. Choose a category from `available_categories` and call again.'
+					: 'No exact match. Closest categories are in `suggested_categories`.',
 			];
 		}
 
@@ -1466,14 +1494,17 @@ class ActivatePluginAbility extends AbstractAbility {
 		}
 
 		return [
-			'status'      => 'activated',
-			'message'     => sprintf(
+			'status'       => 'activated',
+			'message'      => sprintf(
 				/* translators: %s: plugin file */
 				__( 'Plugin "%s" activated successfully.', 'superdav-ai-agent' ),
 				$plugin_file
 			),
-			'plugin_file' => $plugin_file,
-			'active'      => true,
+			'plugin_file'  => $plugin_file,
+			'active'       => true,
+			'verification' => [
+				'active_plugins' => (array) get_option( 'active_plugins', [] ),
+			],
 		];
 	}
 
@@ -1587,14 +1618,17 @@ class DeactivatePluginAbility extends AbstractAbility {
 		deactivate_plugins( $plugin_file );
 
 		return [
-			'status'      => 'deactivated',
-			'message'     => sprintf(
+			'status'       => 'deactivated',
+			'message'      => sprintf(
 				/* translators: %s: plugin file */
 				__( 'Plugin "%s" deactivated successfully.', 'superdav-ai-agent' ),
 				$plugin_file
 			),
-			'plugin_file' => $plugin_file,
-			'active'      => false,
+			'plugin_file'  => $plugin_file,
+			'active'       => false,
+			'verification' => [
+				'active_plugins' => (array) get_option( 'active_plugins', [] ),
+			],
 		];
 	}
 
