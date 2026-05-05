@@ -83,9 +83,9 @@ class AssertionEngine {
 					(string) ( $assertion['method'] ?? 'GET' ),
 					(string) ( $assertion['path'] ?? '' ),
 					(array) ( $assertion['body'] ?? array() ),
-					$assertion['expected_status'] ?? 200,
-					(array) ( $assertion['expected_body_keys'] ?? array() ),
-					array_key_exists( 'as_user', $assertion ) ? $assertion['as_user'] : null
+					self::normalize_int_list( $assertion['expected_status'] ?? 200 ),
+					self::normalize_string_list( $assertion['expected_body_keys'] ?? array() ),
+					self::normalize_optional_int( $assertion['as_user'] ?? null )
 				);
 
 			case 'db_table_exists':
@@ -94,7 +94,7 @@ class AssertionEngine {
 			case 'db_table_has_columns':
 				return self::assert_db_table_has_columns(
 					(string) ( $assertion['table'] ?? '' ),
-					(array) ( $assertion['columns'] ?? array() )
+					self::normalize_string_list( $assertion['columns'] ?? array() )
 				);
 
 			case 'shortcode_registered':
@@ -134,7 +134,7 @@ class AssertionEngine {
 
 			case 'tool_called':
 				return self::assert_tool_called(
-					(array) ( $assertion['tools'] ?? array() ),
+					self::normalize_string_list( $assertion['tools'] ?? array() ),
 					$context,
 					(int) ( $assertion['min_calls'] ?? 1 )
 				);
@@ -275,7 +275,7 @@ class AssertionEngine {
 		}
 		$errors = array();
 
-		$php_binary = defined( 'PHP_BINARY' ) && PHP_BINARY ? PHP_BINARY : 'php';
+		$php_binary = PHP_BINARY;
 		foreach ( $php_files as $file ) {
 			$output    = array();
 			$exit_code = 0;
@@ -345,7 +345,7 @@ class AssertionEngine {
 	 * @param string               $method              HTTP method.
 	 * @param string               $path                Route path.
 	 * @param array<string, mixed> $body                Request body.
-	 * @param int                  $expected_status     Expected HTTP status code.
+	 * @param array<int, int>      $expected_statuses   Expected HTTP status codes.
 	 * @param array<int, string>   $expected_body_keys  Keys that must exist in the JSON response.
 	 * @return array{pass: bool, expected: string, actual: string}
 	 */
@@ -353,13 +353,10 @@ class AssertionEngine {
 		string $method,
 		string $path,
 		array $body,
-		$expected_status,
+		array $expected_statuses,
 		array $expected_body_keys,
-		$as_user = null
+		?int $as_user = null
 	): array {
-		$expected_statuses = is_array( $expected_status )
-			? array_map( 'intval', $expected_status )
-			: array( (int) $expected_status );
 		do_action( 'rest_api_init' );
 
 		$request = new \WP_REST_Request( $method, $path );
@@ -459,7 +456,7 @@ class AssertionEngine {
 		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$rows = $wpdb->get_results( "DESCRIBE `{$table}`", ARRAY_A );
+		$rows = (array) $wpdb->get_results( "DESCRIBE `{$table}`", ARRAY_A );
 
 		if ( empty( $rows ) ) {
 			return array(
@@ -469,7 +466,7 @@ class AssertionEngine {
 			);
 		}
 
-		$existing = array_column( $rows, 'Field' );
+		$existing = self::normalize_string_list( array_column( $rows, 'Field' ) );
 		$missing  = array_diff( $columns, $existing );
 
 		return array(
@@ -539,6 +536,7 @@ class AssertionEngine {
 
 		// Walk all callbacks and check for pattern match.
 		foreach ( $wp_filter[ $hook ]->callbacks as $priority => $callbacks ) {
+			$priority_label = is_scalar( $priority ) ? (string) $priority : 'unknown';
 			foreach ( $callbacks as $callback ) {
 				$fn   = $callback['function'];
 				$name = is_array( $fn )
@@ -549,7 +547,7 @@ class AssertionEngine {
 					return array(
 						'pass'     => true,
 						'expected' => "callback matching '{$callback_pattern}' on '{$hook}'",
-						'actual'   => "found: {$name} (priority {$priority})",
+						'actual'   => "found: {$name} (priority {$priority_label})",
 					);
 				}
 			}
@@ -705,6 +703,9 @@ class AssertionEngine {
 
 		$matches = 0;
 		foreach ( $log as $entry ) {
+			if ( ! is_array( $entry ) ) {
+				continue;
+			}
 			$name      = (string) ( $entry['tool'] ?? '' );
 			$input     = (array) ( $entry['input'] ?? array() );
 			$is_meta   = str_ends_with( $name, '/ability-call' )
@@ -713,7 +714,6 @@ class AssertionEngine {
 			$wpab_name = self::ability_to_function_name( $name );
 
 			foreach ( $tools as $candidate ) {
-				$candidate = (string) $candidate;
 				if ( '' === $candidate ) {
 					continue;
 				}
@@ -775,7 +775,56 @@ class AssertionEngine {
 	}
 
 	/**
+	 * Normalize a scalar-or-list assertion value to a string list.
+	 *
+	 * @param mixed $value Raw assertion value.
+	 * @return array<int, string>
+	 */
+	private static function normalize_string_list( mixed $value ): array {
+		$items = is_array( $value ) ? $value : array( $value );
+		$out   = array();
+
+		foreach ( $items as $item ) {
+			if ( is_scalar( $item ) ) {
+				$out[] = (string) $item;
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Normalize a scalar-or-list assertion value to an integer list.
+	 *
+	 * @param mixed $value Raw assertion value.
+	 * @return array<int, int>
+	 */
+	private static function normalize_int_list( mixed $value ): array {
+		$items = is_array( $value ) ? $value : array( $value );
+		$out   = array();
+
+		foreach ( $items as $item ) {
+			if ( is_scalar( $item ) ) {
+				$out[] = (int) $item;
+			}
+		}
+
+		return empty( $out ) ? array( 200 ) : $out;
+	}
+
+	/**
+	 * Normalize an optional integer assertion value.
+	 *
+	 * @param mixed $value Raw assertion value.
+	 */
+	private static function normalize_optional_int( mixed $value ): ?int {
+		return null === $value || ! is_scalar( $value ) ? null : (int) $value;
+	}
+
+	/**
 	 * Assert a post matching a title pattern exists, optionally constrained by status.
+	 *
+	 * @return array{pass: bool, expected: string, actual: string}
 	 */
 	private static function assert_post_exists( string $post_type, string $title_pattern, string $status ): array {
 		$args  = array(
@@ -803,6 +852,8 @@ class AssertionEngine {
 
 	/**
 	 * Assert option exists and its serialised value matches a regex pattern.
+	 *
+	 * @return array{pass: bool, expected: string, actual: string}
 	 */
 	private static function assert_option_value_matches( string $option, string $pattern ): array {
 		if ( ! self::assert_option_exists( $option )['pass'] ) {
@@ -822,6 +873,11 @@ class AssertionEngine {
 		);
 	}
 
+	/**
+	 * Assert a taxonomy is registered.
+	 *
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
 	private static function assert_taxonomy_registered( string $taxonomy ): array {
 		$pass = taxonomy_exists( $taxonomy );
 		return array(
@@ -831,6 +887,11 @@ class AssertionEngine {
 		);
 	}
 
+	/**
+	 * Assert a navigation menu exists by name.
+	 *
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
 	private static function assert_menu_exists( string $name ): array {
 		$menu = wp_get_nav_menu_object( $name );
 		$pass = $menu && ! is_wp_error( $menu );
@@ -841,6 +902,11 @@ class AssertionEngine {
 		);
 	}
 
+	/**
+	 * Assert a user exists with an optional role constraint.
+	 *
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
 	private static function assert_user_exists( string $login, string $role ): array {
 		$user = get_user_by( 'login', $login );
 		if ( ! $user ) {
@@ -886,7 +952,7 @@ class AssertionEngine {
 			}
 			foreach ( $wp_filter[ $hook ]->callbacks as $callbacks ) {
 				foreach ( $callbacks as $id => $_cb ) {
-					$out[ $hook ][ $id ] = true;
+					$out[ $hook ][ (string) $id ] = true;
 				}
 			}
 		}

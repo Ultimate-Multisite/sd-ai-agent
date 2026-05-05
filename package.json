@@ -126,16 +126,10 @@
 			"limit": "400 KB",
 			"gzip": true
 		},
-    {
+		{
 			"name": "unified-admin",
 			"path": "build/unified-admin.js",
 			"limit": "500 KB",
-			"gzip": true
-		},
-		{
-			"name": "benchmark-page",
-			"path": "build/benchmark-page.js",
-			"limit": "100 KB",
 			"gzip": true
 		}
 	]
