@@ -353,7 +353,7 @@ class BenchmarkSuite {
 				'id'         => 'fn-002',
 				'category'   => 'database',
 				'max_turns'  => 20,
-				'prompt'     => 'Build a WordPress plugin called "api-logger" that creates a custom database table called "api_logs" (with the WordPress table prefix) on plugin activation. The table must have these columns: id (bigint, auto-increment primary key), user_id (bigint), endpoint (varchar 255), method (varchar 10), status_code (int), response_time_ms (int), created_at (datetime). Use dbDelta() for the table creation and store the installed version in a WordPress option. On deactivation, do NOT drop the table — only clear any scheduled events. Activate the plugin when done.',
+				'prompt'     => 'Build a WordPress plugin called "api-logger" that creates a custom database table called "api_logs" (with the WordPress table prefix) on plugin activation. The table must have these columns: id (bigint, auto-increment primary key), user_id (bigint), endpoint (varchar 255), method (varchar 10), status_code (int), response_time_ms (int), created_at (datetime). Use dbDelta() for the table creation and store the installed version in a WordPress option named exactly "api_logger_version". On deactivation, do NOT drop the table — only clear any scheduled events. Activate the plugin when done.',
 				'assertions' => array(
 					array(
 						'type'        => 'plugin_no_php_errors',

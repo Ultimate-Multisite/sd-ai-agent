@@ -163,6 +163,13 @@ class WP_AI_Client_Ability_Function_Resolver {
 			);
 		}
 
+		// Anthropic's tool_result content must be a string or list of content
+		// blocks — booleans/scalars at the top level cause a 400. Wrap so
+		// abilities that legitimately return true/false/scalar still serialise.
+		if ( is_bool( $result ) || is_scalar( $result ) || null === $result ) {
+			$result = array( 'result' => $result );
+		}
+
 		return new FunctionResponse(
 			$function_id,
 			$function_name,

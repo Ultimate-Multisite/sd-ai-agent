@@ -197,13 +197,15 @@ class AssertionEngine {
 		// re-trigger every other plugin and explode on idempotency checks).
 		$absolute = WP_PLUGIN_DIR . '/' . $plugin_file;
 
-		$snapshot = self::snapshot_callbacks( array( 'init', 'rest_api_init' ) );
+		$replay_hooks = array( 'plugins_loaded', 'after_setup_theme', 'init', 'wp_loaded', 'rest_api_init' );
+		$snapshot     = self::snapshot_callbacks( $replay_hooks );
 
 		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
 		include_once $absolute;
 
-		self::run_new_callbacks( 'init', $snapshot['init'] ?? array() );
-		self::run_new_callbacks( 'rest_api_init', $snapshot['rest_api_init'] ?? array() );
+		foreach ( $replay_hooks as $hook ) {
+			self::run_new_callbacks( $hook, $snapshot[ $hook ] ?? array() );
+		}
 
 		return array(
 			'pass'     => true,
