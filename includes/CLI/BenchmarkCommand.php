@@ -388,7 +388,8 @@ class BenchmarkCommand extends WP_CLI_Command {
 
 			// Run assertions against live WordPress state.
 			do_action( 'rest_api_init' );
-			$log['assertions'] = AssertionEngine::run( $question['assertions'], $assertion_ctx );
+			$assertion_ctx['tool_call_log'] = $log['tool_call_log'] ?? array();
+			$log['assertions']              = AssertionEngine::run( $question['assertions'], $assertion_ctx );
 
 			$log['completed_at'] = gmdate( 'c' );
 			return $log;

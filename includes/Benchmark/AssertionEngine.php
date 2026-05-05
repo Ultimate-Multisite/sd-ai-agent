@@ -132,6 +132,38 @@ class AssertionEngine {
 					(int) ( $assertion['expected_exit_code'] ?? 0 )
 				);
 
+			case 'tool_called':
+				return self::assert_tool_called(
+					(array) ( $assertion['tools'] ?? array() ),
+					$context,
+					(int) ( $assertion['min_calls'] ?? 1 )
+				);
+
+			case 'post_exists':
+				return self::assert_post_exists(
+					(string) ( $assertion['post_type'] ?? 'post' ),
+					(string) ( $assertion['title_pattern'] ?? '' ),
+					(string) ( $assertion['status'] ?? '' )
+				);
+
+			case 'option_value_matches':
+				return self::assert_option_value_matches(
+					(string) ( $assertion['option'] ?? '' ),
+					(string) ( $assertion['pattern'] ?? '' )
+				);
+
+			case 'taxonomy_registered':
+				return self::assert_taxonomy_registered( (string) ( $assertion['taxonomy'] ?? '' ) );
+
+			case 'menu_exists':
+				return self::assert_menu_exists( (string) ( $assertion['name'] ?? '' ) );
+
+			case 'user_exists':
+				return self::assert_user_exists(
+					(string) ( $assertion['login'] ?? '' ),
+					(string) ( $assertion['role'] ?? '' )
+				);
+
 			default:
 				return array(
 					'pass'     => false,
@@ -648,6 +680,148 @@ class AssertionEngine {
 			'pass'     => $pass,
 			'expected' => $expected_desc,
 			'actual'   => $pass ? 'passed' : $actual_desc,
+		);
+	}
+
+	/**
+	 * Assert that the agent invoked one of the listed abilities/tools.
+	 *
+	 * @param array<int, string>   $tools     Ability names (e.g. 'ai-agent/create-post')
+	 *                                        or short suffixes ('create-post'). ANY match passes.
+	 * @param array<string, mixed> $context   Runtime context with 'tool_call_log'.
+	 * @param int                  $min_calls Minimum number of matching calls required.
+	 * @return array{pass: bool, expected: string, actual: string}
+	 */
+	private static function assert_tool_called( array $tools, array $context, int $min_calls = 1 ): array {
+		$log = (array) ( $context['tool_call_log'] ?? array() );
+
+		if ( empty( $tools ) ) {
+			return array(
+				'pass'     => false,
+				'expected' => 'at least one tool name to match',
+				'actual'   => 'no tools listed in assertion',
+			);
+		}
+
+		$matches = 0;
+		foreach ( $log as $entry ) {
+			$name = (string) ( $entry['tool'] ?? '' );
+			foreach ( $tools as $candidate ) {
+				$candidate = (string) $candidate;
+				if ( '' === $candidate ) {
+					continue;
+				}
+				// Match either the full ability name or the shortened wpab__ form
+				// or a suffix (e.g. 'create-post' matches 'ai-agent/create-post').
+				if (
+					$name === $candidate
+					|| str_ends_with( $name, '/' . $candidate )
+					|| str_ends_with( $name, '__' . str_replace( '-', '_', $candidate ) )
+					|| str_contains( $name, $candidate )
+				) {
+					++$matches;
+					break;
+				}
+			}
+		}
+
+		$pass = $matches >= $min_calls;
+
+		return array(
+			'pass'     => $pass,
+			'expected' => sprintf( 'at least %d call to one of [%s]', $min_calls, implode( ', ', $tools ) ),
+			'actual'   => sprintf( '%d matching call(s) in tool log', $matches ),
+		);
+	}
+
+	/**
+	 * Assert a post matching a title pattern exists, optionally constrained by status.
+	 */
+	private static function assert_post_exists( string $post_type, string $title_pattern, string $status ): array {
+		$args  = array(
+			'post_type'   => $post_type ?: 'post',
+			'post_status' => $status ? array( $status ) : array( 'any', 'trash', 'draft', 'publish', 'pending', 'private', 'future' ),
+			'numberposts' => 50,
+			's'           => '',
+		);
+		$posts = get_posts( $args );
+		foreach ( $posts as $post ) {
+			if ( '' === $title_pattern || preg_match( '/' . $title_pattern . '/i', $post->post_title ) ) {
+				return array(
+					'pass'     => true,
+					'expected' => "{$post_type} matching /{$title_pattern}/",
+					'actual'   => 'found post #' . $post->ID . ' "' . $post->post_title . '"',
+				);
+			}
+		}
+		return array(
+			'pass'     => false,
+			'expected' => "{$post_type} matching /{$title_pattern}/",
+			'actual'   => 'no matching post found',
+		);
+	}
+
+	/**
+	 * Assert option exists and its serialised value matches a regex pattern.
+	 */
+	private static function assert_option_value_matches( string $option, string $pattern ): array {
+		if ( ! self::assert_option_exists( $option )['pass'] ) {
+			return array(
+				'pass'     => false,
+				'expected' => "option {$option} matching /{$pattern}/",
+				'actual'   => 'option missing',
+			);
+		}
+		$value = get_option( $option );
+		$blob  = is_scalar( $value ) ? (string) $value : (string) wp_json_encode( $value );
+		$pass  = (bool) preg_match( '/' . $pattern . '/i', $blob );
+		return array(
+			'pass'     => $pass,
+			'expected' => "option {$option} matching /{$pattern}/",
+			'actual'   => $pass ? 'matched' : 'value: ' . substr( $blob, 0, 200 ),
+		);
+	}
+
+	private static function assert_taxonomy_registered( string $taxonomy ): array {
+		$pass = taxonomy_exists( $taxonomy );
+		return array(
+			'pass'     => $pass,
+			'expected' => "taxonomy {$taxonomy} registered",
+			'actual'   => $pass ? 'registered' : 'not registered',
+		);
+	}
+
+	private static function assert_menu_exists( string $name ): array {
+		$menu = wp_get_nav_menu_object( $name );
+		$pass = $menu && ! is_wp_error( $menu );
+		return array(
+			'pass'     => $pass,
+			'expected' => "nav menu '{$name}' exists",
+			'actual'   => $pass ? 'menu #' . $menu->term_id : 'not found',
+		);
+	}
+
+	private static function assert_user_exists( string $login, string $role ): array {
+		$user = get_user_by( 'login', $login );
+		if ( ! $user ) {
+			return array(
+				'pass'     => false,
+				'expected' => "user '{$login}' exists" . ( $role ? " with role '{$role}'" : '' ),
+				'actual'   => 'user not found',
+			);
+		}
+		if ( '' === $role ) {
+			return array(
+				'pass'     => true,
+				'expected' => "user '{$login}' exists",
+				'actual'   => 'user #' . $user->ID,
+			);
+		}
+		$pass = in_array( $role, (array) $user->roles, true );
+		return array(
+			'pass'     => $pass,
+			'expected' => "user '{$login}' has role '{$role}'",
+			'actual'   => 'roles: ' . implode( ',', (array) $user->roles ),
 		);
 	}
 

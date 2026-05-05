@@ -47,6 +47,54 @@ class BenchmarkSuite {
 				'description'    => 'End-to-end agent loop tests. The agent must produce working WordPress plugins, endpoints, and features — verified against live WordPress state, not keyword matching.',
 				'question_count' => count( self::get_functional_questions() ),
 			),
+			array(
+				'slug'           => 'abilities-content-v1',
+				'name'           => 'Abilities Coverage — Content',
+				'description'    => 'Targets every content/post ability via a real prompt — create, get, update, list, delete, batch, set-featured, generate-title/excerpt, summarise, content-analyze, content-search, content-performance-report.',
+				'question_count' => count( self::get_abilities_content_questions() ),
+			),
+			array(
+				'slug'           => 'abilities-media-v1',
+				'name'           => 'Abilities Coverage — Media',
+				'description'    => 'Targets media abilities: list/upload-from-url/delete, generate-alt-text, import-base64-image, generate-image, generate-image-prompt, stock-image.',
+				'question_count' => count( self::get_abilities_media_questions() ),
+			),
+			array(
+				'slug'           => 'abilities-structure-v1',
+				'name'           => 'Abilities Coverage — Taxonomies, CPTs, Menus, Users',
+				'description'    => 'Targets register/list/delete-post-type & taxonomy, all menu abilities, and user abilities.',
+				'question_count' => count( self::get_abilities_structure_questions() ),
+			),
+			array(
+				'slug'           => 'abilities-design-v1',
+				'name'           => 'Abilities Coverage — Design & Blocks',
+				'description'    => 'Targets block abilities, global styles, theme.json presets, curated patterns, inject-custom-css, set-site-logo, markdown-to-blocks, review-block.',
+				'question_count' => count( self::get_abilities_design_questions() ),
+			),
+			array(
+				'slug'           => 'abilities-developer-v1',
+				'name'           => 'Abilities Coverage — Developer',
+				'description'    => 'Targets file abilities, db-query, options, run-php, scan-plugin-hooks, scan-theme-hooks, scan-php-error-log.',
+				'question_count' => count( self::get_abilities_developer_questions() ),
+			),
+			array(
+				'slug'           => 'abilities-plugin-mgmt-v1',
+				'name'           => 'Abilities Coverage — Plugin Management',
+				'description'    => 'Targets get-plugins/themes, install/update/activate/deactivate/delete/switch-plugin, install-from-url, search-directory, generate-plugin + sandbox lifecycle.',
+				'question_count' => count( self::get_abilities_plugin_mgmt_questions() ),
+			),
+			array(
+				'slug'           => 'abilities-utility-v1',
+				'name'           => 'Abilities Coverage — Utility',
+				'description'    => 'Targets site-health, navigate, get-page-html, internet-search, fetch-url, analyze-headers, knowledge-search, seo-* , memory-* , skill-* , git-* , site-builder, report-inability.',
+				'question_count' => count( self::get_abilities_utility_questions() ),
+			),
+			array(
+				'slug'           => 'abilities-credentialed-v1',
+				'name'           => 'Abilities Coverage — Credentialed (GA/GSC)',
+				'description'    => 'Exercises Google Analytics and Search Console abilities. Without live credentials these test graceful degradation rather than real data.',
+				'question_count' => count( self::get_abilities_credentialed_questions() ),
+			),
 		);
 	}
 
@@ -72,6 +120,70 @@ class BenchmarkSuite {
 					'name'        => 'Functional Agent v1',
 					'description' => 'End-to-end agent loop tests verified against live WordPress state.',
 					'questions'   => self::get_functional_questions(),
+				);
+
+			case 'abilities-content-v1':
+				return array(
+					'slug'        => 'abilities-content-v1',
+					'name'        => 'Abilities Coverage — Content',
+					'description' => 'Content/post ability coverage.',
+					'questions'   => self::get_abilities_content_questions(),
+				);
+
+			case 'abilities-media-v1':
+				return array(
+					'slug'        => 'abilities-media-v1',
+					'name'        => 'Abilities Coverage — Media',
+					'description' => 'Media ability coverage.',
+					'questions'   => self::get_abilities_media_questions(),
+				);
+
+			case 'abilities-structure-v1':
+				return array(
+					'slug'        => 'abilities-structure-v1',
+					'name'        => 'Abilities Coverage — Structure',
+					'description' => 'Taxonomy/CPT/menu/user ability coverage.',
+					'questions'   => self::get_abilities_structure_questions(),
+				);
+
+			case 'abilities-design-v1':
+				return array(
+					'slug'        => 'abilities-design-v1',
+					'name'        => 'Abilities Coverage — Design',
+					'description' => 'Block/global-styles/design ability coverage.',
+					'questions'   => self::get_abilities_design_questions(),
+				);
+
+			case 'abilities-developer-v1':
+				return array(
+					'slug'        => 'abilities-developer-v1',
+					'name'        => 'Abilities Coverage — Developer',
+					'description' => 'File/db/option/php/scan ability coverage.',
+					'questions'   => self::get_abilities_developer_questions(),
+				);
+
+			case 'abilities-plugin-mgmt-v1':
+				return array(
+					'slug'        => 'abilities-plugin-mgmt-v1',
+					'name'        => 'Abilities Coverage — Plugin Management',
+					'description' => 'Plugin install/activate/sandbox ability coverage.',
+					'questions'   => self::get_abilities_plugin_mgmt_questions(),
+				);
+
+			case 'abilities-utility-v1':
+				return array(
+					'slug'        => 'abilities-utility-v1',
+					'name'        => 'Abilities Coverage — Utility',
+					'description' => 'Site-health/seo/memory/skill/git/utility ability coverage.',
+					'questions'   => self::get_abilities_utility_questions(),
+				);
+
+			case 'abilities-credentialed-v1':
+				return array(
+					'slug'        => 'abilities-credentialed-v1',
+					'name'        => 'Abilities Coverage — Credentialed',
+					'description' => 'GA/GSC ability coverage (graceful degradation).',
+					'questions'   => self::get_abilities_credentialed_questions(),
 				);
 
 			default:
@@ -573,6 +685,1451 @@ class BenchmarkSuite {
 				),
 			),
 
+		);
+	}
+
+	// ── Abilities Coverage Suites ─────────────────────────────────────────────
+	//
+	// Each question below targets one or more specific abilities by name
+	// (`tool_called` assertion) plus a state assertion where there is a clean
+	// side-effect to verify. The goal is breadth, not depth — exercise every
+	// ability with a realistic prompt so we surface bugs in their wiring.
+
+	/**
+	 * Content abilities — posts, titles, excerpts, summaries, content analysis.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function get_abilities_content_questions(): array {
+		return array(
+			array(
+				'id'         => 'ac-001',
+				'category'   => 'posts',
+				'max_turns'  => 8,
+				'prompt'     => 'Create a new draft blog post titled "Test Coverage Post AC-001" with a short body about automated testing. Use the create-post ability.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/create-post' ),
+						'description' => 'create-post ability called',
+					),
+					array(
+						'type'          => 'post_exists',
+						'post_type'     => 'post',
+						'title_pattern' => 'AC-001',
+						'description'   => 'Post titled with AC-001 exists',
+					),
+				),
+			),
+			array(
+				'id'         => 'ac-002',
+				'category'   => 'posts',
+				'max_turns'  => 10,
+				'prompt'     => 'List the 5 most recent posts using the list-posts ability, then fetch the full content of the newest one with get-post and report its title and excerpt back to me.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/list-posts' ),
+						'description' => 'list-posts called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/get-post' ),
+						'description' => 'get-post called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ac-003',
+				'category'   => 'posts',
+				'max_turns'  => 10,
+				'prompt'     => 'Find the post titled "Test Coverage Post AC-001" using list-posts, then update its content using the update-post ability to add the line "UPDATED-AC-003" at the end of the body.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/update-post' ),
+						'description' => 'update-post called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ac-004',
+				'category'   => 'posts',
+				'max_turns'  => 10,
+				'prompt'     => 'Use the batch-create-posts ability to create three draft posts in one call: "Batch AC-004 Alpha", "Batch AC-004 Beta", "Batch AC-004 Gamma". Each should have one paragraph of placeholder body text.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/batch-create-posts' ),
+						'description' => 'batch-create-posts called',
+					),
+					array(
+						'type'          => 'post_exists',
+						'post_type'     => 'post',
+						'title_pattern' => 'Batch AC-004 Alpha',
+						'description'   => 'Alpha exists',
+					),
+					array(
+						'type'          => 'post_exists',
+						'post_type'     => 'post',
+						'title_pattern' => 'Batch AC-004 Beta',
+						'description'   => 'Beta exists',
+					),
+					array(
+						'type'          => 'post_exists',
+						'post_type'     => 'post',
+						'title_pattern' => 'Batch AC-004 Gamma',
+						'description'   => 'Gamma exists',
+					),
+				),
+			),
+			array(
+				'id'         => 'ac-005',
+				'category'   => 'posts',
+				'max_turns'  => 8,
+				'prompt'     => 'Find the draft post "Batch AC-004 Gamma" using list-posts, then permanently delete it (force=true) with delete-post.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/delete-post' ),
+						'description' => 'delete-post called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ac-006',
+				'category'   => 'media',
+				'max_turns'  => 12,
+				'prompt'     => 'Find or create a draft post titled "Featured AC-006", upload a stock image of a coffee cup as a media attachment, and use the set-featured-image ability to attach it as the featured image of that post.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/set-featured-image' ),
+						'description' => 'set-featured-image called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ac-007',
+				'category'   => 'editorial',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the generate-title ability to suggest 3 SEO-friendly title options for a blog post about migrating a legacy WordPress site to a multisite network. Pick the best one and report it back.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/generate-title' ),
+						'description' => 'generate-title called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ac-008',
+				'category'   => 'editorial',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the generate-excerpt ability to produce a 50-word excerpt for the following content: "WordPress multisite lets you run many sites from a single installation. It is ideal for agencies managing client sites, universities running departmental blogs, and SaaS products selling subsites. The shared codebase makes upgrades trivial but the architecture introduces complexity around domain mapping and per-site limitations."',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/generate-excerpt' ),
+						'description' => 'generate-excerpt called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ac-009',
+				'category'   => 'editorial',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the summarize-content ability to summarise the following text in 2 sentences: "Customer support tickets at SaaS companies follow a predictable pattern. About 60% of incoming volume can be deflected with good documentation. The remaining 40% splits into account/billing issues, technical bugs, and feature requests. Tier-1 agents handle the first two; bugs and feature requests are escalated to engineering."',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/summarize-content' ),
+						'description' => 'summarize-content called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ac-010',
+				'category'   => 'analysis',
+				'max_turns'  => 8,
+				'prompt'     => 'Run the content-analyze ability against the main site and report the published-vs-draft post counts and most-used categories.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/content-analyze' ),
+						'description' => 'content-analyze called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ac-011',
+				'category'   => 'analysis',
+				'max_turns'  => 8,
+				'prompt'     => 'Use the content-search ability to find any pages or posts on this site that mention "WordPress" and report the top 3 matches with their IDs and titles.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/content-search' ),
+						'description' => 'content-search called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ac-012',
+				'category'   => 'analysis',
+				'max_turns'  => 8,
+				'prompt'     => 'Run the content-performance-report ability for this site and tell me the top 3 metrics it returns (recent activity, top categories, anything else).',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/content-performance-report' ),
+						'description' => 'content-performance-report called',
+					),
+				),
+			),
+		);
+	}
+
+	/**
+	 * Media abilities.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function get_abilities_media_questions(): array {
+		return array(
+			array(
+				'id'         => 'am-001',
+				'category'   => 'media',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the list-media ability to show me the 5 most recent media attachments on this site with their IDs and filenames.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/list-media' ),
+						'description' => 'list-media called',
+					),
+				),
+			),
+			array(
+				'id'         => 'am-002',
+				'category'   => 'media',
+				'max_turns'  => 8,
+				'prompt'     => 'Use upload-media-from-url to upload this remote image into the media library: https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/240px-PNG_transparency_demonstration_1.png . Set the title to "AM-002 Test Upload". Report back the new attachment ID.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/upload-media-from-url' ),
+						'description' => 'upload-media-from-url called',
+					),
+				),
+			),
+			array(
+				'id'         => 'am-003',
+				'category'   => 'media',
+				'max_turns'  => 6,
+				'prompt'     => 'Use generate-alt-text to generate descriptive alt text for an image whose subject is "a black cat sitting on a windowsill at sunset". Report the suggested alt text.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/generate-alt-text' ),
+						'description' => 'generate-alt-text called',
+					),
+				),
+			),
+			array(
+				'id'         => 'am-004',
+				'category'   => 'media',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the generate-image-prompt ability to expand the rough idea "minimalist hero illustration of a cloud-sync app for teams" into a full image-generation prompt suitable for an AI image model.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/generate-image-prompt' ),
+						'description' => 'generate-image-prompt called',
+					),
+				),
+			),
+			array(
+				'id'         => 'am-005',
+				'category'   => 'media',
+				'max_turns'  => 8,
+				'prompt'     => 'Use the stock-image ability to find a free-licence stock photo matching the query "open laptop on a wooden desk". Show me the top result\'s URL and source.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/stock-image' ),
+						'description' => 'stock-image called',
+					),
+				),
+			),
+			array(
+				'id'         => 'am-006',
+				'category'   => 'media',
+				'max_turns'  => 12,
+				'prompt'     => 'Use generate-image to create a 512x512 image of "a flat-design icon of a lightning bolt on a purple gradient". Report the resulting attachment ID.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/generate-image' ),
+						'description' => 'generate-image called',
+					),
+				),
+			),
+			array(
+				'id'         => 'am-007',
+				'category'   => 'media',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the import-base64-image ability to upload this 1x1 transparent PNG and report the new attachment ID. Image data: iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII=',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/import-base64-image' ),
+						'description' => 'import-base64-image called',
+					),
+				),
+			),
+		);
+	}
+
+	/**
+	 * Taxonomy / CPT / Menu / User abilities.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function get_abilities_structure_questions(): array {
+		return array(
+			array(
+				'id'         => 'as-001',
+				'category'   => 'cpt',
+				'max_turns'  => 6,
+				'prompt'     => 'Register a new custom post type with slug "as_book", singular label "Book", plural label "Books", supports title and editor, public and shows in REST. Use the register-post-type ability.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/register-post-type' ),
+						'description' => 'register-post-type called',
+					),
+					array(
+						'type'        => 'post_type_registered',
+						'post_type'   => 'as_book',
+						'description' => 'CPT as_book registered',
+					),
+				),
+			),
+			array(
+				'id'         => 'as-002',
+				'category'   => 'cpt',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the list-post-types ability to show all custom post types currently registered on this site (excluding built-ins).',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/list-post-types' ),
+						'description' => 'list-post-types called',
+					),
+				),
+			),
+			array(
+				'id'         => 'as-003',
+				'category'   => 'cpt',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the delete-post-type ability to remove the custom post type "as_book" that was registered earlier.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/delete-post-type' ),
+						'description' => 'delete-post-type called',
+					),
+				),
+			),
+			array(
+				'id'         => 'as-004',
+				'category'   => 'taxonomy',
+				'max_turns'  => 6,
+				'prompt'     => 'Register a hierarchical taxonomy with slug "as_genre", labels "Genre/Genres", attached to the "post" post type, public and shown in REST. Use register-taxonomy.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/register-taxonomy' ),
+						'description' => 'register-taxonomy called',
+					),
+					array(
+						'type'        => 'taxonomy_registered',
+						'taxonomy'    => 'as_genre',
+						'description' => 'taxonomy as_genre registered',
+					),
+				),
+			),
+			array(
+				'id'         => 'as-005',
+				'category'   => 'taxonomy',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the list-taxonomies ability to enumerate all custom taxonomies on this site (exclude built-ins).',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/list-taxonomies' ),
+						'description' => 'list-taxonomies called',
+					),
+				),
+			),
+			array(
+				'id'         => 'as-006',
+				'category'   => 'taxonomy',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the delete-taxonomy ability to remove the "as_genre" taxonomy that was registered earlier.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/delete-taxonomy' ),
+						'description' => 'delete-taxonomy called',
+					),
+				),
+			),
+			array(
+				'id'         => 'as-007',
+				'category'   => 'menus',
+				'max_turns'  => 12,
+				'prompt'     => 'Create a new nav menu called "Coverage Menu AS-007" using create-menu. Then add two custom-link items to it via add-menu-item: "Home" → /, and "About" → /about. Finally use list-menus to confirm the menu and item count.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/create-menu' ),
+						'description' => 'create-menu called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/add-menu-item' ),
+						'min_calls'   => 2,
+						'description' => 'add-menu-item called twice',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/list-menus' ),
+						'description' => 'list-menus called',
+					),
+					array(
+						'type'        => 'menu_exists',
+						'name'        => 'Coverage Menu AS-007',
+						'description' => 'menu Coverage Menu AS-007 exists',
+					),
+				),
+			),
+			array(
+				'id'         => 'as-008',
+				'category'   => 'menus',
+				'max_turns'  => 8,
+				'prompt'     => 'Use get-menu to fetch the contents of the menu named "Coverage Menu AS-007", then use remove-menu-item to remove the "About" item from it.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/get-menu' ),
+						'description' => 'get-menu called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/remove-menu-item' ),
+						'description' => 'remove-menu-item called',
+					),
+				),
+			),
+			array(
+				'id'         => 'as-009',
+				'category'   => 'menus',
+				'max_turns'  => 6,
+				'prompt'     => 'Use assign-menu-location to assign the "Coverage Menu AS-007" menu to the "primary" theme location, then delete-menu to remove the menu entirely.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/assign-menu-location' ),
+						'description' => 'assign-menu-location called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/delete-menu' ),
+						'description' => 'delete-menu called',
+					),
+				),
+			),
+			array(
+				'id'         => 'as-010',
+				'category'   => 'users',
+				'max_turns'  => 10,
+				'prompt'     => 'Use list-users to show the first 5 users on this site, then create-user to add a new user with login "as010_user", email "as010_user@example.test", role "subscriber". Then use update-user-role to change them to "editor".',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/list-users' ),
+						'description' => 'list-users called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/create-user' ),
+						'description' => 'create-user called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/update-user-role' ),
+						'description' => 'update-user-role called',
+					),
+					array(
+						'type'        => 'user_exists',
+						'login'       => 'as010_user',
+						'role'        => 'editor',
+						'description' => 'user as010_user has role editor',
+					),
+				),
+			),
+		);
+	}
+
+	/**
+	 * Design / blocks / global styles abilities.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function get_abilities_design_questions(): array {
+		return array(
+			array(
+				'id'         => 'ad-001',
+				'category'   => 'blocks',
+				'max_turns'  => 6,
+				'prompt'     => 'Use list-block-types to show me the first 10 registered Gutenberg block types on this site.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/list-block-types' ),
+						'description' => 'list-block-types called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ad-002',
+				'category'   => 'blocks',
+				'max_turns'  => 6,
+				'prompt'     => 'Use get-block-type to show the schema and supports of the core/paragraph block.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/get-block-type' ),
+						'description' => 'get-block-type called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ad-003',
+				'category'   => 'blocks',
+				'max_turns'  => 6,
+				'prompt'     => 'Use list-block-patterns to show me the first 5 block patterns registered on this site (full content, not truncated).',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/list-block-patterns' ),
+						'description' => 'list-block-patterns called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ad-004',
+				'category'   => 'blocks',
+				'max_turns'  => 6,
+				'prompt'     => 'Use list-block-templates to enumerate the FSE templates available on this site.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/list-block-templates' ),
+						'description' => 'list-block-templates called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ad-005',
+				'category'   => 'blocks',
+				'max_turns'  => 6,
+				'prompt'     => 'Use markdown-to-blocks to convert this markdown into Gutenberg blocks: "## Hello\n\nThis is **bold** text and a [link](https://example.com).\n\n- one\n- two".',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/markdown-to-blocks' ),
+						'description' => 'markdown-to-blocks called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ad-006',
+				'category'   => 'blocks',
+				'max_turns'  => 8,
+				'prompt'     => 'Use create-block-content to assemble a block array containing a heading ("Coverage AD-006") and a paragraph ("This was created via the create-block-content ability."). Then use validate-block-content to confirm the resulting block markup is valid, and parse-block-content to round-trip it back.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/create-block-content' ),
+						'description' => 'create-block-content called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/validate-block-content' ),
+						'description' => 'validate-block-content called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/parse-block-content' ),
+						'description' => 'parse-block-content called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ad-007',
+				'category'   => 'blocks',
+				'max_turns'  => 6,
+				'prompt'     => 'Use review-block to suggest improvements for this paragraph block markup: <!-- wp:paragraph --><p>this is a sentence with no capital letters and a typo recieve.</p><!-- /wp:paragraph -->',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/review-block' ),
+						'description' => 'review-block called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ad-008',
+				'category'   => 'design',
+				'max_turns'  => 6,
+				'prompt'     => 'Use get-global-styles to show the current global styles JSON for the active theme on this site.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/get-global-styles' ),
+						'description' => 'get-global-styles called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ad-009',
+				'category'   => 'design',
+				'max_turns'  => 8,
+				'prompt'     => 'Use update-global-styles to set the body background colour to #fafafa, then use get-theme-json to show the current theme.json. Then use reset-global-styles to revert to defaults.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/update-global-styles' ),
+						'description' => 'update-global-styles called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/get-theme-json' ),
+						'description' => 'get-theme-json called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/reset-global-styles' ),
+						'description' => 'reset-global-styles called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ad-010',
+				'category'   => 'design',
+				'max_turns'  => 6,
+				'prompt'     => 'Use theme-json-presets to show what colour palette presets are currently defined in the active theme\'s theme.json.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/theme-json-presets' ),
+						'description' => 'theme-json-presets called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ad-011',
+				'category'   => 'design',
+				'max_turns'  => 6,
+				'prompt'     => 'Use curated-block-patterns to list the curated patterns available, then return their slugs.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/curated-block-patterns' ),
+						'description' => 'curated-block-patterns called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ad-012',
+				'category'   => 'design',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the inject-custom-css ability with dry-run=true to preview the CSS that would be added if I requested "make h1 headings purple and 3rem". Show me the CSS without actually saving it.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/inject-custom-css' ),
+						'description' => 'inject-custom-css called',
+					),
+				),
+			),
+			array(
+				'id'         => 'ad-013',
+				'category'   => 'design',
+				'max_turns'  => 6,
+				'prompt'     => 'Use set-site-logo with remove=true to clear the current site logo (it may already be empty — that is fine, just exercise the call).',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/set-site-logo' ),
+						'description' => 'set-site-logo called',
+					),
+				),
+			),
+		);
+	}
+
+	/**
+	 * Developer abilities — files, db, options, php, scan.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function get_abilities_developer_questions(): array {
+		return array(
+			array(
+				'id'         => 'adev-001',
+				'category'   => 'options',
+				'max_turns'  => 8,
+				'prompt'     => 'Use update-option to set an option named "ac_dev_test_option" to the JSON value {"a":1,"b":[1,2,3]}. Then use get-option to read it back. Then list-options to confirm it appears in the options list.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/update-option' ),
+						'description' => 'update-option called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/get-option' ),
+						'description' => 'get-option called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/list-options' ),
+						'description' => 'list-options called',
+					),
+					array(
+						'type'        => 'option_exists',
+						'option'      => 'ac_dev_test_option',
+						'description' => 'ac_dev_test_option exists',
+					),
+					array(
+						'type'        => 'option_value_matches',
+						'option'      => 'ac_dev_test_option',
+						'pattern'     => '"a".*1',
+						'description' => 'option holds the expected JSON',
+					),
+				),
+			),
+			array(
+				'id'         => 'adev-002',
+				'category'   => 'options',
+				'max_turns'  => 6,
+				'prompt'     => 'Use delete-option to remove the option "ac_dev_test_option" that was created earlier.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/delete-option' ),
+						'description' => 'delete-option called',
+					),
+				),
+			),
+			array(
+				'id'         => 'adev-003',
+				'category'   => 'database',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the db-query ability to run a SELECT showing the 5 most recent rows from the wp_posts table — only id, post_title and post_status. Read-only query.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/db-query' ),
+						'description' => 'db-query called',
+					),
+				),
+			),
+			array(
+				'id'         => 'adev-004',
+				'category'   => 'php',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the run-php ability to evaluate a snippet that returns the WordPress version (return get_bloginfo(\'version\');). Report the value back to me.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/run-php' ),
+						'description' => 'run-php called',
+					),
+				),
+			),
+			array(
+				'id'         => 'adev-005',
+				'category'   => 'files',
+				'max_turns'  => 12,
+				'prompt'     => 'Use file-list to list the contents of the current plugin directory (path "."). Then use file-search to find any PHP files containing the string "wp_register_ability". Then use file-read on the first match and report its first 20 lines back.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/file-list' ),
+						'description' => 'file-list called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/file-search' ),
+						'description' => 'file-search called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/file-read' ),
+						'description' => 'file-read called',
+					),
+				),
+			),
+			array(
+				'id'         => 'adev-006',
+				'category'   => 'files',
+				'max_turns'  => 14,
+				'prompt'     => 'Build a one-file plugin called "file-coverage" by: (a) using file-write to create file-coverage/file-coverage.php with the standard plugin header (Plugin Name: File Coverage), (b) using file-edit to append a comment "// EDITED" at the bottom, (c) using file-read to verify the change, (d) using file-delete to remove the file. The plugin slug must be exactly "file-coverage".',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/file-write' ),
+						'description' => 'file-write called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/file-edit' ),
+						'description' => 'file-edit called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/file-read' ),
+						'description' => 'file-read called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/file-delete' ),
+						'description' => 'file-delete called',
+					),
+				),
+			),
+			array(
+				'id'         => 'adev-007',
+				'category'   => 'scan',
+				'max_turns'  => 6,
+				'prompt'     => 'Use scan-plugin-hooks to list all action and filter hook names invoked from the "akismet" plugin (or any installed plugin if akismet is not present — pick one from the get-plugins list).',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/scan-plugin-hooks' ),
+						'description' => 'scan-plugin-hooks called',
+					),
+				),
+			),
+			array(
+				'id'         => 'adev-008',
+				'category'   => 'scan',
+				'max_turns'  => 6,
+				'prompt'     => 'Use scan-theme-hooks against the active theme to list its registered hooks.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/scan-theme-hooks' ),
+						'description' => 'scan-theme-hooks called',
+					),
+				),
+			),
+			array(
+				'id'         => 'adev-009',
+				'category'   => 'scan',
+				'max_turns'  => 6,
+				'prompt'     => 'Use scan-php-error-log to show me the last 10 entries from the WordPress PHP error log. If the log is empty say so.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/scan-php-error-log' ),
+						'description' => 'scan-php-error-log called',
+					),
+				),
+			),
+		);
+	}
+
+	/**
+	 * Plugin management abilities.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function get_abilities_plugin_mgmt_questions(): array {
+		return array(
+			array(
+				'id'         => 'apm-001',
+				'category'   => 'plugins',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the get-plugins ability to list all plugins currently installed on this site, and the get-themes ability to list installed themes.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/get-plugins' ),
+						'description' => 'get-plugins called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/get-themes' ),
+						'description' => 'get-themes called',
+					),
+				),
+			),
+			array(
+				'id'         => 'apm-002',
+				'category'   => 'plugins',
+				'max_turns'  => 6,
+				'prompt'     => 'Use search-plugin-directory to find a plugin in the WordPress.org directory matching the term "hello dolly". Show me the top result.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/search-plugin-directory' ),
+						'description' => 'search-plugin-directory called',
+					),
+				),
+			),
+			array(
+				'id'         => 'apm-003',
+				'category'   => 'plugins',
+				'max_turns'  => 12,
+				'prompt'     => 'Install the "hello-dolly" plugin from the WordPress.org directory using install-plugin (do not activate it yet). Then use activate-plugin to activate it. Confirm with get-plugins that it is active.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/install-plugin' ),
+						'description' => 'install-plugin called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/activate-plugin' ),
+						'description' => 'activate-plugin called',
+					),
+				),
+			),
+			array(
+				'id'         => 'apm-004',
+				'category'   => 'plugins',
+				'max_turns'  => 8,
+				'prompt'     => 'Use deactivate-plugin to deactivate the "hello-dolly" plugin, then use delete-plugin to remove it from the site entirely.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/deactivate-plugin' ),
+						'description' => 'deactivate-plugin called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/delete-plugin' ),
+						'description' => 'delete-plugin called',
+					),
+				),
+			),
+			array(
+				'id'         => 'apm-005',
+				'category'   => 'plugins',
+				'max_turns'  => 6,
+				'prompt'     => 'Use list-plugin-updates and check-plugin-updates to report any plugin updates currently available on this site.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/list-plugin-updates' ),
+						'description' => 'list-plugin-updates called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/check-plugin-updates' ),
+						'description' => 'check-plugin-updates called',
+					),
+				),
+			),
+			array(
+				'id'         => 'apm-006',
+				'category'   => 'plugins',
+				'max_turns'  => 6,
+				'prompt'     => 'Use list-modified-plugins to show me any plugins on this site that have been modified from their original distribution.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/list-modified-plugins' ),
+						'description' => 'list-modified-plugins called',
+					),
+				),
+			),
+			array(
+				'id'         => 'apm-007',
+				'category'   => 'plugins',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the recommend-plugin ability to recommend a plugin for "newsletter signup forms". Show me 3 candidates with their slugs.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/recommend-plugin' ),
+						'description' => 'recommend-plugin called',
+					),
+				),
+			),
+			array(
+				'id'         => 'apm-008',
+				'category'   => 'plugins',
+				'max_turns'  => 6,
+				'prompt'     => 'Use get-plugin-download-url to fetch the download URL for the "akismet" plugin from WordPress.org.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/get-plugin-download-url' ),
+						'description' => 'get-plugin-download-url called',
+					),
+				),
+			),
+			array(
+				'id'         => 'apm-009',
+				'category'   => 'sandbox',
+				'max_turns'  => 25,
+				'prompt'     => 'Use generate-plugin to create a new sandboxed plugin called "apm-009-sandbox" that registers a single shortcode [apm009] returning the string "hello from apm-009". Then use sandbox-test-plugin to verify it loads cleanly. Then use sandbox-activate-plugin to copy it from sandbox to the live plugins directory and activate it.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/generate-plugin' ),
+						'description' => 'generate-plugin called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/sandbox-test-plugin' ),
+						'description' => 'sandbox-test-plugin called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/sandbox-activate-plugin' ),
+						'description' => 'sandbox-activate-plugin called',
+					),
+				),
+			),
+			array(
+				'id'         => 'apm-010',
+				'category'   => 'sandbox',
+				'max_turns'  => 15,
+				'prompt'     => 'Use update-plugin-sandboxed to apply a small change to the previously generated "apm-009-sandbox" plugin: add a second shortcode [apm009v2] that returns "v2". Test it in the sandbox before deploying.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/update-plugin-sandboxed' ),
+						'description' => 'update-plugin-sandboxed called',
+					),
+				),
+			),
+			array(
+				'id'         => 'apm-011',
+				'category'   => 'plugins',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the install-plugin-from-url ability to attempt to fetch the URL https://downloads.wordpress.org/plugin/hello-dolly.zip into a draft slot — do NOT activate it. Report whether the install succeeded.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/install-plugin-from-url' ),
+						'description' => 'install-plugin-from-url called',
+					),
+				),
+			),
+			array(
+				'id'         => 'apm-012',
+				'category'   => 'plugins',
+				'max_turns'  => 8,
+				'prompt'     => 'Use update-plugin to attempt to update the "akismet" plugin to the latest version (it may already be up to date — that is fine, just exercise the path).',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/update-plugin' ),
+						'description' => 'update-plugin called',
+					),
+				),
+			),
+			array(
+				'id'         => 'apm-013',
+				'category'   => 'plugins',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the switch-plugin ability to find a recommended replacement for "akismet" (any anti-spam alternative). Just exercise the call — do not actually switch.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/switch-plugin' ),
+						'description' => 'switch-plugin called',
+					),
+				),
+			),
+		);
+	}
+
+	/**
+	 * Utility abilities — site-health, navigation, search, seo, memory, skills, git, site-builder.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function get_abilities_utility_questions(): array {
+		return array(
+			array(
+				'id'         => 'au-001',
+				'category'   => 'site-health',
+				'max_turns'  => 6,
+				'prompt'     => 'Use site-health-summary, check-disk-space, check-performance, check-security, and detect-fresh-install to give me a one-paragraph site-health overview.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/site-health-summary' ),
+						'description' => 'site-health-summary called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/check-disk-space' ),
+						'description' => 'check-disk-space called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/check-performance' ),
+						'description' => 'check-performance called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/check-security' ),
+						'description' => 'check-security called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/detect-fresh-install' ),
+						'description' => 'detect-fresh-install called',
+					),
+				),
+			),
+			array(
+				'id'         => 'au-002',
+				'category'   => 'navigation',
+				'max_turns'  => 6,
+				'prompt'     => 'Use the navigate ability to send the user to the WordPress dashboard, then use get-page-html to fetch the rendered HTML of the home page (/) and report the <title> tag content.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/navigate' ),
+						'description' => 'navigate called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/get-page-html' ),
+						'description' => 'get-page-html called',
+					),
+				),
+			),
+			array(
+				'id'         => 'au-003',
+				'category'   => 'web',
+				'max_turns'  => 6,
+				'prompt'     => 'Use fetch-url to fetch https://example.com and report the first 200 characters of the response body. Then use analyze-headers on the same URL and tell me what cache headers were returned.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/fetch-url' ),
+						'description' => 'fetch-url called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/analyze-headers' ),
+						'description' => 'analyze-headers called',
+					),
+				),
+			),
+			array(
+				'id'         => 'au-004',
+				'category'   => 'web',
+				'max_turns'  => 6,
+				'prompt'     => 'Use internet-search to search for "WordPress 6.7 release notes" and show me the top 3 results.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/internet-search' ),
+						'description' => 'internet-search called',
+					),
+				),
+			),
+			array(
+				'id'         => 'au-005',
+				'category'   => 'web',
+				'max_turns'  => 6,
+				'prompt'     => 'Use configure-search-provider to query the current internet-search provider configuration on this site (just read it back, do not change anything).',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/configure-search-provider' ),
+						'description' => 'configure-search-provider called',
+					),
+				),
+			),
+			array(
+				'id'         => 'au-006',
+				'category'   => 'knowledge',
+				'max_turns'  => 6,
+				'prompt'     => 'Use knowledge-search to search the local knowledge base for "WordPress hooks". If no collection is configured, report that gracefully.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/knowledge-search' ),
+						'description' => 'knowledge-search called',
+					),
+				),
+			),
+			array(
+				'id'         => 'au-007',
+				'category'   => 'seo',
+				'max_turns'  => 8,
+				'prompt'     => 'Use seo-analyze-content on this body text targeting the keyword "remote work tools": "Working remotely changes the kinds of tools teams need. Project management software, video calls, async docs, and good ergonomics matter more than they do in an office. Choose tools that integrate well together." Report the score and top 3 suggestions.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/seo-analyze-content' ),
+						'description' => 'seo-analyze-content called',
+					),
+				),
+			),
+			array(
+				'id'         => 'au-008',
+				'category'   => 'seo',
+				'max_turns'  => 8,
+				'prompt'     => 'Use seo-audit-url to audit https://example.com and report the top 3 SEO issues it finds.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/seo-audit-url' ),
+						'description' => 'seo-audit-url called',
+					),
+				),
+			),
+			array(
+				'id'         => 'au-009',
+				'category'   => 'memory',
+				'max_turns'  => 8,
+				'prompt'     => 'Use memory-save to save a fact under key "au_009_fact" with body "Coverage benchmark AU-009 ran on this site". Then memory-list to confirm. Then memory-delete to remove it.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/memory-save' ),
+						'description' => 'memory-save called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/memory-list' ),
+						'description' => 'memory-list called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/memory-delete' ),
+						'description' => 'memory-delete called',
+					),
+				),
+			),
+			array(
+				'id'         => 'au-010',
+				'category'   => 'skills',
+				'max_turns'  => 6,
+				'prompt'     => 'Use skill-list to enumerate the skills the agent currently has loaded, then use skill-load to load whichever skill is most relevant for "creating WordPress block themes".',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/skill-list' ),
+						'description' => 'skill-list called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'ai-agent/skill-load' ),
+						'description' => 'skill-load called',
+					),
+				),
+			),
+			array(
+				'id'         => 'au-011',
+				'category'   => 'git',
+				'max_turns'  => 14,
+				'prompt'     => 'Use git-snapshot to take a snapshot of the current state of an arbitrary plugin (pick the first installed plugin from get-plugins). Then git-list to show recent snapshots, git-package-summary to summarise that plugin, and git-diff to show what (if anything) changed since the last snapshot.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/git-snapshot' ),
+						'description' => 'git-snapshot called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/git-list' ),
+						'description' => 'git-list called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/git-package-summary' ),
+						'description' => 'git-package-summary called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/git-diff' ),
+						'description' => 'git-diff called',
+					),
+				),
+			),
+			array(
+				'id'         => 'au-012',
+				'category'   => 'git',
+				'max_turns'  => 8,
+				'prompt'     => 'Use git-restore to roll back the most recent snapshot of the plugin from au-011. Then use git-revert-package to revert that package entirely. Then describe what was undone.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/git-restore' ),
+						'description' => 'git-restore called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/git-revert-package' ),
+						'description' => 'git-revert-package called',
+					),
+				),
+			),
+			array(
+				'id'         => 'au-013',
+				'category'   => 'site-builder',
+				'max_turns'  => 8,
+				'prompt'     => 'Use get-site-builder-status to read the current site-builder mode. Then set-site-builder-mode to "active". Then complete-site-builder to mark the site builder as complete. Finally use get-site-builder-status again to confirm the final state.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/get-site-builder-status' ),
+						'description' => 'get-site-builder-status called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/set-site-builder-mode' ),
+						'description' => 'set-site-builder-mode called',
+					),
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/complete-site-builder' ),
+						'description' => 'complete-site-builder called',
+					),
+				),
+			),
+			array(
+				'id'         => 'au-014',
+				'category'   => 'meta',
+				'max_turns'  => 6,
+				'prompt'     => 'Pretend you have been asked to perform a task that you genuinely cannot do — "open my refrigerator and make me a sandwich". Use the report-inability ability to formally report what was attempted and why it cannot be completed.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/report-inability' ),
+						'description' => 'report-inability called',
+					),
+				),
+			),
+		);
+	}
+
+	/**
+	 * Credentialed abilities — Google Analytics & Search Console.
+	 * Without live credentials these test graceful degradation paths.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function get_abilities_credentialed_questions(): array {
+		return array(
+			array(
+				'id'         => 'acr-001',
+				'category'   => 'ga',
+				'max_turns'  => 6,
+				'prompt'     => 'Use ga-traffic-summary to fetch the last 7 days of traffic for this site. If GA credentials are not configured, report the error message gracefully.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/ga-traffic-summary' ),
+						'description' => 'ga-traffic-summary called',
+					),
+				),
+			),
+			array(
+				'id'         => 'acr-002',
+				'category'   => 'ga',
+				'max_turns'  => 6,
+				'prompt'     => 'Use ga-top-pages to fetch the top 10 pages by pageviews for the last 30 days.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/ga-top-pages' ),
+						'description' => 'ga-top-pages called',
+					),
+				),
+			),
+			array(
+				'id'         => 'acr-003',
+				'category'   => 'ga',
+				'max_turns'  => 6,
+				'prompt'     => 'Use ga-realtime to fetch the current live visitor count.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/ga-realtime' ),
+						'description' => 'ga-realtime called',
+					),
+				),
+			),
+			array(
+				'id'         => 'acr-004',
+				'category'   => 'gsc',
+				'max_turns'  => 6,
+				'prompt'     => 'Use gsc-site-summary for the last 28 days, including the previous-period comparison.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/gsc-site-summary' ),
+						'description' => 'gsc-site-summary called',
+					),
+				),
+			),
+			array(
+				'id'         => 'acr-005',
+				'category'   => 'gsc',
+				'max_turns'  => 6,
+				'prompt'     => 'Use gsc-top-queries to show the top 10 search queries driving traffic in the last 28 days.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/gsc-top-queries' ),
+						'description' => 'gsc-top-queries called',
+					),
+				),
+			),
+			array(
+				'id'         => 'acr-006',
+				'category'   => 'gsc',
+				'max_turns'  => 6,
+				'prompt'     => 'Use gsc-page-performance for the homepage URL of this site over the last 28 days.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/gsc-page-performance' ),
+						'description' => 'gsc-page-performance called',
+					),
+				),
+			),
+			array(
+				'id'         => 'acr-007',
+				'category'   => 'gsc',
+				'max_turns'  => 6,
+				'prompt'     => 'Use gsc-query-details for the query "wordpress" over the last 28 days.',
+				'assertions' => array(
+					array(
+						'type'        => 'tool_called',
+						'tools'       => array( 'sd-ai-agent/gsc-query-details' ),
+						'description' => 'gsc-query-details called',
+					),
+				),
+			),
 		);
 	}
 }
