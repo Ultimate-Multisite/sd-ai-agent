@@ -91,6 +91,11 @@ final class AdminHandler {
 				0
 			);
 		}
+
+		// Flush when any provider plugin is activated or deactivated so the
+		// WP SDK registry change is immediately reflected in the chat UI.
+		add_action( 'activated_plugin', [ SettingsController::class, 'flush_providers_cache' ], 10, 0 );
+		add_action( 'deactivated_plugin', [ SettingsController::class, 'flush_providers_cache' ], 10, 0 );
 	}
 
 	/**
