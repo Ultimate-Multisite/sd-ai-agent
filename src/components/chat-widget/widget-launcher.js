@@ -70,7 +70,7 @@ export default function WidgetLauncher() {
 	return (
 		<button
 			type="button"
-			className="gaa-w-launcher"
+			className="sdaa-w-launcher"
 			data-drag-target="true"
 			style={ positionStyle }
 			onMouseDown={ handleMouseDown }
@@ -82,16 +82,16 @@ export default function WidgetLauncher() {
 				<img
 					src={ branding.logoUrl }
 					alt=""
-					className="gaa-w-launcher-logo"
+					className="sdaa-w-launcher-logo"
 					aria-hidden="true"
 				/>
 			) : (
 				<AiIcon thinking={ isRunning } size={ 24 } />
 			) }
-			{ isRunning && <span className="gaa-w-launcher-pulse" /> }
+			{ isRunning && <span className="sdaa-w-launcher-pulse" /> }
 			{ alertCount > 0 && (
 				<span
-					className="gaa-w-launcher-badge"
+					className="sdaa-w-launcher-badge"
 					aria-label={ sprintf(
 						/* translators: %d: number of alerts */
 						__( '%d alert(s)', 'sd-ai-agent' ),

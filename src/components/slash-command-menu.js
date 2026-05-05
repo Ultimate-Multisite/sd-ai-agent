@@ -140,12 +140,12 @@ export default function SlashCommandMenu( {
 	}
 
 	const activeId = filtered[ selectedIndex ]
-		? `sd-ai-agent-slash-option-${ filtered[ selectedIndex ].action }`
+		? `sdaa-slash-option-${ filtered[ selectedIndex ].action }`
 		: undefined;
 
 	return (
 		<div
-			className="sd-ai-agent-slash-menu"
+			className="sdaa-slash-menu"
 			ref={ menuRef }
 			role="listbox"
 			aria-label={ __( 'Slash commands', 'superdav-ai-agent' ) }
@@ -156,11 +156,11 @@ export default function SlashCommandMenu( {
 			{ filtered.map( ( cmd, i ) => (
 				<div
 					key={ cmd.name }
-					id={ `sd-ai-agent-slash-option-${ cmd.action }` }
+					id={ `sdaa-slash-option-${ cmd.action }` }
 					role="option"
 					aria-selected={ i === selectedIndex }
 					tabIndex={ 0 }
-					className={ `sd-ai-agent-slash-item ${
+					className={ `sdaa-slash-item ${
 						i === selectedIndex ? 'is-selected' : ''
 					}` }
 					onClick={ () => onSelect( cmd ) }
@@ -172,10 +172,8 @@ export default function SlashCommandMenu( {
 					} }
 					onMouseEnter={ () => setSelectedIndex( i ) }
 				>
-					<span className="sd-ai-agent-slash-name">{ cmd.name }</span>
-					<span className="sd-ai-agent-slash-desc">
-						{ cmd.description }
-					</span>
+					<span className="sdaa-slash-name">{ cmd.name }</span>
+					<span className="sdaa-slash-desc">{ cmd.description }</span>
 				</div>
 			) ) }
 		</div>

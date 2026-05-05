@@ -58,7 +58,7 @@ export const actions = {
 	 * Deduplicates concurrent in-flight calls: if a fetch is already in-flight
 	 * (tracked via the shared Redux store, so cross-bundle dedup works too),
 	 * the call is a no-op. This prevents duplicate REST requests when multiple
-	 * plugin bundles (e.g. floating-widget.js and screen-meta.js) are loaded on
+	 * plugin bundles (e.g. floating-widget.js and admin-page.js) are loaded on
 	 * the same admin page and each mount a component that calls fetchProviders()
 	 * on mount. Intentional refreshes (e.g. after saving API credentials) are
 	 * not blocked — once the in-flight fetch settles, the next call starts a

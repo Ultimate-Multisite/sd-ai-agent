@@ -60,7 +60,7 @@ export default function UsageDashboard() {
 
 	if ( loading ) {
 		return (
-			<div className="sd-ai-agent-usage-loading">
+			<div className="sdaa-usage-loading">
 				<Spinner />
 			</div>
 		);
@@ -79,8 +79,8 @@ export default function UsageDashboard() {
 	);
 
 	return (
-		<div className="sd-ai-agent-usage-dashboard">
-			<div className="sd-ai-agent-usage-header">
+		<div className="sdaa-usage-dashboard">
+			<div className="sdaa-usage-header">
 				<h3>{ __( 'Usage Summary', 'sd-ai-agent' ) }</h3>
 				<SelectControl
 					value={ period }
@@ -107,45 +107,45 @@ export default function UsageDashboard() {
 				/>
 			</div>
 
-			<div className="sd-ai-agent-usage-cards">
-				<div className="sd-ai-agent-usage-card">
-					<div className="sd-ai-agent-usage-card-label">
+			<div className="sdaa-usage-cards">
+				<div className="sdaa-usage-card">
+					<div className="sdaa-usage-card-label">
 						{ __( 'Total Cost', 'sd-ai-agent' ) }
 					</div>
-					<div className="sd-ai-agent-usage-card-value">
+					<div className="sdaa-usage-card-value">
 						{ formatCost( totals.cost_usd ) }
 					</div>
 				</div>
-				<div className="sd-ai-agent-usage-card">
-					<div className="sd-ai-agent-usage-card-label">
+				<div className="sdaa-usage-card">
+					<div className="sdaa-usage-card-label">
 						{ __( 'Requests', 'sd-ai-agent' ) }
 					</div>
-					<div className="sd-ai-agent-usage-card-value">
+					<div className="sdaa-usage-card-value">
 						{ totals.request_count || 0 }
 					</div>
 				</div>
-				<div className="sd-ai-agent-usage-card">
-					<div className="sd-ai-agent-usage-card-label">
+				<div className="sdaa-usage-card">
+					<div className="sdaa-usage-card-label">
 						{ __( 'Input Tokens', 'sd-ai-agent' ) }
 					</div>
-					<div className="sd-ai-agent-usage-card-value">
+					<div className="sdaa-usage-card-value">
 						{ formatTokens( totals.prompt_tokens ) }
 					</div>
 				</div>
-				<div className="sd-ai-agent-usage-card">
-					<div className="sd-ai-agent-usage-card-label">
+				<div className="sdaa-usage-card">
+					<div className="sdaa-usage-card-label">
 						{ __( 'Output Tokens', 'sd-ai-agent' ) }
 					</div>
-					<div className="sd-ai-agent-usage-card-value">
+					<div className="sdaa-usage-card-value">
 						{ formatTokens( totals.completion_tokens ) }
 					</div>
 				</div>
 			</div>
 
 			{ byModel.length > 0 && (
-				<div className="sd-ai-agent-usage-breakdown">
+				<div className="sdaa-usage-breakdown">
 					<h4>{ __( 'By Model', 'sd-ai-agent' ) }</h4>
-					<table className="sd-ai-agent-usage-table">
+					<table className="sdaa-usage-table">
 						<thead>
 							<tr>
 								<th>{ __( 'Model', 'sd-ai-agent' ) }</th>
@@ -181,9 +181,9 @@ export default function UsageDashboard() {
 										</td>
 										<td>{ formatCost( m.cost_usd ) }</td>
 										<td>
-											<div className="sd-ai-agent-usage-bar">
+											<div className="sdaa-usage-bar">
 												<div
-													className="sd-ai-agent-usage-bar-fill"
+													className="sdaa-usage-bar-fill"
 													style={ {
 														width: pct + '%',
 													} }

@@ -11,7 +11,7 @@ import ErrorBoundary from '../components/error-boundary';
 import SettingsApp from './settings-app';
 import './style.css';
 
-const container = document.getElementById( 'sd-ai-agent-settings-root' );
+const container = document.getElementById( 'sdaa-settings-root' );
 if ( container ) {
 	const root = createRoot( container );
 	root.render(

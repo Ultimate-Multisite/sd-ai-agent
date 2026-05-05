@@ -416,7 +416,7 @@ export default function ConnectorsRoute() {
 
 	if ( state.loading ) {
 		return (
-			<div className="sd-ai-agent-route sd-ai-agent-route-connectors">
+			<div className="sdaa-route sdaa-route-connectors">
 				<div className="sd-ai-connectors__loading">
 					<Spinner />
 					<span>{ __( 'Loading connectors…', 'sd-ai-agent' ) }</span>
@@ -427,7 +427,7 @@ export default function ConnectorsRoute() {
 
 	if ( state.error ) {
 		return (
-			<div className="sd-ai-agent-route sd-ai-agent-route-connectors">
+			<div className="sdaa-route sdaa-route-connectors">
 				<Notice status="error" isDismissible={ false }>
 					{ state.error }
 				</Notice>
@@ -439,7 +439,7 @@ export default function ConnectorsRoute() {
 	// The native Connectors page handles everything.
 	if ( state.hasNative ) {
 		return (
-			<div className="sd-ai-agent-route sd-ai-agent-route-connectors">
+			<div className="sdaa-route sdaa-route-connectors">
 				<div className="sd-ai-connectors__native-redirect">
 					<h2>{ __( 'Connectors', 'sd-ai-agent' ) }</h2>
 					<Notice status="info" isDismissible={ false }>
@@ -457,7 +457,7 @@ export default function ConnectorsRoute() {
 	}
 
 	return (
-		<div className="sd-ai-agent-route sd-ai-agent-route-connectors">
+		<div className="sdaa-route sdaa-route-connectors">
 			<div className="sd-ai-connectors__header">
 				<h2>{ __( 'Connectors', 'sd-ai-agent' ) }</h2>
 				<p className="sd-ai-connectors__intro">

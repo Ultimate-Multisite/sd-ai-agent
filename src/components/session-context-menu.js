@@ -82,8 +82,8 @@ export default function SessionContextMenu( {
 
 	if ( isRenaming ) {
 		return (
-			<div className="sd-ai-agent-context-menu" ref={ menuRef }>
-				<div className="sd-ai-agent-context-menu-rename">
+			<div className="sdaa-context-menu" ref={ menuRef }>
+				<div className="sdaa-context-menu-rename">
 					<input
 						ref={ renameInputRef }
 						type="text"
@@ -107,7 +107,7 @@ export default function SessionContextMenu( {
 	}
 
 	return (
-		<div className="sd-ai-agent-context-menu" ref={ menuRef } role="menu">
+		<div className="sdaa-context-menu" ref={ menuRef } role="menu">
 			{ ! isTrashed && isOwner && (
 				<button
 					type="button"
@@ -195,7 +195,7 @@ export default function SessionContextMenu( {
 				<button
 					type="button"
 					role="menuitem"
-					className="sd-ai-agent-context-menu-danger"
+					className="sdaa-context-menu-danger"
 					onClick={ () => {
 						trashSession( sessionId );
 						onClose();
@@ -208,7 +208,7 @@ export default function SessionContextMenu( {
 				<button
 					type="button"
 					role="menuitem"
-					className="sd-ai-agent-context-menu-danger"
+					className="sdaa-context-menu-danger"
 					onClick={ () => {
 						// eslint-disable-next-line no-alert
 						const confirmed = window.confirm(

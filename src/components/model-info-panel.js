@@ -82,44 +82,44 @@ export default function ModelInfoPanel( { debug } ) {
 		summaryParts.join( ' / ' ) || __( 'No metrics', 'sd-ai-agent' );
 
 	return (
-		<div className="sd-ai-agent-debug-panel">
+		<div className="sdaa-debug-panel">
 			<button
-				className="sd-ai-agent-debug-toggle"
+				className="sdaa-debug-toggle"
 				onClick={ () => setExpanded( ! expanded ) }
 				type="button"
 			>
-				<span className="sd-ai-agent-debug-summary">{ summary }</span>
-				<span className="sd-ai-agent-debug-caret">
+				<span className="sdaa-debug-summary">{ summary }</span>
+				<span className="sdaa-debug-caret">
 					{ expanded ? '\u25B4' : '\u25BE' }
 				</span>
 			</button>
 			{ expanded && (
-				<div className="sd-ai-agent-debug-details">
+				<div className="sdaa-debug-details">
 					{ modelId && (
-						<div className="sd-ai-agent-debug-row">
-							<span className="sd-ai-agent-debug-label">
+						<div className="sdaa-debug-row">
+							<span className="sdaa-debug-label">
 								{ __( 'Model', 'sd-ai-agent' ) }
 							</span>
-							<span className="sd-ai-agent-debug-value">
+							<span className="sdaa-debug-value">
 								{ modelId }
 							</span>
 						</div>
 					) }
-					<div className="sd-ai-agent-debug-row">
-						<span className="sd-ai-agent-debug-label">
+					<div className="sdaa-debug-row">
+						<span className="sdaa-debug-label">
 							{ __( 'Response time', 'sd-ai-agent' ) }
 						</span>
-						<span className="sd-ai-agent-debug-value">
+						<span className="sdaa-debug-value">
 							{ formatTime( responseTimeMs ) }
 						</span>
 					</div>
-					<div className="sd-ai-agent-debug-row">
-						<span className="sd-ai-agent-debug-label">
+					<div className="sdaa-debug-row">
+						<span className="sdaa-debug-label">
 							{ __( 'Tokens', 'sd-ai-agent' ) }
 						</span>
-						<span className="sd-ai-agent-debug-value">
+						<span className="sdaa-debug-value">
 							{ totalTokens.toLocaleString() }
-							<span className="sd-ai-agent-debug-detail">
+							<span className="sdaa-debug-detail">
 								({ ( tokenUsage.prompt || 0 ).toLocaleString() }{ ' ' }
 								in /{ ' ' }
 								{ (
@@ -130,42 +130,42 @@ export default function ModelInfoPanel( { debug } ) {
 						</span>
 					</div>
 					{ tokensPerSecond > 0 && (
-						<div className="sd-ai-agent-debug-row">
-							<span className="sd-ai-agent-debug-label">
+						<div className="sdaa-debug-row">
+							<span className="sdaa-debug-label">
 								{ __( 'Speed', 'sd-ai-agent' ) }
 							</span>
-							<span className="sd-ai-agent-debug-value">
+							<span className="sdaa-debug-value">
 								{ tokensPerSecond } tok/s
 							</span>
 						</div>
 					) }
 					{ costEstimate > 0 && (
-						<div className="sd-ai-agent-debug-row">
-							<span className="sd-ai-agent-debug-label">
+						<div className="sdaa-debug-row">
+							<span className="sdaa-debug-label">
 								{ __( 'Cost', 'sd-ai-agent' ) }
 							</span>
-							<span className="sd-ai-agent-debug-value">
+							<span className="sdaa-debug-value">
 								{ formatCost( costEstimate ) }
 							</span>
 						</div>
 					) }
-					<div className="sd-ai-agent-debug-row">
-						<span className="sd-ai-agent-debug-label">
+					<div className="sdaa-debug-row">
+						<span className="sdaa-debug-label">
 							{ __( 'Iterations', 'sd-ai-agent' ) }
 						</span>
-						<span className="sd-ai-agent-debug-value">
+						<span className="sdaa-debug-value">
 							{ iterationsUsed }
 						</span>
 					</div>
 					{ toolCallCount > 0 && (
-						<div className="sd-ai-agent-debug-row">
-							<span className="sd-ai-agent-debug-label">
+						<div className="sdaa-debug-row">
+							<span className="sdaa-debug-label">
 								{ __( 'Tool calls', 'sd-ai-agent' ) }
 							</span>
-							<span className="sd-ai-agent-debug-value">
+							<span className="sdaa-debug-value">
 								{ toolCallCount }
 								{ toolNames.length > 0 && (
-									<span className="sd-ai-agent-debug-detail">
+									<span className="sdaa-debug-detail">
 										({ toolNames.join( ', ' ) })
 									</span>
 								) }

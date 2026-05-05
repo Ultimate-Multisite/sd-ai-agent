@@ -72,10 +72,10 @@ export default function MessageActions( { message, index, onThumbsDown } ) {
 
 	if ( editing ) {
 		return (
-			<div className="sd-ai-agent-message-edit">
+			<div className="sdaa-message-edit">
 				<textarea
 					ref={ editInputRef }
-					className="sd-ai-agent-message-edit-input"
+					className="sdaa-message-edit-input"
 					value={ editText }
 					onChange={ ( e ) => setEditText( e.target.value ) }
 					rows={ 3 }
@@ -89,7 +89,7 @@ export default function MessageActions( { message, index, onThumbsDown } ) {
 						}
 					} }
 				/>
-				<div className="sd-ai-agent-message-edit-actions">
+				<div className="sdaa-message-edit-actions">
 					<Button
 						variant="primary"
 						onClick={ handleEditSubmit }
@@ -114,9 +114,9 @@ export default function MessageActions( { message, index, onThumbsDown } ) {
 	const isModel = message.role === 'model';
 
 	return (
-		<div className="sd-ai-agent-message-actions">
+		<div className="sdaa-message-actions">
 			<Button
-				className="sd-ai-agent-action-btn"
+				className="sdaa-action-btn"
 				onClick={ handleCopy }
 				label={
 					copied
@@ -129,7 +129,7 @@ export default function MessageActions( { message, index, onThumbsDown } ) {
 			/>
 			{ isUser && (
 				<Button
-					className="sd-ai-agent-action-btn"
+					className="sdaa-action-btn"
 					onClick={ handleEdit }
 					disabled={ sending }
 					label={ __( 'Edit message', 'sd-ai-agent' ) }
@@ -140,7 +140,7 @@ export default function MessageActions( { message, index, onThumbsDown } ) {
 			) }
 			{ isModel && (
 				<Button
-					className="sd-ai-agent-action-btn"
+					className="sdaa-action-btn"
 					onClick={ () => regenerateMessage( index ) }
 					disabled={ sending }
 					label={ __( 'Regenerate', 'sd-ai-agent' ) }
@@ -151,7 +151,7 @@ export default function MessageActions( { message, index, onThumbsDown } ) {
 			) }
 			{ isModel && onThumbsDown && (
 				<Button
-					className="sd-ai-agent-action-btn sd-ai-agent-thumbs-down-btn"
+					className="sdaa-action-btn sdaa-thumbs-down-btn"
 					onClick={ onThumbsDown }
 					disabled={ sending }
 					label={ __(

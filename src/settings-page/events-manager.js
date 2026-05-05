@@ -213,8 +213,8 @@ export default function EventsManager() {
 	);
 
 	return (
-		<div className="sd-ai-agent-events-manager">
-			<div className="sd-ai-agent-skill-header">
+		<div className="sdaa-events-manager">
+			<div className="sdaa-skill-header">
 				<div>
 					<h3>{ __( 'Event-Driven Automations', 'sd-ai-agent' ) }</h3>
 					<p className="description">
@@ -250,7 +250,7 @@ export default function EventsManager() {
 			) }
 
 			{ showForm && (
-				<div className="sd-ai-agent-skill-form">
+				<div className="sdaa-skill-form">
 					<TextControl
 						label={ __( 'Name', 'sd-ai-agent' ) }
 						value={ form.name }
@@ -281,7 +281,7 @@ export default function EventsManager() {
 					/>
 
 					{ selectedTrigger && (
-						<div className="sd-ai-agent-trigger-info">
+						<div className="sdaa-trigger-info">
 							<p className="description">
 								{ selectedTrigger.description }
 							</p>
@@ -363,7 +363,7 @@ export default function EventsManager() {
 						}
 						__nextHasNoMarginBottom
 					/>
-					<div className="sd-ai-agent-skill-form-actions">
+					<div className="sdaa-skill-form-actions">
 						<Button
 							variant="primary"
 							onClick={ handleSubmit }
@@ -406,37 +406,35 @@ export default function EventsManager() {
 
 			{ events.length > 0 && (
 				<div
-					className="sd-ai-agent-skill-cards"
+					className="sdaa-skill-cards"
 					style={ { marginTop: '16px' } }
 				>
 					{ events.map( ( ev ) => (
 						<div
 							key={ ev.id }
-							className={ `sd-ai-agent-skill-card ${
-								! ev.enabled
-									? 'sd-ai-agent-skill-card--disabled'
-									: ''
+							className={ `sdaa-skill-card ${
+								! ev.enabled ? 'sdaa-skill-card--disabled' : ''
 							}` }
 						>
-							<div className="sd-ai-agent-skill-card-header">
+							<div className="sdaa-skill-card-header">
 								<ToggleControl
 									checked={ ev.enabled }
 									onChange={ () => handleToggle( ev ) }
 									__nextHasNoMarginBottom
 								/>
-								<div className="sd-ai-agent-skill-card-title">
+								<div className="sdaa-skill-card-title">
 									<strong>{ ev.name }</strong>
-									<span className="sd-ai-agent-skill-badge">
+									<span className="sdaa-skill-badge">
 										{ ev.hook_name }
 									</span>
 								</div>
 							</div>
-							<p className="sd-ai-agent-skill-card-description">
+							<p className="sdaa-skill-card-description">
 								{ ev.description ||
 									ev.prompt_template.slice( 0, 100 ) + '...' }
 							</p>
-							<div className="sd-ai-agent-skill-card-footer">
-								<span className="sd-ai-agent-skill-word-count">
+							<div className="sdaa-skill-card-footer">
+								<span className="sdaa-skill-word-count">
 									{ ev.run_count }{ ' ' }
 									{ __( 'runs', 'sd-ai-agent' ) }
 									{ ev.last_run_at && (
@@ -451,7 +449,7 @@ export default function EventsManager() {
 										</>
 									) }
 								</span>
-								<div className="sd-ai-agent-skill-card-actions">
+								<div className="sdaa-skill-card-actions">
 									<Button
 										variant="tertiary"
 										size="small"
@@ -480,7 +478,7 @@ export default function EventsManager() {
 							</div>
 
 							{ viewLogsId === ev.id && (
-								<div className="sd-ai-agent-automation-logs">
+								<div className="sdaa-automation-logs">
 									{ logs.length === 0 && (
 										<p className="description">
 											{ __(
@@ -492,11 +490,11 @@ export default function EventsManager() {
 									{ logs.map( ( log ) => (
 										<div
 											key={ log.id }
-											className={ `sd-ai-agent-log-entry sd-ai-agent-log--${ log.status }` }
+											className={ `sdaa-log-entry sdaa-log--${ log.status }` }
 										>
-											<div className="sd-ai-agent-log-meta">
+											<div className="sdaa-log-meta">
 												<span
-													className={ `sd-ai-agent-log-status sd-ai-agent-log-status--${ log.status }` }
+													className={ `sdaa-log-status sdaa-log-status--${ log.status }` }
 												>
 													{ log.status }
 												</span>
@@ -510,7 +508,7 @@ export default function EventsManager() {
 												</span>
 											</div>
 											{ log.error_message && (
-												<p className="sd-ai-agent-log-error">
+												<p className="sdaa-log-error">
 													{ log.error_message }
 												</p>
 											) }
@@ -522,7 +520,7 @@ export default function EventsManager() {
 															'sd-ai-agent'
 														) }
 													</summary>
-													<pre className="sd-ai-agent-log-reply">
+													<pre className="sdaa-log-reply">
 														{ log.reply }
 													</pre>
 												</details>

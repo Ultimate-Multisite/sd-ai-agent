@@ -56,17 +56,17 @@ export default function ExportDialog( { sessionId, onClose } ) {
 	}, [ sessionId, format, exportSession, onClose ] );
 
 	return (
-		<div className="sd-ai-agent-shortcuts-overlay">
-			<div className="sd-ai-agent-export-dialog" ref={ dialogRef }>
-				<div className="sd-ai-agent-export-header">
+		<div className="sdaa-shortcuts-overlay">
+			<div className="sdaa-export-dialog" ref={ dialogRef }>
+				<div className="sdaa-export-header">
 					<h3>{ __( 'Export Conversation', 'sd-ai-agent' ) }</h3>
 					<button type="button" onClick={ onClose }>
 						&times;
 					</button>
 				</div>
-				<div className="sd-ai-agent-export-body">
+				<div className="sdaa-export-body">
 					<label
-						className="sd-ai-agent-export-option"
+						className="sdaa-export-option"
 						htmlFor="export-format-json"
 					>
 						<input
@@ -79,7 +79,7 @@ export default function ExportDialog( { sessionId, onClose } ) {
 						/>
 						<span>
 							{ __( 'JSON', 'sd-ai-agent' ) }
-							<span className="sd-ai-agent-export-option-desc">
+							<span className="sdaa-export-option-desc">
 								{ __(
 									'Full conversation data. Can be imported back.',
 									'sd-ai-agent'
@@ -88,7 +88,7 @@ export default function ExportDialog( { sessionId, onClose } ) {
 						</span>
 					</label>
 					<label
-						className="sd-ai-agent-export-option"
+						className="sdaa-export-option"
 						htmlFor="export-format-markdown"
 					>
 						<input
@@ -101,7 +101,7 @@ export default function ExportDialog( { sessionId, onClose } ) {
 						/>
 						<span>
 							{ __( 'Markdown', 'sd-ai-agent' ) }
-							<span className="sd-ai-agent-export-option-desc">
+							<span className="sdaa-export-option-desc">
 								{ __(
 									'Human-readable format. Good for sharing.',
 									'sd-ai-agent'
@@ -110,7 +110,7 @@ export default function ExportDialog( { sessionId, onClose } ) {
 						</span>
 					</label>
 				</div>
-				<div className="sd-ai-agent-export-footer">
+				<div className="sdaa-export-footer">
 					<button
 						type="button"
 						className="button"

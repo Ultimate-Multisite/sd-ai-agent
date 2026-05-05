@@ -177,8 +177,8 @@ export default function WidgetMessageList() {
 
 	return (
 		<>
-			<div className="gaa-w-body" ref={ ref }>
-				<div className="gaa-w-body-inner">
+			<div className="sdaa-w-body" ref={ ref }>
+				<div className="sdaa-w-body-inner">
 					{ visible.map( ( { msg, index }, i ) => {
 						const isLast = i === visible.length - 1;
 						if ( msg.role === 'user' ) {
@@ -223,10 +223,10 @@ export default function WidgetMessageList() {
 			</div>
 
 			{ unseenCount > 0 && (
-				<div className="gaa-w-scroll-to-bottom">
+				<div className="sdaa-w-scroll-to-bottom">
 					<button
 						type="button"
-						className="gaa-w-scroll-btn"
+						className="sdaa-w-scroll-btn"
 						onClick={ scrollToBottom }
 						aria-label={ __(
 							'Scroll to latest messages',
@@ -242,7 +242,7 @@ export default function WidgetMessageList() {
 						>
 							<path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
 						</svg>
-						<span className="gaa-w-scroll-btn-badge">
+						<span className="sdaa-w-scroll-btn-badge">
 							{ unseenCount }
 						</span>
 					</button>

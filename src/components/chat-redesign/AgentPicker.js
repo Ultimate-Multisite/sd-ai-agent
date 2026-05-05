@@ -39,14 +39,14 @@ function AgentIcon( { icon } ) {
 	if ( icon.startsWith( 'dashicons-' ) ) {
 		return (
 			<span
-				className={ `dashicons ${ icon } gaa-cr-agent-icon` }
+				className={ `dashicons ${ icon } sdaa-cr-agent-icon` }
 				aria-hidden="true"
 			/>
 		);
 	}
 	return (
 		<span
-			className="gaa-cr-agent-icon gaa-cr-agent-icon--emoji"
+			className="sdaa-cr-agent-icon sdaa-cr-agent-icon--emoji"
 			aria-hidden="true"
 		>
 			{ icon }
@@ -197,7 +197,7 @@ export default function AgentPicker() {
 		? createPortal(
 				<div
 					ref={ popoverRef }
-					className="gaa-cr-popover gaa-cr-popover-fixed"
+					className="sdaa-cr-popover sdaa-cr-popover-fixed"
 					role="menu"
 					aria-label={ __( 'Select agent', 'sd-ai-agent' ) }
 					style={ {
@@ -207,7 +207,7 @@ export default function AgentPicker() {
 						maxHeight: pos.maxHeight,
 					} }
 				>
-					<div className="gaa-cr-popover-section-label">
+					<div className="sdaa-cr-popover-section-label">
 						{ __( 'Agent', 'sd-ai-agent' ) }
 					</div>
 					{ enabledAgents.map( ( agent ) => {
@@ -218,7 +218,7 @@ export default function AgentPicker() {
 								type="button"
 								key={ agent.id }
 								role="menuitem"
-								className={ `gaa-cr-popover-item gaa-cr-agent-popover-item${
+								className={ `sdaa-cr-popover-item sdaa-cr-agent-popover-item${
 									active ? ' is-active' : ''
 								}` }
 								onClick={ () => pick( agent.id ) }
@@ -226,7 +226,7 @@ export default function AgentPicker() {
 								<AgentIcon icon={ agent.avatar_icon } />
 								<span>{ agent.name }</span>
 								{ active && (
-									<span className="gaa-cr-popover-item-check">
+									<span className="sdaa-cr-popover-item-check">
 										<Icon icon={ check } size={ 14 } />
 									</span>
 								) }
@@ -239,18 +239,18 @@ export default function AgentPicker() {
 		: null;
 
 	return (
-		<div className="gaa-cr-model-chip-wrap">
+		<div className="sdaa-cr-model-chip-wrap">
 			<button
 				ref={ chipRef }
 				type="button"
-				className="gaa-cr-model-chip gaa-cr-agent-chip"
+				className="sdaa-cr-model-chip sdaa-cr-agent-chip"
 				onClick={ () => setOpen( ( v ) => ! v ) }
 				aria-haspopup="menu"
 				aria-expanded={ open }
 				title={ __( 'Change agent', 'sd-ai-agent' ) }
 			>
 				<AgentIcon icon={ activeAgent?.avatar_icon } />
-				<span className="gaa-cr-model-chip-model">
+				<span className="sdaa-cr-model-chip-model">
 					{ activeAgent?.name || __( '(default)', 'sd-ai-agent' ) }
 				</span>
 				<Icon icon={ chevronDown } size={ 14 } />

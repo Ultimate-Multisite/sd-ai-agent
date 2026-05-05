@@ -147,27 +147,27 @@ export default function DataTable( { children } ) {
 	const sortIndicator = ( colIndex ) => {
 		if ( sortCol !== colIndex ) {
 			return (
-				<span className="sd-ai-agent-table-sort-icon sd-ai-agent-table-sort-none">
+				<span className="sdaa-table-sort-icon sdaa-table-sort-none">
 					⇅
 				</span>
 			);
 		}
 		return (
-			<span className="sd-ai-agent-table-sort-icon sd-ai-agent-table-sort-active">
+			<span className="sdaa-table-sort-icon sdaa-table-sort-active">
 				{ sortDir === 'asc' ? '↑' : '↓' }
 			</span>
 		);
 	};
 
 	return (
-		<div className="sd-ai-agent-data-table-wrap">
+		<div className="sdaa-data-table-wrap">
 			{ /* Filter bar — only shown when the table has more than 10 rows */ }
 			{ rawRows.length > 10 && (
-				<div className="sd-ai-agent-data-table-toolbar">
-					<div className="sd-ai-agent-data-table-filter">
+				<div className="sdaa-data-table-toolbar">
+					<div className="sdaa-data-table-filter">
 						<input
 							type="search"
-							className="sd-ai-agent-data-table-filter-input"
+							className="sdaa-data-table-filter-input"
 							placeholder={ __( 'Filter…', 'superdav-ai-agent' ) }
 							value={ filter }
 							onChange={ handleFilterChange }
@@ -179,7 +179,7 @@ export default function DataTable( { children } ) {
 						{ filter && (
 							<button
 								type="button"
-								className="sd-ai-agent-data-table-filter-clear"
+								className="sdaa-data-table-filter-clear"
 								onClick={ handleFilterClear }
 								aria-label={ __(
 									'Clear filter',
@@ -191,15 +191,15 @@ export default function DataTable( { children } ) {
 						) }
 					</div>
 					{ filter && (
-						<span className="sd-ai-agent-data-table-count">
+						<span className="sdaa-data-table-count">
 							{ filteredRows.length } / { rawRows.length }
 						</span>
 					) }
 				</div>
 			) }
 
-			<div className="sd-ai-agent-data-table-scroll">
-				<table className="sd-ai-agent-data-table">
+			<div className="sdaa-data-table-scroll">
+				<table className="sdaa-data-table">
 					{ headers.length > 0 && (
 						<thead>
 							<tr>
@@ -208,8 +208,8 @@ export default function DataTable( { children } ) {
 										key={ i }
 										className={
 											sortCol === i
-												? 'sd-ai-agent-data-table-th is-sorted'
-												: 'sd-ai-agent-data-table-th'
+												? 'sdaa-data-table-th is-sorted'
+												: 'sdaa-data-table-th'
 										}
 										onClick={ () => handleSort( i ) }
 										aria-sort={ ( () => {
@@ -232,7 +232,7 @@ export default function DataTable( { children } ) {
 											}
 										} }
 									>
-										<span className="sd-ai-agent-data-table-th-label">
+										<span className="sdaa-data-table-th-label">
 											{ header }
 										</span>
 										{ sortIndicator( i ) }
@@ -248,7 +248,7 @@ export default function DataTable( { children } ) {
 									{ row.map( ( cell, cellIdx ) => (
 										<td
 											key={ cellIdx }
-											className="sd-ai-agent-data-table-td"
+											className="sdaa-data-table-td"
 										>
 											{ cell.node }
 										</td>
@@ -259,7 +259,7 @@ export default function DataTable( { children } ) {
 							<tr>
 								<td
 									colSpan={ headers.length || 1 }
-									className="sd-ai-agent-data-table-empty"
+									className="sdaa-data-table-empty"
 								>
 									{ __(
 										'No matching rows.',

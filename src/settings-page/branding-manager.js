@@ -46,13 +46,13 @@ function BrandingPreview( {
 		__( 'Send a message to start a conversation.', 'sd-ai-agent' );
 
 	return (
-		<div className="sd-ai-agent-branding-preview">
+		<div className="sdaa-branding-preview">
 			<p className="description">
 				{ __( 'Live preview', 'sd-ai-agent' ) }
 			</p>
 			{ /* FAB preview */ }
 			<div
-				className="sd-ai-agent-branding-preview__fab"
+				className="sdaa-branding-preview__fab"
 				style={ { background: fabBg, color: fabColor } }
 				aria-hidden="true"
 			>
@@ -60,7 +60,7 @@ function BrandingPreview( {
 					<img
 						src={ logoUrl }
 						alt=""
-						className="sd-ai-agent-branding-preview__logo"
+						className="sdaa-branding-preview__logo"
 					/>
 				) : (
 					<svg
@@ -76,7 +76,7 @@ function BrandingPreview( {
 			</div>
 			{ /* Title bar preview */ }
 			<div
-				className="sd-ai-agent-branding-preview__titlebar"
+				className="sdaa-branding-preview__titlebar"
 				style={ { background: fabBg, color: fabColor } }
 				aria-hidden="true"
 			>
@@ -84,15 +84,13 @@ function BrandingPreview( {
 					<img
 						src={ logoUrl }
 						alt=""
-						className="sd-ai-agent-branding-preview__titlebar-logo"
+						className="sdaa-branding-preview__titlebar-logo"
 					/>
 				) }
 				<span>{ displayName }</span>
 			</div>
 			{ /* Greeting preview */ }
-			<div className="sd-ai-agent-branding-preview__greeting">
-				{ greeting }
-			</div>
+			<div className="sdaa-branding-preview__greeting">{ greeting }</div>
 		</div>
 	);
 }
@@ -113,7 +111,7 @@ export default function BrandingManager( { local, updateField } ) {
 	const [ showTextPicker, setShowTextPicker ] = useState( false );
 
 	return (
-		<div className="sd-ai-agent-branding-manager">
+		<div className="sdaa-branding-manager">
 			<p className="description">
 				{ __(
 					'Customise how the AI agent appears to users. Leave fields empty to use the plugin defaults.',
@@ -140,11 +138,11 @@ export default function BrandingManager( { local, updateField } ) {
 					'Background colour for the FAB button and chat title bar. Leave empty to use the WordPress admin theme colour.',
 					'sd-ai-agent'
 				) }
-				id="sd-ai-agent-brand-primary-color"
+				id="sdaa-brand-primary-color"
 			>
-				<div className="sd-ai-agent-color-field">
+				<div className="sdaa-color-field">
 					<div
-						className="sd-ai-agent-color-swatch"
+						className="sdaa-color-swatch"
 						style={ {
 							background:
 								local.brand_primary_color ||
@@ -153,7 +151,7 @@ export default function BrandingManager( { local, updateField } ) {
 						aria-hidden="true"
 					/>
 					<TextControl
-						id="sd-ai-agent-brand-primary-color"
+						id="sdaa-brand-primary-color"
 						value={ local.brand_primary_color || '' }
 						onChange={ ( v ) =>
 							updateField( 'brand_primary_color', v )
@@ -192,11 +190,11 @@ export default function BrandingManager( { local, updateField } ) {
 					'Colour for text and icons inside the FAB button and title bar. Defaults to white (#ffffff).',
 					'sd-ai-agent'
 				) }
-				id="sd-ai-agent-brand-text-color"
+				id="sdaa-brand-text-color"
 			>
-				<div className="sd-ai-agent-color-field">
+				<div className="sdaa-color-field">
 					<div
-						className="sd-ai-agent-color-swatch"
+						className="sdaa-color-swatch"
 						style={ {
 							background: local.brand_text_color || '#ffffff',
 							border: '1px solid #c3c4c7',
@@ -204,7 +202,7 @@ export default function BrandingManager( { local, updateField } ) {
 						aria-hidden="true"
 					/>
 					<TextControl
-						id="sd-ai-agent-brand-text-color"
+						id="sdaa-brand-text-color"
 						value={ local.brand_text_color || '' }
 						onChange={ ( v ) =>
 							updateField( 'brand_text_color', v )

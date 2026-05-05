@@ -63,25 +63,25 @@ export default function ContextIndicator() {
 	const totalTokens = tokenUsage.prompt + tokenUsage.completion;
 
 	return (
-		<div className="sd-ai-agent-context-indicator">
-			<div className="sd-ai-agent-context-stats">
-				<span className="sd-ai-agent-context-tokens">
+		<div className="sdaa-context-indicator">
+			<div className="sdaa-context-stats">
+				<span className="sdaa-context-tokens">
 					{ formatTokens( totalTokens ) }{ ' ' }
 					{ __( 'tokens', 'sd-ai-agent' ) }
-					<span className="sd-ai-agent-context-detail">
+					<span className="sdaa-context-detail">
 						({ formatTokens( tokenUsage.prompt ) }{ ' ' }
 						{ __( 'in', 'sd-ai-agent' ) } /{ ' ' }
 						{ formatTokens( tokenUsage.completion ) }{ ' ' }
 						{ __( 'out', 'sd-ai-agent' ) })
 					</span>
 				</span>
-				<span className="sd-ai-agent-context-pct">
+				<span className="sdaa-context-pct">
 					{ Math.round( clampedPct ) }%
 				</span>
 			</div>
-			<div className="sd-ai-agent-context-bar-track">
+			<div className="sdaa-context-bar-track">
 				<div
-					className="sd-ai-agent-context-bar-fill"
+					className="sdaa-context-bar-fill"
 					style={ {
 						width: clampedPct + '%',
 						backgroundColor: barColor,
@@ -89,14 +89,14 @@ export default function ContextIndicator() {
 				/>
 			</div>
 			{ isWarning && (
-				<div className="sd-ai-agent-context-warning">
+				<div className="sdaa-context-warning">
 					<span>
 						{ __(
 							'Context window is getting full.',
 							'sd-ai-agent'
 						) }
 					</span>
-					<div className="sd-ai-agent-context-warning-actions">
+					<div className="sdaa-context-warning-actions">
 						<Button
 							variant="secondary"
 							size="small"

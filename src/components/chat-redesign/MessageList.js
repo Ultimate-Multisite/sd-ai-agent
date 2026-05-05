@@ -245,10 +245,10 @@ export default function MessageList() {
 
 	return (
 		<>
-			<div className="gaa-cr-messages" ref={ ref }>
-				<div className="gaa-cr-messages-inner">
+			<div className="sdaa-cr-messages" ref={ ref }>
+				<div className="sdaa-cr-messages-inner">
 					{ visible.length === 0 && ! sending && (
-						<div className="gaa-cr-empty">{ greeting }</div>
+						<div className="sdaa-cr-empty">{ greeting }</div>
 					) }
 
 					{ visible.map( ( { msg, index }, i ) => {
@@ -295,10 +295,10 @@ export default function MessageList() {
 			</div>
 
 			{ unseenCount > 0 && (
-				<div className="gaa-cr-scroll-to-bottom">
+				<div className="sdaa-cr-scroll-to-bottom">
 					<button
 						type="button"
-						className="gaa-cr-scroll-btn"
+						className="sdaa-cr-scroll-btn"
 						onClick={ scrollToBottom }
 						aria-label={ __(
 							'Scroll to latest messages',
@@ -314,7 +314,7 @@ export default function MessageList() {
 						>
 							<path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
 						</svg>
-						<span className="gaa-cr-scroll-btn-badge">
+						<span className="sdaa-cr-scroll-btn-badge">
 							{ unseenCount }
 						</span>
 					</button>

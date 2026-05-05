@@ -86,7 +86,7 @@ export default function Router( { route } ) {
 
 		default:
 			return (
-				<div className="sd-ai-agent-route-not-found">
+				<div className="sdaa-route-not-found">
 					<h2>{ __( 'Page Not Found', 'sd-ai-agent' ) }</h2>
 					<p>
 						{ __(

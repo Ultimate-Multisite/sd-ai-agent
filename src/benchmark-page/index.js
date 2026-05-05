@@ -272,7 +272,7 @@ function BenchmarkPageApp() {
 	}
 
 	return (
-		<div className="sd-ai-agent-benchmark-page">
+		<div className="sdaa-benchmark-page">
 			{ notice && (
 				<Notice
 					status={ notice.status }
@@ -284,7 +284,7 @@ function BenchmarkPageApp() {
 			) }
 
 			<TabPanel
-				className="sd-ai-agent-benchmark-tabs"
+				className="sdaa-benchmark-tabs"
 				activeClass="is-active"
 				tabs={ tabs }
 				initialTabName={ activeTab }
@@ -376,14 +376,14 @@ function NewRunTab( {
 	runProgress,
 } ) {
 	return (
-		<div className="sd-ai-agent-benchmark-new-run">
+		<div className="sdaa-benchmark-new-run">
 			<Card>
 				<CardHeader>
 					<h2>{ __( 'Configure Benchmark', 'sd-ai-agent' ) }</h2>
 				</CardHeader>
 				<CardBody>
 					{ isRunning && runProgress && (
-						<div className="sd-ai-agent-benchmark-progress">
+						<div className="sdaa-benchmark-progress">
 							<Notice status="info" isDismissible={ false }>
 								{ __( 'Benchmark is running…', 'sd-ai-agent' ) }
 							</Notice>
@@ -436,7 +436,7 @@ function NewRunTab( {
 						disabled={ isRunning }
 					/>
 
-					<div className="sd-ai-agent-benchmark-models">
+					<div className="sdaa-benchmark-models">
 						<h3>{ __( 'Select Models', 'sd-ai-agent' ) }</h3>
 						<ModelSelector
 							providers={ providers }
@@ -462,7 +462,7 @@ function NewRunTab( {
 	);
 }
 
-const container = document.getElementById( 'sd-ai-agent-benchmark-root' );
+const container = document.getElementById( 'sdaa-benchmark-root' );
 if ( container ) {
 	const root = createRoot( container );
 	root.render( <BenchmarkPageApp /> );

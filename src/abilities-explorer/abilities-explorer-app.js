@@ -120,13 +120,11 @@ function AbilityRow( { ability } ) {
 	const isClientAbility = category === 'sd-ai-agent-js';
 
 	return (
-		<div className="sd-ai-agent-ability-row">
-			<div className="sd-ai-agent-ability-row-header">
-				<div className="sd-ai-agent-ability-title">
-					{ label || name }
-				</div>
-				<div className="sd-ai-agent-ability-name">{ name }</div>
-				<div className="sd-ai-agent-ability-badges">
+		<div className="sdaa-ability-row">
+			<div className="sdaa-ability-row-header">
+				<div className="sdaa-ability-title">{ label || name }</div>
+				<div className="sdaa-ability-name">{ name }</div>
+				<div className="sdaa-ability-badges">
 					{ isClientAbility && (
 						<Badge intent="info">
 							{ __( 'client', 'sd-ai-agent' ) }
@@ -164,14 +162,14 @@ function AbilityRow( { ability } ) {
 					) }
 				</div>
 			</div>
-			<div className="sd-ai-agent-ability-row-body">
-				<p className="sd-ai-agent-ability-category">{ category }</p>
-				<p className="sd-ai-agent-ability-description">
+			<div className="sdaa-ability-row-body">
+				<p className="sdaa-ability-category">{ category }</p>
+				<p className="sdaa-ability-description">
 					{ description ||
 						__( 'No description available.', 'sd-ai-agent' ) }
 				</p>
-				<div className="sd-ai-agent-ability-meta">
-					<span className="sd-ai-agent-ability-params">
+				<div className="sdaa-ability-meta">
+					<span className="sdaa-ability-params">
 						{ paramCount === 1
 							? __( '1 parameter', 'sd-ai-agent' )
 							: sprintf(
@@ -181,7 +179,7 @@ function AbilityRow( { ability } ) {
 							  ) }
 					</span>
 					{ requiredParams && requiredParams.length > 0 && (
-						<span className="sd-ai-agent-ability-required">
+						<span className="sdaa-ability-required">
 							{ __( 'Required:', 'sd-ai-agent' ) }{ ' ' }
 							<code>{ requiredParams.join( ', ' ) }</code>
 						</span>
@@ -193,7 +191,7 @@ function AbilityRow( { ability } ) {
 						<Notice
 							status="warning"
 							isDismissible={ false }
-							className="sd-ai-agent-ability-notice"
+							className="sdaa-ability-notice"
 						>
 							{ __( 'Requires:', 'sd-ai-agent' ) }{ ' ' }
 							{ requiredApiKeys.join( ', ' ) }{ ' ' }
@@ -208,7 +206,7 @@ function AbilityRow( { ability } ) {
 						</Notice>
 					) }
 				{ outputSchema && Object.keys( outputSchema ).length > 0 && (
-					<div className="sd-ai-agent-ability-schema-toggle">
+					<div className="sdaa-ability-schema-toggle">
 						<Button
 							variant="link"
 							onClick={ () => setExpanded( ( v ) => ! v ) }
@@ -219,7 +217,7 @@ function AbilityRow( { ability } ) {
 								: __( 'Show output schema', 'sd-ai-agent' ) }
 						</Button>
 						{ expanded && (
-							<pre className="sd-ai-agent-ability-schema">
+							<pre className="sdaa-ability-schema">
 								{ JSON.stringify( outputSchema, null, 2 ) }
 							</pre>
 						) }
@@ -244,22 +242,22 @@ function AbilityRow( { ability } ) {
  */
 function CategorySection( { category, abilities, open, onToggle } ) {
 	return (
-		<div className="sd-ai-agent-abilities-category">
+		<div className="sdaa-abilities-category">
 			<button
 				type="button"
-				className="sd-ai-agent-abilities-category-header"
+				className="sdaa-abilities-category-header"
 				onClick={ onToggle }
 				aria-expanded={ open }
 			>
-				<span className="sd-ai-agent-abilities-category-name">
+				<span className="sdaa-abilities-category-name">
 					{ category }
 				</span>
-				<span className="sd-ai-agent-abilities-category-count">
+				<span className="sdaa-abilities-category-count">
 					{ abilities.length }
 				</span>
 			</button>
 			{ open && (
-				<div className="sd-ai-agent-abilities-category-body">
+				<div className="sdaa-abilities-category-body">
 					{ abilities.map( ( ability ) => (
 						<AbilityRow key={ ability.name } ability={ ability } />
 					) ) }
@@ -279,14 +277,14 @@ function CategorySection( { category, abilities, open, onToggle } ) {
  *   - A result count paragraph that updates as filters change.
  *
  * CSS classes used by E2E tests:
- *   .sd-ai-agent-abilities-manager       — outer wrapper
- *   .sd-ai-agent-abilities-search        — SearchControl wrapper
- *   .sd-ai-agent-abilities-filters       — category SelectControl wrapper
- *   .sd-ai-agent-abilities-count         — count paragraph
- *   .sd-ai-agent-abilities-category      — per-category section
- *   .sd-ai-agent-abilities-category-header — clickable header button
- *   .sd-ai-agent-abilities-category-body   — collapsible body
- *   .sd-ai-agent-abilities-category-count  — count badge in header
+ *   .sdaa-abilities-manager       — outer wrapper
+ *   .sdaa-abilities-search        — SearchControl wrapper
+ *   .sdaa-abilities-filters       — category SelectControl wrapper
+ *   .sdaa-abilities-count         — count paragraph
+ *   .sdaa-abilities-category      — per-category section
+ *   .sdaa-abilities-category-header — clickable header button
+ *   .sdaa-abilities-category-body   — collapsible body
+ *   .sdaa-abilities-category-count  — count badge in header
  */
 export default function AbilitiesExplorerApp() {
 	const [ abilities, setAbilities ] = useState( [] );
@@ -425,12 +423,12 @@ export default function AbilitiesExplorerApp() {
 
 	// Render the outer wrapper immediately so E2E tests can detect the
 	// abilities route has mounted. Loading and error states appear inside
-	// the wrapper so the .sd-ai-agent-abilities-manager selector is
+	// the wrapper so the .sdaa-abilities-manager selector is
 	// always present once the route renders, regardless of fetch status.
 	if ( loading ) {
 		return (
-			<div className="sd-ai-agent-abilities-manager">
-				<div className="sd-ai-agent-abilities-loading">
+			<div className="sdaa-abilities-manager">
+				<div className="sdaa-abilities-loading">
 					<Spinner />
 					<span>{ __( 'Loading abilities…', 'sd-ai-agent' ) }</span>
 				</div>
@@ -440,7 +438,7 @@ export default function AbilitiesExplorerApp() {
 
 	if ( error ) {
 		return (
-			<div className="sd-ai-agent-abilities-manager">
+			<div className="sdaa-abilities-manager">
 				<Notice status="error" isDismissible={ false }>
 					{ error }
 				</Notice>
@@ -449,11 +447,11 @@ export default function AbilitiesExplorerApp() {
 	}
 
 	return (
-		<div className="sd-ai-agent-abilities-manager">
+		<div className="sdaa-abilities-manager">
 			{ /* Toolbar: search, category filter, expand/collapse controls */ }
-			<div className="sd-ai-agent-abilities-toolbar">
-				<div className="sd-ai-agent-abilities-controls">
-					<div className="sd-ai-agent-abilities-search">
+			<div className="sdaa-abilities-toolbar">
+				<div className="sdaa-abilities-controls">
+					<div className="sdaa-abilities-search">
 						<SearchControl
 							label={ __( 'Search abilities', 'sd-ai-agent' ) }
 							value={ search }
@@ -464,7 +462,7 @@ export default function AbilitiesExplorerApp() {
 							) }
 						/>
 					</div>
-					<div className="sd-ai-agent-abilities-filters">
+					<div className="sdaa-abilities-filters">
 						<SelectControl
 							label={ __( 'Category', 'sd-ai-agent' ) }
 							value={ categoryFilter }
@@ -472,7 +470,7 @@ export default function AbilitiesExplorerApp() {
 							onChange={ setCategoryFilter }
 						/>
 					</div>
-					<div className="sd-ai-agent-abilities-bulk-actions">
+					<div className="sdaa-abilities-bulk-actions">
 						<Button
 							variant="tertiary"
 							onClick={ handleCollapseAll }
@@ -484,7 +482,7 @@ export default function AbilitiesExplorerApp() {
 						</Button>
 					</div>
 				</div>
-				<p className="sd-ai-agent-abilities-count">
+				<p className="sdaa-abilities-count">
 					{ filtered.length === abilities.length
 						? sprintf(
 								/* translators: %d: total number of abilities */
@@ -505,7 +503,7 @@ export default function AbilitiesExplorerApp() {
 
 			{ /* Category sections */ }
 			{ filtered.length === 0 ? (
-				<p className="sd-ai-agent-abilities-no-results">
+				<p className="sdaa-abilities-no-results">
 					{ abilities.length === 0
 						? __( 'No abilities are registered.', 'sd-ai-agent' )
 						: __(
@@ -514,7 +512,7 @@ export default function AbilitiesExplorerApp() {
 						  ) }
 				</p>
 			) : (
-				<div className="sd-ai-agent-abilities-list">
+				<div className="sdaa-abilities-list">
 					{ sortedCategories.map( ( category ) => (
 						<CategorySection
 							key={ category }

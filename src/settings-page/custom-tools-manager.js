@@ -284,8 +284,8 @@ export default function CustomToolsManager() {
 	};
 
 	return (
-		<div className="sd-ai-agent-custom-tools-manager">
-			<div className="sd-ai-agent-skill-header">
+		<div className="sdaa-custom-tools-manager">
+			<div className="sdaa-skill-header">
 				<div>
 					<h3>{ __( 'Custom Tools', 'sd-ai-agent' ) }</h3>
 					<p className="description">
@@ -318,7 +318,7 @@ export default function CustomToolsManager() {
 			) }
 
 			{ showForm && (
-				<div className="sd-ai-agent-skill-form">
+				<div className="sdaa-skill-form">
 					{ ! editId && (
 						<TextControl
 							label={ __( 'Slug', 'sd-ai-agent' ) }
@@ -383,7 +383,7 @@ export default function CustomToolsManager() {
 						) }
 					/>
 
-					<div className="sd-ai-agent-skill-form-actions">
+					<div className="sdaa-skill-form-actions">
 						<Button
 							variant="primary"
 							onClick={ handleSubmit }
@@ -418,7 +418,7 @@ export default function CustomToolsManager() {
 
 					{ testResult && (
 						<div
-							className={ `sd-ai-agent-test-result ${
+							className={ `sdaa-test-result ${
 								testResult.success ? 'is-success' : 'is-error'
 							}` }
 						>
@@ -457,37 +457,37 @@ export default function CustomToolsManager() {
 			) }
 
 			{ tools.length > 0 && (
-				<div className="sd-ai-agent-skill-cards">
+				<div className="sdaa-skill-cards">
 					{ tools.map( ( tool ) => (
 						<div
 							key={ tool.id }
-							className={ `sd-ai-agent-skill-card ${
+							className={ `sdaa-skill-card ${
 								! tool.enabled
-									? 'sd-ai-agent-skill-card--disabled'
+									? 'sdaa-skill-card--disabled'
 									: ''
 							}` }
 						>
-							<div className="sd-ai-agent-skill-card-header">
+							<div className="sdaa-skill-card-header">
 								<ToggleControl
 									checked={ tool.enabled }
 									onChange={ () => handleToggle( tool ) }
 									__nextHasNoMarginBottom
 								/>
-								<div className="sd-ai-agent-skill-card-title">
+								<div className="sdaa-skill-card-title">
 									<strong>{ tool.name }</strong>
-									<span className="sd-ai-agent-skill-badge">
+									<span className="sdaa-skill-badge">
 										{ tool.type.toUpperCase() }
 									</span>
 								</div>
 							</div>
-							<p className="sd-ai-agent-skill-card-description">
+							<p className="sdaa-skill-card-description">
 								{ tool.description }
 							</p>
-							<div className="sd-ai-agent-skill-card-footer">
-								<span className="sd-ai-agent-skill-word-count">
+							<div className="sdaa-skill-card-footer">
+								<span className="sdaa-skill-word-count">
 									{ tool.slug }
 								</span>
-								<div className="sd-ai-agent-skill-card-actions">
+								<div className="sdaa-skill-card-actions">
 									<Button
 										icon={ pencil }
 										size="small"

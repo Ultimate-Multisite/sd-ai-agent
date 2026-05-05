@@ -95,13 +95,13 @@ function SessionRow( { session, isActive, job, onPick } ) {
 	if ( isRunning ) {
 		leadIcon = (
 			<span
-				className="gaa-cr-dot"
+				className="sdaa-cr-dot"
 				title={ __( 'Agent running', 'sd-ai-agent' ) }
 			/>
 		);
 	} else if ( emoji ) {
 		leadIcon = (
-			<span className="gaa-cr-session-row-emoji" aria-hidden="true">
+			<span className="sdaa-cr-session-row-emoji" aria-hidden="true">
 				{ emoji }
 			</span>
 		);
@@ -130,7 +130,7 @@ function SessionRow( { session, isActive, job, onPick } ) {
 
 	return (
 		<div
-			className={ `gaa-cr-session-row${ isActive ? ' is-active' : '' }` }
+			className={ `sdaa-cr-session-row${ isActive ? ' is-active' : '' }` }
 			onClick={ () => onPick( session.id ) }
 			onKeyDown={ ( e ) => {
 				if ( e.key === 'Enter' || e.key === ' ' ) {
@@ -142,23 +142,23 @@ function SessionRow( { session, isActive, job, onPick } ) {
 			tabIndex={ 0 }
 			aria-current={ isActive ? 'true' : undefined }
 		>
-			<span className="gaa-cr-session-row-icon">{ leadIcon }</span>
-			<div className="gaa-cr-session-row-body">
-				<div className="gaa-cr-session-row-title">
+			<span className="sdaa-cr-session-row-icon">{ leadIcon }</span>
+			<div className="sdaa-cr-session-row-body">
+				<div className="sdaa-cr-session-row-title">
 					{ title || __( 'Untitled', 'sd-ai-agent' ) }
 				</div>
 				<div
-					className={ `gaa-cr-session-row-meta${
+					className={ `sdaa-cr-session-row-meta${
 						metaIsRunning ? ' is-running' : ''
 					}` }
 				>
 					{ metaLabel }
 				</div>
 			</div>
-			<div className="gaa-cr-session-row-actions">
+			<div className="sdaa-cr-session-row-actions">
 				<button
 					type="button"
-					className="gaa-cr-icon-btn is-small"
+					className="sdaa-cr-icon-btn is-small"
 					onClick={ ( e ) => {
 						e.stopPropagation();
 						setShowMenu( ( v ) => ! v );
@@ -170,7 +170,7 @@ function SessionRow( { session, isActive, job, onPick } ) {
 					<Icon icon={ moreVertical } size={ 16 } />
 				</button>
 				{ showMenu && (
-					<div className="gaa-cr-context-menu">
+					<div className="sdaa-cr-context-menu">
 						<SessionContextMenu
 							session={ session }
 							onClose={ () => setShowMenu( false ) }
@@ -272,15 +272,15 @@ export default function Sidebar( { collapsed, onToggleCollapse } ) {
 
 	return (
 		<aside
-			className="gaa-cr-sidebar"
+			className="sdaa-cr-sidebar"
 			aria-label={ __( 'Conversations', 'sd-ai-agent' ) }
 		>
-			<div className="gaa-cr-sidebar-brand">
-				<div className="gaa-cr-sidebar-brand-text">
-					<div className="gaa-cr-sidebar-brand-title">
+			<div className="sdaa-cr-sidebar-brand">
+				<div className="sdaa-cr-sidebar-brand-text">
+					<div className="sdaa-cr-sidebar-brand-title">
 						{ __( 'AI Agent', 'sd-ai-agent' ) }
 					</div>
-					<div className="gaa-cr-sidebar-brand-subtitle">
+					<div className="sdaa-cr-sidebar-brand-subtitle">
 						{ __(
 							'Universal agent for every plugin on your site',
 							'sd-ai-agent'
@@ -289,17 +289,17 @@ export default function Sidebar( { collapsed, onToggleCollapse } ) {
 				</div>
 				<button
 					type="button"
-					className="gaa-cr-icon-btn gaa-cr-sidebar-brand-collapse"
+					className="sdaa-cr-icon-btn sdaa-cr-sidebar-brand-collapse"
 					onClick={ onToggleCollapse }
 					aria-label={ __( 'Hide sidebar', 'sd-ai-agent' ) }
 				>
 					<Icon icon={ sidebarIcon } size={ 16 } />
 				</button>
 			</div>
-			<div className="gaa-cr-sidebar-head">
+			<div className="sdaa-cr-sidebar-head">
 				<button
 					type="button"
-					className="components-button is-primary is-compact gaa-cr-new-chat"
+					className="components-button is-primary is-compact sdaa-cr-new-chat"
 					onClick={ () => {
 						clearCurrentSession();
 					} }
@@ -310,7 +310,7 @@ export default function Sidebar( { collapsed, onToggleCollapse } ) {
 			</div>
 
 			<div
-				className="gaa-cr-sidebar-tabs"
+				className="sdaa-cr-sidebar-tabs"
 				role="tablist"
 				aria-label={ __( 'Session filter', 'sd-ai-agent' ) }
 			>
@@ -322,7 +322,7 @@ export default function Sidebar( { collapsed, onToggleCollapse } ) {
 							type="button"
 							role="tab"
 							aria-selected={ active }
-							className={ `gaa-cr-sidebar-tab${
+							className={ `sdaa-cr-sidebar-tab${
 								active ? ' is-active' : ''
 							}` }
 							onClick={ () => setSessionFilter( f.key ) }
@@ -333,14 +333,14 @@ export default function Sidebar( { collapsed, onToggleCollapse } ) {
 				} ) }
 			</div>
 
-			<div className="gaa-cr-sidebar-search">
-				<div className="gaa-cr-search-field">
-					<span className="gaa-cr-search-icon" aria-hidden="true">
+			<div className="sdaa-cr-sidebar-search">
+				<div className="sdaa-cr-search-field">
+					<span className="sdaa-cr-search-icon" aria-hidden="true">
 						<Icon icon={ search } size={ 14 } />
 					</span>
 					<input
 						type="text"
-						className="gaa-cr-search-input"
+						className="sdaa-cr-search-input"
 						placeholder={ __(
 							'Search conversations',
 							'sd-ai-agent'
@@ -355,9 +355,9 @@ export default function Sidebar( { collapsed, onToggleCollapse } ) {
 				</div>
 			</div>
 
-			<div className="gaa-cr-sidebar-list">
+			<div className="sdaa-cr-sidebar-list">
 				{ total === 0 && (
-					<div className="gaa-cr-session-empty">
+					<div className="sdaa-cr-session-empty">
 						{ sessionFilter === 'trash' &&
 							__( 'Trash is empty', 'sd-ai-agent' ) }
 						{ sessionFilter === 'archived' &&
@@ -377,7 +377,7 @@ export default function Sidebar( { collapsed, onToggleCollapse } ) {
 				) ) }
 			</div>
 
-			<div className="gaa-cr-sidebar-foot">
+			<div className="sdaa-cr-sidebar-foot">
 				<span>
 					{ total === 1
 						? __( '1 conversation', 'sd-ai-agent' )

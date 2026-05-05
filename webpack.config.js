@@ -14,12 +14,7 @@ module.exports = {
 			'src/floating-widget',
 			'index.js'
 		),
-		'screen-meta': path.resolve(
-			process.cwd(),
-			'src/screen-meta',
-			'index.js'
-		),
-		'benchmark-page': path.resolve(
+'benchmark-page': path.resolve(
 			process.cwd(),
 			'src/benchmark-page',
 			'index.js'

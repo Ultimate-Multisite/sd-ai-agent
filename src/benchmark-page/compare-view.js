@@ -27,14 +27,14 @@ export default function CompareView( { comparison } ) {
 	const { summary, by_model: byModel, by_category: byCategory } = comparison;
 
 	return (
-		<div className="sd-ai-agent-benchmark-compare">
+		<div className="sdaa-benchmark-compare">
 			<Card>
 				<CardHeader>
 					<h2>{ __( 'Benchmark Comparison', 'sd-ai-agent' ) }</h2>
 				</CardHeader>
 				<CardBody>
 					<h3>{ __( 'Summary', 'sd-ai-agent' ) }</h3>
-					<div className="sd-ai-agent-benchmark-compare-table">
+					<div className="sdaa-benchmark-compare-table">
 						<table className="wp-list-table widefat fixed striped">
 							<thead>
 								<tr>
@@ -72,7 +72,7 @@ export default function CompareView( { comparison } ) {
 							<h3 style={ { marginTop: '24px' } }>
 								{ __( 'By Model', 'sd-ai-agent' ) }
 							</h3>
-							<div className="sd-ai-agent-benchmark-compare-table">
+							<div className="sdaa-benchmark-compare-table">
 								<table className="wp-list-table widefat fixed striped">
 									<thead>
 										<tr>
@@ -116,7 +116,7 @@ export default function CompareView( { comparison } ) {
 							<h3 style={ { marginTop: '24px' } }>
 								{ __( 'By Category', 'sd-ai-agent' ) }
 							</h3>
-							<div className="sd-ai-agent-benchmark-compare-table">
+							<div className="sdaa-benchmark-compare-table">
 								<table className="wp-list-table widefat fixed striped">
 									<thead>
 										<tr>

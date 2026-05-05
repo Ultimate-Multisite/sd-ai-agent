@@ -43,7 +43,7 @@ async function goToUnifiedAdmin( page ) {
 	await page.goto( '/wp-admin/admin.php?page=sd-ai-agent' );
 	await page.waitForLoadState( 'domcontentloaded' );
 	await page
-		.locator( '.sd-ai-agent-unified-admin' )
+		.locator( '.sdaa-unified-admin' )
 		.waitFor( { state: 'visible', timeout: 45_000 } );
 }
 
@@ -57,7 +57,7 @@ async function goToHashRoute( page, hash ) {
 	await page.goto( `/wp-admin/admin.php?page=sd-ai-agent${ hash }` );
 	await page.waitForLoadState( 'domcontentloaded' );
 	await page
-		.locator( '.sd-ai-agent-unified-admin' )
+		.locator( '.sdaa-unified-admin' )
 		.waitFor( { state: 'visible', timeout: 45_000 } );
 }
 
@@ -79,7 +79,7 @@ test.describe.skip( 'UnifiedAdminMenu - Menu Rendering', () => {
 		page,
 	} ) => {
 		// Outer SPA wrapper.
-		await expect( page.locator( '.sd-ai-agent-unified-admin' ) ).toBeVisible();
+		await expect( page.locator( '.sdaa-unified-admin' ) ).toBeVisible();
 
 		// Navigation sidebar.
 		await expect( page.locator( '.sd-ai-admin-nav' ) ).toBeVisible();
@@ -127,9 +127,9 @@ test.describe( 'UnifiedAdminMenu - Hash-Based Routing', () => {
 	} ) => {
 		await goToUnifiedAdmin( page );
 
-		// ChatRoute mounts the chat app into #sd-ai-agent-chat-container.
+		// ChatRoute mounts the chat app into #sdaa-chat-container.
 		await expect(
-			page.locator( '#sd-ai-agent-chat-container' )
+			page.locator( '#sdaa-chat-container' )
 		).toBeVisible( { timeout: 15_000 } );
 	} );
 
@@ -137,7 +137,7 @@ test.describe( 'UnifiedAdminMenu - Hash-Based Routing', () => {
 		await goToHashRoute( page, '#/chat' );
 
 		await expect(
-			page.locator( '#sd-ai-agent-chat-container' )
+			page.locator( '#sdaa-chat-container' )
 		).toBeVisible( { timeout: 15_000 } );
 	} );
 
@@ -145,7 +145,7 @@ test.describe( 'UnifiedAdminMenu - Hash-Based Routing', () => {
 		await goToSettingsPage( page );
 
 		await expect(
-			page.locator( '.sd-ai-agent-route-settings' )
+			page.locator( '.sdaa-route-settings' )
 		).toBeVisible();
 	} );
 
@@ -153,7 +153,7 @@ test.describe( 'UnifiedAdminMenu - Hash-Based Routing', () => {
 		await goToChangesPage( page );
 
 		await expect(
-			page.locator( '.sd-ai-agent-route-changes' )
+			page.locator( '.sdaa-route-changes' )
 		).toBeVisible();
 	} );
 
@@ -163,16 +163,16 @@ test.describe( 'UnifiedAdminMenu - Hash-Based Routing', () => {
 		await goToAbilitiesPage( page );
 
 		await expect(
-			page.locator( '.sd-ai-agent-abilities-manager' )
+			page.locator( '.sdaa-abilities-manager' )
 		).toBeVisible();
 	} );
 
 	test( 'unknown hash route shows a not-found message', async ( { page } ) => {
 		await goToHashRoute( page, '#/this-route-does-not-exist' );
 
-		// Router renders .sd-ai-agent-route-not-found for unrecognised routes.
+		// Router renders .sdaa-route-not-found for unrecognised routes.
 		await expect(
-			page.locator( '.sd-ai-agent-route-not-found' )
+			page.locator( '.sdaa-route-not-found' )
 		).toBeVisible( { timeout: 15_000 } );
 	} );
 } );
@@ -216,7 +216,7 @@ test.describe.skip( 'UnifiedAdminMenu - Navigation', () => {
 
 		// Wait for the changes route container.
 		await expect(
-			page.locator( '.sd-ai-agent-route-changes' )
+			page.locator( '.sdaa-route-changes' )
 		).toBeVisible( { timeout: 30_000 } );
 	} );
 
@@ -229,7 +229,7 @@ test.describe.skip( 'UnifiedAdminMenu - Navigation', () => {
 			.filter( { hasText: /settings/i } )
 			.first();
 		await settingsLink.click();
-		await expect( page.locator( '.sd-ai-agent-route-settings' ) ).toBeVisible( {
+		await expect( page.locator( '.sdaa-route-settings' ) ).toBeVisible( {
 			timeout: 30_000,
 		} );
 
@@ -241,7 +241,7 @@ test.describe.skip( 'UnifiedAdminMenu - Navigation', () => {
 		await chatLink.click();
 
 		await expect(
-			page.locator( '#sd-ai-agent-chat-container' )
+			page.locator( '#sdaa-chat-container' )
 		).toBeVisible( { timeout: 15_000 } );
 	} );
 } );
@@ -370,7 +370,7 @@ test.describe( 'UnifiedAdminMenu - Access Control', () => {
 		// WordPress should redirect to the dashboard or show an error.
 		// The unified admin SPA must NOT be rendered for non-admin users.
 		const spaVisible = await page
-			.locator( '.sd-ai-agent-unified-admin' )
+			.locator( '.sdaa-unified-admin' )
 			.isVisible()
 			.catch( () => false );
 		expect( spaVisible ).toBe( false );

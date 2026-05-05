@@ -47,8 +47,8 @@ export default class ErrorBoundary extends Component {
 			const areaLabel = label || __( 'This section', 'sd-ai-agent' );
 
 			return (
-				<div className="sd-ai-agent-error-boundary" role="alert">
-					<p className="sd-ai-agent-error-boundary-message">
+				<div className="sdaa-error-boundary" role="alert">
+					<p className="sdaa-error-boundary-message">
 						{ /* translators: %s: name of the UI area that failed */ }
 						{ areaLabel }{ ' ' }
 						{ __(
@@ -59,7 +59,7 @@ export default class ErrorBoundary extends Component {
 					<Button
 						variant="secondary"
 						onClick={ this.handleReset }
-						className="sd-ai-agent-error-boundary-retry"
+						className="sdaa-error-boundary-retry"
 					>
 						{ __( 'Try again', 'sd-ai-agent' ) }
 					</Button>

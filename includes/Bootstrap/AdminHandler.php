@@ -16,7 +16,6 @@ namespace SdAiAgent\Bootstrap;
 use SdAiAgent\Abilities\ToolCapabilities;
 use SdAiAgent\Admin\FloatingWidget;
 use SdAiAgent\Admin\ModelBenchmarkPage;
-use SdAiAgent\Admin\ScreenMetaPanel;
 use SdAiAgent\Admin\UnifiedAdminMenu;
 use SdAiAgent\Core\Database;
 use SdAiAgent\REST\ConnectorsController;
@@ -95,24 +94,13 @@ final class AdminHandler {
 	}
 
 	/**
-	 * Enqueue admin-only assets for the floating widget and screen-meta panel.
+	 * Enqueue admin-only assets for the floating widget.
 	 *
 	 * @param string $hook_suffix The current admin page hook suffix.
 	 */
 	#[Action( tag: 'admin_enqueue_scripts', priority: 10 )]
 	public function enqueue_admin_assets( string $hook_suffix ): void {
 		FloatingWidget::enqueue_assets_admin( $hook_suffix );
-		ScreenMetaPanel::enqueue_assets( $hook_suffix );
-	}
-
-	/**
-	 * Add the Help tab chat panel to every admin screen.
-	 *
-	 * @param \WP_Screen $screen Current screen object.
-	 */
-	#[Action( tag: 'current_screen', priority: 10 )]
-	public function add_help_tab( \WP_Screen $screen ): void {
-		ScreenMetaPanel::add_help_tab( $screen );
 	}
 
 	/**

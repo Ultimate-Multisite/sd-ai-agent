@@ -48,14 +48,14 @@ function formatValue( value ) {
 function StatusChip( { status } ) {
 	if ( status === 'running' ) {
 		return (
-			<span className="gaa-cr-tool-status is-running">
-				<span className="gaa-cr-tool-spin" />
+			<span className="sdaa-cr-tool-status is-running">
+				<span className="sdaa-cr-tool-spin" />
 			</span>
 		);
 	}
 	if ( status === 'error' ) {
 		return (
-			<span className="gaa-cr-tool-status is-error">
+			<span className="sdaa-cr-tool-status is-error">
 				<span
 					style={ { fontWeight: 700, fontSize: 11, lineHeight: 1 } }
 				>
@@ -66,7 +66,7 @@ function StatusChip( { status } ) {
 	}
 	if ( status === 'warn' ) {
 		return (
-			<span className="gaa-cr-tool-status is-warn">
+			<span className="sdaa-cr-tool-status is-warn">
 				<span
 					style={ { fontWeight: 700, fontSize: 11, lineHeight: 1 } }
 				>
@@ -76,7 +76,7 @@ function StatusChip( { status } ) {
 		);
 	}
 	return (
-		<span className="gaa-cr-tool-status is-ok">
+		<span className="sdaa-cr-tool-status is-ok">
 			<Icon icon={ check } size={ 12 } />
 		</span>
 	);
@@ -168,63 +168,63 @@ export default function ToolCard( {
 
 	return (
 		<div
-			className={ `gaa-cr-tool-card${ open ? ' is-open' : '' }${
+			className={ `sdaa-cr-tool-card${ open ? ' is-open' : '' }${
 				status === 'running' ? ' is-running' : ''
 			}${ status === 'error' ? ' is-error' : '' }` }
 		>
 			<button
 				type="button"
-				className="gaa-cr-tool-card-head"
+				className="sdaa-cr-tool-card-head"
 				onClick={ () => setOpen( ( v ) => ! v ) }
 				aria-expanded={ open }
 			>
 				<StatusChip status={ status } />
-				<div className="gaa-cr-tool-card-name">
+				<div className="sdaa-cr-tool-card-name">
 					<code>{ name }</code>
 					{ summary && (
-						<span className="gaa-cr-tool-card-summary">
+						<span className="sdaa-cr-tool-card-summary">
 							{ summary }
 						</span>
 					) }
 				</div>
 				<div
-					className={ `gaa-cr-tool-card-meta${
+					className={ `sdaa-cr-tool-card-meta${
 						status === 'running' ? ' is-running' : ''
 					}` }
 				>
 					{ status === 'running' && (
 						<span>{ __( 'Running…', 'sd-ai-agent' ) }</span>
 					) }
-					<span className="gaa-cr-tool-card-chevron">
+					<span className="sdaa-cr-tool-card-chevron">
 						<Icon icon={ chevronDown } size={ 16 } />
 					</span>
 				</div>
 			</button>
 			{ open && (
-				<div className="gaa-cr-tool-card-body">
+				<div className="sdaa-cr-tool-card-body">
 					{ args && args !== '{}' && args !== 'null' && (
 						<div>
-							<div className="gaa-cr-tool-detail-label">
+							<div className="sdaa-cr-tool-detail-label">
 								{ __( 'Arguments', 'sd-ai-agent' ) }
 							</div>
-							<pre className="gaa-cr-tool-detail-value">
+							<pre className="sdaa-cr-tool-detail-value">
 								{ args }
 							</pre>
 						</div>
 					) }
 					{ result && (
 						<div>
-							<div className="gaa-cr-tool-detail-label">
+							<div className="sdaa-cr-tool-detail-label">
 								{ __( 'Result', 'sd-ai-agent' ) }
 							</div>
-							<pre className="gaa-cr-tool-detail-value">
+							<pre className="sdaa-cr-tool-detail-value">
 								{ result }
 							</pre>
 						</div>
 					) }
 					{ mutating && response && (
-						<div className="gaa-cr-tool-detail-revert">
-							<span className="gaa-cr-tool-detail-revert-note">
+						<div className="sdaa-cr-tool-detail-revert">
+							<span className="sdaa-cr-tool-detail-revert-note">
 								<Icon icon={ caution } size={ 14 } />
 								{ __(
 									'This action modified your site.',
@@ -234,7 +234,7 @@ export default function ToolCard( {
 							{ onRevert && (
 								<button
 									type="button"
-									className="gaa-cr-btn-sm"
+									className="sdaa-cr-btn-sm"
 									onClick={ onRevert }
 								>
 									<Icon icon={ undo } size={ 12 } />

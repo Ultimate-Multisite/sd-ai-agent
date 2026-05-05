@@ -218,10 +218,9 @@ const store = createReduxStore( STORE_NAME, {
 	selectors,
 } );
 
-// Guard against double-registration: both floating-widget.js and
-// screen-meta.js import this module. The first bundle to load registers
-// the store; subsequent bundles on the same page skip registration so
-// the existing store instance (and its state) is preserved.
+// Guard against double-registration when multiple bundles (e.g. floating-widget.js
+// and admin-page.js) import this module. The first to load registers the store;
+// subsequent bundles skip registration so the existing state is preserved.
 if ( ! wpSelect( STORE_NAME ) ) {
 	register( store );
 }

@@ -281,8 +281,8 @@ export default function SkillManager() {
 	const manifestUrlSet = !! settings?.skill_manifest_url;
 
 	return (
-		<div className="sd-ai-agent-skill-manager">
-			<div className="sd-ai-agent-skill-header">
+		<div className="sdaa-skill-manager">
+			<div className="sdaa-skill-header">
 				<div>
 					<h3>{ __( 'Agent Skills', 'sd-ai-agent' ) }</h3>
 					<p className="description">
@@ -306,7 +306,7 @@ export default function SkillManager() {
 
 			{ /* Auto-update controls */ }
 			{ settingsLoaded && (
-				<div className="sd-ai-agent-skill-update-controls">
+				<div className="sdaa-skill-update-controls">
 					<ToggleControl
 						label={ __( 'Automatic skill updates', 'sd-ai-agent' ) }
 						help={ __(
@@ -325,7 +325,7 @@ export default function SkillManager() {
 							isBusy={ skillUpdatesChecking }
 							disabled={ skillUpdatesChecking }
 							size="compact"
-							className="sd-ai-agent-check-updates-btn"
+							className="sdaa-check-updates-btn"
 						>
 							{ skillUpdatesChecking
 								? __( 'Checking…', 'sd-ai-agent' )
@@ -346,7 +346,7 @@ export default function SkillManager() {
 			) }
 
 			{ showForm && (
-				<div className="sd-ai-agent-skill-form">
+				<div className="sdaa-skill-form">
 					{ ! editId && (
 						<TextControl
 							label={ __( 'Slug', 'sd-ai-agent' ) }
@@ -385,7 +385,7 @@ export default function SkillManager() {
 							'sd-ai-agent'
 						) }
 					/>
-					<div className="sd-ai-agent-skill-form-actions">
+					<div className="sdaa-skill-form-actions">
 						<Button
 							variant="primary"
 							onClick={ handleSubmit }
@@ -427,7 +427,7 @@ export default function SkillManager() {
 			) }
 
 			{ skills.length > 0 && (
-				<div className="sd-ai-agent-skill-cards">
+				<div className="sdaa-skill-cards">
 					{ skills.map( ( skill ) => {
 						const stats = skillStats[ skill.id ] ?? null;
 						const updateInfo = skillUpdates[ skill.id ] ?? null;
@@ -437,22 +437,22 @@ export default function SkillManager() {
 						return (
 							<div
 								key={ skill.id }
-								className={ `sd-ai-agent-skill-card ${
+								className={ `sdaa-skill-card ${
 									! skill.enabled
-										? 'sd-ai-agent-skill-card--disabled'
+										? 'sdaa-skill-card--disabled'
 										: ''
 								}` }
 							>
-								<div className="sd-ai-agent-skill-card-header">
+								<div className="sdaa-skill-card-header">
 									<ToggleControl
 										checked={ skill.enabled }
 										onChange={ () => handleToggle( skill ) }
 										__nextHasNoMarginBottom
 									/>
-									<div className="sd-ai-agent-skill-card-title">
+									<div className="sdaa-skill-card-title">
 										<strong>{ skill.name }</strong>
 										{ skill.is_builtin && (
-											<span className="sd-ai-agent-skill-badge">
+											<span className="sdaa-skill-badge">
 												{ __(
 													'Built-in',
 													'sd-ai-agent'
@@ -460,7 +460,7 @@ export default function SkillManager() {
 											</span>
 										) }
 										{ skill.user_modified && (
-											<span className="sd-ai-agent-skill-badge sd-ai-agent-skill-badge--modified">
+											<span className="sdaa-skill-badge sdaa-skill-badge--modified">
 												{ __(
 													'Modified',
 													'sd-ai-agent'
@@ -468,7 +468,7 @@ export default function SkillManager() {
 											</span>
 										) }
 										{ hasUpdate && (
-											<span className="sd-ai-agent-skill-badge sd-ai-agent-skill-badge--update">
+											<span className="sdaa-skill-badge sdaa-skill-badge--update">
 												{ __(
 													'Update Available',
 													'sd-ai-agent'
@@ -476,24 +476,24 @@ export default function SkillManager() {
 											</span>
 										) }
 										{ skill.version && (
-											<span className="sd-ai-agent-skill-version">
+											<span className="sdaa-skill-version">
 												v{ skill.version }
 											</span>
 										) }
 									</div>
 								</div>
-								<p className="sd-ai-agent-skill-card-description">
+								<p className="sdaa-skill-card-description">
 									{ skill.description }
 								</p>
-								<div className="sd-ai-agent-skill-card-footer">
-									<div className="sd-ai-agent-skill-meta">
-										<span className="sd-ai-agent-skill-word-count">
+								<div className="sdaa-skill-card-footer">
+									<div className="sdaa-skill-meta">
+										<span className="sdaa-skill-word-count">
 											{ skill.word_count }{ ' ' }
 											{ __( 'words', 'sd-ai-agent' ) }
 										</span>
 										{ stats && (
-											<span className="sd-ai-agent-skill-usage-stats">
-												<span className="sd-ai-agent-skill-usage-count">
+											<span className="sdaa-skill-usage-stats">
+												<span className="sdaa-skill-usage-count">
 													{ stats.total_loads > 0 ? (
 														<>
 															{ sprintf(
@@ -524,7 +524,7 @@ export default function SkillManager() {
 												</span>
 												{ stats.total_loads > 0 &&
 													stats.helpful_count > 0 && (
-														<span className="sd-ai-agent-skill-helpful">
+														<span className="sdaa-skill-helpful">
 															{ sprintf(
 																/* translators: %d: number of helpful feedback responses */
 																_n(
@@ -540,7 +540,7 @@ export default function SkillManager() {
 											</span>
 										) }
 									</div>
-									<div className="sd-ai-agent-skill-card-actions">
+									<div className="sdaa-skill-card-actions">
 										<Button
 											icon={ pencil }
 											size="small"

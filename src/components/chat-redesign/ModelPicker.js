@@ -165,7 +165,7 @@ export default function ModelPicker() {
 		? createPortal(
 				<div
 					ref={ popoverRef }
-					className="gaa-cr-popover gaa-cr-popover-fixed"
+					className="sdaa-cr-popover sdaa-cr-popover-fixed"
 					role="menu"
 					aria-label={ __( 'Select model', 'sd-ai-agent' ) }
 					style={ {
@@ -177,7 +177,7 @@ export default function ModelPicker() {
 				>
 					{ providers.map( ( p ) => (
 						<div key={ p.id }>
-							<div className="gaa-cr-popover-section-label">
+							<div className="sdaa-cr-popover-section-label">
 								{ p.name }
 							</div>
 							{ ( p.models || [] ).map( ( m ) => {
@@ -189,19 +189,19 @@ export default function ModelPicker() {
 										type="button"
 										key={ m.id }
 										role="menuitem"
-										className={ `gaa-cr-popover-item${
+										className={ `sdaa-cr-popover-item${
 											active ? ' is-active' : ''
 										}` }
 										onClick={ () => pick( p.id, m.id ) }
 									>
 										<span>{ m.name || m.id }</span>
 										{ m.sub && (
-											<span className="gaa-cr-popover-item-sub">
+											<span className="sdaa-cr-popover-item-sub">
 												{ m.sub }
 											</span>
 										) }
 										{ active && (
-											<span className="gaa-cr-popover-item-check">
+											<span className="sdaa-cr-popover-item-check">
 												<Icon
 													icon={ check }
 													size={ 14 }
@@ -219,20 +219,20 @@ export default function ModelPicker() {
 		: null;
 
 	return (
-		<div className="gaa-cr-model-chip-wrap">
+		<div className="sdaa-cr-model-chip-wrap">
 			<button
 				ref={ chipRef }
 				type="button"
-				className="gaa-cr-model-chip"
+				className="sdaa-cr-model-chip"
 				onClick={ () => setOpen( ( v ) => ! v ) }
 				aria-haspopup="menu"
 				aria-expanded={ open }
 				title={ __( 'Change model', 'sd-ai-agent' ) }
 			>
-				<span className="gaa-cr-model-chip-provider">
+				<span className="sdaa-cr-model-chip-provider">
 					{ activeProvider.name }
 				</span>
-				<span className="gaa-cr-model-chip-model">
+				<span className="sdaa-cr-model-chip-model">
 					{ activeModel?.name ||
 						activeModel?.id ||
 						__( '(default)', 'sd-ai-agent' ) }

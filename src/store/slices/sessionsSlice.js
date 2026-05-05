@@ -1001,7 +1001,7 @@ export const actions = {
 
 			const pageContext = select.getPageContext();
 			if ( pageContext ) {
-				// Normalise to object — screen-meta may set a string.
+				// Normalise to object — setPageContext may receive a string.
 				body.page_context =
 					typeof pageContext === 'string'
 						? { summary: pageContext }

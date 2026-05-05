@@ -260,7 +260,7 @@ export default function ChangesApp() {
 			const url = URL.createObjectURL( blob );
 			const a = document.createElement( 'a' );
 			a.href = url;
-			a.download = data.filename || 'sd-ai-agent-changes.patch';
+			a.download = data.filename || 'sdaa-changes.patch';
 			document.body.appendChild( a );
 			a.click();
 			document.body.removeChild( a );

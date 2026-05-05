@@ -6,10 +6,8 @@
 /* stylelint-disable selector-class-pattern */
 
 /* Lock viewport scrolling and establish a height basis for the flex chain. */
-html:has(body.toplevel_page_sd-ai-agent .sd-ai-agent-layout),
-body.toplevel_page_sd-ai-agent:has(.sd-ai-agent-layout),
-html:has(body.toplevel_page_sd-ai-agent .gaa-cr),
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) {
+html:has(body.toplevel_page_sd-ai-agent .sdaa-cr),
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) {
 	overflow: hidden;
 	height: 100%;
 }
@@ -17,19 +15,19 @@ body.toplevel_page_sd-ai-agent:has(.gaa-cr) {
 /* Flex chain: propagate height through the WP admin scaffold so that any
    content injected before our .wrap (Hello Dolly, admin notices, etc.) takes
    its natural height as a flex item and the React app fills the remainder.
-   Without this chain, .gaa-cr must rely on calc(100vh - Npx) which breaks
+   Without this chain, .sdaa-cr must rely on calc(100vh - Npx) which breaks
    whenever a plugin adds content above the plugin page. */
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) #wpwrap {
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) #wpwrap {
 	height: 100%;
 }
 
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) #wpcontent {
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) #wpcontent {
 	height: 100%;
 	display: flex;
 	flex-direction: column;
 }
 
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) #wpbody {
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) #wpbody {
 	display: flex;
 	flex-direction: column;
 	flex: 1;
@@ -38,10 +36,10 @@ body.toplevel_page_sd-ai-agent:has(.gaa-cr) #wpbody {
 
 /* #wpbody-content becomes a flex column so injected nodes (Hello Dolly,
    notices that survive the display:none rules below) take their natural
-   height and .wrap.sd-ai-agent-wrap with flex:1 gets the rest.
+   height and .wrap.sdaa-wrap with flex:1 gets the rest.
    Reset WP's default padding-bottom (footer clearance) and float:left —
    both are irrelevant and harmful inside a flex container. */
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) #wpbody-content {
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) #wpbody-content {
 	display: flex;
 	flex-direction: column;
 	flex: 1;
@@ -54,7 +52,7 @@ body.toplevel_page_sd-ai-agent:has(.gaa-cr) #wpbody-content {
    fires after all admin_notices).  flex:1 claims all space not consumed by
    injected siblings above it.  Reset .wrap's default top margin so
    injected content above doesn't create a double gap. */
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) .wrap.sd-ai-agent-wrap {
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) .wrap.sdaa-wrap {
 	display: flex;
 	flex-direction: column;
 	flex: 1;
@@ -63,8 +61,8 @@ body.toplevel_page_sd-ai-agent:has(.gaa-cr) .wrap.sd-ai-agent-wrap {
 }
 
 /* React root and app container propagate height into the unified-admin tree. */
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) #sd-ai-agent-root,
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) .sd-ai-agent-app {
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) #sdaa-root,
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) .sdaa-app {
 	display: flex;
 	flex-direction: column;
 	flex: 1;
@@ -73,26 +71,26 @@ body.toplevel_page_sd-ai-agent:has(.gaa-cr) .sd-ai-agent-app {
 
 /* unified-admin already declares display:flex; flex-direction:column — just
    add flex:1 so it stretches to fill its parent. */
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) .sd-ai-agent-unified-admin {
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) .sdaa-unified-admin {
 	flex: 1;
 	min-height: 0;
 }
 
 /* .sd-ai-admin-main is display:block by default (unified-admin/style.css).
-   That means flex properties on its child .sd-ai-agent-route-chat are
+   That means flex properties on its child .sdaa-route-chat are
    inert, so the route grows to its content height and overflows the viewport.
    Making it a flex column here (scoped to the chat page) allows the route to
    participate in the height distribution chain. */
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) .sd-ai-admin-main {
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) .sd-ai-admin-main {
 	display: flex;
 	flex-direction: column;
 	min-height: 0;
 }
 
 /* Chat route wrapper and the mount container that ChatRoute renders into both
-   need to be flex columns so .gaa-cr (which uses flex:1) can fill them. */
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) .sd-ai-agent-route-chat,
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) .sd-ai-agent-chat-container {
+   need to be flex columns so .sdaa-cr (which uses flex:1) can fill them. */
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) .sdaa-route-chat,
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) .sdaa-chat-container {
 	display: flex;
 	flex-direction: column;
 	flex: 1;
@@ -102,37 +100,33 @@ body.toplevel_page_sd-ai-agent:has(.gaa-cr) .sd-ai-agent-chat-container {
 /* The WP admin footer (#wpfooter) is a flex sibling of #wpbody inside
    #wpcontent. Leaving it visible costs flex space that the chat panel needs,
    causing the input area to be pushed off-screen on smaller viewports. */
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) #wpfooter {
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) #wpfooter {
 	display: none;
 }
 
 /* Allow the wp-admin left menu to scroll independently when its items don't
    fit, since body overflow:hidden (above) otherwise traps the overflow. */
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) #adminmenuwrap {
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) #adminmenuwrap {
 	height: calc(100vh - 32px);
 	overflow-y: auto;
 }
 
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) #adminmenuwrap::-webkit-scrollbar {
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) #adminmenuwrap::-webkit-scrollbar {
 	width: 8px;
 }
 
-body.toplevel_page_sd-ai-agent:has(.gaa-cr) #adminmenuwrap::-webkit-scrollbar-thumb {
+body.toplevel_page_sd-ai-agent:has(.sdaa-cr) #adminmenuwrap::-webkit-scrollbar-thumb {
 	background: rgb(255 255 255 / 15%);
 	border-radius: 8px;
 }
 
 /* wp-admin folded menu state also needs the override */
-body.folded.toplevel_page_sd-ai-agent:has(.gaa-cr) #adminmenuwrap {
+body.folded.toplevel_page_sd-ai-agent:has(.sdaa-cr) #adminmenuwrap {
 	height: calc(100vh - 32px);
 	overflow-y: auto;
 }
 
 /* Hide all admin notices on the AI Agent page */
-.sd-ai-agent-admin-wrap ~ .notice,
-.sd-ai-agent-admin-wrap ~ .updated,
-.sd-ai-agent-admin-wrap ~ .error,
-.sd-ai-agent-admin-wrap ~ .update-nag,
 body.toplevel_page_sd-ai-agent .notice,
 body.toplevel_page_sd-ai-agent .updated,
 body.toplevel_page_sd-ai-agent .error,
@@ -143,254 +137,47 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 }
 /* stylelint-enable selector-class-pattern */
 
-.sd-ai-agent-admin-wrap {
-	margin-right: 0;
-}
-
-.sd-ai-agent-layout {
-	display: flex;
-	height: calc(100vh - 140px);
-	min-height: 500px;
-	border: 1px solid #c3c4c7;
-	border-radius: 8px;
-	background: #fff;
-	overflow: hidden;
-	margin-top: 12px;
-}
-
-/* Sidebar */
-.sd-ai-agent-sidebar {
-	width: 280px;
-	min-width: 280px;
-	border-right: 1px solid #c3c4c7;
-	display: flex;
-	flex-direction: column;
-	background: #f6f7f7;
-}
-
-.sd-ai-agent-sidebar-header {
-	padding: 12px;
-	border-bottom: 1px solid #dcdcde;
-}
-
-.sd-ai-agent-sidebar-actions {
-	display: flex;
-	gap: 6px;
-	margin-bottom: 8px;
-}
-
-.sd-ai-agent-new-chat-btn.components-button {
-	flex: 1;
-	justify-content: center;
-	border-radius: 6px;
-}
-
-.sd-ai-agent-import-btn.components-button {
-	min-width: auto;
-	width: 32px;
-	height: 32px;
-	padding: 0;
-	border-radius: 6px;
-}
-
-.sd-ai-agent-sidebar-close-btn.components-button {
-	min-width: auto;
-	width: 32px;
-	height: 32px;
-	padding: 0;
-	border-radius: 6px;
-	color: #646970;
-	background: transparent;
-	border: none;
-}
-
-.sd-ai-agent-sidebar-close-btn.components-button:hover {
-	background: #f0f0f1;
-	color: #1d2327;
-}
-
-.sd-ai-agent-sidebar-search {
-	width: 100%;
-	padding: 6px 10px;
-	border: 1px solid #c3c4c7;
-	border-radius: 4px;
-	font-size: 13px;
-	box-sizing: border-box;
-}
-
-.sd-ai-agent-sidebar-search:focus {
-	border-color: var(--wp-admin-theme-color, #2271b1);
-	outline: none;
-	box-shadow: 0 0 0 1px var(--wp-admin-theme-color, #2271b1);
-}
-
-/* Filter tabs — wp-admin subsubsub style */
-.sd-ai-agent-sidebar-filters {
-	display: flex;
-	border-bottom: 1px solid #dcdcde;
-	padding: 0 4px;
-}
-
-.sd-ai-agent-filter-tab {
-	flex: 1;
-	padding: 8px 4px;
-	background: none;
-	border: none;
-	border-bottom: 2px solid transparent;
-	color: #50575e;
-	font-size: 12px;
-	font-weight: 400;
-	cursor: pointer;
-	text-align: center;
-	transition: color 0.15s, border-color 0.15s;
-	line-height: 1.4;
-}
-
-.sd-ai-agent-filter-tab:hover {
-	color: #1d2327;
-}
-
-.sd-ai-agent-filter-tab:focus-visible {
-	outline: 2px solid var(--wp-admin-theme-color, #2271b1);
-	outline-offset: -2px;
-	border-radius: 2px;
-}
-
-.sd-ai-agent-filter-tab.is-active {
-	color: #1d2327;
-	border-bottom-color: var(--wp-admin-theme-color, #2271b1);
-	font-weight: 600;
-}
-
-/* Folder tabs */
-.sd-ai-agent-sidebar-folders {
-	display: flex;
-	gap: 4px;
-	padding: 6px 8px;
-	overflow-x: auto;
-	border-bottom: 1px solid #dcdcde;
-}
-
-.sd-ai-agent-folder-tab {
-	padding: 3px 8px;
-	background: #e0e0e0;
-	border: none;
-	border-radius: 10px;
-	color: #50575e;
-	font-size: 11px;
-	cursor: pointer;
-	white-space: nowrap;
-	transition: background 0.15s, color 0.15s;
-}
-
-.sd-ai-agent-folder-tab:hover {
-	background: #d0d0d0;
-}
-
-.sd-ai-agent-folder-tab:focus-visible {
-	outline: 2px solid var(--wp-admin-theme-color, #2271b1);
-	outline-offset: 2px;
-}
-
-.sd-ai-agent-folder-tab.is-active {
-	background: var(--wp-admin-theme-color, #2271b1);
-	color: #fff;
-}
-
-.sd-ai-agent-session-list {
-	flex: 1;
-	overflow-y: auto;
-	padding: 0;
-}
-
-.sd-ai-agent-session-empty {
-	padding: 20px 16px;
-	color: #646970;
-	text-align: center;
-	font-size: 13px;
-}
-
-/* Session item — mirrors wp-admin list table row conventions */
-.sd-ai-agent-session-item {
-	position: relative;
-	padding: 7px 32px 7px 12px;
-	cursor: pointer;
-	border-bottom: 1px solid #f0f0f1;
-	transition: background 0.1s;
-	box-sizing: border-box;
-}
-
-.sd-ai-agent-session-item:hover {
-	background: #f0f0f1;
-}
-
-.sd-ai-agent-session-item:focus-visible {
-	outline: 2px solid var(--wp-admin-theme-color, #2271b1);
-	outline-offset: -2px;
-}
-
-/* Active state: left accent bar without shifting content */
-.sd-ai-agent-session-item.is-active {
-	background: #f0f6fc;
-	box-shadow: inset 3px 0 0 var(--wp-admin-theme-color, #2271b1);
-}
-
-.sd-ai-agent-session-item.is-active .sd-ai-agent-session-title {
-	color: var(--wp-admin-theme-color, #2271b1);
-	font-weight: 600;
-}
-
-.sd-ai-agent-session-title {
-	font-size: 13px;
-	font-weight: 400;
-	color: #1d2327;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	line-height: 1.4;
-}
-
 /* Pulsing dot badge for sessions with active background jobs */
-.sd-ai-agent-session-job-badge {
+.sdaa-session-job-badge {
 	display: inline-block;
 	color: #2271b1;
 	font-size: 18px;
 	line-height: 1;
 	margin-left: 4px;
 	vertical-align: middle;
-	animation: sd-ai-agent-pulse 1.5s ease-in-out infinite;
+	animation: sdaa-pulse 1.5s ease-in-out infinite;
 }
 
-@keyframes sd-ai-agent-pulse {
+@keyframes sdaa-pulse {
 	0%, 100% { opacity: 1; }
 	50% { opacity: 0.3; }
 }
 
 /* Warning badge for sessions with a pending tool confirmation */
-.sd-ai-agent-session-confirm-badge {
+.sdaa-session-confirm-badge {
 	display: inline-block;
 	color: #d63638;
 	font-size: 14px;
 	line-height: 1;
 	margin-left: 4px;
 	vertical-align: middle;
-	animation: sd-ai-agent-confirm-pulse 1s ease-in-out infinite;
+	animation: sdaa-confirm-pulse 1s ease-in-out infinite;
 }
 
-@keyframes sd-ai-agent-confirm-pulse {
+@keyframes sdaa-confirm-pulse {
 	0%, 100% { opacity: 1; transform: scale(1); }
 	50% { opacity: 0.6; transform: scale(1.2); }
 }
 
-.sd-ai-agent-session-meta {
+.sdaa-session-meta {
 	font-size: 11px;
 	color: #8c8f94;
 	margin-top: 1px;
 }
 
 /* Pin / shared indicators */
-.sd-ai-agent-pin-icon,
-.sd-ai-agent-shared-icon {
+.sdaa-pin-icon,
+.sdaa-shared-icon {
 	display: inline-flex;
 	align-items: center;
 	vertical-align: middle;
@@ -398,7 +185,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	color: #a7aaad;
 }
 
-.sd-ai-agent-session-folder-badge {
+.sdaa-session-folder-badge {
 	display: inline-block;
 	background: #e0e0e0;
 	padding: 0 5px;
@@ -408,46 +195,8 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	vertical-align: middle;
 }
 
-/* More button (three dots) — shown on hover/focus, wp-admin row-action style */
-.sd-ai-agent-session-more {
-	position: absolute;
-	top: 50%;
-	right: 4px;
-	transform: translateY(-50%);
-	background: none;
-	border: none;
-	color: #a7aaad;
-	cursor: pointer;
-	width: 24px;
-	height: 24px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: 4px;
-	padding: 0;
-	opacity: 0;
-	transition: opacity 0.1s, background 0.1s, color 0.1s;
-}
-
-.sd-ai-agent-session-item:hover .sd-ai-agent-session-more,
-.sd-ai-agent-session-item.is-active .sd-ai-agent-session-more {
-	opacity: 1;
-}
-
-.sd-ai-agent-session-more:hover {
-	color: #1d2327;
-	background: #e0e0e0;
-}
-
-.sd-ai-agent-session-more:focus-visible {
-	outline: 2px solid var(--wp-admin-theme-color, #2271b1);
-	outline-offset: 1px;
-	opacity: 1;
-	border-radius: 2px;
-}
-
 /* Context menu */
-.sd-ai-agent-context-menu {
+.sdaa-context-menu {
 	position: absolute;
 	top: 100%;
 	right: 4px;
@@ -460,7 +209,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	padding: 4px 0;
 }
 
-.sd-ai-agent-context-menu button {
+.sdaa-context-menu button {
 	display: block;
 	width: 100%;
 	padding: 6px 12px;
@@ -473,36 +222,36 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	transition: background 0.1s;
 }
 
-.sd-ai-agent-context-menu button:hover {
+.sdaa-context-menu button:hover {
 	background: #f0f0f1;
 }
 
-.sd-ai-agent-context-menu button:focus-visible {
+.sdaa-context-menu button:focus-visible {
 	outline: 2px solid var(--wp-admin-theme-color, #2271b1);
 	outline-offset: -2px;
 }
 
-.sd-ai-agent-context-menu-danger {
+.sdaa-context-menu-danger {
 	color: #d63638 !important;
 }
 
-.sd-ai-agent-context-menu-danger:hover {
+.sdaa-context-menu-danger:hover {
 	background: #fcf0f1 !important;
 }
 
-.sd-ai-agent-context-menu hr {
+.sdaa-context-menu hr {
 	margin: 4px 0;
 	border: none;
 	border-top: 1px solid #dcdcde;
 }
 
-.sd-ai-agent-context-menu-rename {
+.sdaa-context-menu-rename {
 	display: flex;
 	gap: 4px;
 	padding: 6px 8px;
 }
 
-.sd-ai-agent-context-menu-rename input {
+.sdaa-context-menu-rename input {
 	flex: 1;
 	padding: 4px 6px;
 	border: 1px solid #c3c4c7;
@@ -510,7 +259,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	font-size: 13px;
 }
 
-.sd-ai-agent-context-menu-rename button {
+.sdaa-context-menu-rename button {
 	width: auto;
 	padding: 4px 10px;
 	background: var(--wp-admin-theme-color, #2271b1);
@@ -520,18 +269,18 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 }
 
 /* Folder picker */
-.sd-ai-agent-folder-picker {
+.sdaa-folder-picker {
 	padding: 4px 0;
 }
 
-.sd-ai-agent-folder-picker-header {
+.sdaa-folder-picker-header {
 	padding: 6px 12px;
 	font-size: 12px;
 	font-weight: 600;
 	color: #50575e;
 }
 
-.sd-ai-agent-folder-picker-item {
+.sdaa-folder-picker-item {
 	display: block;
 	width: 100%;
 	padding: 6px 12px;
@@ -542,16 +291,16 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	cursor: pointer;
 }
 
-.sd-ai-agent-folder-picker-item:hover {
+.sdaa-folder-picker-item:hover {
 	background: #f0f0f1;
 }
 
-.sd-ai-agent-folder-picker-item.is-current {
+.sdaa-folder-picker-item.is-current {
 	font-weight: 600;
 	color: var(--wp-admin-theme-color, #2271b1);
 }
 
-.sd-ai-agent-folder-picker-new {
+.sdaa-folder-picker-new {
 	display: flex;
 	gap: 4px;
 	padding: 6px 8px;
@@ -559,7 +308,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	margin-top: 4px;
 }
 
-.sd-ai-agent-folder-picker-new input {
+.sdaa-folder-picker-new input {
 	flex: 1;
 	padding: 4px 6px;
 	border: 1px solid #c3c4c7;
@@ -567,7 +316,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	font-size: 12px;
 }
 
-.sd-ai-agent-folder-picker-new button {
+.sdaa-folder-picker-new button {
 	width: auto;
 	padding: 4px 8px;
 	background: var(--wp-admin-theme-color, #2271b1);
@@ -577,36 +326,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	font-size: 11px;
 	cursor: pointer;
 }
-
-/* Main area */
-.sd-ai-agent-main {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	min-width: 0;
-}
-
-/* Shared Chat Panel */
-.sd-ai-agent-chat-panel {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	min-height: 0;
-}
-
-/* Header */
-.sd-ai-agent-header {
-	padding: 6px 12px;
-	border-bottom: 1px solid #dcdcde;
-	background: #fafafa;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	flex-wrap: wrap;
-	min-height: 44px;
-}
-
-.sd-ai-agent-provider-selector {
+.sdaa-provider-selector {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -614,26 +334,26 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	flex: 1;
 }
 
-.sd-ai-agent-provider-selector .components-select-control {
+.sdaa-provider-selector .components-select-control {
 	min-width: 160px;
 }
 
-.sd-ai-agent-provider-selector__row {
+.sdaa-provider-selector__row {
 	display: flex;
 	align-items: flex-end;
 	gap: 4px;
 }
 
-.sd-ai-agent-provider-selector__refresh {
+.sdaa-provider-selector__refresh {
 	flex-shrink: 0;
 	margin-bottom: 2px;
 }
 
-.sd-ai-agent-provider-selector__refresh svg {
+.sdaa-provider-selector__refresh svg {
 	transition: transform 0.3s ease;
 }
 
-.sd-ai-agent-provider-selector__refresh:disabled svg {
+.sdaa-provider-selector__refresh:disabled svg {
 	animation: spin 1s linear infinite;
 }
 
@@ -647,7 +367,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 }
 
 /* Messages */
-.sd-ai-agent-messages {
+.sdaa-messages {
 	flex: 1;
 	overflow-y: auto;
 	padding: 16px;
@@ -656,7 +376,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	gap: 12px;
 }
 
-.sd-ai-agent-empty-state {
+.sdaa-empty-state {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -666,7 +386,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 }
 
 /* Welcome screen — simplified, reduced visual weight */
-.sd-ai-agent-welcome {
+.sdaa-welcome {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -677,7 +397,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	text-align: center;
 }
 
-.sd-ai-agent-welcome__greeting {
+.sdaa-welcome__greeting {
 	margin: 0;
 	font-size: 15px;
 	font-weight: 600;
@@ -685,14 +405,14 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	line-height: 1.4;
 }
 
-.sd-ai-agent-welcome__grid {
+.sdaa-welcome__grid {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
 	gap: 8px;
 	width: 100%;
 }
 
-.sd-ai-agent-welcome__card {
+.sdaa-welcome__card {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
@@ -707,18 +427,18 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	transition: background 0.1s, border-color 0.1s, box-shadow 0.1s;
 }
 
-.sd-ai-agent-welcome__card:hover {
+.sdaa-welcome__card:hover {
 	background: #f8f9fa;
 	border-color: var(--wp-admin-theme-color, #2271b1);
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.sd-ai-agent-welcome__card:focus-visible {
+.sdaa-welcome__card:focus-visible {
 	outline: 2px solid var(--wp-admin-theme-color, #2271b1);
 	outline-offset: 2px;
 }
 
-.sd-ai-agent-welcome__card-icon {
+.sdaa-welcome__card-icon {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -731,20 +451,20 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	flex-shrink: 0;
 }
 
-.sd-ai-agent-welcome__card-title {
+.sdaa-welcome__card-title {
 	font-size: 13px;
 	font-weight: 600;
 	color: #1d2327;
 	line-height: 1.3;
 }
 
-.sd-ai-agent-welcome__card-desc {
+.sdaa-welcome__card-desc {
 	font-size: 11px;
 	color: #646970;
 	line-height: 1.4;
 }
 
-.sd-ai-agent-welcome__hint {
+.sdaa-welcome__hint {
 	margin: 0;
 	font-size: 12px;
 	color: #a7aaad;
@@ -753,7 +473,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 /* Responsive: 2 columns on medium screens */
 @media (max-width: 780px) {
 
-	.sd-ai-agent-welcome__grid {
+	.sdaa-welcome__grid {
 		grid-template-columns: repeat(2, 1fr);
 	}
 }
@@ -761,17 +481,17 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 /* Responsive: 1 column on small screens */
 @media (max-width: 480px) {
 
-	.sd-ai-agent-welcome__grid {
+	.sdaa-welcome__grid {
 		grid-template-columns: 1fr;
 	}
 
-	.sd-ai-agent-welcome {
+	.sdaa-welcome {
 		padding: 16px 12px;
 	}
 }
 
 /* Bubbles */
-.sd-ai-agent-bubble {
+.sdaa-bubble {
 	padding: 9px 13px;
 	border-radius: 8px;
 	max-width: 85%;
@@ -781,7 +501,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	font-size: 13px;
 }
 
-.sd-ai-agent-user {
+.sdaa-user {
 	background: #f0f6fc;
 	color: #1d2327;
 	align-self: flex-end;
@@ -789,7 +509,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	border-radius: 8px 8px 2px 8px;
 }
 
-.sd-ai-agent-assistant {
+.sdaa-assistant {
 	background: #fff;
 	color: #1d2327;
 	align-self: flex-start;
@@ -799,40 +519,40 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 }
 
 /* Markdown inside assistant bubbles — wp-admin 13px typography */
-.sd-ai-agent-assistant p {
+.sdaa-assistant p {
 	margin: 0 0 0.6em;
 	font-size: 13px;
 }
 
-.sd-ai-agent-assistant p:last-child {
+.sdaa-assistant p:last-child {
 	margin-bottom: 0;
 }
 
-.sd-ai-agent-assistant ul,
-.sd-ai-agent-assistant ol {
+.sdaa-assistant ul,
+.sdaa-assistant ol {
 	margin: 0.4em 0;
 	padding-left: 1.4em;
 }
 
-.sd-ai-agent-assistant li {
+.sdaa-assistant li {
 	margin-bottom: 0.2em;
 }
 
-.sd-ai-agent-assistant h1,
-.sd-ai-agent-assistant h2,
-.sd-ai-agent-assistant h3,
-.sd-ai-agent-assistant h4 {
+.sdaa-assistant h1,
+.sdaa-assistant h2,
+.sdaa-assistant h3,
+.sdaa-assistant h4 {
 	margin: 0.6em 0 0.3em;
 	line-height: 1.3;
 }
 
-.sd-ai-agent-assistant h1 { font-size: 1.3em; }
+.sdaa-assistant h1 { font-size: 1.3em; }
 
-.sd-ai-agent-assistant h2 { font-size: 1.15em; }
+.sdaa-assistant h2 { font-size: 1.15em; }
 
-.sd-ai-agent-assistant h3 { font-size: 1.05em; }
+.sdaa-assistant h3 { font-size: 1.05em; }
 
-.sd-ai-agent-assistant code {
+.sdaa-assistant code {
 	background: #e0e0e0;
 	padding: 1px 5px;
 	border-radius: 3px;
@@ -840,14 +560,14 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 }
 
 /* Code blocks (CodeMirror 6) */
-.sd-ai-agent-code-block {
+.sdaa-code-block {
 	margin: 0.5em 0;
 	border-radius: 4px;
 	overflow: hidden;
 	border: 1px solid #3a3a3a;
 }
 
-.sd-ai-agent-code-header {
+.sdaa-code-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -856,12 +576,12 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	font-size: 12px;
 }
 
-.sd-ai-agent-code-language {
+.sdaa-code-language {
 	color: #a0a0a0;
 	text-transform: lowercase;
 }
 
-.sd-ai-agent-code-copy {
+.sdaa-code-copy {
 	background: none;
 	border: 1px solid #555;
 	color: #ccc;
@@ -872,22 +592,22 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	transition: background 0.15s, color 0.15s;
 }
 
-.sd-ai-agent-code-copy:hover {
+.sdaa-code-copy:hover {
 	background: #555;
 	color: #fff;
 }
 
 /* CodeMirror mount container */
-.sd-ai-agent-code-cm .cm-editor {
+.sdaa-code-cm .cm-editor {
 	border-radius: 0 0 4px 4px;
 }
 
 /* Prevent CodeMirror from adding its own focus outline inside chat bubbles */
-.sd-ai-agent-code-cm .cm-editor.cm-focused {
+.sdaa-code-cm .cm-editor.cm-focused {
 	outline: none;
 }
 
-.sd-ai-agent-assistant pre {
+.sdaa-assistant pre {
 	background: #1d2327;
 	color: #e0e0e0;
 	padding: 10px 12px;
@@ -898,7 +618,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	line-height: 1.5;
 }
 
-.sd-ai-agent-assistant pre code {
+.sdaa-assistant pre code {
 	background: none;
 	padding: 0;
 	border-radius: 0;
@@ -907,42 +627,37 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 }
 
 /* Tables — legacy wrapper (kept for any non-DataTable usage) */
-.sd-ai-agent-table-wrap {
-	overflow-x: auto;
-	margin: 0.5em 0;
-}
-
-.sd-ai-agent-assistant table {
+.sdaa-assistant table {
 	border-collapse: collapse;
 	width: 100%;
 	font-size: 13px;
 }
 
-.sd-ai-agent-assistant th,
-.sd-ai-agent-assistant td {
+.sdaa-assistant th,
+.sdaa-assistant td {
 	border: 1px solid #dcdcde;
 	padding: 6px 10px;
 	text-align: left;
 }
 
-.sd-ai-agent-assistant th {
+.sdaa-assistant th {
 	background: #f0f0f1;
 	font-weight: 600;
 }
 
-.sd-ai-agent-assistant tr:nth-child(even) td {
+.sdaa-assistant tr:nth-child(even) td {
 	background: #fafafa;
 }
 
 /* DataTable — sortable, filterable table (t072) */
-.sd-ai-agent-data-table-wrap {
+.sdaa-data-table-wrap {
 	margin: 0.5em 0;
 	border: 1px solid #dcdcde;
 	border-radius: 4px;
 	overflow: hidden;
 }
 
-.sd-ai-agent-data-table-toolbar {
+.sdaa-data-table-toolbar {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -951,12 +666,12 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	border-bottom: 1px solid #dcdcde;
 }
 
-.sd-ai-agent-data-table-filter {
+.sdaa-data-table-filter {
 	position: relative;
 	flex: 1;
 }
 
-.sd-ai-agent-data-table-filter-input {
+.sdaa-data-table-filter-input {
 	width: 100%;
 	padding: 4px 28px 4px 8px;
 	border: 1px solid #c3c4c7;
@@ -966,13 +681,13 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	background: #fff;
 }
 
-.sd-ai-agent-data-table-filter-input:focus {
+.sdaa-data-table-filter-input:focus {
 	border-color: var(--wp-admin-theme-color, #2271b1);
 	outline: none;
 	box-shadow: 0 0 0 1px var(--wp-admin-theme-color, #2271b1);
 }
 
-.sd-ai-agent-data-table-filter-clear {
+.sdaa-data-table-filter-clear {
 	position: absolute;
 	right: 6px;
 	top: 50%;
@@ -986,27 +701,27 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	line-height: 1;
 }
 
-.sd-ai-agent-data-table-filter-clear:hover {
+.sdaa-data-table-filter-clear:hover {
 	color: #1d2327;
 }
 
-.sd-ai-agent-data-table-count {
+.sdaa-data-table-count {
 	font-size: 11px;
 	color: #646970;
 	white-space: nowrap;
 }
 
-.sd-ai-agent-data-table-scroll {
+.sdaa-data-table-scroll {
 	overflow-x: auto;
 }
 
-.sd-ai-agent-data-table {
+.sdaa-data-table {
 	border-collapse: collapse;
 	width: 100%;
 	font-size: 13px;
 }
 
-.sd-ai-agent-data-table-th {
+.sdaa-data-table-th {
 	background: #f0f0f1;
 	border: 1px solid #dcdcde;
 	padding: 6px 10px;
@@ -1018,49 +733,49 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	transition: background 0.1s;
 }
 
-.sd-ai-agent-data-table-th:hover {
+.sdaa-data-table-th:hover {
 	background: #e0e0e0;
 }
 
-.sd-ai-agent-data-table-th.is-sorted {
+.sdaa-data-table-th.is-sorted {
 	background: #e0e6ed;
 	color: var(--wp-admin-theme-color, #2271b1);
 }
 
-.sd-ai-agent-data-table-th:focus {
+.sdaa-data-table-th:focus {
 	outline: 2px solid var(--wp-admin-theme-color, #2271b1);
 	outline-offset: -2px;
 }
 
-.sd-ai-agent-data-table-th-label {
+.sdaa-data-table-th-label {
 	margin-right: 4px;
 }
 
-.sd-ai-agent-table-sort-icon {
+.sdaa-table-sort-icon {
 	font-size: 11px;
 	vertical-align: middle;
 }
 
-.sd-ai-agent-table-sort-none {
+.sdaa-table-sort-none {
 	color: #a7aaad;
 }
 
-.sd-ai-agent-table-sort-active {
+.sdaa-table-sort-active {
 	color: var(--wp-admin-theme-color, #2271b1);
 }
 
-.sd-ai-agent-data-table-td {
+.sdaa-data-table-td {
 	border: 1px solid #dcdcde;
 	padding: 6px 10px;
 	text-align: left;
 	vertical-align: top;
 }
 
-.sd-ai-agent-data-table tr:nth-child(even) .sd-ai-agent-data-table-td {
+.sdaa-data-table tr:nth-child(even) .sdaa-data-table-td {
 	background: #fafafa;
 }
 
-.sd-ai-agent-data-table-empty {
+.sdaa-data-table-empty {
 	padding: 12px 10px;
 	color: #646970;
 	font-style: italic;
@@ -1069,7 +784,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 }
 
 /* Blockquote */
-.sd-ai-agent-assistant blockquote {
+.sdaa-assistant blockquote {
 	margin: 0.5em 0;
 	padding: 4px 12px;
 	border-left: 3px solid #dcdcde;
@@ -1077,30 +792,30 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 }
 
 /* Task lists (GFM) */
-.sd-ai-agent-assistant .contains-task-list {
+.sdaa-assistant .contains-task-list {
 	list-style: none;
 	padding-left: 0.5em;
 }
 
-.sd-ai-agent-assistant .task-list-item input[type="checkbox"] {
+.sdaa-assistant .task-list-item input[type="checkbox"] {
 	margin-right: 6px;
 }
 
-.sd-ai-agent-assistant a {
+.sdaa-assistant a {
 	color: var(--wp-admin-theme-color, #2271b1);
 }
 
-.sd-ai-agent-assistant strong {
+.sdaa-assistant strong {
 	font-weight: 600;
 }
 
-.sd-ai-agent-assistant hr {
+.sdaa-assistant hr {
 	border: none;
 	border-top: 1px solid #dcdcde;
 	margin: 0.6em 0;
 }
 
-.sd-ai-agent-system {
+.sdaa-system {
 	background: #fcf0f1;
 	color: #8a2424;
 	align-self: center;
@@ -1109,7 +824,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	border-radius: 2px;
 }
 
-.sd-ai-agent-thinking {
+.sdaa-thinking {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -1118,28 +833,28 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	font-size: 13px;
 }
 
-.sd-ai-agent-thinking .components-spinner {
+.sdaa-thinking .components-spinner {
 	margin: 0;
 }
 
 /* Live tool progress (shown inside the Thinking bubble) */
-.sd-ai-agent-live-progress {
+.sdaa-live-progress {
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
 }
 
-.sd-ai-agent-live-progress-completed {
+.sdaa-live-progress-completed {
 	font-size: 12px;
 	color: #50575e;
 	font-style: normal;
 }
 
-.sd-ai-agent-live-progress-current {
+.sdaa-live-progress-current {
 	font-style: italic;
 }
 
-.sd-ai-agent-live-progress-current code {
+.sdaa-live-progress-current code {
 	font-style: normal;
 	font-size: 12px;
 	background: rgba(0, 0, 0, 0.05);
@@ -1147,26 +862,26 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	border-radius: 3px;
 }
 
-.sd-ai-agent-live-progress-count {
+.sdaa-live-progress-count {
 	font-style: normal;
 	font-size: 12px;
 	color: #50575e;
 }
 
 /* Tool calls — outer container */
-.sd-ai-agent-tool-calls {
+.sdaa-tool-calls {
 	align-self: flex-start;
 	max-width: 85%;
 	font-size: 13px;
 }
 
-.sd-ai-agent-tool-calls > details {
+.sdaa-tool-calls > details {
 	background: #f6f7f7;
 	border: 1px solid #dcdcde;
 	border-radius: 6px;
 }
 
-.sd-ai-agent-tool-calls > details > summary {
+.sdaa-tool-calls > details > summary {
 	padding: 8px 12px;
 	cursor: pointer;
 	color: #50575e;
@@ -1176,7 +891,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	list-style: none;
 }
 
-.sd-ai-agent-tool-calls > details > summary::before {
+.sdaa-tool-calls > details > summary::before {
 	content: "\25B6";
 	display: inline-block;
 	margin-right: 6px;
@@ -1184,20 +899,20 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	transition: transform 0.15s;
 }
 
-.sd-ai-agent-tool-calls > details[open] > summary::before {
+.sdaa-tool-calls > details[open] > summary::before {
 	transform: rotate(90deg);
 }
 
-.sd-ai-agent-tool-calls > details > summary::-webkit-details-marker {
+.sdaa-tool-calls > details > summary::-webkit-details-marker {
 	display: none;
 }
 
-.sd-ai-agent-tool-calls > details > summary:hover {
+.sdaa-tool-calls > details > summary:hover {
 	color: var(--wp-admin-theme-color, #2271b1);
 }
 
 /* Tool list inside the outer details */
-.sd-ai-agent-tool-list {
+.sdaa-tool-list {
 	padding: 4px 10px 10px;
 	display: flex;
 	flex-direction: column;
@@ -1205,18 +920,18 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 }
 
 /* Individual tool call pair */
-.sd-ai-agent-tool-pair {
+.sdaa-tool-pair {
 	background: #fff;
 	border: 1px solid #e0e0e0;
 	border-radius: 4px;
 	overflow: hidden;
 }
 
-.sd-ai-agent-tool-pair--skill {
+.sdaa-tool-pair--skill {
 	border-left: 3px solid #a36ec5;
 }
 
-.sd-ai-agent-tool-pair-header {
+.sdaa-tool-pair-header {
 	display: flex;
 	align-items: center;
 	gap: 6px;
@@ -1227,12 +942,12 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	line-height: 1.4;
 }
 
-.sd-ai-agent-tool-pair-icon {
+.sdaa-tool-pair-icon {
 	font-size: 12px;
 	flex-shrink: 0;
 }
 
-.sd-ai-agent-tool-pair-name {
+.sdaa-tool-pair-name {
 	font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 	font-size: 12px;
 	font-weight: 600;
@@ -1241,22 +956,22 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	padding: 0;
 }
 
-.sd-ai-agent-tool-pair-status {
+.sdaa-tool-pair-status {
 	margin-left: auto;
 	font-size: 12px;
 	flex-shrink: 0;
 }
 
-.sd-ai-agent-tool-pair-status--ok {
+.sdaa-tool-pair-status--ok {
 	color: #00a32a;
 }
 
-.sd-ai-agent-tool-pair-status--error {
+.sdaa-tool-pair-status--error {
 	color: #d63638;
 }
 
 /* Badge styling */
-.sd-ai-agent-tool-badge {
+.sdaa-tool-badge {
 	display: inline-flex;
 	align-items: center;
 	padding: 0 5px;
@@ -1270,11 +985,11 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 }
 
 /* Expandable content (args / response) */
-.sd-ai-agent-tool-expandable {
+.sdaa-tool-expandable {
 	border-top: 1px solid #f0f0f0;
 }
 
-.sd-ai-agent-tool-expandable-toggle {
+.sdaa-tool-expandable-toggle {
 	padding: 5px 10px;
 	cursor: pointer;
 	color: #646970;
@@ -1284,7 +999,7 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	list-style: none;
 }
 
-.sd-ai-agent-tool-expandable-toggle::before {
+.sdaa-tool-expandable-toggle::before {
 	content: "\25B6";
 	display: inline-block;
 	margin-right: 4px;
@@ -1292,24 +1007,24 @@ body.toplevel_page_sd-ai-agent #wpbody-content > .updated {
 	transition: transform 0.15s;
 }
 
-details[open] > .sd-ai-agent-tool-expandable-toggle::before {
+details[open] > .sdaa-tool-expandable-toggle::before {
 	transform: rotate(90deg);
 }
 
-.sd-ai-agent-tool-expandable-toggle::-webkit-details-marker {
+.sdaa-tool-expandable-toggle::-webkit-details-marker {
 	display: none;
 }
 
-.sd-ai-agent-tool-expandable-toggle:hover {
+.sdaa-tool-expandable-toggle:hover {
 	color: var(--wp-admin-theme-color, #2271b1);
 }
 
-.sd-ai-agent-tool-expandable-size {
+.sdaa-tool-expandable-size {
 	color: #a7aaad;
 	font-weight: 400;
 }
 
-.sd-ai-agent-tool-expandable-content {
+.sdaa-tool-expandable-content {
 	margin: 0;
 	padding: 8px 10px;
 	background: #f9f9f9;
@@ -1325,7 +1040,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	color: #1d2327;
 }
 
-.sd-ai-agent-tool-expand-btn {
+.sdaa-tool-expand-btn {
 	display: block;
 	margin-top: 4px;
 	background: none;
@@ -1337,53 +1052,23 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	text-decoration: underline;
 }
 
-.sd-ai-agent-tool-expand-btn:hover {
+.sdaa-tool-expand-btn:hover {
 	color: #135e96;
 }
 
-/* Legacy flat entries (backwards compat) */
-.sd-ai-agent-tool-entry {
-	font-size: 12px;
-	line-height: 1.4;
-}
-
-.sd-ai-agent-tool-label {
-	font-weight: 600;
-	color: #50575e;
-}
-
-.sd-ai-agent-tool-entry code {
-	background: #e0e0e0;
-	padding: 1px 5px;
-	border-radius: 3px;
-	font-size: 12px;
-}
-
-.sd-ai-agent-tool-entry pre {
-	background: #fff;
-	border: 1px solid #dcdcde;
-	border-radius: 3px;
-	padding: 6px 8px;
-	margin: 4px 0 0;
-	font-size: 11px;
-	overflow-x: auto;
-	max-height: 200px;
-	white-space: pre-wrap;
-}
-
 /* Message row */
-.sd-ai-agent-message-row {
+.sdaa-message-row {
 	position: relative;
 	display: flex;
 	flex-direction: column;
 }
 
-.sd-ai-agent-message-row:hover .sd-ai-agent-message-actions {
+.sdaa-message-row:hover .sdaa-message-actions {
 	opacity: 1;
 }
 
 /* Message actions — align to match bubble side */
-.sd-ai-agent-message-actions {
+.sdaa-message-actions {
 	display: flex;
 	gap: 2px;
 	margin-top: 3px;
@@ -1393,11 +1078,11 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 }
 
 /* User message rows: bubble + actions both right-aligned */
-.sd-ai-agent-message-row:has(.sd-ai-agent-user) .sd-ai-agent-message-actions {
+.sdaa-message-row:has(.sdaa-user) .sdaa-message-actions {
 	align-self: flex-end;
 }
 
-.sd-ai-agent-action-btn.components-button {
+.sdaa-action-btn.components-button {
 	min-width: 26px;
 	width: 26px;
 	height: 26px;
@@ -1410,30 +1095,30 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	transition: background 0.1s, color 0.1s, border-color 0.1s;
 }
 
-.sd-ai-agent-action-btn.components-button:hover {
+.sdaa-action-btn.components-button:hover {
 	background: #f0f0f1;
 	color: #1d2327;
 	border-color: #c3c4c7;
 }
 
-.sd-ai-agent-action-btn.components-button:disabled {
+.sdaa-action-btn.components-button:disabled {
 	opacity: 0.4;
 	cursor: default;
 }
 
 /* Thumbs-down feedback button — subtle negative hover (t186) */
-.sd-ai-agent-thumbs-down-btn.components-button:hover {
+.sdaa-thumbs-down-btn.components-button:hover {
 	background: #fef8f8;
 	color: #c0392b;
 	border-color: #e8b4b0;
 }
 
 /* Edit inline */
-.sd-ai-agent-message-edit {
+.sdaa-message-edit {
 	margin-top: 4px;
 }
 
-.sd-ai-agent-message-edit-input {
+.sdaa-message-edit-input {
 	width: 100%;
 	padding: 6px 8px;
 	border: 1px solid var(--wp-admin-theme-color, #2271b1);
@@ -1444,14 +1129,14 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	box-sizing: border-box;
 }
 
-.sd-ai-agent-message-edit-actions {
+.sdaa-message-edit-actions {
 	display: flex;
 	gap: 6px;
 	margin-top: 6px;
 }
 
 /* Stop button — icon-only, matches send/mic sizing */
-.sd-ai-agent-stop-btn.components-button {
+.sdaa-stop-btn.components-button {
 	flex-shrink: 0;
 	min-width: auto;
 	width: 32px;
@@ -1465,14 +1150,14 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
-.sd-ai-agent-stop-btn.components-button:hover {
+.sdaa-stop-btn.components-button:hover {
 	background: #d63638;
 	border-color: #d63638;
 	color: #fff;
 }
 
 /* Input area */
-.sd-ai-agent-input-area {
+.sdaa-input-area {
 	display: flex;
 	flex-direction: column;
 	position: relative;
@@ -1481,7 +1166,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	background: #fff;
 }
 
-.sd-ai-agent-input {
+.sdaa-input {
 	flex: 1;
 	resize: none;
 	font-size: 13px;
@@ -1497,13 +1182,13 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.sd-ai-agent-input:focus {
+.sdaa-input:focus {
 	border-color: var(--wp-admin-theme-color, #2271b1);
 	box-shadow: 0 0 0 1px var(--wp-admin-theme-color, #2271b1);
 	outline: none;
 }
 
-.sd-ai-agent-input:disabled {
+.sdaa-input:disabled {
 	background: #f6f7f7;
 	color: #a7aaad;
 	cursor: not-allowed;
@@ -1511,7 +1196,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 
 /* ── Message queue indicator ─────────────────────────────────── */
 
-.sd-ai-agent-queue-indicator {
+.sdaa-queue-indicator {
 	font-size: 11px;
 	color: #8c8f94;
 	padding: 2px 0 4px;
@@ -1521,12 +1206,12 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 
 /* ── Queued message badge ────────────────────────────────────── */
 
-.sd-ai-agent-bubble.sd-ai-agent-user.is-queued {
+.sdaa-bubble.sdaa-user.is-queued {
 	opacity: 0.7;
 	border-style: dashed;
 }
 
-.sd-ai-agent-queued-badge {
+.sdaa-queued-badge {
 	display: inline-block;
 	font-size: 10px;
 	color: #8c8f94;
@@ -1536,10 +1221,9 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 }
 
 /* ── Shared icon-button sizing for input row ─────────────────── */
-.sd-ai-agent-send-btn.components-button,
-.sd-ai-agent-mic-btn.components-button,
-.sd-ai-agent-upload-btn.components-button,
-.sd-ai-agent-templates-btn.components-button {
+.sdaa-send-btn.components-button,
+.sdaa-mic-btn.components-button,
+.sdaa-upload-btn.components-button {
 	flex-shrink: 0;
 	min-width: auto;
 	width: 32px;
@@ -1550,57 +1234,57 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 }
 
 /* Send button — filled primary style */
-.sd-ai-agent-send-btn.components-button {
+.sdaa-send-btn.components-button {
 	background: var(--wp-admin-theme-color, #2271b1);
 	color: #fff;
 	border: none;
 	transition: background 0.15s, opacity 0.15s;
 }
 
-.sd-ai-agent-send-btn.components-button:hover:not(:disabled) {
+.sdaa-send-btn.components-button:hover:not(:disabled) {
 	background: var(--wp-admin-theme-color-darker-10, #135e96);
 	color: #fff;
 }
 
-.sd-ai-agent-send-btn.components-button:disabled {
+.sdaa-send-btn.components-button:disabled {
 	background: #c3c4c7;
 	color: #fff;
 	opacity: 1;
 }
 
-.sd-ai-agent-send-btn svg {
+.sdaa-send-btn svg {
 	width: 18px;
 	height: 18px;
 }
 
 /* Mic / push-to-talk button */
-.sd-ai-agent-mic-btn.components-button {
+.sdaa-mic-btn.components-button {
 	color: #646970;
 	background: transparent;
 	border: 1px solid #c3c4c7;
 	transition: color 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
-.sd-ai-agent-mic-btn.components-button svg {
+.sdaa-mic-btn.components-button svg {
 	width: 18px;
 	height: 18px;
 }
 
-.sd-ai-agent-mic-btn.components-button:hover {
+.sdaa-mic-btn.components-button:hover {
 	color: var(--wp-admin-theme-color, #2271b1);
 	border-color: var(--wp-admin-theme-color, #2271b1);
 	background: transparent;
 }
 
-.sd-ai-agent-mic-btn.components-button.is-listening {
+.sdaa-mic-btn.components-button.is-listening {
 	color: #fff;
 	background: #d63638;
 	border-color: #d63638;
 	box-shadow: 0 0 0 3px rgba(214, 54, 56, 0.25);
-	animation: sd-ai-agent-mic-pulse 1.2s ease-in-out infinite;
+	animation: sdaa-mic-pulse 1.2s ease-in-out infinite;
 }
 
-@keyframes sd-ai-agent-mic-pulse {
+@keyframes sdaa-mic-pulse {
 
 	0%, 100% { box-shadow: 0 0 0 3px rgba(214, 54, 56, 0.25); }
 
@@ -1608,7 +1292,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 }
 
 /* Context Indicator (full-page) — base styles in shared.css */
-.sd-ai-agent-context-stats {
+.sdaa-context-stats {
 	display: flex;
 	justify-content: space-between;
 	padding: 3px 12px 2px;
@@ -1616,23 +1300,23 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	color: #646970;
 }
 
-.sd-ai-agent-context-tokens {
+.sdaa-context-tokens {
 	font-weight: 500;
 }
 
-.sd-ai-agent-context-detail {
+.sdaa-context-detail {
 	font-weight: 400;
 	margin-left: 4px;
 	color: #a7aaad;
 }
 
-.sd-ai-agent-context-pct {
+.sdaa-context-pct {
 	font-weight: 500;
 }
 
 /* context-bar-track, context-bar-fill — in shared.css */
 
-.sd-ai-agent-context-warning {
+.sdaa-context-warning {
 	padding: 8px 16px;
 	background: #fcf0f1;
 	border-bottom: 1px solid #d63638;
@@ -1644,17 +1328,17 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	flex-wrap: wrap;
 }
 
-.sd-ai-agent-context-warning span {
+.sdaa-context-warning span {
 	color: #8a2424;
 }
 
-.sd-ai-agent-context-warning-actions {
+.sdaa-context-warning-actions {
 	display: flex;
 	gap: 6px;
 }
 
 /* Onboarding Wizard */
-.sd-ai-agent-wizard {
+.sdaa-wizard {
 	max-width: 600px;
 	margin: 40px auto;
 	background: #fff;
@@ -1663,22 +1347,22 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	overflow: hidden;
 }
 
-.sd-ai-agent-wizard-header {
+.sdaa-wizard-header {
 	padding: 24px 32px 16px;
 	border-bottom: 1px solid #dcdcde;
 }
 
-.sd-ai-agent-wizard-header h2 {
+.sdaa-wizard-header h2 {
 	margin: 0 0 12px;
 	font-size: 20px;
 }
 
-.sd-ai-agent-wizard-progress {
+.sdaa-wizard-progress {
 	display: flex;
 	gap: 8px;
 }
 
-.sd-ai-agent-wizard-dot {
+.sdaa-wizard-dot {
 	width: 10px;
 	height: 10px;
 	border-radius: 50%;
@@ -1686,27 +1370,27 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	transition: background 0.2s;
 }
 
-.sd-ai-agent-wizard-dot.is-active {
+.sdaa-wizard-dot.is-active {
 	background: var(--wp-admin-theme-color, #2271b1);
 }
 
-.sd-ai-agent-wizard-dot.is-complete {
+.sdaa-wizard-dot.is-complete {
 	background: #00a32a;
 }
 
-.sd-ai-agent-wizard-body {
+.sdaa-wizard-body {
 	padding: 24px 32px;
 	min-height: 200px;
 	max-height: calc(100vh - 300px);
 	overflow-y: auto;
 }
 
-.sd-ai-agent-wizard-body p {
+.sdaa-wizard-body p {
 	font-size: 14px;
 	line-height: 1.6;
 }
 
-.sd-ai-agent-wizard-footer {
+.sdaa-wizard-footer {
 	padding: 16px 32px;
 	border-top: 1px solid #dcdcde;
 	display: flex;
@@ -1716,101 +1400,18 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	background: #f6f7f7;
 }
 
-.sd-ai-agent-wizard-skip {
+.sdaa-wizard-skip {
 	margin-right: auto;
 }
 
-/* Provider list inside the wizard */
-.sd-ai-agent-wizard-provider-list {
-	display: flex;
-	flex-direction: column;
-	gap: 16px;
-	margin-bottom: 20px;
-}
-
-/* Individual provider row */
-.sd-ai-agent-wizard-provider-row {
-	border: 1px solid #dcdcde;
-	border-radius: 6px;
-	padding: 14px 16px;
-	background: #fafafa;
-	transition: border-color 0.15s;
-}
-
-.sd-ai-agent-wizard-provider-row--configured {
-	border-color: #00a32a;
-	background: #f0faf0;
-}
-
-.sd-ai-agent-wizard-provider-row__header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 4px;
-}
-
-.sd-ai-agent-wizard-provider-row__title {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	font-size: 14px;
-}
-
-.sd-ai-agent-wizard-provider-row__badge {
-	display: inline-block;
-	background: #00a32a;
-	color: #fff;
-	font-size: 11px;
-	font-weight: 600;
-	padding: 1px 7px;
-	border-radius: 10px;
-	line-height: 1.6;
-}
-
-.sd-ai-agent-wizard-provider-row__docs {
-	font-size: 12px;
-	color: var(--wp-admin-theme-color, #2271b1);
-	text-decoration: none;
-	white-space: nowrap;
-}
-
-.sd-ai-agent-wizard-provider-row__docs:hover {
-	text-decoration: underline;
-}
-
-.sd-ai-agent-wizard-provider-row__desc {
-	font-size: 13px;
-	color: #50575e;
-	margin: 0 0 10px;
-}
-
-.sd-ai-agent-wizard-provider-row__key-row {
-	display: flex;
-	align-items: flex-end;
-	gap: 8px;
-	flex-wrap: wrap;
-}
-
-.sd-ai-agent-wizard-provider-row__key-row .components-base-control {
-	flex: 1;
-	min-width: 200px;
-}
-
-.sd-ai-agent-wizard-provider-row__actions {
-	display: flex;
-	gap: 6px;
-	flex-shrink: 0;
-	padding-bottom: 2px;
-}
-
 /* Provider selector shown after at least one key is saved */
-.sd-ai-agent-wizard-provider-selector {
+.sdaa-wizard-provider-selector {
 	border-top: 1px solid #dcdcde;
 	padding-top: 16px;
 	margin-top: 4px;
 }
 
-.sd-ai-agent-wizard-provider-selector__label {
+.sdaa-wizard-provider-selector__label {
 	font-size: 13px;
 	font-weight: 600;
 	color: #1d2327;
@@ -1818,7 +1419,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 }
 
 /* Slash command menu */
-.sd-ai-agent-slash-menu {
+.sdaa-slash-menu {
 	position: absolute;
 	bottom: 100%;
 	left: 12px;
@@ -1833,7 +1434,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	z-index: 100;
 }
 
-.sd-ai-agent-slash-item {
+.sdaa-slash-item {
 	display: flex;
 	align-items: center;
 	gap: 12px;
@@ -1842,87 +1443,67 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	transition: background 0.1s;
 }
 
-.sd-ai-agent-slash-item:hover,
-.sd-ai-agent-slash-item.is-selected {
+.sdaa-slash-item:hover,
+.sdaa-slash-item.is-selected {
 	background: #f0f0f1;
 }
 
-.sd-ai-agent-slash-item:focus-visible {
+.sdaa-slash-item:focus-visible {
 	outline: 2px solid var(--wp-admin-theme-color, #2271b1);
 	outline-offset: -2px;
 }
 
-.sd-ai-agent-slash-name {
+.sdaa-slash-name {
 	font-weight: 600;
 	font-size: 13px;
 	color: var(--wp-admin-theme-color, #2271b1);
 	min-width: 80px;
 }
 
-.sd-ai-agent-slash-desc {
+.sdaa-slash-desc {
 	font-size: 13px;
 	color: #50575e;
 }
 
 /* Input row (wraps templates button + textarea + send/stop) */
-.sd-ai-agent-input-row {
+.sdaa-input-row {
 	display: flex;
 	align-items: flex-end;
 	gap: 5px;
 	width: 100%;
 }
 
-.sd-ai-agent-input-row .sd-ai-agent-input {
+.sdaa-input-row .sdaa-input {
 	flex: 1;
 }
 
-/* Templates button — icon-only, subtle */
-.sd-ai-agent-templates-btn.components-button {
-	color: #787c82;
-	background: transparent;
-	border: 1px solid #c3c4c7;
-	transition: color 0.15s, border-color 0.15s, background 0.15s;
-}
-
-.sd-ai-agent-templates-btn.components-button:hover {
-	color: var(--wp-admin-theme-color, #2271b1);
-	border-color: var(--wp-admin-theme-color, #2271b1);
-	background: transparent;
-}
-
-.sd-ai-agent-templates-btn.components-button.is-active {
-	color: var(--wp-admin-theme-color, #2271b1);
-	border-color: var(--wp-admin-theme-color, #2271b1);
-	background: #f0f6fc;
-}
-
 /* ── File upload button (paperclip) ─────────────────────────── */
-.sd-ai-agent-upload-btn.components-button {
+.sdaa-upload-btn.components-button {
 	color: #787c82;
 	background: transparent;
 	border: 1px solid #c3c4c7;
 	transition: color 0.15s, border-color 0.15s;
 }
 
-.sd-ai-agent-upload-btn.components-button:hover {
+.sdaa-upload-btn.components-button:hover {
 	color: var(--wp-admin-theme-color, #2271b1);
 	border-color: var(--wp-admin-theme-color, #2271b1);
 	background: transparent;
 }
 
 /* Hidden native file input */
-.sd-ai-agent-file-input {
+.sdaa-file-input {
 	display: none;
 }
 
 /* ── Drag-over state ─────────────────────────────────────────── */
-.sd-ai-agent-input-area.is-drag-over {
+.sdaa-input-area.is-drag-over {
 	border-color: var(--wp-admin-theme-color, #2271b1);
 	background: #f0f6fc;
 }
 
 /* Drop overlay label */
-.sd-ai-agent-drop-overlay {
+.sdaa-drop-overlay {
 	position: absolute;
 	inset: 0;
 	display: flex;
@@ -1939,7 +1520,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 }
 
 /* ── Attachment thumbnail strip (above input) ────────────────── */
-.sd-ai-agent-attachment-previews {
+.sdaa-attachment-previews {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 8px;
@@ -1947,7 +1528,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	width: 100%;
 }
 
-.sd-ai-agent-attachment-thumb {
+.sdaa-attachment-thumb {
 	position: relative;
 	display: flex;
 	flex-direction: column;
@@ -1956,7 +1537,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	gap: 4px;
 }
 
-.sd-ai-agent-attachment-thumb__img {
+.sdaa-attachment-thumb__img {
 	width: 72px;
 	height: 72px;
 	object-fit: cover;
@@ -1964,7 +1545,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	border: 1px solid #c3c4c7;
 }
 
-.sd-ai-agent-attachment-thumb__file {
+.sdaa-attachment-thumb__file {
 	width: 72px;
 	height: 72px;
 	display: flex;
@@ -1975,14 +1556,14 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	border-radius: 4px;
 }
 
-.sd-ai-agent-attachment-thumb__ext {
+.sdaa-attachment-thumb__ext {
 	font-size: 11px;
 	font-weight: 700;
 	color: #50575e;
 	text-transform: uppercase;
 }
 
-.sd-ai-agent-attachment-thumb__name {
+.sdaa-attachment-thumb__name {
 	font-size: 10px;
 	color: #50575e;
 	max-width: 72px;
@@ -1992,7 +1573,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	text-align: center;
 }
 
-.sd-ai-agent-attachment-thumb__remove {
+.sdaa-attachment-thumb__remove {
 	position: absolute;
 	top: -6px;
 	right: -6px;
@@ -2012,24 +1593,24 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	transition: background 0.15s;
 }
 
-.sd-ai-agent-attachment-thumb__remove:hover {
+.sdaa-attachment-thumb__remove:hover {
 	background: #b32d2e;
 }
 
 /* ── Inline images in sent messages ─────────────────────────── */
-.sd-ai-agent-message-attachments {
+.sdaa-message-attachments {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 6px;
 	margin-bottom: 6px;
 }
 
-.sd-ai-agent-message-attachment-link {
+.sdaa-message-attachment-link {
 	display: inline-block;
 	line-height: 0;
 }
 
-.sd-ai-agent-message-attachment-img {
+.sdaa-message-attachment-img {
 	max-width: 240px;
 	max-height: 240px;
 	border-radius: 6px;
@@ -2039,7 +1620,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 }
 
 /* Conversation template menu */
-.sd-ai-agent-template-menu {
+.sdaa-template-menu {
 	position: absolute;
 	bottom: 100%;
 	left: 0;
@@ -2056,7 +1637,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	overflow: hidden;
 }
 
-.sd-ai-agent-template-menu__header {
+.sdaa-template-menu__header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -2065,18 +1646,18 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	flex-shrink: 0;
 }
 
-.sd-ai-agent-template-menu__title {
+.sdaa-template-menu__title {
 	font-weight: 600;
 	font-size: 13px;
 	color: #1d2327;
 }
 
-.sd-ai-agent-template-menu__close {
+.sdaa-template-menu__close {
 	min-width: auto;
 	padding: 2px;
 }
 
-.sd-ai-agent-template-menu__categories {
+.sdaa-template-menu__categories {
 	display: flex;
 	gap: 4px;
 	padding: 8px 14px 6px;
@@ -2085,7 +1666,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	flex-wrap: wrap;
 }
 
-.sd-ai-agent-template-menu__cat-tab {
+.sdaa-template-menu__cat-tab {
 	background: none;
 	border: 1px solid #c3c4c7;
 	border-radius: 12px;
@@ -2096,17 +1677,17 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	transition: background 0.1s, color 0.1s;
 }
 
-.sd-ai-agent-template-menu__cat-tab:hover {
+.sdaa-template-menu__cat-tab:hover {
 	background: #f0f0f1;
 }
 
-.sd-ai-agent-template-menu__cat-tab.is-active {
+.sdaa-template-menu__cat-tab.is-active {
 	background: var(--wp-admin-theme-color, #2271b1);
 	border-color: var(--wp-admin-theme-color, #2271b1);
 	color: #fff;
 }
 
-.sd-ai-agent-template-menu__grid {
+.sdaa-template-menu__grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
 	gap: 8px;
@@ -2114,20 +1695,20 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	overflow-y: auto;
 }
 
-.sd-ai-agent-template-menu__loading {
+.sdaa-template-menu__loading {
 	display: flex;
 	justify-content: center;
 	padding: 16px;
 }
 
-.sd-ai-agent-template-menu__empty {
+.sdaa-template-menu__empty {
 	color: #50575e;
 	font-size: 13px;
 	margin: 0;
 	padding: 8px 0;
 }
 
-.sd-ai-agent-template-card {
+.sdaa-template-card {
 	display: flex;
 	flex-direction: column;
 	gap: 3px;
@@ -2141,24 +1722,24 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	font-family: inherit;
 }
 
-.sd-ai-agent-template-card:hover {
+.sdaa-template-card:hover {
 	background: #f0f0f1;
 	border-color: var(--wp-admin-theme-color, #2271b1);
 }
 
-.sd-ai-agent-template-card:focus-visible {
+.sdaa-template-card:focus-visible {
 	outline: 2px solid var(--wp-admin-theme-color, #2271b1);
 	outline-offset: 2px;
 }
 
-.sd-ai-agent-template-card__name {
+.sdaa-template-card__name {
 	font-size: 13px;
 	font-weight: 600;
 	color: #1d2327;
 	line-height: 1.3;
 }
 
-.sd-ai-agent-template-card__desc {
+.sdaa-template-card__desc {
 	font-size: 11px;
 	color: #50575e;
 	line-height: 1.3;
@@ -2166,7 +1747,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 
 /* Shortcuts help overlay — in shared.css (used by floating-widget bundle too) */
 
-.sd-ai-agent-shortcuts-dialog {
+.sdaa-shortcuts-dialog {
 	background: #fff;
 	border-radius: 8px;
 	width: 400px;
@@ -2174,7 +1755,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
-.sd-ai-agent-shortcuts-header {
+.sdaa-shortcuts-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -2182,12 +1763,12 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	border-bottom: 1px solid #dcdcde;
 }
 
-.sd-ai-agent-shortcuts-header h3 {
+.sdaa-shortcuts-header h3 {
 	margin: 0;
 	font-size: 16px;
 }
 
-.sd-ai-agent-shortcuts-header button {
+.sdaa-shortcuts-header button {
 	background: none;
 	border: none;
 	font-size: 20px;
@@ -2196,11 +1777,11 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	padding: 4px 8px;
 }
 
-.sd-ai-agent-shortcuts-list {
+.sdaa-shortcuts-list {
 	padding: 12px 20px;
 }
 
-.sd-ai-agent-shortcut-row {
+.sdaa-shortcut-row {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -2208,11 +1789,11 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	font-size: 13px;
 }
 
-.sd-ai-agent-shortcut-label {
+.sdaa-shortcut-label {
 	color: #1d2327;
 }
 
-.sd-ai-agent-shortcut-key {
+.sdaa-shortcut-key {
 	background: #f0f0f1;
 	border: 1px solid #dcdcde;
 	border-radius: 4px;
@@ -2222,25 +1803,25 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	color: #50575e;
 }
 
-.sd-ai-agent-shortcuts-footer {
+.sdaa-shortcuts-footer {
 	padding: 12px 20px 16px;
 	border-top: 1px solid #dcdcde;
 }
 
-.sd-ai-agent-shortcuts-footer h4 {
+.sdaa-shortcuts-footer h4 {
 	margin: 0 0 8px;
 	font-size: 13px;
 	color: #50575e;
 }
 
-.sd-ai-agent-shortcuts-footer .sd-ai-agent-shortcut-row span:first-child {
+.sdaa-shortcuts-footer .sdaa-shortcut-row span:first-child {
 	font-family: monospace;
 	font-weight: 600;
 	color: var(--wp-admin-theme-color, #2271b1);
 }
 
 /* Export / Import dialogs */
-.sd-ai-agent-export-dialog {
+.sdaa-export-dialog {
 	background: #fff;
 	border-radius: 8px;
 	width: 420px;
@@ -2248,7 +1829,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
-.sd-ai-agent-export-header {
+.sdaa-export-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -2256,12 +1837,12 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	border-bottom: 1px solid #dcdcde;
 }
 
-.sd-ai-agent-export-header h3 {
+.sdaa-export-header h3 {
 	margin: 0;
 	font-size: 16px;
 }
 
-.sd-ai-agent-export-header button {
+.sdaa-export-header button {
 	background: none;
 	border: none;
 	font-size: 20px;
@@ -2270,15 +1851,15 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	padding: 4px 8px;
 }
 
-.sd-ai-agent-export-header button:hover {
+.sdaa-export-header button:hover {
 	color: #1d2327;
 }
 
-.sd-ai-agent-export-body {
+.sdaa-export-body {
 	padding: 16px 20px;
 }
 
-.sd-ai-agent-export-option {
+.sdaa-export-option {
 	display: flex;
 	align-items: flex-start;
 	gap: 10px;
@@ -2290,27 +1871,27 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	transition: border-color 0.15s;
 }
 
-.sd-ai-agent-export-option:hover {
+.sdaa-export-option:hover {
 	border-color: var(--wp-admin-theme-color, #2271b1);
 }
 
-.sd-ai-agent-export-option input[type="radio"] {
+.sdaa-export-option input[type="radio"] {
 	margin-top: 3px;
 }
 
-.sd-ai-agent-export-option div strong {
+.sdaa-export-option div strong {
 	display: block;
 	font-size: 13px;
 	margin-bottom: 2px;
 }
 
-.sd-ai-agent-export-option div p {
+.sdaa-export-option div p {
 	margin: 0;
 	font-size: 12px;
 	color: #646970;
 }
 
-.sd-ai-agent-export-footer {
+.sdaa-export-footer {
 	display: flex;
 	justify-content: flex-end;
 	gap: 8px;
@@ -2318,7 +1899,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	border-top: 1px solid #dcdcde;
 }
 
-.sd-ai-agent-import-dropzone {
+.sdaa-import-dropzone {
 	border: 2px dashed #c3c4c7;
 	border-radius: 6px;
 	padding: 32px 20px;
@@ -2327,35 +1908,35 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	transition: border-color 0.15s, background 0.15s;
 }
 
-.sd-ai-agent-import-dropzone:hover {
+.sdaa-import-dropzone:hover {
 	border-color: var(--wp-admin-theme-color, #2271b1);
 	background: #f0f6fc;
 }
 
-.sd-ai-agent-import-dropzone p {
+.sdaa-import-dropzone p {
 	margin: 0;
 	color: #646970;
 	font-size: 13px;
 }
 
-.sd-ai-agent-import-file {
+.sdaa-import-file {
 	text-align: center;
 }
 
-.sd-ai-agent-import-file strong {
+.sdaa-import-file strong {
 	display: block;
 	font-size: 14px;
 	color: #1d2327;
 	margin-bottom: 4px;
 }
 
-.sd-ai-agent-import-file p {
+.sdaa-import-file p {
 	margin: 4px 0 0;
 	font-size: 13px;
 	color: #50575e;
 }
 
-.sd-ai-agent-import-error {
+.sdaa-import-error {
 	color: #d63638;
 	font-size: 13px;
 	margin: 8px 0 0;
@@ -2366,139 +1947,26 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 /* Large-screen bubble width — prevent bubbles from stretching too wide */
 @media (min-width: 1200px) {
 
-	.sd-ai-agent-bubble {
+	.sdaa-bubble {
 		max-width: min(90%, 900px);
 	}
 }
 
 @media (min-width: 1600px) {
 
-	.sd-ai-agent-bubble {
+	.sdaa-bubble {
 		max-width: min(92%, 1100px);
 	}
 }
 
 /* Responsive */
-@media (max-width: 900px) {
 
-	.sd-ai-agent-sidebar {
-		width: 200px;
-		min-width: 200px;
-	}
-}
-
-/* ── Mobile drawer (< 700px) ─────────────────────────────────────────────── */
-
-/* Hamburger toggle — hidden on desktop, shown on mobile */
-.sd-ai-agent-sidebar-toggle {
-	display: none;
-}
-
-/* Sidebar close button — hidden on desktop, shown on mobile */
-.sd-ai-agent-sidebar-close-btn {
-	display: none;
-}
-
-@media (max-width: 700px) {
-
-	/* Layout stays as a row; sidebar becomes a fixed overlay */
-	.sd-ai-agent-layout {
-		position: relative;
-		height: calc(100vh - 140px);
-	}
-
-	/* Sidebar: hidden off-screen by default */
-	.sd-ai-agent-sidebar {
-		position: fixed;
-		top: 0;
-		left: 0;
-		bottom: 0;
-		width: 280px;
-		min-width: 280px;
-		z-index: 9999;
-		transform: translateX(-100%);
-		transition: transform 0.25s ease;
-		border-right: 1px solid #c3c4c7;
-		box-shadow: 2px 0 12px rgba(0, 0, 0, 0.18);
-	}
-
-	/* Sidebar open state */
-	.sd-ai-agent-layout.sidebar-is-open .sd-ai-agent-sidebar {
-		transform: translateX(0);
-	}
-
-	/* Backdrop */
-	.sd-ai-agent-sidebar-backdrop {
-		position: fixed;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.4);
-		z-index: 9998;
-	}
-
-	/* Chat area takes full width */
-	.sd-ai-agent-main {
-		width: 100%;
-		position: relative;
-	}
-
-	/* Hamburger button */
-	.sd-ai-agent-sidebar-toggle {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		position: absolute;
-		top: 8px;
-		left: 8px;
-		z-index: 10;
-		width: 32px;
-		height: 32px;
-		background: none;
-		border: 1px solid #c3c4c7;
-		border-radius: 4px;
-		color: #50575e;
-		font-size: 18px;
-		cursor: pointer;
-		transition: background 0.15s, color 0.15s;
-	}
-
-	.sd-ai-agent-sidebar-toggle:hover {
-		background: #f0f0f1;
-		color: #1d2327;
-	}
-
-	/* Shift the chat header content to make room for the hamburger */
-	.sd-ai-agent-header {
-		padding-left: 48px;
-	}
-
-	/* Close button inside the drawer */
-	.sd-ai-agent-sidebar-close-btn {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 28px;
-		height: 28px;
-		background: none;
-		border: 1px solid #c3c4c7;
-		border-radius: 4px;
-		color: #50575e;
-		font-size: 14px;
-		cursor: pointer;
-		flex-shrink: 0;
-		transition: background 0.15s, color 0.15s;
-	}
-
-	.sd-ai-agent-sidebar-close-btn:hover {
-		background: #f0f0f1;
-		color: #1d2327;
-	}
-}
 
 /* Debug mode badge, YOLO badge, budget indicator, context indicator, debug panel,
    suggestion chips, action card, and chart block styles are in shared.css */
 
 /* TTS toggle button in chat header (admin-page) */
-.sd-ai-agent-tts-btn {
+.sdaa-tts-btn {
 	min-width: auto;
 	width: 28px;
 	height: 28px;
@@ -2514,19 +1982,19 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	justify-content: center;
 }
 
-.sd-ai-agent-tts-btn:hover {
+.sdaa-tts-btn:hover {
 	color: var(--wp-admin-theme-color, #2271b1);
 	border-color: var(--wp-admin-theme-color, #2271b1);
 	background: transparent;
 }
 
-.sd-ai-agent-tts-btn.is-active {
+.sdaa-tts-btn.is-active {
 	color: var(--wp-admin-theme-color, #2271b1);
 	background: rgba(34, 113, 177, 0.1);
 	border-color: var(--wp-admin-theme-color, #2271b1);
 }
 
-.sd-ai-agent-tts-btn svg {
+.sdaa-tts-btn svg {
 	width: 18px;
 	height: 18px;
 }
@@ -2534,7 +2002,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 /* Debug panel, suggestion chips, action card, chart block — in shared.css */
 
 /* Onboarding Interview (t064) */
-.sd-ai-agent-interview {
+.sdaa-interview {
 	max-width: 640px;
 	margin: 40px auto;
 	background: #fff;
@@ -2543,7 +2011,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	overflow: hidden;
 }
 
-.sd-ai-agent-interview--loading {
+.sdaa-interview--loading {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -2554,28 +2022,28 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	font-size: 14px;
 }
 
-.sd-ai-agent-interview__header {
+.sdaa-interview__header {
 	padding: 24px 32px 16px;
 	border-bottom: 1px solid #dcdcde;
 }
 
-.sd-ai-agent-interview__header h2 {
+.sdaa-interview__header h2 {
 	margin: 0 0 6px;
 	font-size: 20px;
 }
 
-.sd-ai-agent-interview__subtitle {
+.sdaa-interview__subtitle {
 	margin: 0 0 16px;
 	color: #757575;
 	font-size: 13px;
 }
 
-.sd-ai-agent-interview__progress {
+.sdaa-interview__progress {
 	display: flex;
 	gap: 8px;
 }
 
-.sd-ai-agent-interview__dot {
+.sdaa-interview__dot {
 	width: 10px;
 	height: 10px;
 	border-radius: 50%;
@@ -2583,45 +2051,45 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	transition: background 0.2s;
 }
 
-.sd-ai-agent-interview__dot.is-active {
+.sdaa-interview__dot.is-active {
 	background: var(--wp-admin-theme-color, #2271b1);
 }
 
-.sd-ai-agent-interview__dot.is-complete {
+.sdaa-interview__dot.is-complete {
 	background: #00a32a;
 }
 
-.sd-ai-agent-interview__summary {
+.sdaa-interview__summary {
 	padding: 16px 32px 0;
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
 }
 
-.sd-ai-agent-interview__summary-item {
+.sdaa-interview__summary-item {
 	background: #f6f7f7;
 	border-radius: 6px;
 	padding: 10px 14px;
 	font-size: 13px;
 }
 
-.sd-ai-agent-interview__summary-q {
+.sdaa-interview__summary-q {
 	display: block;
 	color: #757575;
 	margin-bottom: 2px;
 }
 
-.sd-ai-agent-interview__summary-a {
+.sdaa-interview__summary-a {
 	display: block;
 	color: #1e1e1e;
 	font-weight: 500;
 }
 
-.sd-ai-agent-interview__question-card {
+.sdaa-interview__question-card {
 	padding: 24px 32px;
 }
 
-.sd-ai-agent-interview__question-label {
+.sdaa-interview__question-label {
 	display: block;
 	font-size: 15px;
 	font-weight: 600;
@@ -2630,17 +2098,17 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	color: #1e1e1e;
 }
 
-.sd-ai-agent-interview__required {
+.sdaa-interview__required {
 	color: #d63638;
 }
 
-.sd-ai-agent-interview__optional-hint {
+.sdaa-interview__optional-hint {
 	margin: 6px 0 0;
 	font-size: 12px;
 	color: #757575;
 }
 
-.sd-ai-agent-interview__error {
+.sdaa-interview__error {
 	margin: 0 32px;
 	padding: 10px 14px;
 	background: #fcf0f1;
@@ -2650,7 +2118,7 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	font-size: 13px;
 }
 
-.sd-ai-agent-interview__footer {
+.sdaa-interview__footer {
 	padding: 16px 32px;
 	border-top: 1px solid #dcdcde;
 	display: flex;
@@ -2660,6 +2128,6 @@ details[open] > .sd-ai-agent-tool-expandable-toggle::before {
 	background: #f6f7f7;
 }
 
-.sd-ai-agent-interview__skip {
+.sdaa-interview__skip {
 	margin-right: auto;
 }

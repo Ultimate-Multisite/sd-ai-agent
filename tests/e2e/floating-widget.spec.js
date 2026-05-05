@@ -5,11 +5,11 @@
  * Requires a running wp-env environment with the plugin active.
  *
  * The chat widget was redesigned in #1157. Class names changed:
- *   .sd-ai-agent-fab         → .gaa-w-launcher  (WidgetLauncher)
- *   .sd-ai-agent-floating-panel → .gaa-w-panel  (WidgetPanel)
- *   .sd-ai-agent-chat-panel  → .gaa-w-body-wrap (panel body area)
- *   .sd-ai-agent-input       → .gaa-w-input-textarea
- *   .sd-ai-agent-send-btn    → .gaa-cr-send-btn
+ *   .sdaa-fab         → .sdaa-w-launcher  (WidgetLauncher)
+ *   .sdaa-floating-panel → .sdaa-w-panel  (WidgetPanel)
+ *   .sdaa-chat-panel  → .sdaa-w-body-wrap (panel body area)
+ *   .sdaa-input       → .sdaa-w-input-textarea
+ *   .sdaa-send-btn    → .sdaa-cr-send-btn
  *
  * Run: npm run test:e2e:playwright
  */
@@ -51,14 +51,14 @@ test.describe( 'Floating Widget', () => {
 		await fab.click();
 
 		const panel = getFloatingPanel( page );
-		// The redesigned widget panel body is .gaa-w-body-wrap (WidgetPanel,
+		// The redesigned widget panel body is .sdaa-w-body-wrap (WidgetPanel,
 		// widget-panel.js). It contains WidgetEmpty or WidgetMessageList.
-		const bodyWrap = panel.locator( '.gaa-w-body-wrap' );
+		const bodyWrap = panel.locator( '.sdaa-w-body-wrap' );
 		await expect( bodyWrap ).toBeVisible();
 
 		// The input area is always present when the panel is open.
-		// .gaa-w-input-textarea is the textarea inside WidgetInput.
-		const input = panel.locator( '.gaa-w-input-textarea' );
+		// .sdaa-w-input-textarea is the textarea inside WidgetInput.
+		const input = panel.locator( '.sdaa-w-input-textarea' );
 		await expect( input ).toBeVisible();
 	} );
 
@@ -92,9 +92,9 @@ test.describe( 'Floating Widget', () => {
 		// Panel element stays in DOM but body is hidden (is-minimized class).
 		await expect( panel ).toHaveClass( /is-minimized/ );
 
-		// Body wrap is conditionally rendered: { !isMinimized && <div.gaa-w-body-wrap> }
+		// Body wrap is conditionally rendered: { !isMinimized && <div.sdaa-w-body-wrap> }
 		// so when minimized it is removed from the DOM entirely.
-		const bodyWrap = panel.locator( '.gaa-w-body-wrap' );
+		const bodyWrap = panel.locator( '.sdaa-w-body-wrap' );
 		await expect( bodyWrap ).not.toBeVisible();
 	} );
 
@@ -117,7 +117,7 @@ test.describe( 'Floating Widget', () => {
 		await expect( panel ).not.toHaveClass( /is-minimized/ );
 
 		// Body wrap should be visible again after expanding.
-		const bodyWrap = panel.locator( '.gaa-w-body-wrap' );
+		const bodyWrap = panel.locator( '.sdaa-w-body-wrap' );
 		await expect( bodyWrap ).toBeVisible();
 	} );
 
@@ -129,8 +129,8 @@ test.describe( 'Floating Widget', () => {
 		await fab.click();
 
 		const panel = getFloatingPanel( page );
-		// .gaa-w-input-textarea is the textarea in WidgetInput (widget-input.js).
-		const input = panel.locator( '.gaa-w-input-textarea' );
+		// .sdaa-w-input-textarea is the textarea in WidgetInput (widget-input.js).
+		const input = panel.locator( '.sdaa-w-input-textarea' );
 		await input.fill( 'Hello, AI Agent!' );
 
 		await expect( input ).toHaveValue( 'Hello, AI Agent!' );
@@ -141,10 +141,10 @@ test.describe( 'Floating Widget', () => {
 		await fab.click();
 
 		const panel = getFloatingPanel( page );
-		// .gaa-w-input-textarea is the textarea in WidgetInput.
-		const input = panel.locator( '.gaa-w-input-textarea' );
-		// .gaa-cr-send-btn is the send button in WidgetInput (widget-input.js).
-		const sendButton = panel.locator( '.gaa-cr-send-btn' );
+		// .sdaa-w-input-textarea is the textarea in WidgetInput.
+		const input = panel.locator( '.sdaa-w-input-textarea' );
+		// .sdaa-cr-send-btn is the send button in WidgetInput (widget-input.js).
+		const sendButton = panel.locator( '.sdaa-cr-send-btn' );
 
 		// Send button should be disabled (or absent) when input is empty.
 		await expect( sendButton ).toBeDisabled();
@@ -160,8 +160,8 @@ test.describe( 'Floating Widget', () => {
 		await fab.click();
 
 		const panel = getFloatingPanel( page );
-		// .gaa-w-input-textarea is the textarea in WidgetInput.
-		const input = panel.locator( '.gaa-w-input-textarea' );
+		// .sdaa-w-input-textarea is the textarea in WidgetInput.
+		const input = panel.locator( '.sdaa-w-input-textarea' );
 		await input.fill( 'Test message via Enter' );
 		await input.press( 'Enter' );
 

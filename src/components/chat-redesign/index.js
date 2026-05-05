@@ -113,9 +113,9 @@ export default function ChatRedesign() {
 	}, [ sending, currentSessionId, refreshChangesCount ] );
 
 	return (
-		<div className={ `gaa-cr is-density-${ density }` }>
+		<div className={ `sdaa-cr is-density-${ density }` }>
 			<div
-				className={ `gaa-cr-shell${
+				className={ `sdaa-cr-shell${
 					sidebarCollapsed ? ' is-sidebar-collapsed' : ''
 				}` }
 			>
@@ -126,7 +126,7 @@ export default function ChatRedesign() {
 					/>
 				</ErrorBoundary>
 
-				<section className="gaa-cr-convo">
+				<section className="sdaa-cr-convo">
 					<ConvoHeader
 						sidebarCollapsed={ sidebarCollapsed }
 						onExpandSidebar={ () => setSidebarCollapsed( false ) }

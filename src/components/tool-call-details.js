@@ -59,7 +59,7 @@ function Badge( { label, color = 'blue' } ) {
 	const scheme = colors[ color ] || colors.blue;
 
 	return (
-		<span className="sd-ai-agent-tool-badge" style={ scheme }>
+		<span className="sdaa-tool-badge" style={ scheme }>
 			{ label }
 		</span>
 	);
@@ -89,12 +89,12 @@ function ExpandableContent( { content, label, maxPreview = 200 } ) {
 			: content.substring( 0, maxPreview ) + '...';
 
 	return (
-		<div className="sd-ai-agent-tool-expandable">
+		<div className="sdaa-tool-expandable">
 			<details>
-				<summary className="sd-ai-agent-tool-expandable-toggle">
+				<summary className="sdaa-tool-expandable-toggle">
 					{ label }
 					{ isLong && (
-						<span className="sd-ai-agent-tool-expandable-size">
+						<span className="sdaa-tool-expandable-size">
 							{ ' ' }
 							({ formatSize( content.length ) })
 						</span>
@@ -102,7 +102,7 @@ function ExpandableContent( { content, label, maxPreview = 200 } ) {
 				</summary>
 				{ /* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- the pre is supplementary; the button below is the primary expand control */ }
 				<pre
-					className="sd-ai-agent-tool-expandable-content"
+					className="sdaa-tool-expandable-content"
 					onClick={
 						isLong && ! expanded
 							? () => setExpanded( true )
@@ -113,7 +113,7 @@ function ExpandableContent( { content, label, maxPreview = 200 } ) {
 					{ isLong && ! expanded && (
 						<button
 							type="button"
-							className="sd-ai-agent-tool-expand-btn"
+							className="sdaa-tool-expand-btn"
 							onClick={ ( e ) => {
 								e.stopPropagation();
 								setExpanded( true );
@@ -216,17 +216,15 @@ function ToolCallPair( { call, response } ) {
 
 	return (
 		<div
-			className={ `sd-ai-agent-tool-pair${
-				isSkill ? ' sd-ai-agent-tool-pair--skill' : ''
+			className={ `sdaa-tool-pair${
+				isSkill ? ' sdaa-tool-pair--skill' : ''
 			}` }
 		>
-			<div className="sd-ai-agent-tool-pair-header">
-				<span className="sd-ai-agent-tool-pair-icon">
+			<div className="sdaa-tool-pair-header">
+				<span className="sdaa-tool-pair-icon">
 					{ isSkill ? '\u{1F4DA}' : '\u{2699}\u{FE0F}' }
 				</span>
-				<code className="sd-ai-agent-tool-pair-name">
-					{ displayName }
-				</code>
+				<code className="sdaa-tool-pair-name">{ displayName }</code>
 				{ ranInBrowser && (
 					<Badge
 						label={ __( 'Browser', 'sd-ai-agent' ) }
@@ -240,12 +238,12 @@ function ToolCallPair( { call, response } ) {
 					/>
 				) }
 				{ hasResponse && response.response?.success === false ? (
-					<span className="sd-ai-agent-tool-pair-status sd-ai-agent-tool-pair-status--error">
+					<span className="sdaa-tool-pair-status sdaa-tool-pair-status--error">
 						{ '✗' }
 					</span>
 				) : (
 					hasResponse && (
-						<span className="sd-ai-agent-tool-pair-status sd-ai-agent-tool-pair-status--ok">
+						<span className="sdaa-tool-pair-status sdaa-tool-pair-status--ok">
 							{ '✓' }
 						</span>
 					)
@@ -314,10 +312,10 @@ export default function ToolCallDetails( { toolCalls } ) {
 		summaryParts.join( ', ' ) || __( 'tool calls executed', 'sd-ai-agent' );
 
 	return (
-		<div className="sd-ai-agent-tool-calls">
+		<div className="sdaa-tool-calls">
 			<details>
 				<summary>{ summaryText }</summary>
-				<div className="sd-ai-agent-tool-list">
+				<div className="sdaa-tool-list">
 					{ pairs.map( ( pair, i ) => (
 						<ToolCallPair
 							key={ pair.call.id || i }

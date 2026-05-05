@@ -120,8 +120,8 @@ class ModelBenchmarkPageTest extends WP_UnitTestCase {
 		ModelBenchmarkPage::render();
 		$output = (string) ob_get_clean();
 
-		$this->assertStringContainsString( 'sd-ai-agent-benchmark-wrap', $output );
-		$this->assertStringContainsString( 'sd-ai-agent-benchmark-root', $output );
+		$this->assertStringContainsString( 'sdaa-benchmark-wrap', $output );
+		$this->assertStringContainsString( 'sdaa-benchmark-root', $output );
 	}
 
 	/**

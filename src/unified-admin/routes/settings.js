@@ -15,7 +15,7 @@ import SettingsApp from '../../settings-page/settings-app';
  */
 export default function SettingsRoute() {
 	return (
-		<div className="sd-ai-agent-route sd-ai-agent-route-settings">
+		<div className="sdaa-route sdaa-route-settings">
 			<SettingsApp />
 		</div>
 	);

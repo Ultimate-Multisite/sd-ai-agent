@@ -57,10 +57,10 @@ const ShortcutsHelp = lazy( () =>
  *    so it disappears automatically once a provider becomes available.
  *
  * 2. **Onboarding bootstrap** — shown when a provider exists but onboarding
- *    has not yet completed. Renders the normal ChatPanel and auto-sends a
- *    kickoff message so the AI explores the site before asking any questions.
+ *    has not yet completed. Auto-sends a kickoff message so the AI explores
+ *    the site before asking any questions.
  *
- * After onboarding completes the full layout (sidebar + ChatPanel) is shown.
+ * After onboarding completes the full redesigned chat layout is shown.
  *
  * @return {JSX.Element|null} Admin page app element, or null while settings are loading.
  */
@@ -137,7 +137,7 @@ function AdminPageApp() {
 			'mod+n': () => clearCurrentSession(),
 			'mod+k': () => {
 				const searchInput = document.querySelector(
-					'.gaa-cr-search-input, .sd-ai-agent-sidebar-search'
+					'.sdaa-cr-search-input'
 				);
 				if ( searchInput ) {
 					searchInput.focus();
@@ -225,9 +225,9 @@ function mountAdminPageApp( container ) {
  *
  * The unified admin (src/unified-admin/routes/chat.js) calls
  * window.sdAiAgentChat.mount(container) to embed the full chat UI
- * (sidebar + chat panel) inside the #sd-ai-agent-chat-container div that
+ * (sidebar + chat panel) inside the #sdaa-chat-container div that
  * ChatRoute renders. This avoids the old pattern of both the unified admin
- * and the admin-page bundle competing to mount into #sd-ai-agent-root.
+ * and the admin-page bundle competing to mount into #sdaa-root.
  */
 window.sdAiAgentChat = {
 	/**

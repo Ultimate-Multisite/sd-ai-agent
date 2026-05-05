@@ -342,8 +342,8 @@ class UnifiedAdminMenuTest extends WP_UnitTestCase {
 		UnifiedAdminMenu::render();
 		$output = (string) ob_get_clean();
 
-		$this->assertStringContainsString( 'sd-ai-agent-root', $output );
-		$this->assertStringContainsString( 'sd-ai-agent-wrap', $output );
+		$this->assertStringContainsString( 'sdaa-root', $output );
+		$this->assertStringContainsString( 'sdaa-wrap', $output );
 	}
 
 	// ─── handleLegacyRedirects ────────────────────────────────────────────────

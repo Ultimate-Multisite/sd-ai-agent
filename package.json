@@ -126,13 +126,7 @@
 			"limit": "400 KB",
 			"gzip": true
 		},
-		{
-			"name": "screen-meta",
-			"path": "build/screen-meta.js",
-			"limit": "400 KB",
-			"gzip": true
-		},
-		{
+    {
 			"name": "unified-admin",
 			"path": "build/unified-admin.js",
 			"limit": "500 KB",

@@ -131,45 +131,45 @@ export default function ChangesDrawer( {
 
 	return (
 		<div
-			className="gaa-cr-changes-drawer"
+			className="sdaa-cr-changes-drawer"
 			role="dialog"
 			aria-label={ __( 'Session changes', 'sd-ai-agent' ) }
 		>
-			<div className="gaa-cr-changes-drawer-head">
+			<div className="sdaa-cr-changes-drawer-head">
 				<span>{ headerLabel }</span>
 				<button
 					type="button"
-					className="gaa-cr-icon-btn"
+					className="sdaa-cr-icon-btn"
 					onClick={ onClose }
 					aria-label={ __( 'Close changes drawer', 'sd-ai-agent' ) }
 				>
 					<Icon icon={ closeSmall } size={ 18 } />
 				</button>
 			</div>
-			<div className="gaa-cr-changes-drawer-body">
+			<div className="sdaa-cr-changes-drawer-body">
 				{ loading && changes.length === 0 && (
-					<div className="gaa-cr-changes-drawer-empty">
+					<div className="sdaa-cr-changes-drawer-empty">
 						{ __( 'Loading changes…', 'sd-ai-agent' ) }
 					</div>
 				) }
 				{ ! loading && changes.length === 0 && (
-					<div className="gaa-cr-changes-drawer-empty">
+					<div className="sdaa-cr-changes-drawer-empty">
 						{ __( 'No un-reverted changes.', 'sd-ai-agent' ) }
 					</div>
 				) }
 				{ changes.map( ( c ) => (
-					<div key={ c.id } className="gaa-cr-changes-row">
-						<div className="gaa-cr-changes-row-body">
-							<div className="gaa-cr-changes-row-title">
+					<div key={ c.id } className="sdaa-cr-changes-row">
+						<div className="sdaa-cr-changes-row-body">
+							<div className="sdaa-cr-changes-row-title">
 								{ changeTitle( c ) }
 							</div>
-							<div className="gaa-cr-changes-row-meta">
+							<div className="sdaa-cr-changes-row-meta">
 								{ changeMeta( c ) }
 							</div>
 						</div>
 						<button
 							type="button"
-							className="gaa-cr-icon-btn is-small"
+							className="sdaa-cr-icon-btn is-small"
 							onClick={ () => handleRevert( c.id ) }
 							aria-label={ __(
 								'Revert this change',
@@ -181,9 +181,9 @@ export default function ChangesDrawer( {
 					</div>
 				) ) }
 			</div>
-			<div className="gaa-cr-changes-drawer-foot">
+			<div className="sdaa-cr-changes-drawer-foot">
 				<a
-					className="gaa-cr-btn-sm"
+					className="sdaa-cr-btn-sm"
 					href={
 						window.sdAiAgentData?.changesPageUrl ||
 						window.location.href.split( '#' )[ 0 ] + '#/changes'
@@ -193,7 +193,7 @@ export default function ChangesDrawer( {
 				</a>
 				<button
 					type="button"
-					className="gaa-cr-btn-sm is-destructive"
+					className="sdaa-cr-btn-sm is-destructive"
 					onClick={ handleRevertAll }
 					disabled={ reverting || changes.length === 0 }
 				>

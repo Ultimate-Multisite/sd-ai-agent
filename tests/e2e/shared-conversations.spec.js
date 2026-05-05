@@ -250,16 +250,16 @@ async function setupMocks( page, options = {} ) {
  * React render cycle that follows the intercepted sessions list response.
  * Even though goToAgentPage() waits for the sessions response, there is still
  * a brief async gap between the store receiving the data and React committing
- * the DOM update that produces .gaa-cr-session-row nodes.
+ * the DOM update that produces .sdaa-cr-session-row nodes.
  *
  * The ChatRedesign Sidebar uses:
- *   .gaa-cr-session-row  (was .sd-ai-agent-session-item)
- *   button[aria-label="Session options"]  (was .sd-ai-agent-session-more)
+ *   .sdaa-cr-session-row  (was .sdaa-session-item)
+ *   button[aria-label="Session options"]  (was .sdaa-session-more)
  *
  * @param {import('@playwright/test').Page} page
  */
 async function openFirstSessionContextMenu( page ) {
-	const sessionItem = page.locator( '.gaa-cr-session-row' ).first();
+	const sessionItem = page.locator( '.sdaa-cr-session-row' ).first();
 	await expect( sessionItem ).toBeVisible( { timeout: 10_000 } );
 	// Hover to reveal the ⋯ button, then click it.
 	await sessionItem.hover();
@@ -271,7 +271,7 @@ async function openFirstSessionContextMenu( page ) {
 /**
  * Click the "Shared" tab in the session sidebar.
  *
- * NOTE: The ChatRedesign Sidebar (gaa-cr-*) does not yet have a "Shared" tab.
+ * NOTE: The ChatRedesign Sidebar (sdaa-cr-*) does not yet have a "Shared" tab.
  * The old SessionSidebar had Active / Archived / Trash / Shared tabs; the new
  * Sidebar only has Active / Archived / Trash. Tests that call this helper are
  * marked test.fixme until the Shared tab is added to the new Sidebar.
@@ -370,9 +370,9 @@ test.describe( 'Shared Conversations (t091)', () => {
 		test.fixme(
 			'shared session shows shared badge icon in sidebar',
 			async ( { page } ) => {
-				// FIXME: The ChatRedesign Sidebar (gaa-cr-*) does not yet render
+				// FIXME: The ChatRedesign Sidebar (sdaa-cr-*) does not yet render
 				// a shared-icon badge on session rows. The old SessionSidebar
-				// rendered .sd-ai-agent-shared-icon when session.is_shared=true.
+				// rendered .sdaa-shared-icon when session.is_shared=true.
 				// This test should be re-enabled once the shared badge is added to
 				// the new Sidebar component.
 				await page.unrouteAll( { behavior: 'ignoreErrors' } );
@@ -383,10 +383,10 @@ test.describe( 'Shared Conversations (t091)', () => {
 				} );
 				await goToAgentPage( page );
 				await expect(
-					page.locator( '.gaa-cr-session-row' ).first()
+					page.locator( '.sdaa-cr-session-row' ).first()
 				).toBeVisible( { timeout: 10_000 } );
 				const sharedIcon = page
-					.locator( '.gaa-cr-session-row.is-shared .gaa-cr-shared-icon' )
+					.locator( '.sdaa-cr-session-row.is-shared .sdaa-cr-shared-icon' )
 					.first();
 				await expect( sharedIcon ).toBeVisible( { timeout: 10_000 } );
 			}
@@ -513,7 +513,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 			await goToAgentPage( page );
 		} );
 
-		// FIXME: The ChatRedesign Sidebar (gaa-cr-*) does not yet include a
+		// FIXME: The ChatRedesign Sidebar (sdaa-cr-*) does not yet include a
 		// "Shared" tab. The old SessionSidebar had Active / Archived / Trash /
 		// Shared tabs; the new Sidebar only has Active / Archived / Trash.
 		// All tests in this describe block are marked fixme until the Shared
@@ -555,7 +555,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 				await clickSharedTab( page );
 				await sharedResponsePromise;
 				const sessionTitle = page
-					.locator( '.gaa-cr-session-row' )
+					.locator( '.sdaa-cr-session-row' )
 					.filter( { hasText: MOCK_SESSION.title } );
 				await expect( sessionTitle.first() ).toBeVisible( {
 					timeout: 10_000,
@@ -573,7 +573,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 				} );
 				await goToAgentPage( page );
 				await clickSharedTab( page );
-				const emptyState = page.locator( '.gaa-cr-session-empty' );
+				const emptyState = page.locator( '.sdaa-cr-session-empty' );
 				await expect( emptyState ).toBeVisible();
 				await expect( emptyState ).toContainText(
 					/no shared conversations/i
@@ -584,7 +584,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 
 	// FIXME: Tests in this describe block require the "Shared" tab which does
 	// not yet exist in the ChatRedesign Sidebar. Re-enable when the Shared tab
-	// is added back to the gaa-cr-* sidebar.
+	// is added back to the sdaa-cr-* sidebar.
 	test.describe.fixme( 'Second admin — view permission', () => {
 		/**
 		 * This suite uses a second browser context to simulate a second admin
@@ -629,7 +629,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 				await sharedResponsePromise;
 
 				const sessionTitle = secondPage
-					.locator( '.sd-ai-agent-session-item' )
+					.locator( '.sdaa-session-item' )
 					.filter( { hasText: MOCK_SESSION.title } );
 				// Use a 10 s timeout to accommodate the async gap between the store
 				// receiving the response and React committing the DOM update.
@@ -687,7 +687,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 				// opening the context menu. The store update and React re-render
 				// happen asynchronously after the HTTP response is received.
 				await expect(
-					secondPage.locator( '.sd-ai-agent-session-item' ).first()
+					secondPage.locator( '.sdaa-session-item' ).first()
 				).toBeVisible( { timeout: 10_000 } );
 
 				// Open context menu for the shared session.
@@ -784,24 +784,24 @@ test.describe( 'Shared Conversations (t091)', () => {
 				// Use a 10 s timeout to accommodate the async gap between the store
 				// receiving the shared sessions response and React committing the DOM update.
 				const sessionItem = secondPage
-					.locator( '.sd-ai-agent-session-item' )
+					.locator( '.sdaa-session-item' )
 					.filter( { hasText: MOCK_SESSION.title } )
 					.first();
 				await expect( sessionItem ).toBeVisible( { timeout: 10_000 } );
 				await sessionItem.click();
 
 				// Type a message and send it.
-				const input = secondPage.locator( '.sd-ai-agent-input' );
+				const input = secondPage.locator( '.sdaa-input' );
 				await expect( input ).toBeVisible();
 				await input.fill( 'Hello from second admin!' );
 
-				const sendButton = secondPage.locator( '.sd-ai-agent-send-btn' );
+				const sendButton = secondPage.locator( '.sdaa-send-btn' );
 				await expect( sendButton ).toBeEnabled();
 				await sendButton.click();
 
 				// The user message row should appear (synchronous optimistic update).
 				const messageRow = secondPage
-					.locator( '.sd-ai-agent-message-row' )
+					.locator( '.sdaa-message-row' )
 					.first();
 				await expect( messageRow ).toBeVisible( { timeout: 5_000 } );
 			} finally {
@@ -851,7 +851,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 				// opening the context menu. The store update and React re-render
 				// happen asynchronously after the HTTP response is received.
 				await expect(
-					secondPage.locator( '.sd-ai-agent-session-item' ).first()
+					secondPage.locator( '.sdaa-session-item' ).first()
 				).toBeVisible( { timeout: 10_000 } );
 
 				await openFirstSessionContextMenu( secondPage );
@@ -911,7 +911,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 				// Use a 10 s timeout to accommodate the async gap between the store
 				// receiving the response and React committing the DOM update.
 				const sessionTitle = secondPage
-					.locator( '.sd-ai-agent-session-item' )
+					.locator( '.sdaa-session-item' )
 					.filter( { hasText: MOCK_SESSION.title } );
 				await expect( sessionTitle.first() ).toBeVisible( {
 					timeout: 10_000,
@@ -936,7 +936,7 @@ test.describe( 'Shared Conversations (t091)', () => {
 
 				// Empty state should be shown.
 				const emptyState = secondPage.locator(
-					'.sd-ai-agent-session-empty'
+					'.sdaa-session-empty'
 				);
 				await expect( emptyState ).toBeVisible();
 			} finally {

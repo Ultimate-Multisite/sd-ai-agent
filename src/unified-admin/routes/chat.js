@@ -114,11 +114,11 @@ export default function ChatRoute() {
 	}, [] );
 
 	return (
-		<div className="sd-ai-agent-route sd-ai-agent-route-chat">
+		<div className="sdaa-route sdaa-route-chat">
 			<div
 				ref={ containerRef }
-				id="sd-ai-agent-chat-container"
-				className="sd-ai-agent-chat-container"
+				id="sdaa-chat-container"
+				className="sdaa-chat-container"
 			/>
 		</div>
 	);
