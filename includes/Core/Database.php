@@ -36,7 +36,7 @@ use SdAiAgent\Tools\CustomTools;
 class Database {
 
 	const DB_VERSION_OPTION = 'sd_ai_agent_db_version';
-	const DB_VERSION        = '19.0.0';
+	const DB_VERSION        = '20.0.0';
 
 	// ─── Table Name Registry ──────────────────────────────────────────────────
 
@@ -169,6 +169,24 @@ class Database {
 		return $wpdb->prefix . 'sd_ai_agent_shared_sessions';
 	}
 
+	/**
+	 * Get the benchmark runs table name.
+	 */
+	public static function benchmark_runs_table_name(): string {
+		global $wpdb;
+		/** @var \wpdb $wpdb */
+		return $wpdb->prefix . 'sd_ai_agent_benchmark_runs';
+	}
+
+	/**
+	 * Get the benchmark results table name.
+	 */
+	public static function benchmark_results_table_name(): string {
+		global $wpdb;
+		/** @var \wpdb $wpdb */
+		return $wpdb->prefix . 'sd_ai_agent_benchmark_results';
+	}
+
 
 	/**
 	 * Get the provider trace table name.
@@ -242,6 +260,8 @@ class Database {
 		$modified_files_table         = self::modified_files_table_name();
 		$agents_table                 = self::agents_table_name();
 		$shared_sessions_table        = self::shared_sessions_table_name();
+		$benchmark_runs_table         = self::benchmark_runs_table_name();
+		$benchmark_results_table      = self::benchmark_results_table_name();
 		$provider_trace_table         = self::provider_trace_table_name();
 		$generated_plugins_table      = self::generated_plugins_table_name();
 		$active_jobs_table            = self::active_jobs_table_name();
@@ -504,6 +524,58 @@ class Database {
 			PRIMARY KEY  (id),
 			UNIQUE KEY session_id (session_id),
 			KEY shared_by (shared_by)
+		) {$charset};
+
+		CREATE TABLE {$benchmark_runs_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			run_id varchar(100) NOT NULL,
+			suite_slug varchar(100) NOT NULL DEFAULT '',
+			provider_id varchar(100) NOT NULL DEFAULT '',
+			model_id varchar(100) NOT NULL DEFAULT '',
+			status varchar(20) NOT NULL DEFAULT 'running',
+			total_questions int(11) unsigned NOT NULL DEFAULT 0,
+			passed_count int(11) unsigned NOT NULL DEFAULT 0,
+			failed_count int(11) unsigned NOT NULL DEFAULT 0,
+			error_count int(11) unsigned NOT NULL DEFAULT 0,
+			log_dir varchar(1000) NOT NULL DEFAULT '',
+			started_at datetime NOT NULL,
+			completed_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY run_id (run_id),
+			KEY suite_slug (suite_slug),
+			KEY provider_model (provider_id, model_id),
+			KEY status (status),
+			KEY started_at (started_at)
+		) {$charset};
+
+		CREATE TABLE {$benchmark_results_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			run_id varchar(100) NOT NULL,
+			question_id varchar(100) NOT NULL DEFAULT '',
+			suite_slug varchar(100) NOT NULL DEFAULT '',
+			category varchar(100) NOT NULL DEFAULT '',
+			provider_id varchar(100) NOT NULL DEFAULT '',
+			model_id varchar(100) NOT NULL DEFAULT '',
+			status varchar(20) NOT NULL DEFAULT 'pending',
+			passed tinyint(1) NOT NULL DEFAULT 0,
+			assertions_total int(11) unsigned NOT NULL DEFAULT 0,
+			assertions_passed int(11) unsigned NOT NULL DEFAULT 0,
+			turns_used int(11) unsigned NOT NULL DEFAULT 0,
+			duration_ms bigint(20) unsigned NOT NULL DEFAULT 0,
+			prompt longtext NOT NULL,
+			response longtext NOT NULL,
+			assertion_results longtext NOT NULL,
+			error_message text NOT NULL DEFAULT '',
+			log_file varchar(1000) NOT NULL DEFAULT '',
+			created_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			KEY run_id (run_id),
+			KEY question_id (question_id),
+			KEY suite_slug (suite_slug),
+			KEY provider_model (provider_id, model_id),
+			KEY status (status),
+			KEY passed (passed),
+			KEY created_at (created_at)
 		) {$charset};
 
 
