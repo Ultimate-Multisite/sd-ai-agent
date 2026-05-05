@@ -125,6 +125,58 @@ class ContentAbilities {
 				},
 			]
 		);
+
+		wp_register_ability(
+			'ai-agent/create-contact-form',
+			[
+				'label'               => __( 'Create Contact Form', 'superdav-ai-agent' ),
+				'description'         => __( 'Create a simple contact form for a page. Uses Contact Form 7 when available and otherwise returns a Gutenberg HTML block with a dependency-free form.', 'superdav-ai-agent' ),
+				'category'            => 'sd-ai-agent',
+				'input_schema'        => [
+					'type'       => 'object',
+					'properties' => [
+						'title'           => [
+							'type'        => 'string',
+							'description' => 'Form title (default: "Contact Form").',
+						],
+						'recipient_email' => [
+							'type'        => 'string',
+							'description' => 'Email address that should receive submissions. Defaults to the site admin email.',
+						],
+						'submit_label'    => [
+							'type'        => 'string',
+							'description' => 'Submit button label (default: "Send Message").',
+						],
+						'site_url'        => [
+							'type'        => 'string',
+							'description' => 'Subsite URL for multisite. Omit for the main site.',
+						],
+					],
+					'required'   => [],
+				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'provider'  => [ 'type' => 'string' ],
+						'title'     => [ 'type' => 'string' ],
+						'shortcode' => [ 'type' => 'string' ],
+						'block'     => [ 'type' => 'string' ],
+						'form_id'   => [ 'type' => 'integer' ],
+						'message'   => [ 'type' => 'string' ],
+					],
+				],
+				'meta'                => [
+					'annotations' => [
+						'readonly'    => false,
+						'destructive' => false,
+					],
+				],
+				'execute_callback'    => [ __CLASS__, 'handle_create_contact_form' ],
+				'permission_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			]
+		);
 	}
 
 	/**
@@ -318,6 +370,209 @@ class ContentAbilities {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Handle the create-contact-form ability call.
+	 *
+	 * @param array<string,mixed> $input Input with optional title, recipient_email, submit_label, site_url.
+	 * @return array<string,mixed> Contact form result.
+	 */
+	public static function handle_create_contact_form( array $input ): array {
+		// @phpstan-ignore-next-line
+		$title = sanitize_text_field( $input['title'] ?? __( 'Contact Form', 'superdav-ai-agent' ) );
+		if ( '' === $title ) {
+			$title = __( 'Contact Form', 'superdav-ai-agent' );
+		}
+
+		// @phpstan-ignore-next-line
+		$recipient_email = sanitize_email( $input['recipient_email'] ?? get_option( 'admin_email' ) );
+		if ( '' === $recipient_email ) {
+			$recipient_email = (string) get_option( 'admin_email' );
+		}
+
+		// @phpstan-ignore-next-line
+		$submit_label = sanitize_text_field( $input['submit_label'] ?? __( 'Send Message', 'superdav-ai-agent' ) );
+		if ( '' === $submit_label ) {
+			$submit_label = __( 'Send Message', 'superdav-ai-agent' );
+		}
+
+		$site_url = $input['site_url'] ?? '';
+		$switched = false;
+
+		if ( ! empty( $site_url ) && is_multisite() ) {
+			$blog_id = get_blog_id_from_url(
+				// @phpstan-ignore-next-line
+				(string) ( wp_parse_url( $site_url, PHP_URL_HOST ) ?? '' ),
+				// @phpstan-ignore-next-line
+				(string) ( wp_parse_url( $site_url, PHP_URL_PATH ) ?: '/' )
+			);
+
+			if ( $blog_id && $blog_id !== get_current_blog_id() ) {
+				switch_to_blog( $blog_id );
+				$switched = true;
+			}
+		}
+
+		$result = self::create_contact_form_result( $title, $recipient_email, $submit_label );
+
+		if ( $switched ) {
+			restore_current_blog();
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Create the best available contact form representation.
+	 *
+	 * @param string $title           Form title.
+	 * @param string $recipient_email Recipient email address.
+	 * @param string $submit_label    Submit button label.
+	 * @return array<string,mixed> Contact form result.
+	 */
+	private static function create_contact_form_result( string $title, string $recipient_email, string $submit_label ): array {
+		$cf7_class = 'WPCF7_ContactForm';
+
+		if ( class_exists( $cf7_class ) ) {
+			$cf7_result = self::create_contact_form_7_form( $cf7_class, $title, $recipient_email, $submit_label );
+
+			if ( ! empty( $cf7_result ) ) {
+				return $cf7_result;
+			}
+		}
+
+		$block = self::build_html_contact_form_block( $title, $recipient_email, $submit_label );
+
+		return [
+			'provider'  => 'html',
+			'title'     => $title,
+			'shortcode' => '',
+			'block'     => $block,
+			'form_id'   => 0,
+			'message'   => __( 'Contact Form 7 is not active; use the returned Gutenberg HTML block in the page content.', 'superdav-ai-agent' ),
+		];
+	}
+
+	/**
+	 * Create a Contact Form 7 form when the plugin is active.
+	 *
+	 * @param string $cf7_class       Contact Form 7 class name.
+	 * @param string $title           Form title.
+	 * @param string $recipient_email Recipient email address.
+	 * @param string $submit_label    Submit button label.
+	 * @return array<string,mixed> Contact Form 7 result, or empty array on unsupported CF7 API.
+	 */
+	private static function create_contact_form_7_form( string $cf7_class, string $title, string $recipient_email, string $submit_label ): array {
+		$form_markup = self::build_contact_form_7_markup( $submit_label );
+		$mail        = [
+			'subject'            => sprintf(
+				/* translators: %s: contact form title */
+				__( '%s submission', 'superdav-ai-agent' ),
+				$title
+			),
+			'sender'             => '[your-name] <[your-email]>',
+			'body'               => "From: [your-name] <[your-email]>\nSubject: [your-subject]\n\nMessage:\n[your-message]",
+			'recipient'          => $recipient_email,
+			'additional_headers' => 'Reply-To: [your-email]',
+			'attachments'        => '',
+			'use_html'           => false,
+			'exclude_blank'      => false,
+		];
+
+		if ( method_exists( $cf7_class, 'create' ) ) {
+			$create_method = new \ReflectionMethod( $cf7_class, 'create' );
+			$form          = $create_method->getNumberOfParameters() > 0 ? $create_method->invoke( null, $title ) : $create_method->invoke( null );
+		} elseif ( method_exists( $cf7_class, 'get_template' ) ) {
+			$template_method = new \ReflectionMethod( $cf7_class, 'get_template' );
+			$form            = $template_method->invoke(
+				null,
+				[
+					'title' => $title,
+				]
+			);
+		} else {
+			return [];
+		}
+
+		if ( is_object( $form ) && method_exists( $form, 'set_properties' ) ) {
+			$form->set_properties(
+				[
+					'form' => $form_markup,
+					'mail' => $mail,
+				]
+			);
+		}
+
+		if ( is_object( $form ) && method_exists( $form, 'save' ) ) {
+			$form->save();
+		}
+
+		if ( ! is_object( $form ) || ! method_exists( $form, 'id' ) ) {
+			return [];
+		}
+
+		$form_id = (int) $form->id();
+		if ( $form_id <= 0 ) {
+			return [];
+		}
+
+		$shortcode = sprintf(
+			'[contact-form-7 id="%d" title="%s"]',
+			$form_id,
+			esc_attr( $title )
+		);
+
+		return [
+			'provider'  => 'contact-form-7',
+			'title'     => $title,
+			'shortcode' => $shortcode,
+			'block'     => '<!-- wp:shortcode -->' . "\n" . $shortcode . "\n" . '<!-- /wp:shortcode -->',
+			'form_id'   => $form_id,
+			'message'   => __( 'Contact Form 7 form created; insert the shortcode block into page content.', 'superdav-ai-agent' ),
+		];
+	}
+
+	/**
+	 * Build Contact Form 7 form markup.
+	 *
+	 * @param string $submit_label Submit button label.
+	 * @return string Contact Form 7 markup.
+	 */
+	private static function build_contact_form_7_markup( string $submit_label ): string {
+		return sprintf(
+			"<label>Your name\n[text* your-name autocomplete:name]</label>\n\n<label>Your email\n[email* your-email autocomplete:email]</label>\n\n<label>Subject\n[text your-subject]</label>\n\n<label>Your message\n[textarea* your-message]</label>\n\n[submit \"%s\"]",
+			esc_attr( $submit_label )
+		);
+	}
+
+	/**
+	 * Build a dependency-free Gutenberg HTML contact form block.
+	 *
+	 * @param string $title           Form title.
+	 * @param string $recipient_email Recipient email address.
+	 * @param string $submit_label    Submit button label.
+	 * @return string Gutenberg HTML block markup.
+	 */
+	private static function build_html_contact_form_block( string $title, string $recipient_email, string $submit_label ): string {
+		$mailto = add_query_arg(
+			[
+				'subject' => $title,
+			],
+			'mailto:' . $recipient_email
+		);
+
+		$html = sprintf(
+			'<form class="sd-ai-agent-contact-form" action="%1$s" method="post"><p><label>%2$s<br><input type="text" name="name" autocomplete="name" required></label></p><p><label>%3$s<br><input type="email" name="email" autocomplete="email" required></label></p><p><label>%4$s<br><input type="text" name="subject"></label></p><p><label>%5$s<br><textarea name="message" rows="6" required></textarea></label></p><p><button type="submit">%6$s</button></p></form>',
+			esc_url( $mailto ),
+			esc_html__( 'Name', 'superdav-ai-agent' ),
+			esc_html__( 'Email', 'superdav-ai-agent' ),
+			esc_html__( 'Subject', 'superdav-ai-agent' ),
+			esc_html__( 'Message', 'superdav-ai-agent' ),
+			esc_html( $submit_label )
+		);
+
+		return '<!-- wp:html -->' . "\n" . $html . "\n" . '<!-- /wp:html -->';
 	}
 
 	/**
