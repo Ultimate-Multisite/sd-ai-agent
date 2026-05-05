@@ -46,11 +46,16 @@ class SkillAutoInjector {
 	 * @var array<string, string>
 	 */
 	private const TRIGGER_MAP = [
+		// Kadence-specific triggers must precede generic gutenberg-blocks patterns
+		// so that messages mentioning kadence/* blocks route to the kadence skill first.
+		'/\bkadence\b|kadence\/(?:rowlayout|column|advancedheading|advancedbtn|singlebtn)|\bkbVersion\b|\bcolLayout\b|kt-adv-heading|kt-inside-inner-col|kb-section-dir-horizontal|kt-highlight/i' => 'kadence-blocks',
+		'/\b(?:header\s*builder|footer\s*builder|kadence\s*theme)\b|kadence_(?:before|after)_/i'                                       => 'kadence-theme',
 		'/\b(?:create|build|make|write|generate|add)\b.*\b(?:page|pages|post|posts|blog|article|content|landing|homepage|layout)\b/i' => 'gutenberg-blocks',
 		'/\b(?:page|pages|landing|homepage|layout|column|columns|hero|section|block|blocks|gutenberg)\b/i'                            => 'gutenberg-blocks',
 		'/\b(?:woocommerce|product|products|store|shop|order|orders|cart|checkout|coupon)\b/i'                                         => 'woocommerce',
 		'/\b(?:seo|ranking|rankings|meta\s*tags?|meta\s*description|sitemap|search\s*engine|keyword|keywords)\b/i'                     => 'seo-optimization',
-		'/\b(?:full\s*site\s*edit|fse|block\s*theme|template\s*part|site\s*editor|theme\.json)\b/i'                                    => 'full-site-editing',
+		'/\b(?:full\s*site\s*edit|fse|block\s*theme|template\s*part|site\s*editor|theme\.json)\b/i'                                    => 'block-themes',
+		'/\b(?:classic\s*theme|customizer|functions\.php|widget\s*area|sidebar\s*widget|child\s*theme)\b/i'                          => 'classic-themes',
 		'/\b(?:multisite|network|subsite|subsites|sub-site)\b/i'                                                                       => 'multisite-management',
 		'/\b(?:content\s*market|editorial|content\s*strateg|publish\s*schedule|content\s*audit)\b/i'                                    => 'content-marketing',
 		'/\b(?:analytic|report|metric|dashboard|performance\s*report|growth)\b/i'                                                      => 'analytics-reporting',

@@ -126,6 +126,38 @@ class SkillAutoInjectorTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Kadence-specific phrasing routes to kadence-blocks before gutenberg-blocks.
+	 *
+	 * Order matters: the kadence pattern is declared earlier in TRIGGER_MAP so
+	 * a message about kadence/rowlayout markup resolves to kadence-blocks
+	 * rather than the generic gutenberg-blocks fallback.
+	 */
+	public function test_get_index_description_routes_kadence_to_kadence_blocks(): void {
+		$result = SkillAutoInjector::get_index_description( 'Help me fix a kadence/rowlayout colLayout validation error.' );
+
+		$this->assertStringContainsString( 'kadence-blocks', $result );
+		$this->assertStringNotContainsString( 'gutenberg-blocks', $result );
+	}
+
+	/**
+	 * "kadence header builder" routes to kadence-theme.
+	 */
+	public function test_get_index_description_routes_header_builder_to_kadence_theme(): void {
+		$result = SkillAutoInjector::get_index_description( 'How do I add a CTA in the Kadence header builder?' );
+
+		$this->assertStringContainsString( 'kadence', $result );
+	}
+
+	/**
+	 * Customizer / child theme phrasing routes to classic-themes.
+	 */
+	public function test_get_index_description_routes_classic_theme_phrases(): void {
+		$result = SkillAutoInjector::get_index_description( 'I need to register a widget area in my child theme functions.php.' );
+
+		$this->assertStringContainsString( 'classic-themes', $result );
+	}
+
+	/**
 	 * get_index_description() hint is significantly shorter than the full injection.
 	 *
 	 * The whole point of the strong-model path is to avoid injecting 1 500+
