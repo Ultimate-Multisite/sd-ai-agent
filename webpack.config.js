@@ -14,11 +14,6 @@ module.exports = {
 			'src/floating-widget',
 			'index.js'
 		),
-'benchmark-page': path.resolve(
-			process.cwd(),
-			'src/benchmark-page',
-			'index.js'
-		),
 		'unified-admin': path.resolve(
 			process.cwd(),
 			'src/unified-admin',

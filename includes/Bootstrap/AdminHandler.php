@@ -15,7 +15,6 @@ namespace SdAiAgent\Bootstrap;
 
 use SdAiAgent\Abilities\ToolCapabilities;
 use SdAiAgent\Admin\FloatingWidget;
-use SdAiAgent\Admin\ModelBenchmarkPage;
 use SdAiAgent\Admin\UnifiedAdminMenu;
 use SdAiAgent\Core\Database;
 use SdAiAgent\REST\ConnectorsController;
@@ -41,16 +40,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 )]
 final class AdminHandler {
 
-	/**
-	 * Admin menu registration.
-	 *
-	 * - Unified top-level menu (hash-based React routing).
-	 * - Benchmark page under Tools.
-	 */
 	#[Action( tag: 'admin_menu', priority: 10 )]
 	public function register_menus(): void {
 		UnifiedAdminMenu::register();
-		ModelBenchmarkPage::register();
 	}
 
 	/**
