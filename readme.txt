@@ -18,7 +18,7 @@ Superdav AI Agent adds a powerful AI assistant directly inside your WordPress ad
 
 = Built on WordPress Core =
 
-Superdav AI Agent is built on official WordPress APIs shipping in version 7.0:
+Superdav AI Agent is built on official WordPress APIs available in supported WordPress versions:
 
 * **AI Client SDK** — One interface for all AI providers. Install a connector plugin for OpenAI, Anthropic, Ollama, or any compatible service and Superdav AI Agent works immediately.
 * **Abilities API** — The WordPress-native tool registry. Every tool registered by any plugin on your site is automatically available to the agent. As your site grows, so does the agent's capabilities.
