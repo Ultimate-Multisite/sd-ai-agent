@@ -329,38 +329,42 @@ class BenchmarkCommand extends WP_CLI_Command {
 			$prompt .= "\n\nIMPORTANT: The plugin slug and directory name must be exactly \"{$plugin_slug}\". The main plugin file must be \"{$plugin_slug}/{$plugin_slug}.php\".";
 		}
 
-		// Run the agent loop.
-		$agent_result = $this->run_agent_loop( $prompt, $provider_id, $model_id, (int) ( $question['max_turns'] ?? 20 ) );
+		try {
+			// Run the agent loop.
+			$agent_result = $this->run_agent_loop( $prompt, $provider_id, $model_id, (int) ( $question['max_turns'] ?? 20 ) );
 
-		$log['turns_used']    = $agent_result['turns_used'] ?? 0;
-		$log['token_usage']   = $agent_result['token_usage'] ?? array();
-		$log['tool_call_log'] = $agent_result['tool_call_log'] ?? array();
-		$log['agent_reply']   = $agent_result['reply'] ?? '';
-		$log['elapsed_ms']    = (int) ( ( microtime( true ) - $start_time ) * 1000 );
+			$log['turns_used']    = $agent_result['turns_used'] ?? 0;
+			$log['token_usage']   = $agent_result['token_usage'] ?? array();
+			$log['tool_call_log'] = $agent_result['tool_call_log'] ?? array();
+			$log['agent_reply']   = $agent_result['reply'] ?? '';
+			$log['elapsed_ms']    = (int) ( ( microtime( true ) - $start_time ) * 1000 );
 
-		if ( ! empty( $agent_result['error'] ) ) {
-			$log['agent_error']  = $agent_result['error'];
-			$log['assertions']   = array(
-				'passed'  => 0,
-				'failed'  => 0,
-				'total'   => 0,
-				'results' => array(),
-			);
+			if ( ! empty( $agent_result['error'] ) ) {
+				$log['agent_error']  = $agent_result['error'];
+				$log['assertions']   = array(
+					'passed'  => 0,
+					'failed'  => 0,
+					'total'   => 0,
+					'results' => array(),
+				);
+				$log['completed_at'] = gmdate( 'c' );
+				return $log;
+			}
+
+			// Run assertions against live WordPress state.
+			do_action( 'rest_api_init' );
+			$log['assertions'] = AssertionEngine::run( $question['assertions'], $assertion_ctx );
+
 			$log['completed_at'] = gmdate( 'c' );
 			return $log;
+		} finally {
+			// Always deactivate and remove the sandbox plugin if we created one,
+			// even on agent error or thrown exception, so deterministic slugs
+			// (e.g. event-manager) don't leak into later questions.
+			if ( $needs_plugin && '' !== $plugin_slug ) {
+				$this->cleanup_plugin( $plugin_slug );
+			}
 		}
-
-		// Run assertions against live WordPress state.
-		do_action( 'rest_api_init' );
-		$log['assertions'] = AssertionEngine::run( $question['assertions'], $assertion_ctx );
-
-		// Deactivate and remove the sandbox plugin if we created one.
-		if ( $needs_plugin && '' !== $plugin_slug ) {
-			$this->cleanup_plugin( $plugin_slug );
-		}
-
-		$log['completed_at'] = gmdate( 'c' );
-		return $log;
 	}
 
 	/**

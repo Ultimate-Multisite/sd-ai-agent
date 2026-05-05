@@ -113,14 +113,14 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'post list --post_type=page --post_status=publish --fields=post_title --format=csv --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'post list --post_type=page --post_status=publish --fields=post_title --format=csv --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'CloudSync Pro',
 						'expected_exit_code'      => 0,
 						'description'             => 'Page "CloudSync Pro" is published',
 					),
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'post list --post_type=page --post_status=publish --fields=post_title,post_content --format=json --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'post list --post_type=page --post_status=publish --fields=post_title,post_content --format=json --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'Free|Pro|\$9|pricing|feature',
 						'expected_exit_code'      => 0,
 						'description'             => 'Page content includes pricing and features sections',
@@ -136,14 +136,14 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'post list --post_type=page --fields=post_title,post_status --format=csv --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'post list --post_type=page --fields=post_title,post_status --format=csv --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'Acme|About',
 						'expected_exit_code'      => 0,
 						'description'             => 'About Us page exists',
 					),
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'post list --post_type=page --fields=post_title,post_content --format=json --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'post list --post_type=page --fields=post_title,post_content --format=json --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'Austin|2020|mission|team|contact',
 						'expected_exit_code'      => 0,
 						'description'             => 'Page content includes company details, mission, team and contact sections',
@@ -161,21 +161,21 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'post list --post_type=post --post_status=draft --fields=post_title --format=csv --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'post list --post_type=post --post_status=draft --fields=post_title --format=csv --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'Remote Team|remote team|Best Practices',
 						'expected_exit_code'      => 0,
 						'description'             => 'Blog post draft exists with correct title',
 					),
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'post list --post_type=post --post_status=draft --fields=post_title,post_excerpt --format=json --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'post list --post_type=post --post_status=draft --fields=post_title,post_excerpt --format=json --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'remote.team|management',
 						'expected_exit_code'      => 0,
 						'description'             => 'Post has an excerpt (meta description)',
 					),
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'term list post_tag --fields=name --format=csv --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'term list post_tag --fields=name --format=csv --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'remote work|team management|productivity',
 						'expected_exit_code'      => 0,
 						'description'             => 'Tags "remote work", "team management", "productivity" exist',
@@ -191,21 +191,21 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'post list --post_type=post --post_status=draft --fields=post_title --format=csv --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'post list --post_type=post --post_status=draft --fields=post_title --format=csv --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'AI.*Healthcare|Healthcare.*AI|Future of AI',
 						'expected_exit_code'      => 0,
 						'description'             => 'Blog post draft about AI in Healthcare exists',
 					),
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'post list --post_type=post --post_status=draft --fields=post_title,post_content --format=json --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'post list --post_type=post --post_status=draft --fields=post_title,post_content --format=json --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'diagnostic|drug.discovery|patient.care',
 						'expected_exit_code'      => 0,
 						'description'             => 'Post content covers all three required topics',
 					),
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'post list --post_type=post --post_status=draft --fields=post_title,_thumbnail_id --format=json --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'post list --post_type=post --post_status=draft --fields=post_title,_thumbnail_id --format=json --url=wp-multisite-waas.test',
 						'expected_output_pattern' => '_thumbnail_id|thumbnail',
 						'expected_exit_code'      => 0,
 						'description'             => 'Post has a featured image set',
@@ -223,21 +223,21 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'wc product list --field=name --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'wc product list --field=name --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'Ergonomic Standing Desk',
 						'expected_exit_code'      => 0,
 						'description'             => 'WooCommerce product "Ergonomic Standing Desk" exists',
 					),
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'wc product list --fields=name,sku,regular_price,sale_price,stock_quantity --format=json --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'wc product list --fields=name,sku,regular_price,sale_price,stock_quantity --format=json --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'DESK-ERG-001',
 						'expected_exit_code'      => 0,
 						'description'             => 'Product has correct SKU DESK-ERG-001',
 					),
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'wc product list --fields=name,regular_price,sale_price --format=json --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'wc product list --fields=name,regular_price,sale_price --format=json --url=wp-multisite-waas.test',
 						'expected_output_pattern' => '599|449',
 						'expected_exit_code'      => 0,
 						'description'             => 'Product has correct regular ($599.99) and sale ($449.99) prices',
@@ -255,7 +255,7 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'post list --post_status=publish --fields=post_title,post_date --format=csv --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'post list --post_status=publish --fields=post_title,post_date --format=csv --url=wp-multisite-waas.test',
 						'expected_output_pattern' => '.',
 						'expected_exit_code'      => 0,
 						'description'             => 'Agent successfully queried the WordPress post list',
@@ -276,14 +276,14 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'plugin list --field=name --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'plugin list --field=name --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'contact-form-7',
 						'expected_exit_code'      => 0,
 						'description'             => 'contact-form-7 plugin appears in the plugin list',
 					),
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'plugin list --field=name,status --format=csv --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'plugin list --field=name,status --format=csv --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'contact-form-7,active',
 						'expected_exit_code'      => 0,
 						'description'             => 'contact-form-7 plugin is active',
@@ -435,7 +435,7 @@ class BenchmarkSuite {
 					),
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'meta-migrator run --dry-run --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'meta-migrator run --dry-run --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'dry.run|Migration complete|Processed',
 						'expected_exit_code'      => 0,
 						'description'             => 'WP-CLI command runs successfully in dry-run mode',
@@ -532,14 +532,14 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'wc product list --field=name --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'wc product list --field=name --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'Ergonomic Standing Desk',
 						'expected_exit_code'      => 0,
 						'description'             => 'Product "Ergonomic Standing Desk" exists in WooCommerce',
 					),
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'wc product list --field=sku --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'wc product list --field=sku --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'DESK-ERG-001',
 						'expected_exit_code'      => 0,
 						'description'             => 'Product has SKU DESK-ERG-001',
@@ -557,14 +557,14 @@ class BenchmarkSuite {
 				'assertions' => array(
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'post list --post_type=page --post_status=publish --field=post_title --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'post list --post_type=page --post_status=publish --field=post_title --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'CloudSync Pro',
 						'expected_exit_code'      => 0,
 						'description'             => 'Page "CloudSync Pro" is published',
 					),
 					array(
 						'type'                    => 'wp_cli_command',
-						'command'                 => 'post list --post_type=page --post_status=publish --fields=post_title,post_content --format=json --url=wp-multisite-waas.test 2>&1',
+						'command'                 => 'post list --post_type=page --post_status=publish --fields=post_title,post_content --format=json --url=wp-multisite-waas.test',
 						'expected_output_pattern' => 'CloudSync|pricing|feature|Free|Pro|Enterprise',
 						'expected_exit_code'      => 0,
 						'description'             => 'Page content includes required sections',

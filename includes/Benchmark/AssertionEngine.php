@@ -205,16 +205,25 @@ class AssertionEngine {
 			);
 		}
 
-		$php_files = glob( $dir . '/*.php' ) ?: array();
-		$errors    = array();
+		$iterator  = new \RecursiveIteratorIterator(
+			new \RecursiveDirectoryIterator( $dir, \RecursiveDirectoryIterator::SKIP_DOTS )
+		);
+		$php_files = array();
+		foreach ( $iterator as $file_info ) {
+			if ( $file_info->isFile() && 'php' === strtolower( $file_info->getExtension() ) ) {
+				$php_files[] = $file_info->getPathname();
+			}
+		}
+		$errors = array();
 
+		$php_binary = defined( 'PHP_BINARY' ) && PHP_BINARY ? PHP_BINARY : 'php';
 		foreach ( $php_files as $file ) {
 			$output    = array();
 			$exit_code = 0;
 			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec -- PHP syntax check; no WP alternative.
-			exec( 'php -l ' . escapeshellarg( $file ) . ' 2>&1', $output, $exit_code );
+			exec( escapeshellarg( $php_binary ) . ' -l ' . escapeshellarg( $file ) . ' 2>&1', $output, $exit_code );
 			if ( $exit_code !== 0 ) {
-				$errors[] = basename( $file ) . ': ' . implode( ' ', $output );
+				$errors[] = ltrim( str_replace( $dir, '', $file ), '/' ) . ': ' . implode( ' ', $output );
 			}
 		}
 
@@ -247,8 +256,9 @@ class AssertionEngine {
 		$server = rest_get_server();
 		$routes = $server->get_routes();
 
+		$normalized_path = '/' . ltrim( $path, '/' );
 		foreach ( $routes as $route => $handlers ) {
-			if ( false === strpos( $route, ltrim( $path, '/' ) ) ) {
+			if ( untrailingslashit( $route ) !== untrailingslashit( $normalized_path ) ) {
 				continue;
 			}
 			foreach ( $handlers as $handler ) {

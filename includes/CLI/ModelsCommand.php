@@ -5,8 +5,8 @@ declare(strict_types=1);
  * WP-CLI command: wp sd-ai-agent models
  *
  * Lists all configured AI providers and their available models.
- * Reuses the /providers REST endpoint so the output always reflects the
- * same data the chat UI and benchmark runner see.
+ * Mirrors the logic of SettingsController::handle_providers() in-process
+ * so the output reflects the same data the chat UI and benchmark runner see.
  *
  * @package SdAiAgent\CLI
  * @license GPL-2.0-or-later
@@ -122,6 +122,7 @@ class ModelsCommand extends WP_CLI_Command {
 		if ( null === $match ) {
 			$available = implode( ', ', array_column( $providers, 'id' ) );
 			WP_CLI::error( "Provider '{$provider_id}' not found. Available: {$available}" );
+			return;
 		}
 
 		$models = $match['models'] ?? array();
