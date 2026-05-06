@@ -56,6 +56,12 @@ jest.mock( '@wordpress/components', () => {
 					)
 				)
 			),
+		Button: ( { children, onClick, disabled, className, label } ) =>
+			React.createElement(
+				'button',
+				{ onClick, disabled, className, 'aria-label': label },
+				children
+			),
 	};
 } );
 
@@ -96,20 +102,26 @@ function setupMocks( {
 } = {} ) {
 	const setSelectedProvider = jest.fn();
 	const setSelectedModel = jest.fn();
+	const fetchProviders = jest.fn();
 
 	const storeSelectors = {
 		getProviders: () => providers,
 		getSelectedProviderId: () => selectedProviderId,
 		getSelectedModelId: () => selectedModelId,
 		getSelectedProviderModels: () => models,
+		getProvidersLoading: () => false,
 	};
 	useSelect.mockImplementation( ( selector ) =>
 		selector( () => storeSelectors )
 	);
 
-	useDispatch.mockReturnValue( { setSelectedProvider, setSelectedModel } );
+	useDispatch.mockReturnValue( {
+		setSelectedProvider,
+		setSelectedModel,
+		fetchProviders,
+	} );
 
-	return { setSelectedProvider, setSelectedModel };
+	return { setSelectedProvider, setSelectedModel, fetchProviders };
 }
 
 // ─── Snapshot tests (server-side rendering, no act() needed) ─────────────────
