@@ -4,7 +4,7 @@ Tags: ai, chatbot, assistant, automation, tools
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.2
-Stable tag: 1.9.1
+Stable tag: 1.10.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -173,6 +173,20 @@ Yes, the plugin works on both single-site and multisite WordPress installations.
 8. Settings page with 12 configuration tabs
 
 == Changelog ==
+
+= 1.10.0 - Released on 2026-05-05 =
+* New: Tavily internet search — add Tavily as a search provider for richer internet search results alongside Brave Search
+* New: Theme-aware built-in skills — Block Themes, Classic Themes, Kadence Blocks, and Kadence Theme skill guides now ship with the plugin
+* New: Site builder contact form ability — add a contact form to any page directly from the chat interface
+* Improved: WooCommerce integration refactored to use native WooCommerce APIs for better reliability and compatibility
+* Improved: Provider list refreshes automatically when any plugin is activated or deactivated
+* Fix: navigate-to ability caused an infinite reload loop on some admin pages
+* Fix: list-posts now correctly resolves category and tag names to slugs
+* Fix: WP-CLI commands (wp sd-ai-agent) were missing namespace aliases after a previous refactor
+* Fix: Event automation gracefully handles sites where automation tables are not yet created
+* Fix: memory-save ability now uses the correct namespace prefix in the system instruction builder
+* Fix: Scalar tool results are now correctly wrapped before being returned to the AI
+* Fix: Usage statistics now correctly handle the legacy ability key format on upgrade from older versions
 
 = 1.9.1 - Released on 2026-04-28 =
 * Fix: update-post now includes post_type in its schema and response, preventing agents from calling create-post when the intent is to update an existing post
