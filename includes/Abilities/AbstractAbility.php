@@ -15,7 +15,7 @@ declare(strict_types=1);
  * Usage:
  *
  *     class MyAbility extends AbstractAbility {
- *         protected function category(): string { return 'superdav-ai-agent'; }
+ *         protected function category(): string { return 'sd-ai-agent'; }
  *         protected function input_schema(): array { return [...]; }
  *         protected function output_schema(): array { return [...]; }
  *         protected function execute_callback( $input ) { ... }
@@ -24,7 +24,7 @@ declare(strict_types=1);
  *     }
  *
  *     // Register via wp_register_ability() with ability_class:
- *     wp_register_ability( 'superdav-ai-agent/my-ability', [
+ *     wp_register_ability( 'sd-ai-agent/my-ability', [
  *         'label'         => __( 'My Ability', 'superdav-ai-agent' ),
  *         'description'   => __( 'Does something.', 'superdav-ai-agent' ),
  *         'ability_class' => MyAbility::class,
@@ -65,7 +65,7 @@ abstract class AbstractAbility extends \WP_Ability {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string              $name       The namespaced ability name (e.g. 'superdav-ai-agent/memory-save').
+	 * @param string              $name       The namespaced ability name (e.g. 'sd-ai-agent/memory-save').
 	 * @param array<string,mixed> $properties Optional overrides. Supports 'label' and 'description'.
 	 */
 	public function __construct( string $name, array $properties = array() ) {
