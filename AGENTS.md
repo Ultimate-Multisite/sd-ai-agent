@@ -2,6 +2,50 @@
 
 **Requires:** WordPress 7.0+, PHP 8.2+
 
+## CANONICAL NAMING - DO NOT CHANGE
+
+This plugin has ONE canonical set of identifiers. They are deliberately different
+between the user-facing plugin slug and the code-level prefixes/namespaces.
+**Do NOT "normalise" them. Do NOT rename. Do NOT migrate legacy names.**
+
+| Purpose | Canonical Value | Notes |
+| --- | --- | --- |
+| Display name | `Superdav AI Agent` | Human-readable |
+| WordPress.org plugin slug / text domain | `superdav-ai-agent` | Used ONLY for: `Text Domain:` header, `__( '...', 'superdav-ai-agent' )`, plugin folder name, `superdav-ai-agent.php` main file |
+| Plugin DI container ID | `sd-ai-agent` | `xwp_load_app(['id' => 'sd-ai-agent', ...])` — DO NOT change to `superdav-ai-agent` |
+| DI compile class | `CompiledContainerSdAiAgent` | Pairs with the `sd-ai-agent` ID |
+| PHP namespace root | `SdAiAgent\` | e.g. `SdAiAgent\Core\AgentLoop` |
+| PHP constant prefix | `SD_AI_AGENT_` | e.g. `SD_AI_AGENT_DIR`, `SD_AI_AGENT_VERSION` |
+| Database table prefix | `{$wpdb->prefix}sd_ai_agent_` | All 23 tables |
+| REST API namespace | `sd-ai-agent/v1` | Routes: `/wp-json/sd-ai-agent/v1/...` |
+| Ability namespace | `sd-ai-agent/` | e.g. `sd-ai-agent/memory-save`, `sd-ai-agent/skill-load` |
+| CSS class prefix | `sd-ai-agent-` | e.g. `sd-ai-agent-chat-panel` |
+| JS option / handle prefix | `sd-ai-agent-` / `sd_ai_agent_` | Match WP convention per context |
+
+### Rules for Agents
+
+1. **Never** rename `sd-ai-agent` (in any form) to `superdav-ai-agent` in code,
+   ability names, REST namespaces, CSS classes, DB tables, constants, namespaces,
+   container IDs, or compile class names. The `superdav-ai-agent` form is **only**
+   the WP.org plugin slug + i18n text domain.
+2. **Never** rename `superdav-ai-agent` (the text domain) to `sd-ai-agent` either.
+   Both are correct in their own contexts.
+3. **No legacy-name migrations.** Do not write code to rewrite, canonicalise,
+   or migrate `ai-agent/`, `gratis-ai-agent`, or any other historical prefix.
+   Old names are not supported and we are not maintaining backward compatibility
+   for them.
+4. **No "WordPress.org compatibility" refactors** that rename `sd-ai-agent` →
+   `superdav-ai-agent` in code. The WP.org plugin-check tool only inspects the
+   text domain and slug; the internal `'id'` and namespaces are private.
+5. If a PR proposes any of the above renames, it should be **closed and reverted**.
+   Examples of past mistakes (do NOT repeat):
+   - PR #1289 (changed `'id' => 'sd-ai-agent'` to `'superdav-ai-agent'`) — reverted
+   - PR #1290 (renamed `gratis-ai-agent` → `superdav-ai-agent` in `AbstractAbility`) — closed unmerged
+   - PR #1291 (changed docblock examples `sd-ai-agent/` → `superdav-ai-agent/`) — reverted
+   - PR #1283 (auto-migration of legacy `ai-agent/` keys) — reverted
+6. Headless agents that propose these renames are operating outside scope. File
+   an issue describing the rogue behaviour rather than merging the PR.
+
 ## Build Commands
 - **Build**: `npm run build` or `npx wp-scripts build` (production)
 - **Dev**: `npm start` or `npx wp-scripts start` (watch mode)
