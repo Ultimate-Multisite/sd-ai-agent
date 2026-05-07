@@ -26,11 +26,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 class GetPageHtmlAbility extends AbstractAbility {
 
 	protected function label(): string {
-		return __( 'Get Page HTML', 'gratis-ai-agent' );
+		return __( 'Get Page HTML', 'superdav-ai-agent' );
 	}
 
 	protected function description(): string {
-		return __( 'Get the HTML content of elements on the current page the user is viewing. Use CSS selectors to query specific elements. Returns the outer HTML of matched elements.', 'gratis-ai-agent' );
+		return __( 'Get the HTML content of elements on the current page the user is viewing. Use CSS selectors to query specific elements. Returns the outer HTML of matched elements.', 'superdav-ai-agent' );
 	}
 
 	protected function input_schema(): array {
@@ -69,7 +69,7 @@ class GetPageHtmlAbility extends AbstractAbility {
 		$max_length = (int) ( $input['max_length'] ?? 5000 );
 
 		if ( empty( $selector ) ) {
-			return new WP_Error( 'sd_ai_agent_empty_selector', __( 'CSS selector is required.', 'gratis-ai-agent' ) );
+			return new WP_Error( 'sd_ai_agent_empty_selector', __( 'CSS selector is required.', 'superdav-ai-agent' ) );
 		}
 
 		// This ability returns a client-side action instruction.

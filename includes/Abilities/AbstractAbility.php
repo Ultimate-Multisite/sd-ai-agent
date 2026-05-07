@@ -12,21 +12,21 @@ declare(strict_types=1);
  * compatibility: when WordPress core ships Abstract_Ability, our abilities
  * can be migrated to extend it directly with minimal changes.
  *
- * Usage:
- *
- *     class MyAbility extends AbstractAbility {
- *         protected function category(): string { return 'gratis-ai-agent'; }
+     * Usage:
+     *
+     *     class MyAbility extends AbstractAbility {
+ *         protected function category(): string { return 'superdav-ai-agent'; }
  *         protected function input_schema(): array { return [...]; }
  *         protected function output_schema(): array { return [...]; }
  *         protected function execute_callback( $input ) { ... }
  *         protected function permission_callback( $input ) { ... }
  *         protected function meta(): array { return [...]; }
- *     }
- *
- *     // Register via wp_register_ability() with ability_class:
- *     wp_register_ability( 'gratis-ai-agent/my-ability', [
- *         'label'         => __( 'My Ability', 'gratis-ai-agent' ),
- *         'description'   => __( 'Does something.', 'gratis-ai-agent' ),
+     }
+ 
+     // Register via wp_register_ability() with ability_class:
+ *     wp_register_ability( 'superdav-ai-agent/my-ability', [
+ *         'label'         => __( 'My Ability', 'superdav-ai-agent' ),
+ *         'description'   => __( 'Does something.', 'superdav-ai-agent' ),
  *         'ability_class' => MyAbility::class,
  *     ] );
  *
@@ -65,7 +65,7 @@ abstract class AbstractAbility extends \WP_Ability {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string              $name       The namespaced ability name (e.g. 'gratis-ai-agent/memory-save').
+	 * @param string              $name       The namespaced ability name (e.g. 'superdav-ai-agent/memory-save').
 	 * @param array<string,mixed> $properties Optional overrides. Supports 'label' and 'description'.
 	 */
 	public function __construct( string $name, array $properties = array() ) {
@@ -130,10 +130,10 @@ abstract class AbstractAbility extends \WP_Ability {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return string The category slug (must be registered via wp_register_ability_category()).
-	 */
+ * @return string The category slug (must be registered via wp_register_ability_category()).
+ */
 	protected function category(): string {
-		return 'gratis-ai-agent';
+		return 'superdav-ai-agent';
 	}
 
 	/**
@@ -260,7 +260,7 @@ abstract class AbstractAbility extends \WP_Ability {
 				'ability_callback_exception',
 				sprintf(
 					/* translators: 1: Ability name, 2: Exception message. */
-					__( 'Ability "%1$s" threw an error: %2$s', 'gratis-ai-agent' ),
+					__( 'Ability "%1$s" threw an error: %2$s', 'superdav-ai-agent' ),
 					$this->get_name(),
 					$e->getMessage()
 				),

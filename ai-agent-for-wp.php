@@ -1,15 +1,15 @@
 <?php
 /**
  * Plugin Name: Superdav AI Agent
- * Plugin URI:  https://github.com/Ultimate-Multisite/gratis-ai-agent
+ * Plugin URI:  https://github.com/Ultimate-Multisite/superdav-ai-agent
  * Description: Agentic AI loop for WordPress — chat with an AI that can call WordPress abilities (tools) autonomously.
- * Version:     1.9.1
+ * Version:     1.10.0
  * Author:      superdav42
  * Author URI:  https://github.com/superdav42
  * License:     GPL-2.0-or-later
  * Requires at least: 7.0
  * Requires PHP: 8.2
- * Text Domain: gratis-ai-agent
+ * Text Domain: superdav-ai-agent
  *
  * @package SdAiAgent
  */
