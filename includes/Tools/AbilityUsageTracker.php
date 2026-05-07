@@ -48,8 +48,6 @@ class AbilityUsageTracker {
 			return;
 		}
 
-		$ability_name = self::canonicalise( $ability_name );
-
 		$map = self::load();
 		$now = time();
 
@@ -122,50 +120,18 @@ class AbilityUsageTracker {
 			return array();
 		}
 
-		$out      = array();
-		$migrated = false;
+		$out = array();
 		foreach ( $raw as $name => $entry ) {
 			if ( ! is_string( $name ) || '' === $name || ! is_array( $entry ) ) {
 				continue;
 			}
-			$canonical = self::canonicalise( $name );
-			if ( $canonical !== $name ) {
-				$migrated = true;
-			}
-			$count     = isset( $entry['count'] ) ? (int) $entry['count'] : 0;
-			$last_used = isset( $entry['last_used'] ) ? (int) $entry['last_used'] : 0;
-
-			if ( isset( $out[ $canonical ] ) ) {
-				$out[ $canonical ]['count']    += $count;
-				$out[ $canonical ]['last_used'] = max( $out[ $canonical ]['last_used'], $last_used );
-			} else {
-				$out[ $canonical ] = array(
-					'count'     => $count,
-					'last_used' => $last_used,
-				);
-			}
-		}
-
-		if ( $migrated ) {
-			update_option( self::OPTION_NAME, $out, false );
+			$out[ $name ] = array(
+				'count'     => isset( $entry['count'] ) ? (int) $entry['count'] : 0,
+				'last_used' => isset( $entry['last_used'] ) ? (int) $entry['last_used'] : 0,
+			);
 		}
 
 		return $out;
-	}
-
-	/**
-	 * Rewrite the legacy `ai-agent/` namespace to the canonical
-	 * `sd-ai-agent/` form so historical entries (recorded before the plugin
-	 * rename) don't get probed against the abilities registry by name.
-	 *
-	 * @param string $ability_name Raw ability name as recorded.
-	 * @return string Canonicalised ability name.
-	 */
-	private static function canonicalise( string $ability_name ): string {
-		if ( str_starts_with( $ability_name, 'ai-agent/' ) ) {
-			return 'sd-' . $ability_name;
-		}
-		return $ability_name;
 	}
 
 	/**
