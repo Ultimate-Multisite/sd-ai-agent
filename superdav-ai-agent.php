@@ -112,13 +112,13 @@ register_deactivation_hook( __FILE__, [ LifecycleHandler::class, 'deactivate' ] 
 // `SdAiAgent\Plugin::$handlers`. Nothing else needs to live in this file.
 xwp_load_app(
 	[
-		'id'            => 'sd-ai-agent',
+		'id'            => 'superdav-ai-agent',
 		'module'        => Plugin::class,
 		'autowiring'    => true,
 		'compile'       => true,
 		// The default `compile_class` is `CompiledContainer` + uppercased ID,
 		// which produces invalid PHP class names when the ID contains hyphens.
-		'compile_class' => 'CompiledContainerSdAiAgent',
+		'compile_class' => 'CompiledContainerSuperdavAiAgent',
 		'compile_dir'   => SD_AI_AGENT_DIR . '/build/di-cache/' . SD_AI_AGENT_VERSION,
 	],
 );
