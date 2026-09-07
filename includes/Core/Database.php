@@ -484,7 +484,10 @@ class Database {
 			KEY enabled (enabled)
 		) {$charset};
 
-		CREATE TABLE {$automations_table} (
+		";
+
+		if ( ! self::table_exists( $automations_table ) ) {
+			$sql .= "CREATE TABLE {$automations_table} (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			name varchar(255) NOT NULL,
 			description text NOT NULL DEFAULT '',
@@ -523,9 +526,11 @@ class Database {
 			KEY owner_user_id (owner_user_id),
 			KEY active_run_id (active_run_id),
 			KEY lease_status (execution_status, lease_expires_at)
-		) ENGINE=InnoDB {$charset};
+		) ENGINE=InnoDB {$charset};";
+		}
 
-		CREATE TABLE {$automation_logs_table} (
+		if ( ! self::table_exists( $automation_logs_table ) ) {
+			$sql .= "\n\nCREATE TABLE {$automation_logs_table} (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			automation_id bigint(20) unsigned NOT NULL DEFAULT 0,
 			run_id char(36) NOT NULL DEFAULT '',
@@ -552,7 +557,10 @@ class Database {
 			KEY monitor_outcome (monitor_outcome),
 			KEY created_at (created_at),
 			KEY lifecycle_lease (lifecycle_status, lease_expires_at)
-		) ENGINE=InnoDB {$charset};
+		) ENGINE=InnoDB {$charset};";
+		}
+
+		$sql .= "
 
 		CREATE TABLE {$monitor_wakes_table} (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -1053,6 +1061,7 @@ class Database {
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
+		$automation_schema_ready = self::ensure_automation_schema( $automations_table, $automation_logs_table );
 		self::backfill_session_trash_timestamps();
 		// Automation execution fails closed independently through
 		// has_transactional_automation_storage(), so a failed conversion must not
@@ -1090,8 +1099,134 @@ class Database {
 		// Seed built-in agents (onboarding, general, content-creator, seo, ecommerce).
 		Agent::seed_defaults();
 
-		update_option( self::DB_VERSION_OPTION, self::DB_VERSION, true );
+		if ( $automation_schema_ready ) {
+			update_option( self::DB_VERSION_OPTION, self::DB_VERSION, true );
+		}
 		self::ensure_customer_conversation_review_cleanup();
+	}
+
+	/**
+	 * Check whether an internal table already exists before handing its schema to dbDelta.
+	 *
+	 * The dbDelta helper can issue duplicate ALTER statements for the automation lifecycle
+	 * tables when a previous request created only part of their current schema.
+	 * Existing tables use the explicit, introspection-backed migration below instead.
+	 */
+	private static function table_exists( string $table ): bool {
+		global $wpdb;
+		/** @var \wpdb $wpdb */
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Internal schema introspection for a fixed plugin table.
+		return $table === $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
+	}
+
+	/**
+	 * Add the automation lifecycle columns and indexes only when they are missing.
+	 *
+	 * @param string $automations_table Automation definitions table.
+	 * @param string $automation_logs_table Automation execution log table.
+	 */
+	private static function ensure_automation_schema( string $automations_table, string $automation_logs_table ): bool {
+		return self::ensure_table_columns(
+			$automations_table,
+			[
+				'mode'                        => "varchar(20) NOT NULL DEFAULT 'task'",
+				'monitor_scratch'             => "longtext NOT NULL DEFAULT ''",
+				'monitor_event_wakes_enabled' => 'tinyint(1) NOT NULL DEFAULT 0',
+				'monitor_event_sources'       => "longtext NOT NULL DEFAULT ''",
+				'monitor_wake_cooldown_until' => 'datetime DEFAULT NULL',
+				'monitor_wake_dropped_count'  => 'int(11) unsigned NOT NULL DEFAULT 0',
+				'monitor_wake_deferred_count' => 'int(11) unsigned NOT NULL DEFAULT 0',
+				'owner_user_id'               => 'bigint(20) unsigned NOT NULL DEFAULT 0',
+				'active_run_id'               => "char(36) NOT NULL DEFAULT ''",
+				'execution_status'            => "varchar(20) NOT NULL DEFAULT 'idle'",
+				'lease_expires_at'            => 'datetime DEFAULT NULL',
+				'last_run_id'                 => "char(36) NOT NULL DEFAULT ''",
+				'last_run_status'             => "varchar(20) NOT NULL DEFAULT ''",
+				'last_run_error'              => "text NOT NULL DEFAULT ''",
+				'last_monitor_outcome'        => "varchar(20) NOT NULL DEFAULT ''",
+				'last_monitor_summary'        => "text NOT NULL DEFAULT ''",
+			],
+		)
+			&& self::ensure_table_indexes(
+				$automations_table,
+				[
+					'mode_enabled'  => 'KEY mode_enabled (mode, enabled)',
+					'owner_user_id' => 'KEY owner_user_id (owner_user_id)',
+					'active_run_id' => 'KEY active_run_id (active_run_id)',
+					'lease_status'  => 'KEY lease_status (execution_status, lease_expires_at)',
+				],
+			)
+			&& self::ensure_table_columns(
+				$automation_logs_table,
+				[
+					'run_id'           => "char(36) NOT NULL DEFAULT ''",
+					'owner_user_id'    => 'bigint(20) unsigned NOT NULL DEFAULT 0',
+					'lifecycle_status' => "varchar(20) NOT NULL DEFAULT ''",
+					'monitor_outcome'  => "varchar(20) NOT NULL DEFAULT ''",
+					'lease_expires_at' => 'datetime DEFAULT NULL',
+					'started_at'       => 'datetime DEFAULT NULL',
+					'finished_at'      => 'datetime DEFAULT NULL',
+				],
+			)
+			&& self::ensure_table_indexes(
+				$automation_logs_table,
+				[
+					'run_id'          => 'KEY run_id (run_id)',
+					'monitor_outcome' => 'KEY monitor_outcome (monitor_outcome)',
+					'lifecycle_lease' => 'KEY lifecycle_lease (lifecycle_status, lease_expires_at)',
+				],
+			);
+	}
+
+	/**
+	 * Add missing columns using a fixed, internal schema definition.
+	 *
+	 * @param string                $table Fully-qualified plugin table name.
+	 * @param array<string, string> $columns Column names keyed to SQL definitions.
+	 */
+	private static function ensure_table_columns( string $table, array $columns ): bool {
+		global $wpdb;
+
+		foreach ( $columns as $column => $definition ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Internal schema introspection for fixed plugin column names.
+			$existing = $wpdb->get_var( $wpdb->prepare( 'SHOW COLUMNS FROM %i WHERE Field = %s', $table, $column ) );
+			if ( null !== $existing ) {
+				continue;
+			}
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Adds one verified-missing lifecycle column from a fixed internal schema map.
+			if ( false === $wpdb->query( $wpdb->prepare( "ALTER TABLE %i ADD COLUMN {$column} {$definition}", $table ) ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Add missing indexes using a fixed, internal schema definition.
+	 *
+	 * @param string                $table Fully-qualified plugin table name.
+	 * @param array<string, string> $indexes Index names keyed to SQL definitions.
+	 */
+	private static function ensure_table_indexes( string $table, array $indexes ): bool {
+		global $wpdb;
+
+		foreach ( $indexes as $index => $definition ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Internal schema introspection for fixed plugin index names.
+			$existing = $wpdb->get_var( $wpdb->prepare( 'SHOW INDEX FROM %i WHERE Key_name = %s', $table, $index ) );
+			if ( null !== $existing ) {
+				continue;
+			}
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Adds one verified-missing lifecycle index from a fixed internal schema map.
+			if ( false === $wpdb->query( $wpdb->prepare( "ALTER TABLE %i ADD {$definition}", $table ) ) ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/** Backfill the dedicated Trash-entry timestamp for pre-19.16.0 rows. */
