@@ -1117,7 +1117,7 @@ class Database {
 		/** @var \wpdb $wpdb */
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Internal schema introspection for a fixed plugin table.
-		return $table === $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
+		return $table === $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) );
 	}
 
 	/**
@@ -1151,10 +1151,22 @@ class Database {
 			&& self::ensure_table_indexes(
 				$automations_table,
 				[
-					'mode_enabled'  => 'KEY mode_enabled (mode, enabled)',
-					'owner_user_id' => 'KEY owner_user_id (owner_user_id)',
-					'active_run_id' => 'KEY active_run_id (active_run_id)',
-					'lease_status'  => 'KEY lease_status (execution_status, lease_expires_at)',
+					'mode_enabled'  => [
+						'columns' => [ 'mode', 'enabled' ],
+						'unique'  => false,
+					],
+					'owner_user_id' => [
+						'columns' => [ 'owner_user_id' ],
+						'unique'  => false,
+					],
+					'active_run_id' => [
+						'columns' => [ 'active_run_id' ],
+						'unique'  => false,
+					],
+					'lease_status'  => [
+						'columns' => [ 'execution_status', 'lease_expires_at' ],
+						'unique'  => false,
+					],
 				],
 			)
 			&& self::ensure_table_columns(
@@ -1172,9 +1184,18 @@ class Database {
 			&& self::ensure_table_indexes(
 				$automation_logs_table,
 				[
-					'run_id'          => 'KEY run_id (run_id)',
-					'monitor_outcome' => 'KEY monitor_outcome (monitor_outcome)',
-					'lifecycle_lease' => 'KEY lifecycle_lease (lifecycle_status, lease_expires_at)',
+					'run_id'          => [
+						'columns' => [ 'run_id' ],
+						'unique'  => false,
+					],
+					'monitor_outcome' => [
+						'columns' => [ 'monitor_outcome' ],
+						'unique'  => false,
+					],
+					'lifecycle_lease' => [
+						'columns' => [ 'lifecycle_status', 'lease_expires_at' ],
+						'unique'  => false,
+					],
 				],
 			);
 	}
@@ -1207,21 +1228,55 @@ class Database {
 	/**
 	 * Add missing indexes using a fixed, internal schema definition.
 	 *
-	 * @param string                $table Fully-qualified plugin table name.
-	 * @param array<string, string> $indexes Index names keyed to SQL definitions.
+	 * @param string                                                    $table Fully-qualified plugin table name.
+	 * @param array<string, array{columns: list<string>, unique: bool}> $indexes Required index definitions keyed by name.
 	 */
 	private static function ensure_table_indexes( string $table, array $indexes ): bool {
 		global $wpdb;
 
 		foreach ( $indexes as $index => $definition ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Internal schema introspection for fixed plugin index names.
-			$existing = $wpdb->get_var( $wpdb->prepare( 'SHOW INDEX FROM %i WHERE Key_name = %s', $table, $index ) );
-			if ( null !== $existing ) {
+			$existing = $wpdb->get_results( $wpdb->prepare( 'SHOW INDEX FROM %i WHERE Key_name = %s', $table, $index ), ARRAY_A );
+			if ( self::index_matches_definition( $existing, $definition ) ) {
 				continue;
 			}
+			if ( [] !== $existing ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Replaces a fixed internal index whose definition does not match the required lifecycle schema.
+				if ( false === $wpdb->query( $wpdb->prepare( 'ALTER TABLE %i DROP INDEX %i', $table, $index ) ) ) {
+					return false;
+				}
+			}
 
+			$index_type = $definition['unique'] ? 'UNIQUE KEY' : 'KEY';
+			$columns    = implode( ', ', $definition['columns'] );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Adds one verified-missing lifecycle index from a fixed internal schema map.
-			if ( false === $wpdb->query( $wpdb->prepare( "ALTER TABLE %i ADD {$definition}", $table ) ) ) {
+			if ( false === $wpdb->query( $wpdb->prepare( "ALTER TABLE %i ADD {$index_type} {$index} ({$columns})", $table ) ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Determine whether an existing index has the required columns, order, and uniqueness.
+	 *
+	 * @param array<int, array<string, mixed>>           $existing Existing SHOW INDEX rows.
+	 * @param array{columns: list<string>, unique: bool} $definition Required index definition.
+	 */
+	private static function index_matches_definition( array $existing, array $definition ): bool {
+		if ( count( $definition['columns'] ) !== count( $existing ) ) {
+			return false;
+		}
+
+		usort(
+			$existing,
+			static fn( array $left, array $right ): int => (int) $left['Seq_in_index'] <=> (int) $right['Seq_in_index']
+		);
+		$expected_non_unique = $definition['unique'] ? 0 : 1;
+
+		foreach ( $definition['columns'] as $position => $column ) {
+			if ( $column !== $existing[ $position ]['Column_name'] || $expected_non_unique !== (int) $existing[ $position ]['Non_unique'] ) {
 				return false;
 			}
 		}

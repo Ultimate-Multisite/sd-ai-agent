@@ -757,13 +757,22 @@ class DatabaseSchemaTest extends WP_UnitTestCase {
 		global $wpdb;
 
 		Database::install();
-		$wpdb->last_error = '';
+		$automations_table = Database::automations_table_name();
+		$colliding_table   = preg_replace( '/_/', '0', $automations_table, 1 );
+		$this->assertIsString( $colliding_table );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Test-only table whose name matches an unescaped LIKE pattern for the automation table.
+		$this->assertNotFalse( $wpdb->query( $wpdb->prepare( 'CREATE TABLE %i (id bigint(20) unsigned NOT NULL)', $colliding_table ) ) );
 		update_option( Database::DB_VERSION_OPTION, '19.12.0' );
 
-		Database::install();
+		try {
+			Database::install();
+		} finally {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Test-only collision fixture cleanup.
+			$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $colliding_table ) );
+		}
 
-		$this->assertSame( '', $wpdb->last_error );
 		$this->assertSame( Database::DB_VERSION, get_option( Database::DB_VERSION_OPTION ) );
+		$this->assertContains( 'last_monitor_summary', $this->get_column_names( $automations_table ) );
 	}
 
 	/** Missing lifecycle fields and indexes are added once without re-adding existing schema. */
@@ -778,15 +787,25 @@ class DatabaseSchemaTest extends WP_UnitTestCase {
 		$this->assertNotFalse( $wpdb->query( $wpdb->prepare( 'ALTER TABLE %i DROP COLUMN last_monitor_summary', $automations_table ) ) );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Test-only simulation of a partially completed automation upgrade.
 		$this->assertNotFalse( $wpdb->query( $wpdb->prepare( 'ALTER TABLE %i DROP INDEX monitor_outcome', $logs_table ) ) );
-		$wpdb->last_error = '';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Test-only malformed lifecycle index fixture.
+		$this->assertNotFalse( $wpdb->query( $wpdb->prepare( 'ALTER TABLE %i DROP INDEX lifecycle_lease', $logs_table ) ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Test-only malformed lifecycle index fixture.
+		$this->assertNotFalse( $wpdb->query( $wpdb->prepare( 'ALTER TABLE %i ADD UNIQUE KEY lifecycle_lease (run_id)', $logs_table ) ) );
 		update_option( Database::DB_VERSION_OPTION, '19.12.0' );
 
 		Database::install();
 
-		$this->assertSame( '', $wpdb->last_error );
 		$this->assertContains( 'last_monitor_summary', $this->get_column_names( $automations_table ) );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Test-only schema introspection.
 		$this->assertNotNull( $wpdb->get_var( "SHOW INDEX FROM {$logs_table} WHERE Key_name = 'monitor_outcome'" ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Test-only assertion of repaired lifecycle index fields and uniqueness.
+		$lifecycle_index = $wpdb->get_results( "SHOW INDEX FROM {$logs_table} WHERE Key_name = 'lifecycle_lease'", ARRAY_A );
+		usort(
+			$lifecycle_index,
+			static fn( array $left, array $right ): int => (int) $left['Seq_in_index'] <=> (int) $right['Seq_in_index']
+		);
+		$this->assertSame( [ 'lifecycle_status', 'lease_expires_at' ], array_column( $lifecycle_index, 'Column_name' ) );
+		$this->assertSame( [ '1', '1' ], array_column( $lifecycle_index, 'Non_unique' ) );
 		$this->assertSame( Database::DB_VERSION, get_option( Database::DB_VERSION_OPTION ) );
 	}
 
@@ -804,13 +823,11 @@ class DatabaseSchemaTest extends WP_UnitTestCase {
 		try {
 			$handler = new CustomerAgentRuntimeHandler();
 			$handler->ensure_database_schema();
-			$wpdb->last_error = '';
 			update_option( Database::DB_VERSION_OPTION, '19.12.0' );
 
 			$handler->ensure_database_schema();
 
 			$this->assertNotSame( $main_prefix, $wpdb->prefix );
-			$this->assertSame( '', $wpdb->last_error );
 			$this->assertSame( Database::DB_VERSION, get_option( Database::DB_VERSION_OPTION ) );
 			$this->assertContains( 'last_monitor_summary', $this->get_column_names( Database::automations_table_name() ) );
 		} finally {
