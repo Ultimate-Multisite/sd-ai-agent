@@ -1218,7 +1218,12 @@ class Database {
 
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Adds one verified-missing lifecycle column from a fixed internal schema map.
 			if ( false === $wpdb->query( $wpdb->prepare( "ALTER TABLE %i ADD COLUMN {$column} {$definition}", $table ) ) ) {
-				return false;
+				// A concurrent request may have completed this fixed migration after the
+				// preceding introspection. Accept only that already-present outcome.
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Confirms a concurrent fixed schema migration completed.
+				if ( null === $wpdb->get_var( $wpdb->prepare( 'SHOW COLUMNS FROM %i WHERE Field = %s', $table, $column ) ) ) {
+					return false;
+				}
 			}
 		}
 
@@ -1243,7 +1248,12 @@ class Database {
 			if ( [] !== $existing ) {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Replaces a fixed internal index whose definition does not match the required lifecycle schema.
 				if ( false === $wpdb->query( $wpdb->prepare( 'ALTER TABLE %i DROP INDEX %i', $table, $index ) ) ) {
-					return false;
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Confirms a concurrent fixed index repair completed.
+					$after_failed_drop = $wpdb->get_results( $wpdb->prepare( 'SHOW INDEX FROM %i WHERE Key_name = %s', $table, $index ), ARRAY_A );
+					if ( ! self::index_matches_definition( $after_failed_drop, $definition ) ) {
+						return false;
+					}
+					continue;
 				}
 			}
 
@@ -1251,7 +1261,11 @@ class Database {
 			$columns    = implode( ', ', $definition['columns'] );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Adds one verified-missing lifecycle index from a fixed internal schema map.
 			if ( false === $wpdb->query( $wpdb->prepare( "ALTER TABLE %i ADD {$index_type} {$index} ({$columns})", $table ) ) ) {
-				return false;
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Confirms a concurrent fixed index migration completed.
+				$after_failed_add = $wpdb->get_results( $wpdb->prepare( 'SHOW INDEX FROM %i WHERE Key_name = %s', $table, $index ), ARRAY_A );
+				if ( ! self::index_matches_definition( $after_failed_add, $definition ) ) {
+					return false;
+				}
 			}
 		}
 

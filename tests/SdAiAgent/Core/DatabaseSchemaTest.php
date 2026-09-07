@@ -798,6 +798,14 @@ class DatabaseSchemaTest extends WP_UnitTestCase {
 		$this->assertContains( 'last_monitor_summary', $this->get_column_names( $automations_table ) );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Test-only schema introspection.
 		$this->assertNotNull( $wpdb->get_var( "SHOW INDEX FROM {$logs_table} WHERE Key_name = 'monitor_outcome'" ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Test-only assertion of repaired monitor outcome index fields and uniqueness.
+		$monitor_outcome_index = $wpdb->get_results( "SHOW INDEX FROM {$logs_table} WHERE Key_name = 'monitor_outcome'", ARRAY_A );
+		usort(
+			$monitor_outcome_index,
+			static fn( array $left, array $right ): int => (int) $left['Seq_in_index'] <=> (int) $right['Seq_in_index']
+		);
+		$this->assertSame( [ 'monitor_outcome' ], array_column( $monitor_outcome_index, 'Column_name' ) );
+		$this->assertSame( [ '1' ], array_column( $monitor_outcome_index, 'Non_unique' ) );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Test-only assertion of repaired lifecycle index fields and uniqueness.
 		$lifecycle_index = $wpdb->get_results( "SHOW INDEX FROM {$logs_table} WHERE Key_name = 'lifecycle_lease'", ARRAY_A );
 		usort(
