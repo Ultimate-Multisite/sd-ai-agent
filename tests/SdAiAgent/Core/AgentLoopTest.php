@@ -33,6 +33,7 @@ namespace SdAiAgent\Tests\Core;
 use SdAiAgent\Abilities\Js\JsAbilityCatalog;
 use SdAiAgent\Abilities\KnowledgeAbilities;
 use SdAiAgent\Core\ActiveJobFailureDiagnostic;
+use SdAiAgent\Core\AbilityFunctionResolver;
 use SdAiAgent\Core\AgentLoop;
 use SdAiAgent\Core\ClientAbilityRouter;
 use SdAiAgent\Core\ConversationSerializer;
@@ -161,6 +162,30 @@ final class ScriptedAbilityAgentLoop extends ScriptedAgentLoop {
 	}
 }
 
+/** Resolver spy for parent provider/model propagation. */
+final class ProviderContextRecordingResolver extends AbilityFunctionResolver {
+
+	/** @var list<array{provider_id:string,model_id:string}> */
+	public array $contexts = array();
+
+	public int $clear_count = 0;
+
+	public function set_provider_model_context( string $provider_id, string $model_id ): void {
+		$this->contexts[] = array(
+			'provider_id' => $provider_id,
+			'model_id'    => $model_id,
+		);
+	}
+
+	public function clear_provider_model_context(): void {
+		++$this->clear_count;
+	}
+
+	public function execute_abilities( Message $message ): Message {
+		return $message;
+	}
+}
+
 /**
  * Integration tests for AgentLoop.
  *
@@ -204,6 +229,44 @@ class AgentLoopTest extends WP_UnitTestCase {
 		remove_all_filters( 'pre_http_request' );
 		ToolDiscovery::clear_anonymous_allowed_abilities();
 		KnowledgeAbilities::clear_public_collection_allowlist();
+	}
+
+	public function test_execute_abilities_scopes_effective_provider_model_on_resolver(): void {
+		if ( ! class_exists( 'WP_AI_Client_Ability_Function_Resolver' ) ) {
+			$this->markTestSkipped( 'WordPress AI Client ability resolver is unavailable.' );
+		}
+
+		$loop = new AgentLoop(
+			'Generate a plugin.',
+			array(),
+			array(),
+			array(
+				'provider_id' => 'sd-ai-agent-cloud',
+				'model_id'    => 'superdav-chat-strong',
+			)
+		);
+		$resolver = new ProviderContextRecordingResolver();
+
+		$resolver_property = new \ReflectionProperty( AgentLoop::class, 'ability_resolver' );
+		$resolver_property->setAccessible( true );
+		$resolver_property->setValue( $loop, $resolver );
+
+		$message = new UserMessage( array( new MessagePart( 'Run the nested request.' ) ) );
+		$method  = new \ReflectionMethod( AgentLoop::class, 'execute_abilities' );
+		$method->setAccessible( true );
+		$result = $method->invoke( $loop, $message );
+
+		$this->assertSame( $message, $result );
+		$this->assertSame(
+			array(
+				array(
+					'provider_id' => 'sd-ai-agent-cloud',
+					'model_id'    => 'superdav-chat-strong',
+				),
+			),
+			$resolver->contexts
+		);
+		$this->assertSame( 1, $resolver->clear_count );
 	}
 
 	/**

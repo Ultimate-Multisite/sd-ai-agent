@@ -36,6 +36,85 @@ final class ThrowingValidationAbility extends \WP_Ability {
 	}
 }
 
+final class ProviderContextAbility extends \WP_Ability {
+
+	/** @var array{provider_id:string,model_id:string} */
+	public array $provider_model_context = array(
+		'provider_id' => '',
+		'model_id'    => '',
+	);
+
+	/** @var list<array{provider_id:string,model_id:string}> */
+	public array $executed_contexts = array();
+
+	public int $clear_count = 0;
+
+	public function set_provider_model_context( string $provider_id, string $model_id ): void {
+		$this->provider_model_context = array(
+			'provider_id' => $provider_id,
+			'model_id'    => $model_id,
+		);
+	}
+
+	public function clear_provider_model_context(): void {
+		$this->provider_model_context = array(
+			'provider_id' => '',
+			'model_id'    => '',
+		);
+		++$this->clear_count;
+	}
+
+	/**
+	 * @param mixed $input Input passed by the resolver.
+	 * @return array{success:bool}
+	 */
+	public function execute( $input = null ): array {
+		unset( $input );
+		$this->executed_contexts[] = $this->provider_model_context;
+		return array( 'success' => true );
+	}
+}
+
+final class SetterOnlyProviderContextAbility extends \WP_Ability {
+
+	/** @var array{provider_id:string,model_id:string} */
+	public array $provider_model_context = array(
+		'provider_id' => '',
+		'model_id'    => '',
+	);
+
+	/** @var list<array{provider_id:string,model_id:string}> */
+	public array $executed_contexts = array();
+
+	public int $set_count = 0;
+
+	/**
+	 * Record provider/model context without exposing the required cleanup hook.
+	 *
+	 * @param string $provider_id Provider identifier.
+	 * @param string $model_id    Model identifier.
+	 */
+	public function set_provider_model_context( string $provider_id, string $model_id ): void {
+		$this->provider_model_context = array(
+			'provider_id' => $provider_id,
+			'model_id'    => $model_id,
+		);
+		++$this->set_count;
+	}
+
+	/**
+	 * Record context observed during execution.
+	 *
+	 * @param mixed $input Input passed by the resolver.
+	 * @return array{success:bool}
+	 */
+	public function execute( $input = null ): array {
+		unset( $input );
+		$this->executed_contexts[] = $this->provider_model_context;
+		return array( 'success' => true );
+	}
+}
+
 class AbilityFunctionResolverTest extends WP_UnitTestCase {
 
 	/**
@@ -54,6 +133,8 @@ class AbilityFunctionResolverTest extends WP_UnitTestCase {
 		IdenticalFailureTracker::reset();
 		if ( function_exists( 'wp_unregister_ability' ) ) {
 			wp_unregister_ability( 'test-plugin/schema-thrower' );
+			wp_unregister_ability( 'test-plugin/provider-context' );
+			wp_unregister_ability( 'test-plugin/setter-only-provider-context' );
 		}
 		if ( function_exists( 'wp_unregister_ability_category' ) ) {
 			foreach ( $this->registered_test_categories as $category_slug ) {
@@ -131,6 +212,72 @@ class AbilityFunctionResolverTest extends WP_UnitTestCase {
 		$this->assertSame( array( 'query' ), $payload['missing_required_fields'] );
 		$this->assertSame( array( 'query' => '<string — Search keywords. Required.>' ), $payload['example_arguments'] );
 		$this->assertStringContainsString( 'Do not retry with empty arguments', $payload['hint'] );
+	}
+
+	public function test_provider_model_context_is_forwarded_and_cleared_for_each_dispatch(): void {
+		$this->skip_if_resolver_unavailable();
+
+		$ability = $this->register_provider_context_ability();
+		$this->assertInstanceOf( ProviderContextAbility::class, $ability );
+
+		$resolver = new AbilityFunctionResolver( $ability );
+		$resolver->set_provider_model_context( 'sd-ai-agent-cloud', 'superdav-chat-strong' );
+		$resolver->execute_ability(
+			new FunctionCall(
+				'call_provider_context',
+				\WP_AI_Client_Ability_Function_Resolver::ability_name_to_function_name( 'test-plugin/provider-context' ),
+				array()
+			)
+		);
+
+		$this->assertSame(
+			array(
+				'provider_id' => 'sd-ai-agent-cloud',
+				'model_id'    => 'superdav-chat-strong',
+			),
+			$ability->executed_contexts[0]
+		);
+		$this->assertSame(
+			array(
+				'provider_id' => '',
+				'model_id'    => '',
+			),
+			$ability->provider_model_context
+		);
+		$this->assertSame( 1, $ability->clear_count );
+	}
+
+	/**
+	 * Setter-only abilities do not receive context they cannot clear between calls.
+	 */
+	public function test_provider_model_context_requires_atomic_setter_and_clearer_hooks(): void {
+		$this->skip_if_resolver_unavailable();
+
+		$ability = $this->register_setter_only_provider_context_ability();
+		$this->assertInstanceOf( SetterOnlyProviderContextAbility::class, $ability );
+
+		$resolver      = new AbilityFunctionResolver( $ability );
+		$function_name = \WP_AI_Client_Ability_Function_Resolver::ability_name_to_function_name( 'test-plugin/setter-only-provider-context' );
+
+		$resolver->set_provider_model_context( 'sd-ai-agent-cloud', 'first-model' );
+		$resolver->execute_ability( new FunctionCall( 'call_setter_only_context_1', $function_name, array() ) );
+		$resolver->set_provider_model_context( 'another-provider', 'second-model' );
+		$resolver->execute_ability( new FunctionCall( 'call_setter_only_context_2', $function_name, array() ) );
+
+		$this->assertSame( 0, $ability->set_count );
+		$this->assertSame(
+			array(
+				array(
+					'provider_id' => '',
+					'model_id'    => '',
+				),
+				array(
+					'provider_id' => '',
+					'model_id'    => '',
+				),
+			),
+			$ability->executed_contexts
+		);
 	}
 
 	/**
@@ -291,6 +438,70 @@ class AbilityFunctionResolverTest extends WP_UnitTestCase {
 					),
 					'execute_callback'    => static function ( array $input ): array {
 						unset( $input );
+						return array( 'unused' => true );
+					},
+					'permission_callback' => static function (): bool {
+						return true;
+					},
+				)
+			);
+		} finally {
+			array_pop( $wp_current_filter );
+		}
+	}
+
+	private function register_provider_context_ability(): ?\WP_Ability {
+		$this->ensure_test_category( 'test-plugin' );
+
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Standard WordPress hook stack global.
+		global $wp_current_filter;
+		$wp_current_filter[] = 'wp_abilities_api_init';
+
+		try {
+			return wp_register_ability(
+				'test-plugin/provider-context',
+				array(
+					'ability_class'       => ProviderContextAbility::class,
+					'label'               => 'Provider Context',
+					'description'         => 'Records provider routing context for resolver tests.',
+					'category'            => 'test-plugin',
+					'input_schema'        => array(
+						'type'       => 'object',
+						'properties' => array(),
+					),
+					'execute_callback'    => static function (): array {
+						return array( 'unused' => true );
+					},
+					'permission_callback' => static function (): bool {
+						return true;
+					},
+				)
+			);
+		} finally {
+			array_pop( $wp_current_filter );
+		}
+	}
+
+	private function register_setter_only_provider_context_ability(): ?\WP_Ability {
+		$this->ensure_test_category( 'test-plugin' );
+
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Standard WordPress hook stack global.
+		global $wp_current_filter;
+		$wp_current_filter[] = 'wp_abilities_api_init';
+
+		try {
+			return wp_register_ability(
+				'test-plugin/setter-only-provider-context',
+				array(
+					'ability_class'       => SetterOnlyProviderContextAbility::class,
+					'label'               => 'Setter-only Provider Context',
+					'description'         => 'Records whether the resolver forwards context without a cleanup hook.',
+					'category'            => 'test-plugin',
+					'input_schema'        => array(
+						'type'       => 'object',
+						'properties' => array(),
+					),
+					'execute_callback'    => static function (): array {
 						return array( 'unused' => true );
 					},
 					'permission_callback' => static function (): bool {
