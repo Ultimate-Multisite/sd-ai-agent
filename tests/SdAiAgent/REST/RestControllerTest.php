@@ -187,6 +187,7 @@ class RestControllerTest extends WP_UnitTestCase {
 			'/sd-ai-agent/v1/skills',
 			'/sd-ai-agent/v1/skills/(?P<id>\d+)',
 			'/sd-ai-agent/v1/sessions',
+			'/sd-ai-agent/v1/sessions/oversized',
 			'/sd-ai-agent/v1/sessions/(?P<id>\d+)',
 			'/sd-ai-agent/v1/sessions/(?P<id>\d+)/compact',
 			'/sd-ai-agent/v1/sessions/(?P<id>\d+)/resume',
@@ -769,6 +770,94 @@ class RestControllerTest extends WP_UnitTestCase {
 		$this->assertCount( 1, $stored_messages );
 		$source_messages_after = json_decode( (string) Database::get_session( (int) $session_id )->messages, true );
 		$this->assertSame( $source_messages_before, $source_messages_after );
+	}
+
+	/** Administrators can inspect oversized session metadata without conversation content. */
+	public function test_list_oversized_sessions_returns_only_size_metadata(): void {
+		wp_set_current_user( $this->admin_id );
+		$session_id = Database::create_session(
+			array(
+				'user_id' => $this->admin_id,
+				'title'   => 'Private oversized conversation title',
+			)
+		);
+		Database::update_session(
+			(int) $session_id,
+			array(
+				'messages' => wp_json_encode(
+					array(
+						array( 'role' => 'user', 'content' => str_repeat( 'PRIVATE_SESSION_CONTENT ', 100 ) ),
+					)
+				),
+			)
+		);
+
+		$response = $this->dispatch(
+			'GET',
+			'/sd-ai-agent/v1/sessions/oversized',
+			array(
+				'min_bytes'    => 1024,
+				'min_messages' => 999999,
+			)
+		);
+
+		$this->assertStatus( 200, $response );
+		$data = $response->get_data();
+		$this->assertArrayHasKey( 'sessions', $data );
+		$candidate = null;
+		foreach ( $data['sessions'] as $session ) {
+			if ( (int) $session['id'] === (int) $session_id ) {
+				$candidate = $session;
+				break;
+			}
+		}
+
+		$this->assertIsArray( $candidate );
+		$this->assertGreaterThan( 1024, $candidate['total_bytes'] );
+		$this->assertArrayNotHasKey( 'messages', $candidate );
+		$this->assertArrayNotHasKey( 'tool_calls', $candidate );
+		$this->assertArrayNotHasKey( 'title', $candidate );
+	}
+
+	/** Oversized-session metadata is restricted to administrators. */
+	public function test_list_oversized_sessions_requires_administrator(): void {
+		wp_set_current_user( $this->subscriber_id );
+
+		$response = $this->dispatch( 'GET', '/sd-ai-agent/v1/sessions/oversized' );
+
+		$this->assertStatus( 403, $response );
+	}
+
+	/** Compaction leaves active jobs and paused continuations untouched. */
+	public function test_compact_session_rejects_active_or_paused_sessions(): void {
+		wp_set_current_user( $this->admin_id );
+		$paused_session_id = Database::create_session( array( 'user_id' => $this->admin_id, 'title' => 'Paused source' ) );
+		Database::append_to_session( (int) $paused_session_id, array( array( 'role' => 'user', 'content' => 'Do not compact this yet.' ) ) );
+		Database::save_paused_state( (int) $paused_session_id, array( 'history' => array( array( 'role' => 'user' ) ) ) );
+
+		$paused_response = $this->dispatch( 'POST', "/sd-ai-agent/v1/sessions/{$paused_session_id}/compact" );
+		$this->assertStatus( 409, $paused_response );
+		$this->assertSame( 'sd_ai_agent_compact_paused_session', $paused_response->get_data()['code'] );
+
+		$active_session_id = Database::create_session( array( 'user_id' => $this->admin_id, 'title' => 'Active source' ) );
+		Database::append_to_session( (int) $active_session_id, array( array( 'role' => 'user', 'content' => 'Do not compact this job.' ) ) );
+		$this->assertNotFalse( ActiveJobRepository::create( (int) $active_session_id, wp_generate_uuid4(), $this->admin_id ) );
+
+		$active_response = $this->dispatch( 'POST', "/sd-ai-agent/v1/sessions/{$active_session_id}/compact" );
+		$this->assertStatus( 409, $active_response );
+		$this->assertSame( 'sd_ai_agent_compact_active_job', $active_response->get_data()['code'] );
+	}
+
+	/** Streamed compaction keeps the existing session ownership boundary. */
+	public function test_compact_session_rejects_an_unshared_session_owned_by_another_user(): void {
+		$other_admin = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		$session_id  = Database::create_session( array( 'user_id' => $other_admin, 'title' => 'Other user source' ) );
+		Database::append_to_session( (int) $session_id, array( array( 'role' => 'user', 'content' => 'Private source.' ) ) );
+
+		wp_set_current_user( $this->admin_id );
+		$response = $this->dispatch( 'POST', "/sd-ai-agent/v1/sessions/{$session_id}/compact" );
+
+		$this->assertStatus( 403, $response );
 	}
 
 	/**

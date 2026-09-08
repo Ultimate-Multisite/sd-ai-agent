@@ -308,7 +308,7 @@ class ConversationTrimmer {
 	 * @param int                   $max_tokens Maximum estimated seed-message tokens.
 	 * @return array{messages:list<array<string,mixed>>,meta:array<string,int|bool>}
 	 */
-	public static function compact_serialized_history_chunks( iterable $chunks, int $max_bytes = self::COMPACT_MAX_BYTES, int $max_tokens = self::COMPACT_MAX_TOKENS ): array {
+	public static function compact_serialized_history_chunks( iterable $chunks, int $max_bytes = self::COMPACT_MAX_BYTES, int $max_tokens = self::COMPACT_MAX_TOKENS ): array { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic iterable value type is valid PHPStan syntax but not a native PHP type.
 		$stream_complete = false;
 		$stream_valid    = true;
 		$result          = self::compact_serialized_history_iterable(
@@ -331,12 +331,12 @@ class ConversationTrimmer {
 	 * @param int                                $max_tokens Maximum estimated seed-message tokens.
 	 * @return array{messages:list<array<string,mixed>>,meta:array<string,int|bool>}
 	 */
-	private static function compact_serialized_history_iterable( iterable $messages, int $max_bytes, int $max_tokens ): array {
-		$max_bytes             = max( 1024, $max_bytes );
-		$max_tokens            = max( 256, $max_tokens );
-		$per_message_chars     = max( 160, min( self::COMPACT_MAX_MESSAGE_CHARS, (int) floor( $max_bytes / 4 ) ) );
-		$source_count          = 0;
-		$retained_groups       = array();
+	private static function compact_serialized_history_iterable( iterable $messages, int $max_bytes, int $max_tokens ): array { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic iterable value type is valid PHPStan syntax but not a native PHP type.
+		$max_bytes               = max( 1024, $max_bytes );
+		$max_tokens              = max( 256, $max_tokens );
+		$per_message_chars       = max( 160, min( self::COMPACT_MAX_MESSAGE_CHARS, (int) floor( $max_bytes / 4 ) ) );
+		$source_count            = 0;
+		$retained_groups         = array();
 		$pending_tool_call_lines = null;
 
 		foreach ( $messages as $message ) {
@@ -344,10 +344,10 @@ class ConversationTrimmer {
 				continue;
 			}
 
-			$expanded     = self::serialized_message_to_compact_excerpts( $message, $per_message_chars );
+			$expanded      = self::serialized_message_to_compact_excerpts( $message, $per_message_chars );
 			$source_count += $expanded['source_count'];
-			$has_call     = self::serialized_message_has_function_call( $message );
-			$has_response = self::serialized_message_has_function_response( $message );
+			$has_call      = self::serialized_message_has_function_call( $message );
+			$has_response  = self::serialized_message_has_function_response( $message );
 
 			if ( null !== $pending_tool_call_lines ) {
 				if ( $has_response ) {
@@ -439,7 +439,7 @@ class ConversationTrimmer {
 	 * @param bool                  $valid    Receives whether every decoded element was valid.
 	 * @return \Generator<int, array<string,mixed>>
 	 */
-	private static function decode_serialized_history_chunks( iterable $chunks, bool &$complete, bool &$valid ): \Generator {
+	private static function decode_serialized_history_chunks( iterable $chunks, bool &$complete, bool &$valid ): \Generator { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic iterable value type is valid PHPStan syntax but not a native PHP type.
 		$complete      = false;
 		$valid         = true;
 		$started       = false;
@@ -532,10 +532,6 @@ class ConversationTrimmer {
 				}
 
 				--$depth;
-				if ( $depth < 0 ) {
-					$valid = false;
-					return;
-				}
 				if ( 0 !== $depth ) {
 					continue;
 				}
@@ -543,8 +539,8 @@ class ConversationTrimmer {
 				if ( $discarding ) {
 					yield self::oversized_streamed_message_placeholder( $element_bytes );
 				} else {
-					$decoded = json_decode( $element, true );
-					if ( ! is_array( $decoded ) ) {
+					$decoded = self::decode_streamed_message( $element );
+					if ( null === $decoded ) {
 						$valid = false;
 					} else {
 						yield $decoded;
@@ -560,6 +556,29 @@ class ConversationTrimmer {
 		}
 
 		$valid = false;
+	}
+
+	/**
+	 * Decode one JSON object while preserving a string-keyed message shape.
+	 *
+	 * @param string $element Serialized message object.
+	 * @return array<string,mixed>|null
+	 */
+	private static function decode_streamed_message( string $element ): ?array {
+		$decoded = json_decode( $element, true );
+		if ( ! is_array( $decoded ) || array_is_list( $decoded ) ) {
+			return null;
+		}
+
+		$message = array();
+		foreach ( $decoded as $key => $value ) {
+			if ( ! is_string( $key ) ) {
+				return null;
+			}
+			$message[ $key ] = $value;
+		}
+
+		return $message;
 	}
 
 	/**
@@ -620,7 +639,7 @@ class ConversationTrimmer {
 	 * @param int                $max_bytes    Maximum serialized seed-message bytes.
 	 * @param int                $max_tokens   Maximum estimated seed-message tokens.
 	 */
-	private static function retain_compact_group( array &$groups, array $lines, int $source_count, int $max_bytes, int $max_tokens ): void {
+	private static function retain_compact_group( array &$groups, array $lines, int $source_count, int $max_bytes, int $max_tokens ): void { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic list value types are valid PHPStan syntax but not native PHP types.
 		$group = array();
 		foreach ( $lines as $line ) {
 			if ( is_string( $line ) && '' !== $line ) {
@@ -642,7 +661,7 @@ class ConversationTrimmer {
 	 * @param int                $max_bytes    Maximum serialized seed-message bytes.
 	 * @param int                $max_tokens   Maximum estimated seed-message tokens.
 	 */
-	private static function trim_compact_groups( array &$groups, int $source_count, int $max_bytes, int $max_tokens ): void {
+	private static function trim_compact_groups( array &$groups, int $source_count, int $max_bytes, int $max_tokens ): void { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic list value types are valid PHPStan syntax but not native PHP types.
 		while ( ! empty( $groups ) && ! self::compact_lines_fit_budget( self::flatten_compact_groups( $groups ), $source_count, $max_bytes, $max_tokens ) ) {
 			array_shift( $groups );
 		}
@@ -654,7 +673,7 @@ class ConversationTrimmer {
 	 * @param list<list<string>> $groups Retained compact groups.
 	 * @return list<string>
 	 */
-	private static function flatten_compact_groups( array $groups ): array {
+	private static function flatten_compact_groups( array $groups ): array { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic list value types are valid PHPStan syntax but not native PHP types.
 		$lines = array();
 		foreach ( $groups as $group ) {
 			foreach ( $group as $line ) {

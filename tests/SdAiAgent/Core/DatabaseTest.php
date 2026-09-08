@@ -324,6 +324,103 @@ class DatabaseTest extends WP_UnitTestCase {
 		$this->assertSame( 'user', $messages[0]['role'] );
 	}
 
+	/** Storage inspection returns only IDs and size metadata, never conversation content. */
+	public function test_list_oversized_sessions_returns_safe_metadata(): void {
+		$user_id    = self::factory()->user->create();
+		$session_id = Database::create_session(
+			array(
+				'user_id' => $user_id,
+				'title'   => 'Oversized metadata test',
+			)
+		);
+		$messages   = array(
+			array( 'role' => 'user', 'content' => str_repeat( 'private conversation content ', 120 ) ),
+			array( 'role' => 'model', 'content' => str_repeat( 'private model response ', 120 ) ),
+		);
+
+		$this->assertTrue(
+			Database::update_session(
+				(int) $session_id,
+				array(
+					'messages'   => wp_json_encode( $messages ),
+					'tool_calls' => wp_json_encode( array( array( 'secret' => 'DO_NOT_RETURN_THIS' ) ) ),
+				)
+			)
+		);
+
+		$candidates = Database::list_oversized_sessions( 1024, 999999, 100 );
+		$candidate  = null;
+		foreach ( $candidates as $row ) {
+			if ( (int) $row->id === (int) $session_id ) {
+				$candidate = $row;
+				break;
+			}
+		}
+
+		$this->assertNotNull( $candidate );
+		$this->assertSame( 2, (int) $candidate->message_count );
+		$this->assertGreaterThan( 1024, (int) $candidate->total_bytes );
+		$this->assertFalse( property_exists( $candidate, 'messages' ) );
+		$this->assertFalse( property_exists( $candidate, 'tool_calls' ) );
+	}
+
+	/** Historical messages can be read from bounded database slices for compaction. */
+	public function test_stream_session_messages_reads_bounded_slices(): void {
+		$user_id    = self::factory()->user->create();
+		$session_id = Database::create_session( array( 'user_id' => $user_id, 'title' => 'Chunked source' ) );
+		$messages   = array(
+			array( 'role' => 'user', 'content' => str_repeat( 'first chunk café 😀 ', 250 ) ),
+			array( 'role' => 'model', 'content' => str_repeat( 'second chunk ', 250 ) ),
+		);
+		$encoded    = (string) wp_json_encode( $messages, JSON_UNESCAPED_UNICODE );
+
+		$this->assertTrue( Database::update_session( (int) $session_id, array( 'messages' => $encoded ) ) );
+		$chunks = iterator_to_array( Database::stream_session_messages( (int) $session_id, 1024 ), false );
+
+		$this->assertNotEmpty( $chunks );
+		$this->assertSame( $encoded, implode( '', $chunks ) );
+		foreach ( $chunks as $chunk ) {
+			$this->assertLessThanOrEqual( 1024, strlen( $chunk ) );
+		}
+	}
+
+	/** Crossing the maintenance threshold reports safe size metadata without rejecting persistence. */
+	public function test_append_reports_storage_maintenance_without_dropping_messages(): void {
+		$user_id    = self::factory()->user->create();
+		$session_id = Database::create_session( array( 'user_id' => $user_id, 'title' => 'Threshold notice' ) );
+		$reported   = null;
+		$bytes      = static fn(): int => 1024;
+		$messages   = static fn(): int => 999999;
+		$listener   = static function ( int $reported_session_id, array $metrics ) use ( &$reported ): void {
+			$reported = array(
+				'session_id' => $reported_session_id,
+				'metrics'    => $metrics,
+			);
+		};
+
+		add_filter( 'sd_ai_agent_session_storage_maintenance_bytes', $bytes );
+		add_filter( 'sd_ai_agent_session_storage_maintenance_messages', $messages );
+		add_action( 'sd_ai_agent_session_storage_maintenance_required', $listener, 10, 2 );
+		try {
+			$this->assertTrue(
+				Database::append_to_session(
+					(int) $session_id,
+					array( array( 'role' => 'user', 'content' => str_repeat( 'persisted safely ', 100 ) ) )
+				)
+			);
+		} finally {
+			remove_filter( 'sd_ai_agent_session_storage_maintenance_bytes', $bytes );
+			remove_filter( 'sd_ai_agent_session_storage_maintenance_messages', $messages );
+			remove_action( 'sd_ai_agent_session_storage_maintenance_required', $listener, 10 );
+		}
+
+		$this->assertIsArray( $reported );
+		$this->assertSame( (int) $session_id, $reported['session_id'] );
+		$this->assertGreaterThanOrEqual( 1024, $reported['metrics']['total_bytes'] );
+		$session = Database::get_session( (int) $session_id );
+		$this->assertStringContainsString( 'persisted safely', (string) $session->messages );
+	}
+
 	/**
 	 * Tool-call events with the same type, ID, and sequence are persisted once.
 	 */

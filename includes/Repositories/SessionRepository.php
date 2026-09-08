@@ -93,7 +93,7 @@ class SessionRepository {
 	 * @return array{bytes:int,messages:int}
 	 */
 	public static function get_storage_maintenance_limits(): array {
-		$bytes = (int) apply_filters( 'sd_ai_agent_session_storage_maintenance_bytes', self::STORAGE_MAINTENANCE_BYTES );
+		$bytes    = (int) apply_filters( 'sd_ai_agent_session_storage_maintenance_bytes', self::STORAGE_MAINTENANCE_BYTES );
 		$messages = (int) apply_filters( 'sd_ai_agent_session_storage_maintenance_messages', self::STORAGE_MAINTENANCE_MESSAGES );
 
 		return array(
@@ -122,7 +122,7 @@ class SessionRepository {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table inspection returns metadata only; caching cannot safely represent live maintenance candidates.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT id, status, message_count, messages_bytes, tool_calls_bytes, paused_state_bytes, total_bytes
+				'SELECT id, status, message_count, messages_bytes, tool_calls_bytes, paused_state_bytes, total_bytes
 				FROM (
 					SELECT id, status,
 						COALESCE(JSON_LENGTH(messages), 0) AS message_count,
@@ -134,7 +134,7 @@ class SessionRepository {
 				) AS sd_ai_agent_session_sizes
 				WHERE total_bytes >= %d OR message_count >= %d
 				ORDER BY total_bytes DESC, id ASC
-				LIMIT %d",
+				LIMIT %d',
 				Database::table_name(),
 				$min_bytes,
 				$min_messages,
@@ -211,7 +211,7 @@ class SessionRepository {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Bounded custom-table slice for maintenance compaction.
 			$chunk = $wpdb->get_var(
 				$wpdb->prepare(
-					'SELECT SUBSTRING(messages, %d, %d) FROM %i WHERE id = %d',
+					'SELECT SUBSTRING(CAST(messages AS BINARY), %d, %d) FROM %i WHERE id = %d',
 					$offset,
 					$chunk_bytes,
 					Database::table_name(),
