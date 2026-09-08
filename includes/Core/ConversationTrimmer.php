@@ -332,12 +332,17 @@ class ConversationTrimmer {
 	 * @return array{messages:list<array<string,mixed>>,meta:array<string,int|bool>}
 	 */
 	private static function compact_serialized_history_iterable( iterable $messages, int $max_bytes, int $max_tokens ): array { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic iterable value type is valid PHPStan syntax but not a native PHP type.
-		$max_bytes               = max( 1024, $max_bytes );
-		$max_tokens              = max( 256, $max_tokens );
-		$per_message_chars       = max( 160, min( self::COMPACT_MAX_MESSAGE_CHARS, (int) floor( $max_bytes / 4 ) ) );
-		$source_count            = 0;
-		$retained_groups         = array();
-		$pending_tool_call_lines = null;
+		$max_bytes                    = max( 1024, $max_bytes );
+		$max_tokens                   = max( 256, $max_tokens );
+		$per_message_chars            = max( 160, min( self::COMPACT_MAX_MESSAGE_CHARS, (int) floor( $max_bytes / 4 ) ) );
+		$source_count                 = 0;
+		$retained_groups              = array();
+		$pending_tool_lines           = array();
+		$pending_tool_call_ids        = array();
+		$pending_tool_response_ids    = array();
+		$pending_tool_cycle           = false;
+		$pending_tool_responses       = false;
+		$pending_tool_cycle_discarded = false;
 
 		foreach ( $messages as $message ) {
 			if ( ! is_array( $message ) ) {
@@ -346,45 +351,90 @@ class ConversationTrimmer {
 
 			$expanded      = self::serialized_message_to_compact_excerpts( $message, $per_message_chars );
 			$source_count += $expanded['source_count'];
-			$has_call      = self::serialized_message_has_function_call( $message );
-			$has_response  = self::serialized_message_has_function_response( $message );
+			$call_ids      = self::serialized_message_function_ids( $message, 'functionCall', 'function_call' );
+			$response_ids  = self::serialized_message_function_ids( $message, 'functionResponse', 'function_response' );
 
-			if ( null !== $pending_tool_call_lines ) {
-				if ( $has_response ) {
-					self::retain_compact_group(
+			if ( ! empty( $call_ids ) ) {
+				if ( $pending_tool_cycle && $pending_tool_responses ) {
+					self::flush_serialized_tool_cycle(
 						$retained_groups,
-						array_merge( $pending_tool_call_lines, $expanded['lines'] ),
+						$pending_tool_lines,
+						$pending_tool_call_ids,
+						$pending_tool_response_ids,
+						$pending_tool_cycle,
+						$pending_tool_responses,
+						$pending_tool_cycle_discarded,
 						$source_count,
 						$max_bytes,
 						$max_tokens
 					);
-					$pending_tool_call_lines = null;
+				}
+
+				$pending_tool_cycle     = true;
+				$pending_tool_responses = ! empty( $response_ids );
+				if ( $pending_tool_cycle_discarded ) {
 					continue;
 				}
 
-				// Do not retain a lone call when its result is absent from the stream.
-				$pending_tool_call_lines = null;
-				self::trim_compact_groups( $retained_groups, $source_count, $max_bytes, $max_tokens );
-			}
-
-			if ( $has_call ) {
-				$pending_tool_call_lines = $expanded['lines'];
-				self::trim_compact_groups( $retained_groups, $source_count, $max_bytes, $max_tokens );
+				$pending_tool_call_ids     = array_merge( $pending_tool_call_ids, $call_ids );
+				$pending_tool_response_ids = array_merge( $pending_tool_response_ids, $response_ids );
+				$pending_tool_lines        = array_merge( $pending_tool_lines, $expanded['lines'] );
+				if ( ! self::compact_lines_fit_budget( $pending_tool_lines, $source_count, $max_bytes, $max_tokens ) ) {
+					$pending_tool_lines           = array();
+					$pending_tool_call_ids        = array();
+					$pending_tool_response_ids    = array();
+					$pending_tool_cycle_discarded = true;
+				}
 				continue;
 			}
 
-			if ( $has_response ) {
-				// A result without a preceding call cannot form a complete tool cycle.
-				self::trim_compact_groups( $retained_groups, $source_count, $max_bytes, $max_tokens );
+			if ( ! empty( $response_ids ) ) {
+				if ( ! $pending_tool_cycle ) {
+					continue;
+				}
+
+				$pending_tool_responses = true;
+				if ( ! $pending_tool_cycle_discarded ) {
+					$pending_tool_response_ids = array_merge( $pending_tool_response_ids, $response_ids );
+					$pending_tool_lines        = array_merge( $pending_tool_lines, $expanded['lines'] );
+					if ( ! self::compact_lines_fit_budget( $pending_tool_lines, $source_count, $max_bytes, $max_tokens ) ) {
+						$pending_tool_lines           = array();
+						$pending_tool_call_ids        = array();
+						$pending_tool_response_ids    = array();
+						$pending_tool_cycle_discarded = true;
+					}
+				}
 				continue;
 			}
+
+			self::flush_serialized_tool_cycle(
+				$retained_groups,
+				$pending_tool_lines,
+				$pending_tool_call_ids,
+				$pending_tool_response_ids,
+				$pending_tool_cycle,
+				$pending_tool_responses,
+				$pending_tool_cycle_discarded,
+				$source_count,
+				$max_bytes,
+				$max_tokens
+			);
 
 			self::retain_compact_group( $retained_groups, $expanded['lines'], $source_count, $max_bytes, $max_tokens );
 		}
 
-		if ( null !== $pending_tool_call_lines ) {
-			self::trim_compact_groups( $retained_groups, $source_count, $max_bytes, $max_tokens );
-		}
+		self::flush_serialized_tool_cycle(
+			$retained_groups,
+			$pending_tool_lines,
+			$pending_tool_call_ids,
+			$pending_tool_response_ids,
+			$pending_tool_cycle,
+			$pending_tool_responses,
+			$pending_tool_cycle_discarded,
+			$source_count,
+			$max_bytes,
+			$max_tokens
+		);
 
 		$lines          = self::flatten_compact_groups( $retained_groups );
 		$retained_count = count( $lines );
@@ -440,15 +490,18 @@ class ConversationTrimmer {
 	 * @return \Generator<int, array<string,mixed>>
 	 */
 	private static function decode_serialized_history_chunks( iterable $chunks, bool &$complete, bool &$valid ): \Generator { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic iterable value type is valid PHPStan syntax but not a native PHP type.
-		$complete      = false;
-		$valid         = true;
-		$started       = false;
-		$depth         = 0;
-		$element       = '';
-		$element_bytes = 0;
-		$in_string     = false;
-		$escaped       = false;
-		$discarding    = false;
+		$complete       = false;
+		$valid          = true;
+		$started        = false;
+		$depth          = 0;
+		$element        = '';
+		$element_bytes  = 0;
+		$in_string      = false;
+		$escaped        = false;
+		$discarding     = false;
+		$containers     = '';
+		$expect_element = true;
+		$element_count  = 0;
 
 		foreach ( $chunks as $chunk ) {
 			if ( ! is_string( $chunk ) ) {
@@ -472,25 +525,43 @@ class ConversationTrimmer {
 					continue;
 				}
 
-				if ( 0 === $depth ) {
-					if ( ' ' === $character || "\n" === $character || "\r" === $character || "\t" === $character || ',' === $character ) {
-						continue;
-					}
-					if ( ']' === $character ) {
-						$complete = true;
+				if ( $complete ) {
+					if ( ' ' !== $character && "\n" !== $character && "\r" !== $character && "\t" !== $character ) {
+						$valid = false;
 						return;
 					}
-					if ( '{' !== $character ) {
+					continue;
+				}
+
+				if ( 0 === $depth ) {
+					if ( ' ' === $character || "\n" === $character || "\r" === $character || "\t" === $character ) {
+						continue;
+					}
+					if ( $expect_element && ']' === $character && 0 === $element_count ) {
+						$complete = true;
+						continue;
+					}
+					if ( ! $expect_element && ',' === $character ) {
+						$expect_element = true;
+						continue;
+					}
+					if ( ! $expect_element && ']' === $character ) {
+						$complete = true;
+						continue;
+					}
+					if ( ! $expect_element || '{' !== $character ) {
 						$valid = false;
 						return;
 					}
 
-					$depth         = 1;
-					$element       = '{';
-					$element_bytes = 1;
-					$in_string     = false;
-					$escaped       = false;
-					$discarding    = false;
+					$depth          = 1;
+					$element        = '{';
+					$element_bytes  = 1;
+					$in_string      = false;
+					$escaped        = false;
+					$discarding     = false;
+					$containers     = '{';
+					$expect_element = false;
 					continue;
 				}
 
@@ -524,6 +595,11 @@ class ConversationTrimmer {
 					continue;
 				}
 				if ( '{' === $character || '[' === $character ) {
+					if ( strlen( $containers ) >= 512 ) {
+						$valid = false;
+						return;
+					}
+					$containers .= $character;
 					++$depth;
 					continue;
 				}
@@ -531,6 +607,12 @@ class ConversationTrimmer {
 					continue;
 				}
 
+				$expected_open = '}' === $character ? '{' : '[';
+				if ( '' === $containers || $expected_open !== substr( $containers, -1 ) ) {
+					$valid = false;
+					return;
+				}
+				$containers = substr( $containers, 0, -1 );
 				--$depth;
 				if ( 0 !== $depth ) {
 					continue;
@@ -552,10 +634,13 @@ class ConversationTrimmer {
 				$in_string     = false;
 				$escaped       = false;
 				$discarding    = false;
+				++$element_count;
 			}
 		}
 
-		$valid = false;
+		if ( ! $complete ) {
+			$valid = false;
+		}
 	}
 
 	/**
@@ -599,35 +684,66 @@ class ConversationTrimmer {
 	}
 
 	/**
-	 * Check whether a serialized message contains a function call.
+	 * Extract compatibility IDs from serialized function-call or response parts.
 	 *
-	 * @param array<string,mixed> $message Serialized message.
+	 * ID-less provider parts use an empty-string compatibility ID. Distinct counts
+	 * are retained so parallel ID-less calls still require the same number of
+	 * responses before their compact excerpts can be kept.
+	 *
+	 * @param array<string,mixed> $message   Serialized message.
+	 * @param string              $camel_key Camel-case part key.
+	 * @param string              $snake_key Snake-case part key.
+	 * @return list<string>
 	 */
-	private static function serialized_message_has_function_call( array $message ): bool {
+	private static function serialized_message_function_ids( array $message, string $camel_key, string $snake_key ): array {
+		$ids   = array();
 		$parts = isset( $message['parts'] ) && is_array( $message['parts'] ) ? $message['parts'] : array();
 		foreach ( $parts as $part ) {
-			if ( is_array( $part ) && ( isset( $part['functionCall'] ) || isset( $part['function_call'] ) ) ) {
-				return true;
+			if ( ! is_array( $part ) ) {
+				continue;
 			}
+			$function = $part[ $camel_key ] ?? $part[ $snake_key ] ?? null;
+			if ( ! is_array( $function ) ) {
+				continue;
+			}
+
+			$id    = $function['id'] ?? '';
+			$ids[] = is_scalar( $id ) ? (string) $id : '';
 		}
 
-		return false;
+		return $ids;
 	}
 
 	/**
-	 * Check whether a serialized message contains a function response.
+	 * Retain one complete serialized tool cycle, or omit the whole cluster.
 	 *
-	 * @param array<string,mixed> $message Serialized message.
+	 * @param list<list<string>> $groups        Retained compact groups.
+	 * @param list<string>       $lines         Pending call and response excerpts.
+	 * @param list<string>       $call_ids      Pending call IDs.
+	 * @param list<string>       $response_ids  Pending response IDs.
+	 * @param bool               $cycle         Whether a call cluster is pending.
+	 * @param bool               $responses     Whether its response cluster started.
+	 * @param bool               $discarded     Whether the cluster exceeded the budget.
+	 * @param int                $source_count  Original source message count.
+	 * @param int                $max_bytes     Maximum serialized seed-message bytes.
+	 * @param int                $max_tokens    Maximum estimated seed-message tokens.
 	 */
-	private static function serialized_message_has_function_response( array $message ): bool {
-		$parts = isset( $message['parts'] ) && is_array( $message['parts'] ) ? $message['parts'] : array();
-		foreach ( $parts as $part ) {
-			if ( is_array( $part ) && ( isset( $part['functionResponse'] ) || isset( $part['function_response'] ) ) ) {
-				return true;
-			}
+	private static function flush_serialized_tool_cycle( array &$groups, array &$lines, array &$call_ids, array &$response_ids, bool &$cycle, bool &$responses, bool &$discarded, int $source_count, int $max_bytes, int $max_tokens ): void { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic list value types are valid PHPStan syntax but not native PHP types.
+		if (
+			$cycle
+			&& ! $discarded
+			&& count( $call_ids ) === count( $response_ids )
+			&& self::has_matching_tool_responses( $call_ids, $response_ids )
+		) {
+			self::retain_compact_group( $groups, $lines, $source_count, $max_bytes, $max_tokens );
 		}
 
-		return false;
+		$lines        = array();
+		$call_ids     = array();
+		$response_ids = array();
+		$cycle        = false;
+		$responses    = false;
+		$discarded    = false;
 	}
 
 	/**

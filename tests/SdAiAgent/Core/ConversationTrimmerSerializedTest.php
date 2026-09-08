@@ -112,6 +112,79 @@ class ConversationTrimmerSerializedTest extends WP_UnitTestCase {
 		);
 	}
 
+	/** Chunked compaction retains complete split parallel tool cycles as one group. */
+	public function test_chunked_compaction_preserves_parallel_tool_cycles(): void {
+		$history = array(
+			array( 'role' => 'model', 'parts' => array( array( 'functionCall' => array( 'id' => 'call-a', 'name' => 'tool-a' ) ) ) ),
+			array( 'role' => 'model', 'parts' => array( array( 'functionCall' => array( 'id' => 'call-b', 'name' => 'tool-b' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'id' => 'call-a', 'name' => 'tool-a' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'id' => 'call-b', 'name' => 'tool-b' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'text' => 'Continue after both tools.' ) ) ),
+		);
+
+		$result = ConversationTrimmer::compact_serialized_history_chunks( str_split( (string) wp_json_encode( $history ), 11 ), 4096, 1024 );
+		$text   = (string) $result['messages'][0]['parts'][0]['text'];
+
+		$this->assertTrue( $result['meta']['stream_valid'] );
+		$this->assertStringContainsString( '[tool call: tool-a]', $text );
+		$this->assertStringContainsString( '[tool call: tool-b]', $text );
+		$this->assertStringContainsString( '[tool result omitted: tool-a]', $text );
+		$this->assertStringContainsString( '[tool result omitted: tool-b]', $text );
+		$this->assertStringContainsString( 'Continue after both tools.', $text );
+	}
+
+	/** Parallel ID-less cycles use call/response cardinality for compatibility. */
+	public function test_chunked_compaction_preserves_parallel_idless_tool_cycles(): void {
+		$history = array(
+			array( 'role' => 'model', 'parts' => array( array( 'functionCall' => array( 'name' => 'tool-a' ) ) ) ),
+			array( 'role' => 'model', 'parts' => array( array( 'functionCall' => array( 'name' => 'tool-b' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'name' => 'tool-a' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'name' => 'tool-b' ) ) ) ),
+		);
+
+		$result = ConversationTrimmer::compact_serialized_history_chunks( str_split( (string) wp_json_encode( $history ), 13 ), 4096, 1024 );
+		$text   = (string) $result['messages'][0]['parts'][0]['text'];
+
+		$this->assertTrue( $result['meta']['stream_valid'] );
+		$this->assertStringContainsString( '[tool call: tool-a]', $text );
+		$this->assertStringContainsString( '[tool result omitted: tool-b]', $text );
+	}
+
+	/** Incomplete or mismatched parallel cycles are omitted as a whole. */
+	public function test_chunked_compaction_omits_mismatched_parallel_tool_cycles(): void {
+		$history = array(
+			array( 'role' => 'model', 'parts' => array( array( 'functionCall' => array( 'id' => 'call-a', 'name' => 'tool-a' ) ) ) ),
+			array( 'role' => 'model', 'parts' => array( array( 'functionCall' => array( 'id' => 'call-b', 'name' => 'tool-b' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'id' => 'call-a', 'name' => 'tool-a' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'id' => 'call-c', 'name' => 'tool-c' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'text' => 'Keep this safe boundary.' ) ) ),
+		);
+
+		$result = ConversationTrimmer::compact_serialized_history_chunks( str_split( (string) wp_json_encode( $history ), 7 ), 4096, 1024 );
+		$text   = (string) $result['messages'][0]['parts'][0]['text'];
+
+		$this->assertTrue( $result['meta']['stream_valid'] );
+		$this->assertStringNotContainsString( '[tool call:', $text );
+		$this->assertStringNotContainsString( '[tool result omitted:', $text );
+		$this->assertStringContainsString( 'Keep this safe boundary.', $text );
+	}
+
+	/** Malformed array separators and trailing data fail closed. */
+	public function test_chunked_compaction_rejects_malformed_json_arrays(): void {
+		$invalid_histories = array(
+			'[{}{}]',
+			'[,{}]',
+			'[{},]',
+			'[{}]trailing',
+			'[{"parts":[}]',
+		);
+
+		foreach ( $invalid_histories as $history ) {
+			$result = ConversationTrimmer::compact_serialized_history_chunks( str_split( $history, 2 ), 4096, 1024 );
+			$this->assertFalse( $result['meta']['stream_valid'], $history );
+		}
+	}
+
 	/** A 60 MB historical fixture is compacted from bounded JSON slices. */
 	public function test_chunked_compaction_handles_a_60_mb_history_without_materializing_it(): void {
 		$message_count = 18759;
