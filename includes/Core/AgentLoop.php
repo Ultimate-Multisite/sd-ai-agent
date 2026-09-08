@@ -33,7 +33,6 @@ use SdAiAgent\Repositories\SkillUsageRepository;
 use SdAiAgent\Tools\ModelHealthTracker;
 use SdAiAgent\Tools\ToolDiscovery;
 use SdAiAgent\Core\RolePermissions;
-use WP_AI_Client_Ability_Function_Resolver;
 use WP_Error;
 use SdAiAgent\Core\CredentialResolver;
 use SdAiAgent\Infrastructure\AiClient\Superdav\SuperdavAiProvider;
