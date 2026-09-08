@@ -17,6 +17,7 @@ const ACTIVE_JOB_FAILURE_REASONS = [
 	'local_payload_guard',
 	'upstream_payload_rejection',
 	'provider_timeout',
+	'gateway_rejection',
 	'credit_exhausted',
 	'worker_terminated',
 	'approval_wait',
@@ -67,10 +68,35 @@ export function normalizeActiveJobFailureDiagnostic( diagnostic ) {
 		/^job-(?:[a-f0-9]{12}|unknown)$/.test( source.correlation_id )
 			? source.correlation_id
 			: '';
+	const statusCode =
+		Number.isInteger( source.status_code ) &&
+		source.status_code >= 400 &&
+		source.status_code <= 599
+			? source.status_code
+			: 0;
+	const failureClass =
+		source.failure_class === 'gateway_rejection'
+			? source.failure_class
+			: '';
+	const failureSource = [ 'http', 'transport' ].includes(
+		source.failure_source
+	)
+		? source.failure_source
+		: '';
+	const attempts =
+		Number.isInteger( source.attempts ) &&
+		source.attempts >= 0 &&
+		source.attempts <= 10
+			? source.attempts
+			: 0;
 
 	return {
 		reason,
+		status_code: statusCode,
+		failure_class: failureClass,
+		failure_source: failureSource,
 		last_safe_phase: phase,
+		attempts,
 		retryable: source.retryable === true,
 		next_action: nextAction,
 		correlation_id: correlationId,
@@ -121,6 +147,11 @@ export function getActiveJobFailureMessage( diagnostic ) {
 		case 'provider_timeout':
 			return __(
 				'The AI provider timed out before finishing. Retry the request shortly.',
+				'superdav-ai-agent'
+			);
+		case 'gateway_rejection':
+			return __(
+				'The AI request was rejected by an upstream security gateway. Verify that the provider endpoint is allowed by your hosting or network policy, then retry. If it continues, contact support with the correlation ID.',
 				'superdav-ai-agent'
 			);
 		case 'credit_exhausted':

@@ -1258,6 +1258,68 @@ class AgentLoopTest extends WP_UnitTestCase {
 		$this->assertCount( 2, $retry_entries );
 	}
 
+	public function test_run_classifies_imunify_gateway_rejection_without_retrying(): void {
+		$this->skip_if_sdk_unavailable();
+		$call_count = 0;
+		$this->mock_ai_response_sequence(
+			[
+				[
+					'status'  => 403,
+					'message' => 'Forbidden',
+					'body'    => '<html><title>Imunify360</title>Security gateway blocked PRIVATE_PROMPT_CONTENT Authorization: Bearer PRIVATE_TOKEN</html>',
+				],
+			],
+			$call_count
+		);
+
+		$result = ( new AgentLoop( 'PRIVATE_PROMPT_CONTENT', [], [], $this->no_sleep_retry_options( 3 ) ) )->run();
+
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'sd_ai_agent_provider_gateway_rejection', $result->get_error_code() );
+		$this->assertStringContainsString( 'upstream security gateway', $result->get_error_message() );
+		$this->assertStringNotContainsString( 'PRIVATE_PROMPT_CONTENT', $result->get_error_message() );
+		$this->assertStringNotContainsString( 'PRIVATE_TOKEN', $result->get_error_message() );
+		$this->assertSame( 1, $call_count, 'A security-gateway rejection must not use timeout retries.' );
+		$data = $result->get_error_data();
+		$this->assertIsArray( $data );
+		$this->assertSame( 403, $data['status_code'] );
+		$this->assertSame( 'gateway_rejection', $data['failure_class'] );
+		$this->assertSame( 'http', $data['failure_source'] );
+		$this->assertSame( 1, $data['attempts'] );
+		$this->assertSame(
+			ActiveJobFailureDiagnostic::REASON_GATEWAY_REJECTION,
+			ActiveJobFailureDiagnostic::reason_from_error( $result )
+		);
+		$this->assertStringNotContainsString( 'PRIVATE_PROMPT_CONTENT', (string) wp_json_encode( $data ) );
+		$this->assertStringNotContainsString( 'PRIVATE_TOKEN', (string) wp_json_encode( $data ) );
+	}
+
+	public function test_runtime_gateway_metadata_replaces_opaque_provider_exception(): void {
+		$method = new \ReflectionMethod( AgentLoop::class, 'normalize_runtime_gateway_exception' );
+		$method->setAccessible( true );
+		$result = $method->invoke(
+			new AgentLoop( 'PRIVATE_PROMPT_CONTENT' ),
+			new \RuntimeException( 'PRIVATE_PROVIDER_EXCEPTION with Authorization: Bearer PRIVATE_TOKEN' ),
+			array(
+				'status_code'    => 403,
+				'failure_class'  => 'gateway_rejection',
+				'failure_source' => 'http',
+				'attempts'       => 1,
+				'correlation_id' => 'job-0123456789ab',
+			)
+		);
+
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'sd_ai_agent_provider_gateway_rejection', $result->get_error_code() );
+		$this->assertStringContainsString( 'upstream security gateway', $result->get_error_message() );
+		$this->assertStringNotContainsString( 'PRIVATE_PROVIDER_EXCEPTION', $result->get_error_message() );
+		$data = $result->get_error_data();
+		$this->assertIsArray( $data );
+		$this->assertStringNotContainsString( 'PRIVATE_TOKEN', (string) wp_json_encode( $data ) );
+		$this->assertSame( 403, $data['status_code'] );
+		$this->assertSame( 'gateway_rejection', $data['failure_class'] );
+	}
+
 	/** A large exhausted request compacts and retries without browser recovery. */
 	public function test_large_provider_retry_exhaustion_compacts_and_recovers_automatically(): void {
 		$session_id = Database::create_session(

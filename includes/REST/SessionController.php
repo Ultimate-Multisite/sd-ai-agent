@@ -3855,7 +3855,7 @@ final class SessionController {
 			$diagnostic = $this->persist_active_job_failure(
 				$job_id,
 				$job,
-				ActiveJobFailureDiagnostic::reason_from_error( $result, $failure_data['provider_id'] ),
+				ActiveJobFailureDiagnostic::reason_from_error( $result, (string) $failure_data['provider_id'] ),
 				$failure_data
 			);
 			$this->record_public_chat_review_status( $job, 'failed', (string) $diagnostic['reason'] );
