@@ -848,6 +848,19 @@ class RestControllerTest extends WP_UnitTestCase {
 		$this->assertSame( 'sd_ai_agent_compact_active_job', $active_response->get_data()['code'] );
 	}
 
+	/** Malformed persisted JSON fails closed without loading or replacing the source row. */
+	public function test_compact_session_rejects_malformed_persisted_history(): void {
+		wp_set_current_user( $this->admin_id );
+		$session_id = Database::create_session( array( 'user_id' => $this->admin_id, 'title' => 'Malformed source' ) );
+		$this->assertTrue( Database::update_session( (int) $session_id, array( 'messages' => '[{"role":"user"}' ) ) );
+
+		$response = $this->dispatch( 'POST', "/sd-ai-agent/v1/sessions/{$session_id}/compact" );
+
+		$this->assertStatus( 409, $response );
+		$this->assertSame( 'sd_ai_agent_compact_invalid_history', $response->get_data()['code'] );
+		$this->assertSame( '[{"role":"user"}', Database::get_session( (int) $session_id )->messages );
+	}
+
 	/** Streamed compaction keeps the existing session ownership boundary. */
 	public function test_compact_session_rejects_an_unshared_session_owned_by_another_user(): void {
 		$other_admin = self::factory()->user->create( array( 'role' => 'administrator' ) );

@@ -392,6 +392,25 @@ class ConversationTrimmer {
 				if ( ! $pending_tool_cycle ) {
 					continue;
 				}
+				if (
+					! $pending_tool_cycle_discarded
+					&& count( $pending_tool_call_ids ) === count( $pending_tool_response_ids )
+					&& self::has_matching_tool_responses( $pending_tool_call_ids, $pending_tool_response_ids )
+				) {
+					self::flush_serialized_tool_cycle(
+						$retained_groups,
+						$pending_tool_lines,
+						$pending_tool_call_ids,
+						$pending_tool_response_ids,
+						$pending_tool_cycle,
+						$pending_tool_responses,
+						$pending_tool_cycle_discarded,
+						$source_count,
+						$max_bytes,
+						$max_tokens
+					);
+					continue;
+				}
 
 				$pending_tool_responses = true;
 				if ( ! $pending_tool_cycle_discarded ) {

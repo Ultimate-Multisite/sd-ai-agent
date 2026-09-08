@@ -1208,6 +1208,14 @@ final class SessionController {
 			);
 		}
 
+		if ( empty( $source_session->messages_valid ) ) {
+			return new WP_Error(
+				'sd_ai_agent_compact_invalid_history',
+				__( 'The saved conversation could not be read safely for compaction.', 'superdav-ai-agent' ),
+				array( 'status' => 409 )
+			);
+		}
+
 		if ( (int) $source_session->message_count <= 0 ) {
 			return new WP_Error(
 				'sd_ai_agent_compact_empty_session',

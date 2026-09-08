@@ -9,6 +9,7 @@
 
 namespace SdAiAgent\Tests\Core;
 
+use SdAiAgent\Core\ConversationTrimmer;
 use SdAiAgent\Core\Database;
 use WP_UnitTestCase;
 
@@ -368,20 +369,24 @@ class DatabaseTest extends WP_UnitTestCase {
 	public function test_stream_session_messages_reads_bounded_slices(): void {
 		$user_id    = self::factory()->user->create();
 		$session_id = Database::create_session( array( 'user_id' => $user_id, 'title' => 'Chunked source' ) );
-		$messages   = array(
-			array( 'role' => 'user', 'content' => str_repeat( 'first chunk café 😀 ', 250 ) ),
-			array( 'role' => 'model', 'content' => str_repeat( 'second chunk ', 250 ) ),
-		);
+		$template   = (string) wp_json_encode( array( array( 'role' => 'user', 'parts' => array( array( 'text' => 'MARKER' ) ) ) ), JSON_UNESCAPED_UNICODE );
+		$padding    = 65535 - (int) strpos( $template, 'MARKER' );
+		$messages   = array( array( 'role' => 'user', 'parts' => array( array( 'text' => str_repeat( 'x', $padding ) . '😀 boundary' ) ) ) );
 		$encoded    = (string) wp_json_encode( $messages, JSON_UNESCAPED_UNICODE );
 
 		$this->assertTrue( Database::update_session( (int) $session_id, array( 'messages' => $encoded ) ) );
-		$chunks = iterator_to_array( Database::stream_session_messages( (int) $session_id, 1024 ), false );
+		$chunks = iterator_to_array( Database::stream_session_messages( (int) $session_id ), false );
 
 		$this->assertNotEmpty( $chunks );
+		$this->assertSame( 65535, strpos( $encoded, '😀' ) );
 		$this->assertSame( $encoded, implode( '', $chunks ) );
 		foreach ( $chunks as $chunk ) {
-			$this->assertLessThanOrEqual( 1024, strlen( $chunk ) );
+			$this->assertLessThanOrEqual( 65536, strlen( $chunk ) );
 		}
+
+		$compacted = ConversationTrimmer::compact_serialized_history_chunks( $chunks, 4096, 1024 );
+		$this->assertTrue( $compacted['meta']['stream_complete'] );
+		$this->assertTrue( $compacted['meta']['stream_valid'] );
 	}
 
 	/** Crossing the maintenance threshold reports safe size metadata without rejecting persistence. */

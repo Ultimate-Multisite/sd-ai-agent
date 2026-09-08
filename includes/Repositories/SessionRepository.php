@@ -125,7 +125,7 @@ class SessionRepository {
 				'SELECT id, status, message_count, messages_bytes, tool_calls_bytes, paused_state_bytes, total_bytes
 				FROM (
 					SELECT id, status,
-						COALESCE(JSON_LENGTH(messages), 0) AS message_count,
+						CASE WHEN JSON_VALID(messages) THEN COALESCE(JSON_LENGTH(messages), 0) ELSE 0 END AS message_count,
 						COALESCE(OCTET_LENGTH(messages), 0) AS messages_bytes,
 						COALESCE(OCTET_LENGTH(tool_calls), 0) AS tool_calls_bytes,
 						COALESCE(OCTET_LENGTH(paused_state), 0) AS paused_state_bytes,
@@ -163,7 +163,8 @@ class SessionRepository {
 		$row = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT id, user_id, title, provider_id, model_id, status,
-					COALESCE(JSON_LENGTH(messages), 0) AS message_count,
+					CASE WHEN JSON_VALID(messages) THEN COALESCE(JSON_LENGTH(messages), 0) ELSE 0 END AS message_count,
+					COALESCE(JSON_VALID(messages), 0) AS messages_valid,
 					COALESCE(OCTET_LENGTH(messages), 0) AS messages_bytes,
 					COALESCE(OCTET_LENGTH(tool_calls), 0) AS tool_calls_bytes,
 					COALESCE(OCTET_LENGTH(paused_state), 0) AS paused_state_bytes,

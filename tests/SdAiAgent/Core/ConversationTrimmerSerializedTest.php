@@ -169,6 +169,25 @@ class ConversationTrimmerSerializedTest extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'Keep this safe boundary.', $text );
 	}
 
+	/** A completed cycle remains available when a later orphan response is ignored. */
+	public function test_chunked_compaction_preserves_completed_cycle_before_orphan_response(): void {
+		$history = array(
+			array( 'role' => 'model', 'parts' => array( array( 'functionCall' => array( 'id' => 'call-a', 'name' => 'write-tool' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'id' => 'call-a', 'name' => 'write-tool' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'id' => 'orphan-b', 'name' => 'orphan-tool' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'text' => 'Continue without repeating the write.' ) ) ),
+		);
+
+		$result = ConversationTrimmer::compact_serialized_history_chunks( str_split( (string) wp_json_encode( $history ), 9 ), 4096, 1024 );
+		$text   = (string) $result['messages'][0]['parts'][0]['text'];
+
+		$this->assertTrue( $result['meta']['stream_valid'] );
+		$this->assertStringContainsString( '[tool call: write-tool]', $text );
+		$this->assertStringContainsString( '[tool result omitted: write-tool]', $text );
+		$this->assertStringNotContainsString( 'orphan-tool', $text );
+		$this->assertStringContainsString( 'Continue without repeating the write.', $text );
+	}
+
 	/** Malformed array separators and trailing data fail closed. */
 	public function test_chunked_compaction_rejects_malformed_json_arrays(): void {
 		$invalid_histories = array(
