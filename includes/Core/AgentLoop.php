@@ -3084,6 +3084,8 @@ PROMPT;
 
 			if ( $last_error instanceof WP_Error && ! empty( $request_envelope ) ) {
 				$last_error = $this->with_request_envelope_metadata( $last_error, $request_envelope );
+			} elseif ( $last_error instanceof \Throwable ) {
+				$last_error = $this->normalize_runtime_gateway_exception( $last_error, $request_envelope );
 			}
 
 			$status_code = $this->extract_provider_error_status( $last_error );
@@ -3174,6 +3176,30 @@ PROMPT;
 	}
 
 	/**
+	 * Replace a classified gateway exception before its unsafe message can escape.
+	 *
+	 * Some provider SDKs throw after WordPress has observed the HTTP response.
+	 * Their exception message can be arbitrary upstream HTML, while the runtime
+	 * envelope carries the safe classification from that response.
+	 *
+	 * @param \Throwable                $error   Provider exception.
+	 * @param array<string, int|string> $metrics Prompt-free runtime metrics.
+	 * @return WP_Error|\Throwable A safe error for classified gateway failures.
+	 */
+	private function normalize_runtime_gateway_exception( \Throwable $error, array $metrics ): WP_Error|\Throwable {
+		if ( ProviderErrorClassifier::FAILURE_CLASS_GATEWAY_REJECTION !== ( $metrics['failure_class'] ?? '' ) ) {
+			return $error;
+		}
+
+		$gateway_error = new WP_Error(
+			'sd_ai_agent_provider_gateway_rejection',
+			ActiveJobFailureDiagnostic::message_for( ActiveJobFailureDiagnostic::REASON_GATEWAY_REJECTION )
+		);
+
+		return $this->with_request_envelope_metadata( $gateway_error, $metrics );
+	}
+
+	/**
 	 * Copy only bounded provider failure metadata onto a terminal error.
 	 *
 	 * @param WP_Error|\Throwable|null $error       Provider error.
@@ -3191,7 +3217,7 @@ PROMPT;
 			$source = $status_code >= 400 ? 'http' : 'transport';
 		}
 
-		$context = array(
+		$context       = array(
 			'status_code'    => max( 0, $status_code ),
 			'provider_id'    => sanitize_key( $provider_id ),
 			'model_id'       => sanitize_text_field( $model_id ),
@@ -3462,6 +3488,17 @@ PROMPT;
 					? __( 'This request is too large to send safely. Compact the conversation or shorten the latest message and remove large attachments before retrying.', 'superdav-ai-agent' )
 					: __( 'The selected AI provider or intermediary rejected this request because it exceeds its payload limit. Start a new chat and send a smaller request. If you attached files, remove or reduce them before retrying.', 'superdav-ai-agent' ),
 				$data
+			);
+		}
+
+		// Security gateways can return HTML that echoes request content or
+		// credentials. Classify that evidence transiently, then replace the
+		// provider error before it can reach a caller, recovery state, or REST path.
+		if ( ProviderErrorClassifier::is_gateway_rejection( $error, $status_code ) ) {
+			return new WP_Error(
+				'sd_ai_agent_provider_gateway_rejection',
+				ActiveJobFailureDiagnostic::message_for( ActiveJobFailureDiagnostic::REASON_GATEWAY_REJECTION ),
+				$this->provider_failure_context( $error, $status_code, $provider_id, $model_id, $attempts )
 			);
 		}
 

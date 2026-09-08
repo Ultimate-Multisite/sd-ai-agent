@@ -770,7 +770,11 @@ describe( 'actions', () => {
 			} )
 		).toEqual( {
 			reason: 'unknown',
+			status_code: 0,
+			failure_class: '',
+			failure_source: '',
 			last_safe_phase: '',
+			attempts: 0,
 			retryable: false,
 			next_action: 'contact_support',
 			correlation_id: '',
@@ -780,6 +784,10 @@ describe( 'actions', () => {
 	test( 'gateway rejection uses a safe support action without security-disable guidance', () => {
 		const diagnostic = normalizeActiveJobFailureDiagnostic( {
 			reason: 'gateway_rejection',
+			status_code: 403,
+			failure_class: 'gateway_rejection',
+			failure_source: 'http',
+			attempts: 1,
 			next_action: 'contact_support',
 			message: 'PRIVATE_PROVIDER_MESSAGE',
 			response_body: '<html>Imunify360 PRIVATE_PROVIDER_RESPONSE</html>',
@@ -788,7 +796,11 @@ describe( 'actions', () => {
 
 		expect( diagnostic ).toEqual( {
 			reason: 'gateway_rejection',
+			status_code: 403,
+			failure_class: 'gateway_rejection',
+			failure_source: 'http',
 			last_safe_phase: '',
+			attempts: 1,
 			retryable: false,
 			next_action: 'contact_support',
 			correlation_id: '',

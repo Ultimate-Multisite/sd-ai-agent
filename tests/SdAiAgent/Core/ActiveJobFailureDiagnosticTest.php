@@ -107,6 +107,14 @@ class ActiveJobFailureDiagnosticTest extends WP_UnitTestCase {
 				),
 				ActiveJobFailureDiagnostic::REASON_GATEWAY_REJECTION,
 			),
+			'generic WAF rejection'     => array(
+				new \WP_Error(
+					'provider_http_error',
+					'Web application firewall blocked PRIVATE_PROMPT_CONTENT.',
+					array( 'status_code' => 403 )
+				),
+				ActiveJobFailureDiagnostic::REASON_GATEWAY_REJECTION,
+			),
 			'unknown provider error'    => array(
 				new \WP_Error(
 					'provider_unexpected_error',

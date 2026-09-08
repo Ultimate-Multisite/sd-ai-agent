@@ -164,7 +164,7 @@ class ProviderTraceLogger {
 	): void {
 		$has_valid_managed_attribution = SuperdavManagedRequestIdentifiers::is_journey_id( $journey_id )
 			&& SuperdavManagedRequestIdentifiers::is_idempotency_key( $idempotency_key );
-		$allowed_phases                 = array( 'initial_provider_call', 'client_tool_resume', 'provider_followup_call' );
+		$allowed_phases                = array( 'initial_provider_call', 'client_tool_resume', 'provider_followup_call' );
 		self::$runtimeContext          = array(
 			'provider_id'                  => sanitize_key( $provider_id ),
 			'model_id'                     => sanitize_text_field( $model_id ),
@@ -459,21 +459,21 @@ class ProviderTraceLogger {
 	 * @return array<string, mixed> Unchanged response.
 	 */
 	public static function on_http_response( array $response, array $parsed_args, string $url ): array {
-		$trace_enabled          = ProviderTrace::is_enabled();
-		$has_context            = '' !== self::$runtimeContext['provider_id'];
-		$canonical_provider_id  = self::match_provider( $url );
+		$trace_enabled         = ProviderTrace::is_enabled();
+		$has_context           = '' !== self::$runtimeContext['provider_id'];
+		$canonical_provider_id = self::match_provider( $url );
 		if ( ! $trace_enabled && ! $has_context && '' === $canonical_provider_id ) {
 			return $response;
 		}
 
-		$request_body = is_string( $parsed_args['body'] ?? null )
+		$request_body                     = is_string( $parsed_args['body'] ?? null )
 			? $parsed_args['body']
 			: (string) wp_json_encode( $parsed_args['body'] ?? '' );
-		$status_code  = (int) wp_remote_retrieve_response_code( $response );
+		$status_code                      = (int) wp_remote_retrieve_response_code( $response );
 		$response_body_for_classification = $status_code >= 400
 			? (string) wp_remote_retrieve_body( $response )
 			: '';
-		$failure_class = $status_code >= 400 && ProviderErrorClassifier::is_gateway_rejection_response( $status_code, $response_body_for_classification )
+		$failure_class                    = $status_code >= 400 && ProviderErrorClassifier::is_gateway_rejection_response( $status_code, $response_body_for_classification )
 			? ProviderErrorClassifier::FAILURE_CLASS_GATEWAY_REJECTION
 			: '';
 
@@ -636,11 +636,11 @@ class ProviderTraceLogger {
 
 			if ( ProviderErrorClassifier::FAILURE_CLASS_GATEWAY_REJECTION === $failure_class ) {
 				$gateway_diagnostic = array(
-					'event'           => 'provider_gateway_rejection',
-					'failure_class'   => $failure_class,
-					'failure_source'  => 'http',
-					'status_code'     => $status_code,
-					'session_id'      => max( 0, (int) ( $inflight['session_id'] ?? 0 ) ),
+					'event'          => 'provider_gateway_rejection',
+					'failure_class'  => $failure_class,
+					'failure_source' => 'http',
+					'status_code'    => $status_code,
+					'session_id'     => max( 0, (int) ( $inflight['session_id'] ?? 0 ) ),
 				);
 				if ( (int) ( $inflight['attempt'] ?? 0 ) > 0 ) {
 					$gateway_diagnostic['attempts'] = min( 10, (int) $inflight['attempt'] );
@@ -849,7 +849,7 @@ class ProviderTraceLogger {
 			$diagnostics['failure_class'] = $failure_class;
 		}
 		if ( '' !== $job_id ) {
-			$diagnostics['job_id'] = sanitize_text_field( $job_id );
+			$diagnostics['job_id']         = sanitize_text_field( $job_id );
 			$diagnostics['correlation_id'] = self::job_correlation_id( $job_id );
 		}
 

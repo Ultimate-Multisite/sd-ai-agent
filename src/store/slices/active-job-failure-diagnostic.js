@@ -68,10 +68,35 @@ export function normalizeActiveJobFailureDiagnostic( diagnostic ) {
 		/^job-(?:[a-f0-9]{12}|unknown)$/.test( source.correlation_id )
 			? source.correlation_id
 			: '';
+	const statusCode =
+		Number.isInteger( source.status_code ) &&
+		source.status_code >= 400 &&
+		source.status_code <= 599
+			? source.status_code
+			: 0;
+	const failureClass =
+		source.failure_class === 'gateway_rejection'
+			? source.failure_class
+			: '';
+	const failureSource = [ 'http', 'transport' ].includes(
+		source.failure_source
+	)
+		? source.failure_source
+		: '';
+	const attempts =
+		Number.isInteger( source.attempts ) &&
+		source.attempts >= 0 &&
+		source.attempts <= 10
+			? source.attempts
+			: 0;
 
 	return {
 		reason,
+		status_code: statusCode,
+		failure_class: failureClass,
+		failure_source: failureSource,
 		last_safe_phase: phase,
+		attempts,
 		retryable: source.retryable === true,
 		next_action: nextAction,
 		correlation_id: correlationId,

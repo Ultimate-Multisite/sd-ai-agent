@@ -437,8 +437,8 @@ class ProviderTraceLoggerResolveTest extends WP_UnitTestCase {
 		$this->assertSame( 'provider_gateway_rejection', $rows[0]->error );
 		$trace = ProviderTrace::get( $rows[0]->id );
 		$this->assertNotNull( $trace );
-		$this->assertSame( '{}', $trace->request_headers );
-		$this->assertSame( '{}', $trace->response_headers );
+		$this->assertSame( '[]', $trace->request_headers );
+		$this->assertSame( '[]', $trace->response_headers );
 		$terminal_metadata = json_decode( $trace->response_body, true );
 		$this->assertIsArray( $terminal_metadata );
 		$this->assertSame( 'provider_gateway_rejection', $terminal_metadata['event'] );
