@@ -43,6 +43,9 @@ class ConversationTrimmer {
 	/** Maximum characters copied from any single message into compact context. */
 	private const COMPACT_MAX_MESSAGE_CHARS = 2000;
 
+	/** Maximum serialized bytes held for one streamed source message. */
+	private const STREAMED_MESSAGE_MAX_BYTES = 1048576;
+
 	/** Maximum JSON characters retained for callable ability-search schemas. */
 	private const COMPACT_MAX_ABILITY_SCHEMA_RECEIPT_CHARS = 1600;
 
@@ -290,6 +293,530 @@ class ConversationTrimmer {
 				'tool_payloads_omitted'  => true,
 			),
 		);
+	}
+
+	/**
+	 * Build a bounded compact seed from JSON-array chunks without materializing the
+	 * full persisted history in PHP memory.
+	 *
+	 * Complete serialized tool call/result cycles are retained together or omitted
+	 * together. A malformed or incomplete stream is reported in meta so callers
+	 * can fail closed instead of compacting a partial conversation.
+	 *
+	 * @param iterable<int, string> $chunks     Serialized JSON-array slices.
+	 * @param int                   $max_bytes  Maximum serialized seed-message bytes.
+	 * @param int                   $max_tokens Maximum estimated seed-message tokens.
+	 * @return array{messages:list<array<string,mixed>>,meta:array<string,int|bool>}
+	 */
+	public static function compact_serialized_history_chunks( iterable $chunks, int $max_bytes = self::COMPACT_MAX_BYTES, int $max_tokens = self::COMPACT_MAX_TOKENS ): array { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic iterable value type is valid PHPStan syntax but not a native PHP type.
+		$stream_complete = false;
+		$stream_valid    = true;
+		$result          = self::compact_serialized_history_iterable(
+			self::decode_serialized_history_chunks( $chunks, $stream_complete, $stream_valid ),
+			$max_bytes,
+			$max_tokens
+		);
+
+		$result['meta']['stream_complete'] = $stream_complete;
+		$result['meta']['stream_valid']    = $stream_valid;
+
+		return $result;
+	}
+
+	/**
+	 * Build bounded compact context from a streamed serialized-message iterable.
+	 *
+	 * @param iterable<int, array<string,mixed>> $messages   Serialized messages.
+	 * @param int                                $max_bytes  Maximum serialized seed-message bytes.
+	 * @param int                                $max_tokens Maximum estimated seed-message tokens.
+	 * @return array{messages:list<array<string,mixed>>,meta:array<string,int|bool>}
+	 */
+	private static function compact_serialized_history_iterable( iterable $messages, int $max_bytes, int $max_tokens ): array { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic iterable value type is valid PHPStan syntax but not a native PHP type.
+		$max_bytes                    = max( 1024, $max_bytes );
+		$max_tokens                   = max( 256, $max_tokens );
+		$per_message_chars            = max( 160, min( self::COMPACT_MAX_MESSAGE_CHARS, (int) floor( $max_bytes / 4 ) ) );
+		$source_count                 = 0;
+		$retained_groups              = array();
+		$pending_tool_lines           = array();
+		$pending_tool_call_ids        = array();
+		$pending_tool_response_ids    = array();
+		$pending_tool_cycle           = false;
+		$pending_tool_responses       = false;
+		$pending_tool_cycle_discarded = false;
+
+		foreach ( $messages as $message ) {
+			if ( ! is_array( $message ) ) {
+				continue;
+			}
+
+			$expanded      = self::serialized_message_to_compact_excerpts( $message, $per_message_chars );
+			$source_count += $expanded['source_count'];
+			$call_ids      = self::serialized_message_function_ids( $message, 'functionCall', 'function_call' );
+			$response_ids  = self::serialized_message_function_ids( $message, 'functionResponse', 'function_response' );
+
+			if ( ! empty( $call_ids ) ) {
+				if ( $pending_tool_cycle && $pending_tool_responses ) {
+					self::flush_serialized_tool_cycle(
+						$retained_groups,
+						$pending_tool_lines,
+						$pending_tool_call_ids,
+						$pending_tool_response_ids,
+						$pending_tool_cycle,
+						$pending_tool_responses,
+						$pending_tool_cycle_discarded,
+						$source_count,
+						$max_bytes,
+						$max_tokens
+					);
+				}
+
+				$pending_tool_cycle     = true;
+				$pending_tool_responses = ! empty( $response_ids );
+				if ( $pending_tool_cycle_discarded ) {
+					continue;
+				}
+
+				$pending_tool_call_ids     = array_merge( $pending_tool_call_ids, $call_ids );
+				$pending_tool_response_ids = array_merge( $pending_tool_response_ids, $response_ids );
+				$pending_tool_lines        = array_merge( $pending_tool_lines, $expanded['lines'] );
+				if ( ! self::compact_lines_fit_budget( $pending_tool_lines, $source_count, $max_bytes, $max_tokens ) ) {
+					$pending_tool_lines           = array();
+					$pending_tool_call_ids        = array();
+					$pending_tool_response_ids    = array();
+					$pending_tool_cycle_discarded = true;
+				}
+				continue;
+			}
+
+			if ( ! empty( $response_ids ) ) {
+				if ( ! $pending_tool_cycle ) {
+					continue;
+				}
+				if (
+					! $pending_tool_cycle_discarded
+					&& count( $pending_tool_call_ids ) === count( $pending_tool_response_ids )
+					&& self::has_matching_tool_responses( $pending_tool_call_ids, $pending_tool_response_ids )
+				) {
+					self::flush_serialized_tool_cycle(
+						$retained_groups,
+						$pending_tool_lines,
+						$pending_tool_call_ids,
+						$pending_tool_response_ids,
+						$pending_tool_cycle,
+						$pending_tool_responses,
+						$pending_tool_cycle_discarded,
+						$source_count,
+						$max_bytes,
+						$max_tokens
+					);
+					continue;
+				}
+
+				$pending_tool_responses = true;
+				if ( ! $pending_tool_cycle_discarded ) {
+					$pending_tool_response_ids = array_merge( $pending_tool_response_ids, $response_ids );
+					$pending_tool_lines        = array_merge( $pending_tool_lines, $expanded['lines'] );
+					if ( ! self::compact_lines_fit_budget( $pending_tool_lines, $source_count, $max_bytes, $max_tokens ) ) {
+						$pending_tool_lines           = array();
+						$pending_tool_call_ids        = array();
+						$pending_tool_response_ids    = array();
+						$pending_tool_cycle_discarded = true;
+					}
+				}
+				continue;
+			}
+
+			self::flush_serialized_tool_cycle(
+				$retained_groups,
+				$pending_tool_lines,
+				$pending_tool_call_ids,
+				$pending_tool_response_ids,
+				$pending_tool_cycle,
+				$pending_tool_responses,
+				$pending_tool_cycle_discarded,
+				$source_count,
+				$max_bytes,
+				$max_tokens
+			);
+
+			self::retain_compact_group( $retained_groups, $expanded['lines'], $source_count, $max_bytes, $max_tokens );
+		}
+
+		self::flush_serialized_tool_cycle(
+			$retained_groups,
+			$pending_tool_lines,
+			$pending_tool_call_ids,
+			$pending_tool_response_ids,
+			$pending_tool_cycle,
+			$pending_tool_responses,
+			$pending_tool_cycle_discarded,
+			$source_count,
+			$max_bytes,
+			$max_tokens
+		);
+
+		$lines          = self::flatten_compact_groups( $retained_groups );
+		$retained_count = count( $lines );
+		if ( empty( $lines ) ) {
+			$lines          = array( '[No individual message excerpt fit within the compact budget.]' );
+			$retained_count = 0;
+		}
+
+		$text       = self::build_compact_context_text( $source_count, $retained_count, $lines );
+		$message    = self::compact_text_to_message( $text );
+		$line_count = count( $lines );
+
+		while ( ! self::fits_budget( array( $message ), $max_bytes, $max_tokens ) && $line_count > 1 ) {
+			array_shift( $lines );
+			$retained_count = count( $lines );
+			$line_count     = $retained_count;
+			$text           = self::build_compact_context_text( $source_count, $retained_count, $lines );
+			$message        = self::compact_text_to_message( $text );
+		}
+
+		if ( ! self::fits_budget( array( $message ), $max_bytes, $max_tokens ) ) {
+			$retained_count = 0;
+			$text           = self::build_compact_context_text(
+				$source_count,
+				$retained_count,
+				array( '[Conversation details were omitted because the compact budget is smaller than the required metadata.]' )
+			);
+			$message        = self::compact_text_to_message( $text );
+		}
+
+		return array(
+			'messages' => array( $message->toArray() ),
+			'meta'     => array(
+				'source_message_count'   => $source_count,
+				'retained_excerpt_count' => $retained_count,
+				'boundary_omitted_count' => max( 0, $source_count - $retained_count ),
+				'estimated_bytes'        => self::estimate_bytes( $message ),
+				'estimated_tokens'       => self::estimate_tokens( $message ),
+				'max_bytes'              => $max_bytes,
+				'max_tokens'             => $max_tokens,
+				'attachments_omitted'    => true,
+				'tool_payloads_omitted'  => true,
+			),
+		);
+	}
+
+	/**
+	 * Incrementally decode an array of serialized message objects.
+	 *
+	 * @param iterable<int, string> $chunks   Serialized JSON-array slices.
+	 * @param bool                  $complete Receives whether the closing array token was read.
+	 * @param bool                  $valid    Receives whether every decoded element was valid.
+	 * @return \Generator<int, array<string,mixed>>
+	 */
+	private static function decode_serialized_history_chunks( iterable $chunks, bool &$complete, bool &$valid ): \Generator { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic iterable value type is valid PHPStan syntax but not a native PHP type.
+		$complete       = false;
+		$valid          = true;
+		$started        = false;
+		$depth          = 0;
+		$element        = '';
+		$element_bytes  = 0;
+		$in_string      = false;
+		$escaped        = false;
+		$discarding     = false;
+		$containers     = '';
+		$expect_element = true;
+		$element_count  = 0;
+
+		foreach ( $chunks as $chunk ) {
+			if ( ! is_string( $chunk ) ) {
+				$valid = false;
+				continue;
+			}
+
+			for ( $index = 0, $length = strlen( $chunk ); $index < $length; ++$index ) {
+				$character = $chunk[ $index ];
+
+				if ( ! $started ) {
+					if ( ' ' === $character || "\n" === $character || "\r" === $character || "\t" === $character ) {
+						continue;
+					}
+					if ( '[' !== $character ) {
+						$valid = false;
+						return;
+					}
+
+					$started = true;
+					continue;
+				}
+
+				if ( $complete ) {
+					if ( ' ' !== $character && "\n" !== $character && "\r" !== $character && "\t" !== $character ) {
+						$valid = false;
+						return;
+					}
+					continue;
+				}
+
+				if ( 0 === $depth ) {
+					if ( ' ' === $character || "\n" === $character || "\r" === $character || "\t" === $character ) {
+						continue;
+					}
+					if ( $expect_element && ']' === $character && 0 === $element_count ) {
+						$complete = true;
+						continue;
+					}
+					if ( ! $expect_element && ',' === $character ) {
+						$expect_element = true;
+						continue;
+					}
+					if ( ! $expect_element && ']' === $character ) {
+						$complete = true;
+						continue;
+					}
+					if ( ! $expect_element || '{' !== $character ) {
+						$valid = false;
+						return;
+					}
+
+					$depth          = 1;
+					$element        = '{';
+					$element_bytes  = 1;
+					$in_string      = false;
+					$escaped        = false;
+					$discarding     = false;
+					$containers     = '{';
+					$expect_element = false;
+					continue;
+				}
+
+				++$element_bytes;
+				if ( ! $discarding ) {
+					if ( $element_bytes > self::STREAMED_MESSAGE_MAX_BYTES ) {
+						$discarding = true;
+						$element    = '';
+					} else {
+						$element .= $character;
+					}
+				}
+
+				if ( $in_string ) {
+					if ( $escaped ) {
+						$escaped = false;
+						continue;
+					}
+					if ( '\\' === $character ) {
+						$escaped = true;
+						continue;
+					}
+					if ( '"' === $character ) {
+						$in_string = false;
+					}
+					continue;
+				}
+
+				if ( '"' === $character ) {
+					$in_string = true;
+					continue;
+				}
+				if ( '{' === $character || '[' === $character ) {
+					if ( strlen( $containers ) >= 512 ) {
+						$valid = false;
+						return;
+					}
+					$containers .= $character;
+					++$depth;
+					continue;
+				}
+				if ( '}' !== $character && ']' !== $character ) {
+					continue;
+				}
+
+				$expected_open = '}' === $character ? '{' : '[';
+				if ( '' === $containers || $expected_open !== substr( $containers, -1 ) ) {
+					$valid = false;
+					return;
+				}
+				$containers = substr( $containers, 0, -1 );
+				--$depth;
+				if ( 0 !== $depth ) {
+					continue;
+				}
+
+				if ( $discarding ) {
+					yield self::oversized_streamed_message_placeholder( $element_bytes );
+				} else {
+					$decoded = self::decode_streamed_message( $element );
+					if ( null === $decoded ) {
+						$valid = false;
+					} else {
+						yield $decoded;
+					}
+				}
+
+				$element       = '';
+				$element_bytes = 0;
+				$in_string     = false;
+				$escaped       = false;
+				$discarding    = false;
+				++$element_count;
+			}
+		}
+
+		if ( ! $complete ) {
+			$valid = false;
+		}
+	}
+
+	/**
+	 * Decode one JSON object while preserving a string-keyed message shape.
+	 *
+	 * @param string $element Serialized message object.
+	 * @return array<string,mixed>|null
+	 */
+	private static function decode_streamed_message( string $element ): ?array {
+		$decoded = json_decode( $element, true );
+		if ( ! is_array( $decoded ) || array_is_list( $decoded ) ) {
+			return null;
+		}
+
+		$message = array();
+		foreach ( $decoded as $key => $value ) {
+			if ( ! is_string( $key ) ) {
+				return null;
+			}
+			$message[ $key ] = $value;
+		}
+
+		return $message;
+	}
+
+	/**
+	 * Build a bounded marker for one pathological serialized message.
+	 *
+	 * @param int $bytes Source message size.
+	 * @return array<string,mixed>
+	 */
+	private static function oversized_streamed_message_placeholder( int $bytes ): array {
+		return array(
+			'role'  => 'user',
+			'parts' => array(
+				array(
+					'text' => sprintf( '[A persisted message of %d bytes was omitted during maintenance compaction.]', $bytes ),
+				),
+			),
+		);
+	}
+
+	/**
+	 * Extract compatibility IDs from serialized function-call or response parts.
+	 *
+	 * ID-less provider parts use an empty-string compatibility ID. Distinct counts
+	 * are retained so parallel ID-less calls still require the same number of
+	 * responses before their compact excerpts can be kept.
+	 *
+	 * @param array<string,mixed> $message   Serialized message.
+	 * @param string              $camel_key Camel-case part key.
+	 * @param string              $snake_key Snake-case part key.
+	 * @return list<string>
+	 */
+	private static function serialized_message_function_ids( array $message, string $camel_key, string $snake_key ): array {
+		$ids   = array();
+		$parts = isset( $message['parts'] ) && is_array( $message['parts'] ) ? $message['parts'] : array();
+		foreach ( $parts as $part ) {
+			if ( ! is_array( $part ) ) {
+				continue;
+			}
+			$function = $part[ $camel_key ] ?? $part[ $snake_key ] ?? null;
+			if ( ! is_array( $function ) ) {
+				continue;
+			}
+
+			$id    = $function['id'] ?? '';
+			$ids[] = is_scalar( $id ) ? (string) $id : '';
+		}
+
+		return $ids;
+	}
+
+	/**
+	 * Retain one complete serialized tool cycle, or omit the whole cluster.
+	 *
+	 * @param list<list<string>> $groups        Retained compact groups.
+	 * @param list<string>       $lines         Pending call and response excerpts.
+	 * @param list<string>       $call_ids      Pending call IDs.
+	 * @param list<string>       $response_ids  Pending response IDs.
+	 * @param bool               $cycle         Whether a call cluster is pending.
+	 * @param bool               $responses     Whether its response cluster started.
+	 * @param bool               $discarded     Whether the cluster exceeded the budget.
+	 * @param int                $source_count  Original source message count.
+	 * @param int                $max_bytes     Maximum serialized seed-message bytes.
+	 * @param int                $max_tokens    Maximum estimated seed-message tokens.
+	 */
+	private static function flush_serialized_tool_cycle( array &$groups, array &$lines, array &$call_ids, array &$response_ids, bool &$cycle, bool &$responses, bool &$discarded, int $source_count, int $max_bytes, int $max_tokens ): void { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic list value types are valid PHPStan syntax but not native PHP types.
+		if (
+			$cycle
+			&& ! $discarded
+			&& count( $call_ids ) === count( $response_ids )
+			&& self::has_matching_tool_responses( $call_ids, $response_ids )
+		) {
+			self::retain_compact_group( $groups, $lines, $source_count, $max_bytes, $max_tokens );
+		}
+
+		$lines        = array();
+		$call_ids     = array();
+		$response_ids = array();
+		$cycle        = false;
+		$responses    = false;
+		$discarded    = false;
+	}
+
+	/**
+	 * Retain a complete compact group only while it fits the bounded seed budget.
+	 *
+	 * @param list<list<string>> $groups      Retained chronological compact groups.
+	 * @param list<string>       $lines       One logical group of excerpts.
+	 * @param int                $source_count Original source message count.
+	 * @param int                $max_bytes    Maximum serialized seed-message bytes.
+	 * @param int                $max_tokens   Maximum estimated seed-message tokens.
+	 */
+	private static function retain_compact_group( array &$groups, array $lines, int $source_count, int $max_bytes, int $max_tokens ): void { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic list value types are valid PHPStan syntax but not native PHP types.
+		$group = array();
+		foreach ( $lines as $line ) {
+			if ( is_string( $line ) && '' !== $line ) {
+				$group[] = $line;
+			}
+		}
+		if ( ! empty( $group ) ) {
+			$groups[] = $group;
+		}
+
+		self::trim_compact_groups( $groups, $source_count, $max_bytes, $max_tokens );
+	}
+
+	/**
+	 * Drop oldest whole groups until the candidate seed fits the current budget.
+	 *
+	 * @param list<list<string>> $groups       Retained chronological compact groups.
+	 * @param int                $source_count Original source message count.
+	 * @param int                $max_bytes    Maximum serialized seed-message bytes.
+	 * @param int                $max_tokens   Maximum estimated seed-message tokens.
+	 */
+	private static function trim_compact_groups( array &$groups, int $source_count, int $max_bytes, int $max_tokens ): void { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic list value types are valid PHPStan syntax but not native PHP types.
+		while ( ! empty( $groups ) && ! self::compact_lines_fit_budget( self::flatten_compact_groups( $groups ), $source_count, $max_bytes, $max_tokens ) ) {
+			array_shift( $groups );
+		}
+	}
+
+	/**
+	 * Flatten chronological compact groups without splitting their ordering.
+	 *
+	 * @param list<list<string>> $groups Retained compact groups.
+	 * @return list<string>
+	 */
+	private static function flatten_compact_groups( array $groups ): array { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint -- Generic list value types are valid PHPStan syntax but not native PHP types.
+		$lines = array();
+		foreach ( $groups as $group ) {
+			foreach ( $group as $line ) {
+				$lines[] = $line;
+			}
+		}
+
+		return $lines;
 	}
 
 	/**

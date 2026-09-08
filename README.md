@@ -121,6 +121,7 @@ Build specialized agents with the Agent Builder:
 - Search across all sessions by title or content
 - Export to JSON (reimportable) or Markdown (human-readable)
 - Per-session token usage tracking with cost estimates
+- [Backup-safe maintenance for oversized session rows](docs/session-maintenance.md)
 
 ### Memory
 - Persistent knowledge base the AI retains across sessions

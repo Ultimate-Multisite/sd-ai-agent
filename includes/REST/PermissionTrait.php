@@ -154,6 +154,33 @@ trait PermissionTrait {
 	}
 
 	/**
+	 * Permission check for streamed maintenance compaction.
+	 *
+	 * This mirrors the ownership and shared-administrator rules for the standard
+	 * session route without selecting the potentially oversized conversation JSON
+	 * before the compaction handler can consume it in bounded slices.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 */
+	public function check_session_compaction_permission( WP_REST_Request $request ): bool {
+		if ( ! RolePermissions::current_user_has_chat_access() ) {
+			return false;
+		}
+
+		$session_id = self::get_int_param( $request, 'id' );
+		$session    = Database::get_session_maintenance_metadata( $session_id );
+		if ( ! $session ) {
+			return false;
+		}
+
+		if ( (int) $session->user_id === get_current_user_id() ) {
+			return true;
+		}
+
+		return current_user_can( 'manage_options' ) && null !== Database::get_shared_session( $session_id );
+	}
+
+	/**
 	 * Permission check for share/unshare endpoints — owner only.
 	 */
 	public function check_session_owner_permission( WP_REST_Request $request ): bool {

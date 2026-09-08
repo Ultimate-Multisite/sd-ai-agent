@@ -61,4 +61,178 @@ class ConversationTrimmerSerializedTest extends WP_UnitTestCase {
 		$this->assertStringNotContainsString( 'SECRET_RESOURCE_VALUE', $text );
 		$this->assertStringNotContainsString( 'private.example', $text );
 	}
+
+	/** Chunked compaction keeps both sides of a persisted tool cycle in order. */
+	public function test_chunked_compaction_preserves_complete_tool_cycles(): void {
+		$history = array(
+			array(
+				'role'  => 'user',
+				'parts' => array( array( 'text' => 'Check the site before changing it.' ) ),
+			),
+			array(
+				'role'  => 'model',
+				'parts' => array(
+					array(
+						'functionCall' => array(
+							'name' => 'sd-ai-agent/site-info',
+							'args' => array( 'scope' => 'summary' ),
+						),
+					),
+				),
+			),
+			array(
+				'role'  => 'user',
+				'parts' => array(
+					array(
+						'functionResponse' => array(
+							'name'     => 'sd-ai-agent/site-info',
+							'response' => array( 'name' => 'Example Site' ),
+						),
+					),
+				),
+			),
+			array(
+				'role'  => 'user',
+				'parts' => array( array( 'text' => 'Continue with the maintenance plan.' ) ),
+			),
+		);
+
+		$encoded = (string) wp_json_encode( $history );
+		$chunks  = str_split( $encoded, 17 );
+		$result  = ConversationTrimmer::compact_serialized_history_chunks( $chunks, 4096, 1024 );
+		$text    = (string) $result['messages'][0]['parts'][0]['text'];
+
+		$this->assertTrue( $result['meta']['stream_complete'] );
+		$this->assertTrue( $result['meta']['stream_valid'] );
+		$this->assertStringContainsString( '[tool call: sd-ai-agent/site-info]', $text );
+		$this->assertStringContainsString( '[tool result omitted: sd-ai-agent/site-info]', $text );
+		$this->assertLessThan(
+			strpos( $text, '[tool result omitted: sd-ai-agent/site-info]' ),
+			strpos( $text, '[tool call: sd-ai-agent/site-info]' )
+		);
+	}
+
+	/** Chunked compaction retains complete split parallel tool cycles as one group. */
+	public function test_chunked_compaction_preserves_parallel_tool_cycles(): void {
+		$history = array(
+			array( 'role' => 'model', 'parts' => array( array( 'functionCall' => array( 'id' => 'call-a', 'name' => 'tool-a' ) ) ) ),
+			array( 'role' => 'model', 'parts' => array( array( 'functionCall' => array( 'id' => 'call-b', 'name' => 'tool-b' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'id' => 'call-a', 'name' => 'tool-a' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'id' => 'call-b', 'name' => 'tool-b' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'text' => 'Continue after both tools.' ) ) ),
+		);
+
+		$result = ConversationTrimmer::compact_serialized_history_chunks( str_split( (string) wp_json_encode( $history ), 11 ), 4096, 1024 );
+		$text   = (string) $result['messages'][0]['parts'][0]['text'];
+
+		$this->assertTrue( $result['meta']['stream_valid'] );
+		$this->assertStringContainsString( '[tool call: tool-a]', $text );
+		$this->assertStringContainsString( '[tool call: tool-b]', $text );
+		$this->assertStringContainsString( '[tool result omitted: tool-a]', $text );
+		$this->assertStringContainsString( '[tool result omitted: tool-b]', $text );
+		$this->assertStringContainsString( 'Continue after both tools.', $text );
+	}
+
+	/** Parallel ID-less cycles use call/response cardinality for compatibility. */
+	public function test_chunked_compaction_preserves_parallel_idless_tool_cycles(): void {
+		$history = array(
+			array( 'role' => 'model', 'parts' => array( array( 'functionCall' => array( 'name' => 'tool-a' ) ) ) ),
+			array( 'role' => 'model', 'parts' => array( array( 'functionCall' => array( 'name' => 'tool-b' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'name' => 'tool-a' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'name' => 'tool-b' ) ) ) ),
+		);
+
+		$result = ConversationTrimmer::compact_serialized_history_chunks( str_split( (string) wp_json_encode( $history ), 13 ), 4096, 1024 );
+		$text   = (string) $result['messages'][0]['parts'][0]['text'];
+
+		$this->assertTrue( $result['meta']['stream_valid'] );
+		$this->assertStringContainsString( '[tool call: tool-a]', $text );
+		$this->assertStringContainsString( '[tool result omitted: tool-b]', $text );
+	}
+
+	/** Incomplete or mismatched parallel cycles are omitted as a whole. */
+	public function test_chunked_compaction_omits_mismatched_parallel_tool_cycles(): void {
+		$history = array(
+			array( 'role' => 'model', 'parts' => array( array( 'functionCall' => array( 'id' => 'call-a', 'name' => 'tool-a' ) ) ) ),
+			array( 'role' => 'model', 'parts' => array( array( 'functionCall' => array( 'id' => 'call-b', 'name' => 'tool-b' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'id' => 'call-a', 'name' => 'tool-a' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'id' => 'call-c', 'name' => 'tool-c' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'text' => 'Keep this safe boundary.' ) ) ),
+		);
+
+		$result = ConversationTrimmer::compact_serialized_history_chunks( str_split( (string) wp_json_encode( $history ), 7 ), 4096, 1024 );
+		$text   = (string) $result['messages'][0]['parts'][0]['text'];
+
+		$this->assertTrue( $result['meta']['stream_valid'] );
+		$this->assertStringNotContainsString( '[tool call:', $text );
+		$this->assertStringNotContainsString( '[tool result omitted:', $text );
+		$this->assertStringContainsString( 'Keep this safe boundary.', $text );
+	}
+
+	/** A completed cycle remains available when a later orphan response is ignored. */
+	public function test_chunked_compaction_preserves_completed_cycle_before_orphan_response(): void {
+		$history = array(
+			array( 'role' => 'model', 'parts' => array( array( 'functionCall' => array( 'id' => 'call-a', 'name' => 'write-tool' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'id' => 'call-a', 'name' => 'write-tool' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'functionResponse' => array( 'id' => 'orphan-b', 'name' => 'orphan-tool' ) ) ) ),
+			array( 'role' => 'user', 'parts' => array( array( 'text' => 'Continue without repeating the write.' ) ) ),
+		);
+
+		$result = ConversationTrimmer::compact_serialized_history_chunks( str_split( (string) wp_json_encode( $history ), 9 ), 4096, 1024 );
+		$text   = (string) $result['messages'][0]['parts'][0]['text'];
+
+		$this->assertTrue( $result['meta']['stream_valid'] );
+		$this->assertStringContainsString( '[tool call: write-tool]', $text );
+		$this->assertStringContainsString( '[tool result omitted: write-tool]', $text );
+		$this->assertStringNotContainsString( 'orphan-tool', $text );
+		$this->assertStringContainsString( 'Continue without repeating the write.', $text );
+	}
+
+	/** Malformed array separators and trailing data fail closed. */
+	public function test_chunked_compaction_rejects_malformed_json_arrays(): void {
+		$invalid_histories = array(
+			'[{}{}]',
+			'[,{}]',
+			'[{},]',
+			'[{}]trailing',
+			'[{"parts":[}]',
+		);
+
+		foreach ( $invalid_histories as $history ) {
+			$result = ConversationTrimmer::compact_serialized_history_chunks( str_split( $history, 2 ), 4096, 1024 );
+			$this->assertFalse( $result['meta']['stream_valid'], $history );
+		}
+	}
+
+	/** A 60 MB historical fixture is compacted from bounded JSON slices. */
+	public function test_chunked_compaction_handles_a_60_mb_history_without_materializing_it(): void {
+		$message_count = 18759;
+		$chunks        = static function () use ( $message_count ): \Generator {
+			yield '[';
+			for ( $index = 0; $index < $message_count; ++$index ) {
+				$encoded = (string) wp_json_encode(
+					array(
+						'role'  => 'user',
+						'parts' => array(
+							array( 'text' => 'legacy-message-' . $index . ' ' . str_repeat( 'x', 3400 ) ),
+						),
+					)
+				);
+				$encoded = ( 0 === $index ? '' : ',' ) . $encoded;
+				for ( $offset = 0, $length = strlen( $encoded ); $offset < $length; $offset += 4096 ) {
+					yield substr( $encoded, $offset, 4096 );
+				}
+			}
+			yield ']';
+		};
+
+		$result = ConversationTrimmer::compact_serialized_history_chunks( $chunks(), 8192, 2048 );
+		$text   = (string) $result['messages'][0]['parts'][0]['text'];
+
+		$this->assertTrue( $result['meta']['stream_complete'] );
+		$this->assertTrue( $result['meta']['stream_valid'] );
+		$this->assertSame( $message_count, $result['meta']['source_message_count'] );
+		$this->assertLessThanOrEqual( 8192, $result['meta']['estimated_bytes'] );
+		$this->assertStringContainsString( 'legacy-message-18758', $text );
+	}
 }

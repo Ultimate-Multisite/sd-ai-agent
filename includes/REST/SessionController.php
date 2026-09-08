@@ -171,6 +171,33 @@ final class SessionController {
 
 		register_rest_route(
 			RestController::NAMESPACE,
+			'/sessions/oversized',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'handle_list_oversized_sessions' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+				'args'                => array(
+					'min_bytes'    => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+					'min_messages' => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+					'limit'        => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			RestController::NAMESPACE,
 			'/sessions/folders',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
@@ -283,7 +310,7 @@ final class SessionController {
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( $this, 'handle_compact_session' ),
-				'permission_callback' => array( $this, 'check_session_permission' ),
+				'permission_callback' => array( $this, 'check_session_compaction_permission' ),
 				'args'                => array(
 					'id'          => array(
 						'required'          => true,
@@ -903,6 +930,54 @@ final class SessionController {
 	}
 
 	/**
+	 * Handle GET /sessions/oversized — list size metadata for administrative maintenance.
+	 *
+	 * This deliberately returns no session title, owner, messages, tool calls, or
+	 * paused state. Administrators receive only IDs, counts, and byte totals needed
+	 * to select an explicit export, compaction, archive, or removal operation.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response
+	 */
+	public function handle_list_oversized_sessions( WP_REST_Request $request ): WP_REST_Response {
+		$thresholds   = $this->database->get_session_storage_maintenance_limits();
+		$min_bytes    = self::get_int_param( $request, 'min_bytes' );
+		$min_messages = self::get_int_param( $request, 'min_messages' );
+		$limit        = self::get_int_param( $request, 'limit' );
+
+		$min_bytes    = $min_bytes > 0 ? max( 1024, $min_bytes ) : $thresholds['bytes'];
+		$min_messages = $min_messages > 0 ? max( 1, $min_messages ) : $thresholds['messages'];
+		$limit        = min( 500, max( 1, $limit > 0 ? $limit : 100 ) );
+		$sessions     = $this->database->list_oversized_sessions( $min_bytes, $min_messages, $limit );
+
+		$data = array_map(
+			static function ( object $session ): array {
+				return array(
+					'id'                 => (int) $session->id,
+					'status'             => (string) $session->status,
+					'message_count'      => (int) $session->message_count,
+					'messages_bytes'     => (int) $session->messages_bytes,
+					'tool_calls_bytes'   => (int) $session->tool_calls_bytes,
+					'paused_state_bytes' => (int) $session->paused_state_bytes,
+					'total_bytes'        => (int) $session->total_bytes,
+				);
+			},
+			$sessions
+		);
+
+		return new WP_REST_Response(
+			array(
+				'thresholds' => array(
+					'bytes'    => $min_bytes,
+					'messages' => $min_messages,
+				),
+				'sessions'   => $data,
+			),
+			200
+		);
+	}
+
+	/**
 	 * Handle GET /sessions/folders — list folders for current user.
 	 *
 	 * @return WP_REST_Response
@@ -1107,7 +1182,7 @@ final class SessionController {
 	 */
 	public function handle_compact_session( WP_REST_Request $request ) {
 		$source_session_id = self::get_int_param( $request, 'id' );
-		$source_session    = $this->database->get_session( $source_session_id );
+		$source_session    = $this->database->get_session_maintenance_metadata( $source_session_id );
 
 		if ( ! $source_session ) {
 			return new WP_Error(
@@ -1117,10 +1192,31 @@ final class SessionController {
 			);
 		}
 
-		$decoded_messages = json_decode( (string) $source_session->messages, true );
-		$source_messages  = is_array( $decoded_messages ) ? array_values( array_filter( $decoded_messages, 'is_array' ) ) : array();
+		if ( null !== ActiveJobRepository::get_by_session_id( $source_session_id ) ) {
+			return new WP_Error(
+				'sd_ai_agent_compact_active_job',
+				__( 'This conversation has an active job and cannot be compacted yet.', 'superdav-ai-agent' ),
+				array( 'status' => 409 )
+			);
+		}
 
-		if ( empty( $source_messages ) ) {
+		if ( ! empty( $source_session->has_paused_state ) ) {
+			return new WP_Error(
+				'sd_ai_agent_compact_paused_session',
+				__( 'This conversation has a paused continuation and cannot be compacted yet.', 'superdav-ai-agent' ),
+				array( 'status' => 409 )
+			);
+		}
+
+		if ( empty( $source_session->messages_valid ) ) {
+			return new WP_Error(
+				'sd_ai_agent_compact_invalid_history',
+				__( 'The saved conversation could not be read safely for compaction.', 'superdav-ai-agent' ),
+				array( 'status' => 409 )
+			);
+		}
+
+		if ( (int) $source_session->message_count <= 0 ) {
 			return new WP_Error(
 				'sd_ai_agent_compact_empty_session',
 				__( 'This conversation has no saved messages to compact.', 'superdav-ai-agent' ),
@@ -1144,12 +1240,19 @@ final class SessionController {
 			ConversationTrimmer::COMPACT_MAX_TOKENS,
 			max( 256, (int) floor( $request_token_budget / 2 ) )
 		);
-		$compacted            = ConversationTrimmer::compact_serialized_history(
-			$source_messages,
+		$compacted            = ConversationTrimmer::compact_serialized_history_chunks(
+			$this->database->stream_session_messages( $source_session_id ),
 			$compact_byte_budget,
 			$compact_token_budget
 		);
-		$seed_messages        = $compacted['messages'];
+		if ( empty( $compacted['meta']['stream_complete'] ) || empty( $compacted['meta']['stream_valid'] ) ) {
+			return new WP_Error(
+				'sd_ai_agent_compact_invalid_history',
+				__( 'The saved conversation could not be read safely for compaction.', 'superdav-ai-agent' ),
+				array( 'status' => 409 )
+			);
+		}
+		$seed_messages = $compacted['messages'];
 		if ( empty( $seed_messages ) ) {
 			return new WP_Error(
 				'sd_ai_agent_compact_failed',
