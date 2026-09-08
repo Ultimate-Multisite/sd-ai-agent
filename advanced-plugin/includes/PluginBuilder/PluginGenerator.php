@@ -624,7 +624,14 @@ INSTRUCTION;
 
 			$builder = wp_ai_client_prompt( $prompt );
 			if ( '' !== $model_id ) {
-				$model = $registry->getProviderModel( $provider_id, $model_id );
+				try {
+					$model = $registry->getProviderModel( $provider_id, $model_id );
+				} catch ( \InvalidArgumentException ) {
+					return new WP_Error(
+						'sd_ai_agent_plugin_generation_model_unavailable',
+						__( 'The AI model selected for this run is unavailable for plugin generation. Configure a compatible text model and retry.', 'superdav-ai-agent' )
+					);
+				}
 				$builder->using_model( $model );
 			} else {
 				$builder->using_provider( $provider_id );

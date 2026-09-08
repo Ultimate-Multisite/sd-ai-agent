@@ -348,8 +348,9 @@ class AbilityFunctionResolver extends \WP_AI_Client_Ability_Function_Resolver {
 	 * @param \WP_Ability $ability Ability about to execute.
 	 */
 	private function set_ability_provider_model_context( \WP_Ability $ability ): void {
-		$setter = array( $ability, 'set_provider_model_context' );
-		if ( ! is_callable( $setter ) ) {
+		$setter  = array( $ability, 'set_provider_model_context' );
+		$clearer = array( $ability, 'clear_provider_model_context' );
+		if ( ! is_callable( $setter ) || ! is_callable( $clearer ) ) {
 			return;
 		}
 
@@ -366,10 +367,13 @@ class AbilityFunctionResolver extends \WP_AI_Client_Ability_Function_Resolver {
 	 * @param \WP_Ability $ability Ability that has finished executing.
 	 */
 	private function clear_ability_provider_model_context( \WP_Ability $ability ): void {
+		$setter  = array( $ability, 'set_provider_model_context' );
 		$clearer = array( $ability, 'clear_provider_model_context' );
-		if ( is_callable( $clearer ) ) {
-			$clearer();
+		if ( ! is_callable( $setter ) || ! is_callable( $clearer ) ) {
+			return;
 		}
+
+		$clearer();
 	}
 
 	/**
